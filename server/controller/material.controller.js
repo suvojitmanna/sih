@@ -1,4 +1,3 @@
-import fs from "fs";
 import * as pdfjsLib from "pdfjs-dist/legacy/build/pdf.mjs";
 import Material from "../models/materialModel.js";
 import MaterialRequest from "../models/materialRequestModel.js";
@@ -6,10 +5,9 @@ import Quiz from "../models/quizModel.js";
 import { generateMCQsFromText } from "../services/aiService.js";
 
 // Helper: Extract text from PDF buffer
-const extractPdfText = async (filePath) => {
+const extractPdfText = async (buffer) => {
     try {
-        const fileBuffer = await fs.promises.readFile(filePath);
-        const uint8Array = new Uint8Array(fileBuffer);
+        const uint8Array = new Uint8Array(buffer);
         const pdf = await pdfjsLib.getDocument({ data: uint8Array }).promise;
         let fullText = "";
 
@@ -26,42 +24,41 @@ const extractPdfText = async (filePath) => {
     }
 };
 
-// 1. Upload Learning Material
+// 1. Upload Learning Material (Supports PDF, Images, Text, Docs)
 export const uploadMaterial = async (req, res) => {
     try {
         if (!req.file) {
-            return res.status(400).json({ success: false, message: "Please select a file to upload (PDF, DOCX, or TXT)." });
+            return res.status(400).json({ success: false, message: "Please select a file to upload (PDF, Image, DOCX, or TXT)." });
         }
 
         const { title, domain = "Statistical Competencies", topic = "Survey Methodology" } = req.body;
-        const filePath = req.file.path;
         const fileExt = req.file.originalname.split(".").pop().toLowerCase();
+        const mimeType = req.file.mimetype || "application/octet-stream";
         let extractedText = "";
 
-        if (fileExt === "pdf") {
-            extractedText = await extractPdfText(filePath);
-        } else if (fileExt === "txt") {
-            extractedText = await fs.promises.readFile(filePath, "utf-8");
-        } else {
-            extractedText = `Document: ${req.file.originalname}. Official training manual on ${topic}.`;
-        }
+        // Convert buffer to base64 Data URI for rendering/downloading
+        const fileBase64 = `data:${mimeType};base64,${req.file.buffer.toString("base64")}`;
 
-        // Clean up temporary upload file if exists
-        try {
-            await fs.promises.unlink(filePath);
-        } catch (unlinkErr) {
-            // Ignore unlink errors
+        if (fileExt === "pdf") {
+            extractedText = await extractPdfText(req.file.buffer);
+        } else if (fileExt === "txt" || mimeType.includes("text")) {
+            extractedText = req.file.buffer.toString("utf-8");
+        } else if (["jpg", "jpeg", "png", "webp", "gif", "svg"].includes(fileExt) || mimeType.startsWith("image/")) {
+            extractedText = `Official Visual Document / Statistical Chart: ${title || req.file.originalname}. Domain: ${domain}, Topic: ${topic}.`;
+        } else {
+            extractedText = `Official Reference Document: ${title || req.file.originalname}. Domain: ${domain}, Topic: ${topic}.`;
         }
 
         const material = await Material.create({
             title: title || req.file.originalname,
             originalName: req.file.originalname,
-            fileType: fileExt === "pdf" ? "pdf" : fileExt === "txt" ? "txt" : "other",
+            fileType: fileExt,
             fileSize: req.file.size,
+            fileData: fileBase64,
             domain,
             topic,
-            extractedText: extractedText.substring(0, 50000), // Store up to 50k chars
-            summary: `Learning material containing ${Math.round(extractedText.length / 5)} words covering ${topic}.`,
+            extractedText: extractedText.substring(0, 60000), // Store up to 60k chars
+            summary: `Learning material covering ${topic} (${domain}).`,
             uploadedBy: req.userId || req.user?._id,
         });
 
@@ -76,40 +73,43 @@ export const uploadMaterial = async (req, res) => {
     }
 };
 
-// 2. Generate MCQs & Quiz from Uploaded Material
+// 2. Generate MCQs from Material
 export const generateMcqsFromMaterial = async (req, res) => {
     try {
         const { materialId } = req.params;
         const { numQuestions = 5, difficulty = "Medium" } = req.body;
-        const userId = req.userId || req.user?._id;
 
         const material = await Material.findById(materialId);
         if (!material) {
             return res.status(404).json({ success: false, message: "Material not found" });
         }
 
-        const textContent = material.extractedText || material.summary || material.title;
+        const textToUse = material.extractedText && material.extractedText.length > 50
+            ? material.extractedText
+            : `Official Training Manual on ${material.topic} under ${material.domain}. Principles of official survey statistics, sampling frames, and national account compilations.`;
 
-        // Call Gemini AI
-        const mcqs = await generateMCQsFromText({
-            text: textContent,
-            numQuestions: Number(numQuestions),
+        const mcqs = await generateMCQsFromText(textToUse, {
+            numQuestions: Math.min(Math.max(numQuestions, 3), 10),
             difficulty,
+            domain: material.domain,
             topic: material.topic,
         });
 
-        // Automatically create a Quiz from the generated MCQs
         const quiz = await Quiz.create({
-            title: `Assessment: ${material.title} (${difficulty})`,
+            title: `${material.title} - Diagnostic Assessment`,
             domain: material.domain,
             topic: material.topic,
             difficulty,
-            timeLimitMinutes: Math.max(5, Math.round(mcqs.length * 1.5)),
-            questions: mcqs,
+            questions: mcqs.map((q) => ({
+                question: q.question,
+                options: q.options,
+                correctAnswer: q.correctAnswer,
+                explanation: q.explanation || "Official statistical guideline concept.",
+                topic: material.topic,
+            })),
+            isOfficial: false,
             sourceMaterialId: material._id,
-            createdBy: userId,
-            isGeneratedByAI: true,
-            isPublished: true,
+            estimatedTimeMinutes: mcqs.length * 2,
         });
 
         material.generatedMCQsCount = (material.generatedMCQsCount || 0) + mcqs.length;
@@ -117,7 +117,7 @@ export const generateMcqsFromMaterial = async (req, res) => {
 
         return res.status(200).json({
             success: true,
-            message: `Generated ${mcqs.length} MCQs and created assessment quiz! ✨`,
+            message: `Successfully generated ${mcqs.length} diagnostic MCQs!`,
             mcqs,
             quiz,
         });
@@ -130,7 +130,7 @@ export const generateMcqsFromMaterial = async (req, res) => {
 // 3. List Materials
 export const getMaterials = async (req, res) => {
     try {
-        const materials = await Material.find().sort({ createdAt: -1 }).limit(30);
+        const materials = await Material.find().sort({ createdAt: -1 }).limit(40);
         return res.status(200).json({
             success: true,
             materials,
@@ -156,7 +156,7 @@ export const getMaterialById = async (req, res) => {
     }
 };
 
-// 5. User submits a Study Material Request to Admin
+// 5. User submits a Study Material Request (with optional attachment)
 export const requestMaterial = async (req, res) => {
     try {
         const { topic, domain, description, urgency = "Normal" } = req.body;
@@ -165,6 +165,15 @@ export const requestMaterial = async (req, res) => {
         }
 
         const user = req.user;
+        let attachmentData = "";
+        let attachmentName = "";
+
+        if (req.file) {
+            const mimeType = req.file.mimetype || "application/octet-stream";
+            attachmentData = `data:${mimeType};base64,${req.file.buffer.toString("base64")}`;
+            attachmentName = req.file.originalname;
+        }
+
         const newRequest = await MaterialRequest.create({
             requesterId: user._id,
             requesterName: user.name || "Statistical Officer",
@@ -175,6 +184,8 @@ export const requestMaterial = async (req, res) => {
             domain: domain || "Statistical Competencies",
             description: description.trim(),
             urgency,
+            attachmentData,
+            attachmentName,
             status: "pending",
         });
 

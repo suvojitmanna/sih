@@ -13,14 +13,19 @@ const materialSchema = new mongoose.Schema(
         },
         fileUrl: {
             type: String,
+            default: "",
+        },
+        fileData: {
+            type: String, // Base64 Data URI for inline preview/download of images and documents
+            default: "",
         },
         fileType: {
             type: String,
-            enum: ["pdf", "docx", "txt", "doc", "other"],
             default: "pdf",
         },
         fileSize: {
             type: Number,
+            default: 0,
         },
         domain: {
             type: String,

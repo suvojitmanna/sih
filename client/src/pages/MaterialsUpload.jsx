@@ -9,6 +9,7 @@ import {
   FaFileUpload,
   FaFilePdf,
   FaFileAlt,
+  FaFileImage,
   FaTasks,
   FaCheckCircle,
   FaClock,
@@ -19,6 +20,8 @@ import {
   FaBookOpen,
   FaHourglassHalf,
   FaDownload,
+  FaExternalLinkAlt,
+  FaEye,
 } from "react-icons/fa";
 import { HiSparkles } from "react-icons/hi";
 import { BsShieldCheck, BsFillSendFill } from "react-icons/bs";
@@ -55,7 +58,11 @@ const MaterialsUpload = () => {
     description: "",
     urgency: "Normal",
   });
+  const [requestAttachment, setRequestAttachment] = useState(null);
   const [requestSubmitting, setRequestSubmitting] = useState(false);
+
+  // Preview Modal state
+  const [previewFile, setPreviewFile] = useState(null);
 
   const fetchMaterials = async () => {
     try {
@@ -93,7 +100,7 @@ const MaterialsUpload = () => {
     e.preventDefault();
     if (!selectedFile) {
       toast.error(
-        "Please select a training manual, document, or PDF to upload.",
+        "Please select a training manual, image, document, or PDF to upload.",
       );
       return;
     }
@@ -163,10 +170,22 @@ const MaterialsUpload = () => {
     }
     setRequestSubmitting(true);
     try {
+      const formData = new FormData();
+      formData.append("topic", requestForm.topic);
+      formData.append("domain", requestForm.domain);
+      formData.append("description", requestForm.description);
+      formData.append("urgency", requestForm.urgency);
+      if (requestAttachment) {
+        formData.append("file", requestAttachment);
+      }
+
       const { data } = await axios.post(
         `${ServerUrl}/api/materials/request`,
-        requestForm,
-        { withCredentials: true }
+        formData,
+        {
+          headers: { "Content-Type": "multipart/form-data" },
+          withCredentials: true,
+        }
       );
       if (data.success) {
         toast.success("Study material request submitted to NSSTA Secretariat! 📄✨");
@@ -177,10 +196,11 @@ const MaterialsUpload = () => {
           description: "",
           urgency: "Normal",
         });
+        setRequestAttachment(null);
         fetchMaterials();
       }
     } catch (error) {
-      toast.error("Error submitting study material request.");
+      toast.error(error.response?.data?.message || "Error submitting study material request.");
     } finally {
       setRequestSubmitting(false);
     }
@@ -196,13 +216,13 @@ const MaterialsUpload = () => {
           <div>
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/20 text-blue-300 border border-blue-400/30 text-xs font-bold uppercase tracking-wider mb-2">
               <BsShieldCheck size={13} />
-              <span>SankhyaIQ™ AI Neural Document Engine</span>
+              <span>SankhyaIQ™ AI Neural Document & Media Engine</span>
             </div>
             <h1 className="text-2xl sm:text-3xl font-black tracking-tight">
-              Learning Materials, Guidelines & Question Generator
+              Learning Materials, Guidelines & Diagnostic Engine
             </h1>
             <p className="text-xs sm:text-sm text-slate-300 mt-1 max-w-2xl">
-              Upload official MoSPI manuals, NSS instruction books, and National Accounts reports. Request custom study guidelines from the NSSTA Academy Secretariat.
+              Upload official MoSPI manuals, statistical charts, and reports. Request custom study guidelines from the NSSTA Academy Secretariat.
             </p>
           </div>
 
@@ -229,7 +249,7 @@ const MaterialsUpload = () => {
               {myRequests.map((req) => (
                 <div
                   key={req._id}
-                  className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/80 space-y-2.5"
+                  className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/80 space-y-3"
                 >
                   <div className="flex items-center justify-between">
                     <span className="font-bold text-xs text-slate-900 dark:text-white">
@@ -250,8 +270,20 @@ const MaterialsUpload = () => {
                     {req.description}
                   </p>
 
+                  {req.attachmentData && (
+                    <div className="flex items-center gap-2 text-[11px] text-blue-600 dark:text-blue-400">
+                      <span>Attached: {req.attachmentName || "Reference Document"}</span>
+                      <button
+                        onClick={() => setPreviewFile({ url: req.attachmentData, title: req.attachmentName })}
+                        className="underline font-bold cursor-pointer"
+                      >
+                        (Preview)
+                      </button>
+                    </div>
+                  )}
+
                   {req.dispatchedMaterialTitle && (
-                    <div className="p-3 rounded-xl bg-emerald-50/80 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 space-y-1.5 text-xs">
+                    <div className="p-3.5 rounded-xl bg-emerald-50/80 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 space-y-2 text-xs">
                       <div className="flex items-center justify-between">
                         <span className="font-bold text-emerald-900 dark:text-emerald-300">
                           📄 {req.dispatchedMaterialTitle}
@@ -261,12 +293,38 @@ const MaterialsUpload = () => {
                             href={req.dispatchedMaterialUrl}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-blue-600 dark:text-blue-400 font-bold hover:underline"
+                            className="text-blue-600 dark:text-blue-400 font-bold hover:underline inline-flex items-center gap-1"
                           >
-                            Open Reference Link
+                            <span>Link</span>
+                            <FaExternalLinkAlt size={10} />
                           </a>
                         )}
                       </div>
+
+                      {/* Render Dispatched File/Image if present */}
+                      {req.dispatchedFileData && (
+                        <div className="pt-1 flex items-center gap-2">
+                          <a
+                            href={req.dispatchedFileData}
+                            download={req.dispatchedFileName || "official-study-material"}
+                            className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[11px] inline-flex items-center gap-1.5 shadow-xs transition"
+                          >
+                            <FaDownload size={10} />
+                            <span>Download {req.dispatchedFileName || "Dispatched File"}</span>
+                          </a>
+
+                          {req.dispatchedFileData.startsWith("data:image/") && (
+                            <button
+                              onClick={() => setPreviewFile({ url: req.dispatchedFileData, title: req.dispatchedFileName || req.dispatchedMaterialTitle })}
+                              className="px-3 py-1.5 rounded-lg bg-slate-200 dark:bg-slate-800 text-slate-800 dark:text-slate-200 font-bold text-[11px] inline-flex items-center gap-1.5 cursor-pointer"
+                            >
+                              <FaEye size={10} />
+                              <span>View Image</span>
+                            </button>
+                          )}
+                        </div>
+                      )}
+
                       {req.dispatchedMaterialText && (
                         <p className="text-slate-700 dark:text-slate-300 text-[11px] whitespace-pre-wrap leading-relaxed">
                           {req.dispatchedMaterialText}
@@ -274,7 +332,7 @@ const MaterialsUpload = () => {
                       )}
                       {req.adminResponseNote && (
                         <p className="text-[10px] text-emerald-700 dark:text-emerald-400 font-medium">
-                          <strong>Note:</strong> {req.adminResponseNote}
+                          <strong>Secretariat Note:</strong> {req.adminResponseNote}
                         </p>
                       )}
                     </div>
@@ -290,7 +348,7 @@ const MaterialsUpload = () => {
           <div className="lg:col-span-5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-8 shadow-xs space-y-6">
             <h2 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
               <FaFileUpload className="text-blue-600" />
-              <span>Upload Training Document</span>
+              <span>Upload Training Manual / Document</span>
             </h2>
 
             <form onSubmit={handleUpload} className="space-y-4 text-xs">
@@ -299,7 +357,7 @@ const MaterialsUpload = () => {
                 <input
                   type="file"
                   id="material-file"
-                  accept=".pdf,.txt,.docx,.doc"
+                  accept=".pdf,.txt,.docx,.doc,.jpg,.jpeg,.png,.webp"
                   onChange={handleFileChange}
                   className="hidden"
                 />
@@ -308,15 +366,19 @@ const MaterialsUpload = () => {
                   className="cursor-pointer flex flex-col items-center gap-2"
                 >
                   <div className="w-12 h-12 rounded-2xl bg-blue-50 dark:bg-blue-950 text-blue-600 flex items-center justify-center">
-                    <FaFilePdf size={24} />
+                    {selectedFile && selectedFile.type?.startsWith("image/") ? (
+                      <FaFileImage size={24} />
+                    ) : (
+                      <FaFilePdf size={24} />
+                    )}
                   </div>
                   <span className="font-bold text-slate-700 dark:text-slate-300 text-xs">
                     {selectedFile
                       ? selectedFile.name
-                      : "Click to browse official files"}
+                      : "Click to browse official files or images"}
                   </span>
                   <span className="text-[10px] text-slate-400">
-                    Supports PDF, DOCX, TXT (Max 15MB)
+                    Supports PDF, DOCX, TXT, PNG, JPG (Max 25MB)
                   </span>
                 </label>
               </div>
@@ -459,7 +521,11 @@ const MaterialsUpload = () => {
                     >
                       <div className="flex items-start gap-3">
                         <div className="p-2.5 rounded-xl bg-blue-50 dark:bg-blue-950 text-blue-600 mt-0.5">
-                          <FaFilePdf size={18} />
+                          {mat.fileType?.includes("image") || ["png", "jpg", "jpeg", "webp"].includes(mat.fileType) ? (
+                            <FaFileImage size={18} />
+                          ) : (
+                            <FaFilePdf size={18} />
+                          )}
                         </div>
                         <div>
                           <span className="text-[10px] font-extrabold text-blue-600 bg-blue-50 dark:bg-blue-950 px-2 py-0.5 rounded-full uppercase">
@@ -476,6 +542,17 @@ const MaterialsUpload = () => {
                       </div>
 
                       <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
+                        {mat.fileData && (
+                          <a
+                            href={mat.fileData}
+                            download={mat.originalName || "study-material"}
+                            className="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-300 text-xs font-bold transition"
+                            title="Download Material"
+                          >
+                            <FaDownload size={12} />
+                          </a>
+                        )}
+
                         <button
                           onClick={() => handleGenerateMcqs(mat)}
                           disabled={genLoading}
@@ -574,12 +651,24 @@ const MaterialsUpload = () => {
                   Detailed Learning Requirement *
                 </label>
                 <textarea
-                  rows={4}
+                  rows={3}
                   required
                   value={requestForm.description}
                   onChange={(e) => setRequestForm({ ...requestForm, description: e.target.value })}
                   placeholder="Explain why you need this material and any specific formulas, methodologies, or survey rounds you want covered..."
                   className="w-full p-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white outline-hidden focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+
+              <div>
+                <label className="font-bold text-slate-700 dark:text-slate-300 block mb-1.5">
+                  Attach Reference Image or File (Optional)
+                </label>
+                <input
+                  type="file"
+                  accept=".pdf,.png,.jpg,.jpeg,.docx,.txt"
+                  onChange={(e) => setRequestAttachment(e.target.files[0] || null)}
+                  className="w-full p-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white text-xs file:mr-3 file:py-1 file:px-2.5 file:rounded-lg file:border-0 file:bg-blue-600 file:text-white file:text-xs"
                 />
               </div>
 
@@ -601,6 +690,42 @@ const MaterialsUpload = () => {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================== */}
+      {/* MODAL: IMAGE / FILE PREVIEW */}
+      {/* ========================================================== */}
+      {previewFile && (
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl max-w-2xl w-full p-6 shadow-2xl border border-slate-200 dark:border-slate-800 space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
+              <h3 className="font-bold text-sm text-slate-900 dark:text-white">{previewFile.title}</h3>
+              <button
+                onClick={() => setPreviewFile(null)}
+                className="text-slate-400 hover:text-white text-lg cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+            <div className="max-h-[70vh] overflow-auto flex items-center justify-center">
+              {previewFile.url?.startsWith("data:image/") ? (
+                <img src={previewFile.url} alt={previewFile.title} className="max-w-full rounded-xl object-contain" />
+              ) : (
+                <div className="p-8 text-center space-y-3">
+                  <FaFilePdf size={48} className="mx-auto text-rose-500" />
+                  <p className="text-xs text-slate-400">PDF / Document File</p>
+                  <a
+                    href={previewFile.url}
+                    download={previewFile.title || "document"}
+                    className="px-4 py-2 rounded-xl bg-blue-600 text-white font-bold text-xs inline-block"
+                  >
+                    Download File
+                  </a>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       )}

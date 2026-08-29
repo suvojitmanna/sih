@@ -52,6 +52,14 @@ const materialRequestSchema = new mongoose.Schema(
             enum: ["pending", "fulfilled", "rejected"],
             default: "pending",
         },
+        attachmentData: {
+            type: String, // Base64 data URI if officer attached an image or file with their request
+            default: "",
+        },
+        attachmentName: {
+            type: String,
+            default: "",
+        },
         adminResponseNote: {
             type: String,
             default: "",
@@ -65,6 +73,18 @@ const materialRequestSchema = new mongoose.Schema(
             default: "",
         },
         dispatchedMaterialText: {
+            type: String,
+            default: "",
+        },
+        dispatchedFileData: {
+            type: String, // Base64 data URI for dispatched file/image
+            default: "",
+        },
+        dispatchedFileName: {
+            type: String,
+            default: "",
+        },
+        dispatchedFileType: {
             type: String,
             default: "",
         },

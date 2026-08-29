@@ -182,11 +182,27 @@ export const fulfillMaterialRequest = async (req, res) => {
             return res.status(404).json({ success: false, message: "Request not found." });
         }
 
+        let fileData = "";
+        let fileName = "";
+        let fileType = "";
+
+        if (req.file) {
+            const mimeType = req.file.mimetype || "application/octet-stream";
+            fileData = `data:${mimeType};base64,${req.file.buffer.toString("base64")}`;
+            fileName = req.file.originalname;
+            fileType = req.file.originalname.split(".").pop().toLowerCase();
+        }
+
         request.status = status;
         request.adminResponseNote = adminResponseNote || "Dispatched by NSSTA Secretariat.";
         request.dispatchedMaterialTitle = dispatchedMaterialTitle || request.topic;
         request.dispatchedMaterialUrl = dispatchedMaterialUrl || "";
         request.dispatchedMaterialText = dispatchedMaterialText || "";
+        if (fileData) {
+            request.dispatchedFileData = fileData;
+            request.dispatchedFileName = fileName;
+            request.dispatchedFileType = fileType;
+        }
         request.fulfilledAt = new Date();
 
         await request.save();
@@ -219,6 +235,17 @@ export const dispatchMaterial = async (req, res) => {
             return res.status(400).json({ success: false, message: "Title and description are required." });
         }
 
+        let fileData = "";
+        let fileName = title;
+        let fileType = "pdf";
+
+        if (req.file) {
+            const mimeType = req.file.mimetype || "application/octet-stream";
+            fileData = `data:${mimeType};base64,${req.file.buffer.toString("base64")}`;
+            fileName = req.file.originalname;
+            fileType = req.file.originalname.split(".").pop().toLowerCase();
+        }
+
         // If targeted to a specific user, create/record a dispatched request
         if (targetUserId) {
             const targetUser = await User.findById(targetUserId);
@@ -237,6 +264,9 @@ export const dispatchMaterial = async (req, res) => {
                     dispatchedMaterialTitle: title,
                     dispatchedMaterialUrl: fileUrl,
                     dispatchedMaterialText: materialText,
+                    dispatchedFileData: fileData,
+                    dispatchedFileName: fileName,
+                    dispatchedFileType: fileType,
                     fulfilledAt: new Date(),
                 });
             }
@@ -245,9 +275,10 @@ export const dispatchMaterial = async (req, res) => {
         // Create in global Material collection for academy records
         const material = await Material.create({
             title,
-            originalName: title,
+            originalName: fileName || title,
             fileUrl,
-            fileType: "pdf",
+            fileData,
+            fileType,
             domain,
             topic,
             extractedText: materialText || description,

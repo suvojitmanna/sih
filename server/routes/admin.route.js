@@ -1,5 +1,6 @@
 import express from "express";
 import isAuth from "../middleware/isAuth.js";
+import { upload } from "../middleware/multer.js";
 import {
     getAdminOverviewMetrics,
     getLearnersDirectory,
@@ -31,8 +32,8 @@ adminRouter.get("/heatmap", isAuth, isAdmin, getDepartmentHeatmap);
 
 // Study Material Requests & Direct Dispatch
 adminRouter.get("/material-requests", isAuth, isAdmin, getAllMaterialRequests);
-adminRouter.post("/material-requests/:id/fulfill", isAuth, isAdmin, fulfillMaterialRequest);
-adminRouter.post("/dispatch-material", isAuth, isAdmin, dispatchMaterial);
+adminRouter.post("/material-requests/:id/fulfill", isAuth, isAdmin, upload.single("file"), fulfillMaterialRequest);
+adminRouter.post("/dispatch-material", isAuth, isAdmin, upload.single("file"), dispatchMaterial);
 
 // Custom Case Study & Assignment Dispatch & Submissions
 adminRouter.post("/dispatch-assignment", isAuth, isAdmin, dispatchAssignment);

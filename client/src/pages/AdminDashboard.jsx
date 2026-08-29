@@ -16,15 +16,9 @@ import {
   Pie,
   Cell,
   Legend,
-  RadarChart,
-  PolarGrid,
-  PolarAngleAxis,
-  PolarRadiusAxis,
-  Radar,
 } from "recharts";
 import {
   FaUsers,
-  FaShieldAlt,
   FaAward,
   FaClock,
   FaTasks,
@@ -45,10 +39,23 @@ import {
   FaDownload,
   FaGraduationCap,
 } from "react-icons/fa";
-import { BsShieldCheck, BsGrid3X3GapFill, BsRobot, BsFillSendFill } from "react-icons/bs";
+import {
+  BsShieldCheck,
+  BsGrid3X3GapFill,
+  BsRobot,
+  BsFillSendFill,
+} from "react-icons/bs";
 import { HiSparkles } from "react-icons/hi";
 
-const COLORS = ["#1e40af", "#3b82f6", "#10b981", "#f59e0b", "#8b5cf6", "#ec4899", "#06b6d4"];
+const COLORS = [
+  "#1e40af",
+  "#3b82f6",
+  "#10b981",
+  "#f59e0b",
+  "#8b5cf6",
+  "#ec4899",
+  "#06b6d4",
+];
 
 const CADRE_OPTIONS = [
   "All",
@@ -90,11 +97,13 @@ const AdminDashboard = () => {
     dispatchedMaterialTitle: "",
     dispatchedMaterialUrl: "",
     dispatchedMaterialText: "",
+    file: null,
   });
   const [fulfillSubmitting, setFulfillSubmitting] = useState(false);
 
   // Direct Material Dispatch Modal state
-  const [showDispatchMaterialModal, setShowDispatchMaterialModal] = useState(false);
+  const [showDispatchMaterialModal, setShowDispatchMaterialModal] =
+    useState(false);
   const [dispatchMaterialForm, setDispatchMaterialForm] = useState({
     title: "",
     domain: "Statistical Competencies",
@@ -103,11 +112,13 @@ const AdminDashboard = () => {
     targetCadre: "All",
     description: "",
     materialText: "",
+    file: null,
   });
   const [dispatchMaterialLoading, setDispatchMaterialLoading] = useState(false);
 
   // Assignment Dispatch Modal state
-  const [showDispatchAssignmentModal, setShowDispatchAssignmentModal] = useState(false);
+  const [showDispatchAssignmentModal, setShowDispatchAssignmentModal] =
+    useState(false);
   const [assignmentForm, setAssignmentForm] = useState({
     title: "",
     domain: "Statistical Competencies",
@@ -116,7 +127,8 @@ const AdminDashboard = () => {
     assignedToUserId: "",
     difficulty: "Intermediate",
     scenario: "",
-    instructions: "1. Analyze the sampling frame and institutional constraints.\n2. Formulate the mathematical multiplier and non-response adjustment formula.\n3. Draft an executive guidance note for NSS field teams.",
+    instructions:
+      "1. Analyze the sampling frame and institutional constraints.\n2. Formulate the mathematical multiplier and non-response adjustment formula.\n3. Draft an executive guidance note for NSS field teams.",
     estimatedHours: 4,
     dueDate: "",
     adminNotes: "",
@@ -129,18 +141,31 @@ const AdminDashboard = () => {
   const fetchAdminData = async () => {
     try {
       setLoading(true);
-      const [overviewRes, learnersRes, heatmapRes, requestsRes, subsRes] = await Promise.all([
-        axios.get(`${ServerUrl}/api/admin/overview`, { withCredentials: true }),
-        axios.get(`${ServerUrl}/api/admin/learners`, { withCredentials: true }),
-        axios.get(`${ServerUrl}/api/admin/heatmap`, { withCredentials: true }),
-        axios.get(`${ServerUrl}/api/admin/material-requests`, { withCredentials: true }),
-        axios.get(`${ServerUrl}/api/admin/assignment-submissions`, { withCredentials: true }),
-      ]);
+      const [overviewRes, learnersRes, heatmapRes, requestsRes, subsRes] =
+        await Promise.all([
+          axios.get(`${ServerUrl}/api/admin/overview`, {
+            withCredentials: true,
+          }),
+          axios.get(`${ServerUrl}/api/admin/learners`, {
+            withCredentials: true,
+          }),
+          axios.get(`${ServerUrl}/api/admin/heatmap`, {
+            withCredentials: true,
+          }),
+          axios.get(`${ServerUrl}/api/admin/material-requests`, {
+            withCredentials: true,
+          }),
+          axios.get(`${ServerUrl}/api/admin/assignment-submissions`, {
+            withCredentials: true,
+          }),
+        ]);
 
       if (overviewRes.data.success) setMetrics(overviewRes.data.metrics);
-      if (learnersRes.data.success) setLearners(learnersRes.data.learners || []);
+      if (learnersRes.data.success)
+        setLearners(learnersRes.data.learners || []);
       if (heatmapRes.data.success) setHeatmap(heatmapRes.data.heatmap || []);
-      if (requestsRes.data.success) setMaterialRequests(requestsRes.data.requests || []);
+      if (requestsRes.data.success)
+        setMaterialRequests(requestsRes.data.requests || []);
       if (subsRes.data.success) setSubmissions(subsRes.data.submissions || []);
     } catch (error) {
       console.error("Admin dashboard fetch error:", error);
@@ -158,9 +183,12 @@ const AdminDashboard = () => {
     setInspectingUser(user);
     setInspectLoading(true);
     try {
-      const { data } = await axios.get(`${ServerUrl}/api/admin/learner-detail/${user._id}`, {
-        withCredentials: true,
-      });
+      const { data } = await axios.get(
+        `${ServerUrl}/api/admin/learner-detail/${user._id}`,
+        {
+          withCredentials: true,
+        },
+      );
       if (data.success) {
         setUserDetailedData(data);
       } else {
@@ -179,19 +207,34 @@ const AdminDashboard = () => {
     if (!fulfillingRequest) return;
     setFulfillSubmitting(true);
     try {
+      const formData = new FormData();
+      formData.append("adminResponseNote", fulfillForm.adminResponseNote);
+      formData.append("dispatchedMaterialTitle", fulfillForm.dispatchedMaterialTitle);
+      formData.append("dispatchedMaterialUrl", fulfillForm.dispatchedMaterialUrl);
+      formData.append("dispatchedMaterialText", fulfillForm.dispatchedMaterialText);
+      if (fulfillForm.file) {
+        formData.append("file", fulfillForm.file);
+      }
+
       const { data } = await axios.post(
         `${ServerUrl}/api/admin/material-requests/${fulfillingRequest._id}/fulfill`,
-        fulfillForm,
-        { withCredentials: true }
+        formData,
+        {
+          headers: { "Content-Type": "multipart/form-data" },
+          withCredentials: true,
+        },
       );
       if (data.success) {
-        toast.success("Study material successfully dispatched to the officer! 📄✨");
+        toast.success(
+          "Study material successfully dispatched to the officer! 📄✨",
+        );
         setFulfillingRequest(null);
         setFulfillForm({
           adminResponseNote: "",
           dispatchedMaterialTitle: "",
           dispatchedMaterialUrl: "",
           dispatchedMaterialText: "",
+          file: null,
         });
         fetchAdminData();
       } else {
@@ -213,13 +256,30 @@ const AdminDashboard = () => {
     }
     setDispatchMaterialLoading(true);
     try {
+      const formData = new FormData();
+      formData.append("title", dispatchMaterialForm.title);
+      formData.append("domain", dispatchMaterialForm.domain);
+      formData.append("topic", dispatchMaterialForm.topic);
+      formData.append("targetUserId", dispatchMaterialForm.targetUserId);
+      formData.append("targetCadre", dispatchMaterialForm.targetCadre);
+      formData.append("description", dispatchMaterialForm.description);
+      formData.append("materialText", dispatchMaterialForm.materialText);
+      if (dispatchMaterialForm.file) {
+        formData.append("file", dispatchMaterialForm.file);
+      }
+
       const { data } = await axios.post(
         `${ServerUrl}/api/admin/dispatch-material`,
-        dispatchMaterialForm,
-        { withCredentials: true }
+        formData,
+        {
+          headers: { "Content-Type": "multipart/form-data" },
+          withCredentials: true,
+        },
       );
       if (data.success) {
-        toast.success("Study material dispatched and archived successfully! 🚀");
+        toast.success(
+          "Study material dispatched and archived successfully! 🚀",
+        );
         setShowDispatchMaterialModal(false);
         setDispatchMaterialForm({
           title: "",
@@ -229,6 +289,7 @@ const AdminDashboard = () => {
           targetCadre: "All",
           description: "",
           materialText: "",
+          file: null,
         });
         fetchAdminData();
       } else {
@@ -244,7 +305,11 @@ const AdminDashboard = () => {
   // Submit Custom Assignment Dispatch
   const handleDispatchAssignmentSubmit = async (e) => {
     e.preventDefault();
-    if (!assignmentForm.title || !assignmentForm.targetCompetency || !assignmentForm.scenario) {
+    if (
+      !assignmentForm.title ||
+      !assignmentForm.targetCompetency ||
+      !assignmentForm.scenario
+    ) {
       toast.error("Please fill in all mandatory assignment fields.");
       return;
     }
@@ -263,7 +328,7 @@ const AdminDashboard = () => {
       const { data } = await axios.post(
         `${ServerUrl}/api/admin/dispatch-assignment`,
         payload,
-        { withCredentials: true }
+        { withCredentials: true },
       );
       if (data.success) {
         toast.success("Case study assignment successfully dispatched! 📋✨");
@@ -276,7 +341,8 @@ const AdminDashboard = () => {
           assignedToUserId: "",
           difficulty: "Intermediate",
           scenario: "",
-          instructions: "1. Analyze the sampling frame and institutional constraints.\n2. Formulate the mathematical multiplier and non-response adjustment formula.\n3. Draft an executive guidance note for NSS field teams.",
+          instructions:
+            "1. Analyze the sampling frame and institutional constraints.\n2. Formulate the mathematical multiplier and non-response adjustment formula.\n3. Draft an executive guidance note for NSS field teams.",
           estimatedHours: 4,
           dueDate: "",
           adminNotes: "",
@@ -319,7 +385,9 @@ const AdminDashboard = () => {
               Executive Academy Administration & Oversight Hub
             </h1>
             <p className="text-xs sm:text-sm text-slate-300 mt-1 max-w-2xl">
-              Monitor officers' viva experiences, respond to study material requests, and dispatch statistical case studies across Indian Statistical Service cadres.
+              Monitor officers' viva experiences, respond to study material
+              requests, and dispatch statistical case studies across Indian
+              Statistical Service cadres.
             </p>
           </div>
 
@@ -412,51 +480,75 @@ const AdminDashboard = () => {
             {/* KPI Cards Grid */}
             <div className="grid grid-cols-2 lg:grid-cols-6 gap-4">
               <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-xs">
-                <span className="text-[11px] font-semibold text-slate-500 block">Total Officers</span>
+                <span className="text-[11px] font-semibold text-slate-500 block">
+                  Total Officers
+                </span>
                 <div className="mt-1 text-2xl font-black text-blue-700 dark:text-blue-400">
                   {metrics?.totalLearners || 1}
                 </div>
-                <span className="text-[10px] font-bold text-emerald-600">Registered Personnel</span>
+                <span className="text-[10px] font-bold text-emerald-600">
+                  Registered Personnel
+                </span>
               </div>
 
               <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-xs">
-                <span className="text-[11px] font-semibold text-slate-500 block">Avg Competency</span>
+                <span className="text-[11px] font-semibold text-slate-500 block">
+                  Avg Competency
+                </span>
                 <div className="mt-1 text-2xl font-black text-slate-900 dark:text-white">
                   {metrics?.avgCompetency || 70}%
                 </div>
-                <span className="text-[10px] font-bold text-blue-600">System Benchmark</span>
+                <span className="text-[10px] font-bold text-blue-600">
+                  System Benchmark
+                </span>
               </div>
 
               <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-xs">
-                <span className="text-[11px] font-semibold text-slate-500 block">AI Viva Sessions</span>
+                <span className="text-[11px] font-semibold text-slate-500 block">
+                  AI Viva Sessions
+                </span>
                 <div className="mt-1 text-2xl font-black text-indigo-600 dark:text-indigo-400">
                   {metrics?.totalInterviews || 0}
                 </div>
-                <span className="text-[10px] font-bold text-indigo-500">Cadre Mock Drills</span>
+                <span className="text-[10px] font-bold text-indigo-500">
+                  Cadre Mock Drills
+                </span>
               </div>
 
               <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-xs">
-                <span className="text-[11px] font-semibold text-slate-500 block">Quizzes Attempted</span>
+                <span className="text-[11px] font-semibold text-slate-500 block">
+                  Quizzes Attempted
+                </span>
                 <div className="mt-1 text-2xl font-black text-emerald-600 dark:text-emerald-400">
                   {metrics?.totalQuizzesAttempted || 0}
                 </div>
-                <span className="text-[10px] font-bold text-emerald-500">Evaluations Taken</span>
+                <span className="text-[10px] font-bold text-emerald-500">
+                  Evaluations Taken
+                </span>
               </div>
 
               <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-xs">
-                <span className="text-[11px] font-semibold text-slate-500 block">Material Requests</span>
+                <span className="text-[11px] font-semibold text-slate-500 block">
+                  Material Requests
+                </span>
                 <div className="mt-1 text-2xl font-black text-amber-500">
                   {metrics?.pendingMaterialRequests || 0}
                 </div>
-                <span className="text-[10px] font-bold text-amber-500">Pending Response</span>
+                <span className="text-[10px] font-bold text-amber-500">
+                  Pending Response
+                </span>
               </div>
 
               <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-xs">
-                <span className="text-[11px] font-semibold text-slate-500 block">Case Submissions</span>
+                <span className="text-[11px] font-semibold text-slate-500 block">
+                  Case Submissions
+                </span>
                 <div className="mt-1 text-2xl font-black text-purple-600 dark:text-purple-400">
                   {metrics?.totalSubmissions || 0}
                 </div>
-                <span className="text-[10px] font-bold text-purple-500">Evaluated Solutions</span>
+                <span className="text-[10px] font-bold text-purple-500">
+                  Evaluated Solutions
+                </span>
               </div>
             </div>
 
@@ -470,9 +562,22 @@ const AdminDashboard = () => {
                 </h3>
                 <div className="h-64 w-full">
                   <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={metrics?.cadreDistribution || []} margin={{ top: 10, right: 10, left: -20, bottom: 20 }}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#94a3b8" opacity={0.2} />
-                      <XAxis dataKey="cadre" tick={{ fontSize: 10, fill: "#64748b" }} interval={0} angle={-15} textAnchor="end" />
+                    <BarChart
+                      data={metrics?.cadreDistribution || []}
+                      margin={{ top: 10, right: 10, left: -20, bottom: 20 }}
+                    >
+                      <CartesianGrid
+                        strokeDasharray="3 3"
+                        stroke="#94a3b8"
+                        opacity={0.2}
+                      />
+                      <XAxis
+                        dataKey="cadre"
+                        tick={{ fontSize: 10, fill: "#64748b" }}
+                        interval={0}
+                        angle={-15}
+                        textAnchor="end"
+                      />
                       <YAxis tick={{ fontSize: 10, fill: "#64748b" }} />
                       <Tooltip
                         contentStyle={{
@@ -483,7 +588,11 @@ const AdminDashboard = () => {
                           fontSize: "12px",
                         }}
                       />
-                      <Bar dataKey="officers" fill="#2563eb" radius={[6, 6, 0, 0]} />
+                      <Bar
+                        dataKey="officers"
+                        fill="#2563eb"
+                        radius={[6, 6, 0, 0]}
+                      />
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
@@ -505,11 +614,18 @@ const AdminDashboard = () => {
                         cx="50%"
                         cy="50%"
                         outerRadius={80}
-                        label={({ name, percent }) => `${(percent * 100).toFixed(0)}%`}
+                        label={({ name, percent }) =>
+                          `${(percent * 100).toFixed(0)}%`
+                        }
                       >
-                        {(metrics?.departmentDistribution || []).map((_, index) => (
-                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                        ))}
+                        {(metrics?.departmentDistribution || []).map(
+                          (_, index) => (
+                            <Cell
+                              key={`cell-${index}`}
+                              fill={COLORS[index % COLORS.length]}
+                            />
+                          ),
+                        )}
                       </Pie>
                       <Tooltip
                         contentStyle={{
@@ -536,11 +652,16 @@ const AdminDashboard = () => {
                     <FaExclamationTriangle className="text-amber-500" />
                     <span>Top Priority Skill Deficits Across Cadres</span>
                   </h3>
-                  <span className="text-[10px] font-bold text-slate-400">MoSPI Diagnostic</span>
+                  <span className="text-[10px] font-bold text-slate-400">
+                    MoSPI Diagnostic
+                  </span>
                 </div>
                 <div className="space-y-3">
                   {(metrics?.topDeficits || []).map((def, idx) => (
-                    <div key={idx} className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-700/60 flex items-center justify-between">
+                    <div
+                      key={idx}
+                      className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-700/60 flex items-center justify-between"
+                    >
                       <div className="flex items-center gap-2.5">
                         <span className="w-5 h-5 rounded-lg bg-amber-500/10 text-amber-600 font-bold text-xs flex items-center justify-center">
                           {idx + 1}
@@ -575,7 +696,10 @@ const AdminDashboard = () => {
                     </thead>
                     <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                       {heatmap.map((h, i) => (
-                        <tr key={i} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
+                        <tr
+                          key={i}
+                          className="hover:bg-slate-50 dark:hover:bg-slate-800/50"
+                        >
                           <td className="py-2.5 font-bold text-slate-800 dark:text-slate-200 pr-2">
                             {h.department}
                           </td>
@@ -616,14 +740,18 @@ const AdminDashboard = () => {
                   <span>Cadre Officer Directory & Performance Monitor</span>
                 </h2>
                 <p className="text-xs text-slate-500 mt-0.5">
-                  Inspect detailed AI viva scores, transcripts, quiz evaluations, and competency diagnostics per officer.
+                  Inspect detailed AI viva scores, transcripts, quiz
+                  evaluations, and competency diagnostics per officer.
                 </p>
               </div>
 
               {/* Filters */}
               <div className="flex flex-wrap items-center gap-3">
                 <div className="relative">
-                  <FaSearch className="absolute left-3.5 top-3 text-slate-400" size={12} />
+                  <FaSearch
+                    className="absolute left-3.5 top-3 text-slate-400"
+                    size={12}
+                  />
                   <input
                     type="text"
                     value={search}
@@ -662,7 +790,10 @@ const AdminDashboard = () => {
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                   {filteredLearners.map((l) => (
-                    <tr key={l._id} className="hover:bg-slate-50/80 dark:hover:bg-slate-800/50 transition-colors">
+                    <tr
+                      key={l._id}
+                      className="hover:bg-slate-50/80 dark:hover:bg-slate-800/50 transition-colors"
+                    >
                       <td className="p-4">
                         <div className="flex items-center gap-3">
                           <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-blue-700 to-indigo-700 text-white flex items-center justify-center font-bold text-xs shrink-0">
@@ -675,7 +806,9 @@ const AdminDashboard = () => {
                             <span className="text-[11px] text-blue-600 dark:text-blue-400 font-semibold block">
                               {l.jobRole || "Statistical Officer"}
                             </span>
-                            <span className="text-[10px] text-slate-400">{l.email}</span>
+                            <span className="text-[10px] text-slate-400">
+                              {l.email}
+                            </span>
                           </div>
                         </div>
                       </td>
@@ -721,10 +854,13 @@ const AdminDashboard = () => {
               <div>
                 <h2 className="text-xl font-black text-slate-900 dark:text-white flex items-center gap-2">
                   <FaBookOpen className="text-blue-600" />
-                  <span>Officer Study Material Requests & Direct Dispatch Hub</span>
+                  <span>
+                    Officer Study Material Requests & Direct Dispatch Hub
+                  </span>
                 </h2>
                 <p className="text-xs text-slate-500 mt-0.5">
-                  Fulfill study material requests submitted by statistical officers or dispatch customized guidelines.
+                  Fulfill study material requests submitted by statistical
+                  officers or dispatch customized guidelines.
                 </p>
               </div>
 
@@ -753,13 +889,19 @@ const AdminDashboard = () => {
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                   {materialRequests.length === 0 ? (
                     <tr>
-                      <td colSpan={6} className="p-8 text-center text-slate-400">
+                      <td
+                        colSpan={6}
+                        className="p-8 text-center text-slate-400"
+                      >
                         No pending study material requests found.
                       </td>
                     </tr>
                   ) : (
                     materialRequests.map((req) => (
-                      <tr key={req._id} className="hover:bg-slate-50/80 dark:hover:bg-slate-800/50 transition-colors">
+                      <tr
+                        key={req._id}
+                        className="hover:bg-slate-50/80 dark:hover:bg-slate-800/50 transition-colors"
+                      >
                         <td className="p-4">
                           <span className="font-black text-slate-900 dark:text-white block">
                             {req.requesterName}
@@ -767,7 +909,9 @@ const AdminDashboard = () => {
                           <span className="text-[11px] text-blue-600 dark:text-blue-400 font-semibold block">
                             {req.requesterCadre}
                           </span>
-                          <span className="text-[10px] text-slate-400">{req.requesterEmail}</span>
+                          <span className="text-[10px] text-slate-400">
+                            {req.requesterEmail}
+                          </span>
                         </td>
                         <td className="p-4">
                           <span className="font-bold text-slate-900 dark:text-white block text-xs">
@@ -781,7 +925,8 @@ const AdminDashboard = () => {
                           {req.description}
                           {req.dispatchedMaterialTitle && (
                             <div className="mt-1 p-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-[10px] text-emerald-800 dark:text-emerald-300">
-                              <strong>Dispatched:</strong> {req.dispatchedMaterialTitle}
+                              <strong>Dispatched:</strong>{" "}
+                              {req.dispatchedMaterialTitle}
                             </div>
                           )}
                         </td>
@@ -791,8 +936,8 @@ const AdminDashboard = () => {
                               req.urgency === "Critical"
                                 ? "bg-rose-50 dark:bg-rose-950 text-rose-600 border border-rose-200 dark:border-rose-800"
                                 : req.urgency === "High"
-                                ? "bg-amber-50 dark:bg-amber-950 text-amber-600 border border-amber-200 dark:border-amber-800"
-                                : "bg-slate-100 dark:bg-slate-800 text-slate-600"
+                                  ? "bg-amber-50 dark:bg-amber-950 text-amber-600 border border-amber-200 dark:border-amber-800"
+                                  : "bg-slate-100 dark:bg-slate-800 text-slate-600"
                             }`}
                           >
                             {req.urgency || "Normal"}
@@ -804,11 +949,15 @@ const AdminDashboard = () => {
                               req.status === "fulfilled"
                                 ? "bg-emerald-50 dark:bg-emerald-950 text-emerald-600 border border-emerald-200 dark:border-emerald-800"
                                 : req.status === "rejected"
-                                ? "bg-rose-50 dark:bg-rose-950 text-rose-600"
-                                : "bg-amber-50 dark:bg-amber-950 text-amber-600 border border-amber-200 dark:border-amber-800 animate-pulse"
+                                  ? "bg-rose-50 dark:bg-rose-950 text-rose-600"
+                                  : "bg-amber-50 dark:bg-amber-950 text-amber-600 border border-amber-200 dark:border-amber-800 animate-pulse"
                             }`}
                           >
-                            {req.status === "fulfilled" ? "Dispatched" : req.status === "rejected" ? "Closed" : "Pending"}
+                            {req.status === "fulfilled"
+                              ? "Dispatched"
+                              : req.status === "rejected"
+                                ? "Closed"
+                                : "Pending"}
                           </span>
                         </td>
                         <td className="p-4 text-right">
@@ -818,14 +967,20 @@ const AdminDashboard = () => {
                               setFulfillForm({
                                 adminResponseNote: req.adminResponseNote || "",
                                 dispatchedMaterialTitle: req.topic,
-                                dispatchedMaterialUrl: req.dispatchedMaterialUrl || "",
-                                dispatchedMaterialText: req.dispatchedMaterialText || "",
+                                dispatchedMaterialUrl:
+                                  req.dispatchedMaterialUrl || "",
+                                dispatchedMaterialText:
+                                  req.dispatchedMaterialText || "",
                               });
                             }}
                             className="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[11px] shadow-sm transition-all cursor-pointer inline-flex items-center gap-1.5"
                           >
                             <BsFillSendFill size={10} />
-                            <span>{req.status === "fulfilled" ? "Re-Dispatch" : "Fulfill & Send"}</span>
+                            <span>
+                              {req.status === "fulfilled"
+                                ? "Re-Dispatch"
+                                : "Fulfill & Send"}
+                            </span>
                           </button>
                         </td>
                       </tr>
@@ -849,7 +1004,8 @@ const AdminDashboard = () => {
                   <span>Custom Case Study Dispatcher & Submissions Review</span>
                 </h2>
                 <p className="text-xs text-slate-500 mt-0.5">
-                  Assign statistical case studies to specific officers/cadres and inspect submitted solutions and AI evaluations.
+                  Assign statistical case studies to specific officers/cadres
+                  and inspect submitted solutions and AI evaluations.
                 </p>
               </div>
 
@@ -877,13 +1033,19 @@ const AdminDashboard = () => {
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                   {submissions.length === 0 ? (
                     <tr>
-                      <td colSpan={5} className="p-8 text-center text-slate-400">
+                      <td
+                        colSpan={5}
+                        className="p-8 text-center text-slate-400"
+                      >
                         No officer case study submissions recorded yet.
                       </td>
                     </tr>
                   ) : (
                     submissions.map((sub) => (
-                      <tr key={sub._id} className="hover:bg-slate-50/80 dark:hover:bg-slate-800/50 transition-colors">
+                      <tr
+                        key={sub._id}
+                        className="hover:bg-slate-50/80 dark:hover:bg-slate-800/50 transition-colors"
+                      >
                         <td className="p-4">
                           <span className="font-black text-slate-900 dark:text-white block">
                             {sub.userId?.name || "Statistical Officer"}
@@ -891,7 +1053,9 @@ const AdminDashboard = () => {
                           <span className="text-[11px] text-blue-600 dark:text-blue-400 font-semibold block">
                             {sub.userId?.jobRole || "Statistical Cadre"}
                           </span>
-                          <span className="text-[10px] text-slate-400">{sub.userId?.email}</span>
+                          <span className="text-[10px] text-slate-400">
+                            {sub.userId?.email}
+                          </span>
                         </td>
                         <td className="p-4">
                           <span className="font-bold text-slate-900 dark:text-white block text-xs">
@@ -945,12 +1109,15 @@ const AdminDashboard = () => {
             <div className="p-6 bg-gradient-to-r from-slate-900 via-blue-950 to-slate-900 text-white flex items-center justify-between border-b border-slate-800">
               <div className="flex items-center gap-3.5">
                 <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-blue-700 to-indigo-700 text-white flex items-center justify-center font-black text-base shadow-md">
-                  {inspectingUser.name ? inspectingUser.name.charAt(0).toUpperCase() : "O"}
+                  {inspectingUser.name
+                    ? inspectingUser.name.charAt(0).toUpperCase()
+                    : "O"}
                 </div>
                 <div>
                   <h3 className="text-lg font-black">{inspectingUser.name}</h3>
                   <p className="text-xs text-blue-300 font-semibold">
-                    {inspectingUser.jobRole || "Statistical Officer"} • {inspectingUser.department || "MoSPI Headquarters"}
+                    {inspectingUser.jobRole || "Statistical Officer"} •{" "}
+                    {inspectingUser.department || "MoSPI Headquarters"}
                   </p>
                 </div>
               </div>
@@ -970,34 +1137,46 @@ const AdminDashboard = () => {
             {inspectLoading ? (
               <div className="p-16 flex flex-col items-center justify-center gap-3">
                 <div className="w-8 h-8 border-3 border-blue-600 border-t-transparent rounded-full animate-spin" />
-                <span className="text-xs font-bold text-slate-400">Loading Officer Experience History...</span>
+                <span className="text-xs font-bold text-slate-400">
+                  Loading Officer Experience History...
+                </span>
               </div>
             ) : (
               <div className="p-6 overflow-y-auto space-y-6 flex-1 text-xs">
                 {/* 4-Domain Radar Summary */}
                 <div className="grid sm:grid-cols-4 gap-3">
                   <div className="p-3.5 rounded-2xl bg-blue-50/70 dark:bg-blue-950/40 border border-blue-200/60 dark:border-blue-800/60">
-                    <span className="text-[10px] font-bold text-blue-600 block">Overall Score</span>
+                    <span className="text-[10px] font-bold text-blue-600 block">
+                      Overall Score
+                    </span>
                     <span className="text-xl font-black text-blue-900 dark:text-blue-200">
                       {userDetailedData?.learner?.overallCompetencyScore || 65}%
                     </span>
                   </div>
                   <div className="p-3.5 rounded-2xl bg-emerald-50/70 dark:bg-emerald-950/40 border border-emerald-200/60 dark:border-emerald-800/60">
-                    <span className="text-[10px] font-bold text-emerald-600 block">Proficiency Level</span>
+                    <span className="text-[10px] font-bold text-emerald-600 block">
+                      Proficiency Level
+                    </span>
                     <span className="text-xl font-black text-emerald-900 dark:text-emerald-200">
                       {userDetailedData?.learner?.overallLevel || "Proficient"}
                     </span>
                   </div>
                   <div className="p-3.5 rounded-2xl bg-indigo-50/70 dark:bg-indigo-950/40 border border-indigo-200/60 dark:border-indigo-800/60">
-                    <span className="text-[10px] font-bold text-indigo-600 block">Training Hours</span>
+                    <span className="text-[10px] font-bold text-indigo-600 block">
+                      Training Hours
+                    </span>
                     <span className="text-xl font-black text-indigo-900 dark:text-indigo-200">
                       {userDetailedData?.learner?.learningHours || 0} hrs
                     </span>
                   </div>
                   <div className="p-3.5 rounded-2xl bg-purple-50/70 dark:bg-purple-950/40 border border-purple-200/60 dark:border-purple-800/60">
-                    <span className="text-[10px] font-bold text-purple-600 block">Quizzes Done</span>
+                    <span className="text-[10px] font-bold text-purple-600 block">
+                      Quizzes Done
+                    </span>
                     <span className="text-xl font-black text-purple-900 dark:text-purple-200">
-                      {userDetailedData?.learner?.quizzesCompleted || userDetailedData?.quizAttempts?.length || 0}
+                      {userDetailedData?.learner?.quizzesCompleted ||
+                        userDetailedData?.quizAttempts?.length ||
+                        0}
                     </span>
                   </div>
                 </div>
@@ -1012,7 +1191,8 @@ const AdminDashboard = () => {
                         : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400"
                     }`}
                   >
-                    AI Viva Mock Interviews ({userDetailedData?.interviews?.length || 0})
+                    AI Viva Mock Interviews (
+                    {userDetailedData?.interviews?.length || 0})
                   </button>
                   <button
                     onClick={() => setInspectTab("quizzes")}
@@ -1022,7 +1202,8 @@ const AdminDashboard = () => {
                         : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400"
                     }`}
                   >
-                    Quiz Evaluations ({userDetailedData?.quizAttempts?.length || 0})
+                    Quiz Evaluations (
+                    {userDetailedData?.quizAttempts?.length || 0})
                   </button>
                   <button
                     onClick={() => setInspectTab("assignments")}
@@ -1032,7 +1213,8 @@ const AdminDashboard = () => {
                         : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400"
                     }`}
                   >
-                    Case Study Submissions ({userDetailedData?.submissions?.length || 0})
+                    Case Study Submissions (
+                    {userDetailedData?.submissions?.length || 0})
                   </button>
                   <button
                     onClick={() => setInspectTab("requests")}
@@ -1042,7 +1224,8 @@ const AdminDashboard = () => {
                         : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400"
                     }`}
                   >
-                    Material Requests ({userDetailedData?.materialRequests?.length || 0})
+                    Material Requests (
+                    {userDetailedData?.materialRequests?.length || 0})
                   </button>
                 </div>
 
@@ -1050,10 +1233,15 @@ const AdminDashboard = () => {
                 {inspectTab === "interviews" && (
                   <div className="space-y-4">
                     {userDetailedData?.interviews?.length === 0 ? (
-                      <p className="text-slate-400 text-center py-6">No viva mock interviews recorded yet.</p>
+                      <p className="text-slate-400 text-center py-6">
+                        No viva mock interviews recorded yet.
+                      </p>
                     ) : (
                       userDetailedData?.interviews?.map((iv, idx) => (
-                        <div key={idx} className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/80 space-y-3">
+                        <div
+                          key={idx}
+                          className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/80 space-y-3"
+                        >
                           <div className="flex items-center justify-between">
                             <div>
                               <span className="font-black text-slate-900 dark:text-white text-xs block">
@@ -1071,13 +1259,17 @@ const AdminDashboard = () => {
                           {/* Questions Breakdown */}
                           <div className="space-y-2 pt-2 border-t border-slate-200/60 dark:border-slate-700/60">
                             {iv.question?.map((q, qIdx) => (
-                              <div key={qIdx} className="p-3 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 space-y-1">
+                              <div
+                                key={qIdx}
+                                className="p-3 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 space-y-1"
+                              >
                                 <p className="font-bold text-slate-800 dark:text-slate-200 text-[11px]">
                                   Q{qIdx + 1}: {q.question}
                                 </p>
                                 {q.answer && (
                                   <p className="text-slate-600 dark:text-slate-400 text-[10px]">
-                                    <strong>Officer Response:</strong> {q.answer}
+                                    <strong>Officer Response:</strong>{" "}
+                                    {q.answer}
                                   </p>
                                 )}
                                 {q.feedback && (
@@ -1098,16 +1290,24 @@ const AdminDashboard = () => {
                 {inspectTab === "quizzes" && (
                   <div className="space-y-3">
                     {userDetailedData?.quizAttempts?.length === 0 ? (
-                      <p className="text-slate-400 text-center py-6">No quiz attempts recorded yet.</p>
+                      <p className="text-slate-400 text-center py-6">
+                        No quiz attempts recorded yet.
+                      </p>
                     ) : (
                       userDetailedData?.quizAttempts?.map((qa, idx) => (
-                        <div key={idx} className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/80 flex items-center justify-between">
+                        <div
+                          key={idx}
+                          className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/80 flex items-center justify-between"
+                        >
                           <div>
                             <span className="font-bold text-slate-900 dark:text-white block text-xs">
-                              {qa.quizTitle || qa.topic || "Statistical Competency Quiz"}
+                              {qa.quizTitle ||
+                                qa.topic ||
+                                "Statistical Competency Quiz"}
                             </span>
                             <span className="text-[10px] text-slate-400">
-                              Domain: {qa.domain} • Correct: {qa.correctCount}/{qa.totalQuestions} • Time: {qa.timeTakenSeconds}s
+                              Domain: {qa.domain} • Correct: {qa.correctCount}/
+                              {qa.totalQuestions} • Time: {qa.timeTakenSeconds}s
                             </span>
                           </div>
                           <div className="text-right">
@@ -1128,16 +1328,22 @@ const AdminDashboard = () => {
                 {inspectTab === "assignments" && (
                   <div className="space-y-3">
                     {userDetailedData?.submissions?.length === 0 ? (
-                      <p className="text-slate-400 text-center py-6">No case study assignments submitted yet.</p>
+                      <p className="text-slate-400 text-center py-6">
+                        No case study assignments submitted yet.
+                      </p>
                     ) : (
                       userDetailedData?.submissions?.map((sub, idx) => (
-                        <div key={idx} className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/80 space-y-2">
+                        <div
+                          key={idx}
+                          className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/80 space-y-2"
+                        >
                           <div className="flex items-center justify-between">
                             <span className="font-bold text-slate-900 dark:text-white text-xs">
                               {sub.assignmentTitle}
                             </span>
                             <span className="px-2.5 py-1 rounded-xl bg-emerald-600 text-white font-bold text-xs">
-                              Score: {sub.aiEvaluation?.overallScore}% (Grade {sub.aiEvaluation?.grade})
+                              Score: {sub.aiEvaluation?.overallScore}% (Grade{" "}
+                              {sub.aiEvaluation?.grade})
                             </span>
                           </div>
                           <p className="text-slate-600 dark:text-slate-300 text-[11px] leading-relaxed line-clamp-2">
@@ -1145,7 +1351,8 @@ const AdminDashboard = () => {
                           </p>
                           {sub.aiEvaluation?.detailedFeedback && (
                             <div className="p-2.5 rounded-xl bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 text-[10px] text-blue-900 dark:text-blue-300">
-                              <strong>AI Feedback:</strong> {sub.aiEvaluation.detailedFeedback}
+                              <strong>AI Feedback:</strong>{" "}
+                              {sub.aiEvaluation.detailedFeedback}
                             </div>
                           )}
                         </div>
@@ -1158,15 +1365,22 @@ const AdminDashboard = () => {
                 {inspectTab === "requests" && (
                   <div className="space-y-3">
                     {userDetailedData?.materialRequests?.length === 0 ? (
-                      <p className="text-slate-400 text-center py-6">No study material requests submitted by this officer.</p>
+                      <p className="text-slate-400 text-center py-6">
+                        No study material requests submitted by this officer.
+                      </p>
                     ) : (
                       userDetailedData?.materialRequests?.map((mr, idx) => (
-                        <div key={idx} className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/80 flex items-center justify-between">
+                        <div
+                          key={idx}
+                          className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/80 flex items-center justify-between"
+                        >
                           <div>
                             <span className="font-bold text-slate-900 dark:text-white block text-xs">
                               {mr.topic}
                             </span>
-                            <span className="text-[10px] text-slate-400">{mr.description}</span>
+                            <span className="text-[10px] text-slate-400">
+                              {mr.description}
+                            </span>
                           </div>
                           <span
                             className={`px-2.5 py-1 rounded-full font-bold text-[10px] ${
@@ -1200,7 +1414,8 @@ const AdminDashboard = () => {
                   Fulfill Study Material Request
                 </h3>
                 <p className="text-xs text-blue-600 dark:text-blue-400 font-semibold">
-                  Officer: {fulfillingRequest.requesterName} ({fulfillingRequest.requesterCadre})
+                  Officer: {fulfillingRequest.requesterName} (
+                  {fulfillingRequest.requesterCadre})
                 </p>
               </div>
               <button
@@ -1212,11 +1427,18 @@ const AdminDashboard = () => {
             </div>
 
             <div className="p-3.5 rounded-2xl bg-blue-50/70 dark:bg-blue-950/40 border border-blue-200/80 dark:border-blue-800 text-xs text-blue-900 dark:text-blue-200 space-y-1">
-              <span className="font-bold block">Requested Area: {fulfillingRequest.topic}</span>
-              <p className="text-[11px] text-slate-600 dark:text-slate-300">{fulfillingRequest.description}</p>
+              <span className="font-bold block">
+                Requested Area: {fulfillingRequest.topic}
+              </span>
+              <p className="text-[11px] text-slate-600 dark:text-slate-300">
+                {fulfillingRequest.description}
+              </p>
             </div>
 
-            <form onSubmit={handleFulfillRequestSubmit} className="space-y-4 text-xs">
+            <form
+              onSubmit={handleFulfillRequestSubmit}
+              className="space-y-4 text-xs"
+            >
               <div>
                 <label className="font-bold text-slate-700 dark:text-slate-300 block mb-1.5">
                   Dispatched Material Title
@@ -1225,7 +1447,12 @@ const AdminDashboard = () => {
                   type="text"
                   required
                   value={fulfillForm.dispatchedMaterialTitle}
-                  onChange={(e) => setFulfillForm({ ...fulfillForm, dispatchedMaterialTitle: e.target.value })}
+                  onChange={(e) =>
+                    setFulfillForm({
+                      ...fulfillForm,
+                      dispatchedMaterialTitle: e.target.value,
+                    })
+                  }
                   placeholder="e.g. Official NSS Survey Sampling & Imputation Guidelines (MoSPI)"
                   className="w-full p-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white outline-hidden focus:ring-2 focus:ring-blue-500"
                 />
@@ -1238,7 +1465,12 @@ const AdminDashboard = () => {
                 <input
                   type="url"
                   value={fulfillForm.dispatchedMaterialUrl}
-                  onChange={(e) => setFulfillForm({ ...fulfillForm, dispatchedMaterialUrl: e.target.value })}
+                  onChange={(e) =>
+                    setFulfillForm({
+                      ...fulfillForm,
+                      dispatchedMaterialUrl: e.target.value,
+                    })
+                  }
                   placeholder="https://mospi.gov.in/sites/default/files/..."
                   className="w-full p-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white outline-hidden focus:ring-2 focus:ring-blue-500"
                 />
@@ -1251,9 +1483,31 @@ const AdminDashboard = () => {
                 <textarea
                   rows={4}
                   value={fulfillForm.dispatchedMaterialText}
-                  onChange={(e) => setFulfillForm({ ...fulfillForm, dispatchedMaterialText: e.target.value })}
+                  onChange={(e) =>
+                    setFulfillForm({
+                      ...fulfillForm,
+                      dispatchedMaterialText: e.target.value,
+                    })
+                  }
                   placeholder="Insert key methodological rules, formulas, concepts, or instructions for the officer..."
                   className="w-full p-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white outline-hidden focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+
+              <div>
+                <label className="font-bold text-slate-700 dark:text-slate-300 block mb-1.5">
+                  Attach Official File or Image (Optional)
+                </label>
+                <input
+                  type="file"
+                  accept=".pdf,.png,.jpg,.jpeg,.docx,.txt"
+                  onChange={(e) =>
+                    setFulfillForm({
+                      ...fulfillForm,
+                      file: e.target.files[0] || null,
+                    })
+                  }
+                  className="w-full p-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white text-xs file:mr-3 file:py-1 file:px-2.5 file:rounded-lg file:border-0 file:bg-blue-600 file:text-white file:text-xs"
                 />
               </div>
 
@@ -1264,7 +1518,12 @@ const AdminDashboard = () => {
                 <input
                   type="text"
                   value={fulfillForm.adminResponseNote}
-                  onChange={(e) => setFulfillForm({ ...fulfillForm, adminResponseNote: e.target.value })}
+                  onChange={(e) =>
+                    setFulfillForm({
+                      ...fulfillForm,
+                      adminResponseNote: e.target.value,
+                    })
+                  }
                   placeholder="e.g. Dispatched by NSSTA Faculty for Cadre Promotion Drill."
                   className="w-full p-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white outline-hidden focus:ring-2 focus:ring-blue-500"
                 />
@@ -1284,7 +1543,11 @@ const AdminDashboard = () => {
                   className="flex-1 py-3 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold shadow-md cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2"
                 >
                   <BsFillSendFill size={11} />
-                  <span>{fulfillSubmitting ? "Dispatching..." : "Dispatch to Officer"}</span>
+                  <span>
+                    {fulfillSubmitting
+                      ? "Dispatching..."
+                      : "Dispatch to Officer"}
+                  </span>
                 </button>
               </div>
             </form>
@@ -1304,7 +1567,8 @@ const AdminDashboard = () => {
                   Direct Study Material Dispatch
                 </h3>
                 <p className="text-xs text-slate-500">
-                  Broadcast or dispatch official statistical training materials to officers.
+                  Broadcast or dispatch official statistical training materials
+                  to officers.
                 </p>
               </div>
               <button
@@ -1315,7 +1579,10 @@ const AdminDashboard = () => {
               </button>
             </div>
 
-            <form onSubmit={handleDirectMaterialDispatch} className="space-y-4 text-xs">
+            <form
+              onSubmit={handleDirectMaterialDispatch}
+              className="space-y-4 text-xs"
+            >
               <div>
                 <label className="font-bold text-slate-700 dark:text-slate-300 block mb-1.5">
                   Material Document Title *
@@ -1324,7 +1591,12 @@ const AdminDashboard = () => {
                   type="text"
                   required
                   value={dispatchMaterialForm.title}
-                  onChange={(e) => setDispatchMaterialForm({ ...dispatchMaterialForm, title: e.target.value })}
+                  onChange={(e) =>
+                    setDispatchMaterialForm({
+                      ...dispatchMaterialForm,
+                      title: e.target.value,
+                    })
+                  }
                   placeholder="e.g. National Accounts Statistics (NAS) Sources & Methods 2024"
                   className="w-full p-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white outline-hidden focus:ring-2 focus:ring-blue-500"
                 />
@@ -1337,7 +1609,12 @@ const AdminDashboard = () => {
                   </label>
                   <select
                     value={dispatchMaterialForm.domain}
-                    onChange={(e) => setDispatchMaterialForm({ ...dispatchMaterialForm, domain: e.target.value })}
+                    onChange={(e) =>
+                      setDispatchMaterialForm({
+                        ...dispatchMaterialForm,
+                        domain: e.target.value,
+                      })
+                    }
                     className="w-full p-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white outline-hidden"
                   >
                     {DOMAIN_OPTIONS.map((d) => (
@@ -1354,7 +1631,12 @@ const AdminDashboard = () => {
                   </label>
                   <select
                     value={dispatchMaterialForm.targetCadre}
-                    onChange={(e) => setDispatchMaterialForm({ ...dispatchMaterialForm, targetCadre: e.target.value })}
+                    onChange={(e) =>
+                      setDispatchMaterialForm({
+                        ...dispatchMaterialForm,
+                        targetCadre: e.target.value,
+                      })
+                    }
                     className="w-full p-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white outline-hidden"
                   >
                     {CADRE_OPTIONS.map((c) => (
@@ -1374,7 +1656,12 @@ const AdminDashboard = () => {
                   rows={3}
                   required
                   value={dispatchMaterialForm.description}
-                  onChange={(e) => setDispatchMaterialForm({ ...dispatchMaterialForm, description: e.target.value })}
+                  onChange={(e) =>
+                    setDispatchMaterialForm({
+                      ...dispatchMaterialForm,
+                      description: e.target.value,
+                    })
+                  }
                   placeholder="Overview of this study material and how it aligns with national statistical frameworks..."
                   className="w-full p-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white outline-hidden focus:ring-2 focus:ring-blue-500"
                 />
@@ -1387,9 +1674,31 @@ const AdminDashboard = () => {
                 <textarea
                   rows={4}
                   value={dispatchMaterialForm.materialText}
-                  onChange={(e) => setDispatchMaterialForm({ ...dispatchMaterialForm, materialText: e.target.value })}
+                  onChange={(e) =>
+                    setDispatchMaterialForm({
+                      ...dispatchMaterialForm,
+                      materialText: e.target.value,
+                    })
+                  }
                   placeholder="Full text / guidelines for MCQ generation and self-study..."
                   className="w-full p-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white outline-hidden focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+
+              <div>
+                <label className="font-bold text-slate-700 dark:text-slate-300 block mb-1.5">
+                  Attach Official File or Image (Optional)
+                </label>
+                <input
+                  type="file"
+                  accept=".pdf,.png,.jpg,.jpeg,.docx,.txt"
+                  onChange={(e) =>
+                    setDispatchMaterialForm({
+                      ...dispatchMaterialForm,
+                      file: e.target.files[0] || null,
+                    })
+                  }
+                  className="w-full p-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white text-xs file:mr-3 file:py-1 file:px-2.5 file:rounded-lg file:border-0 file:bg-blue-600 file:text-white file:text-xs"
                 />
               </div>
 
@@ -1407,7 +1716,11 @@ const AdminDashboard = () => {
                   className="flex-1 py-3 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-md cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2"
                 >
                   <FaFileUpload size={11} />
-                  <span>{dispatchMaterialLoading ? "Dispatching..." : "Dispatch & Archive"}</span>
+                  <span>
+                    {dispatchMaterialLoading
+                      ? "Dispatching..."
+                      : "Dispatch & Archive"}
+                  </span>
                 </button>
               </div>
             </form>
@@ -1427,7 +1740,8 @@ const AdminDashboard = () => {
                   Compose & Assign Statistical Case Study
                 </h3>
                 <p className="text-xs text-slate-500">
-                  Target custom analytical drills directly to officers or cadres.
+                  Target custom analytical drills directly to officers or
+                  cadres.
                 </p>
               </div>
               <button
@@ -1438,7 +1752,10 @@ const AdminDashboard = () => {
               </button>
             </div>
 
-            <form onSubmit={handleDispatchAssignmentSubmit} className="space-y-4 text-xs">
+            <form
+              onSubmit={handleDispatchAssignmentSubmit}
+              className="space-y-4 text-xs"
+            >
               <div>
                 <label className="font-bold text-slate-700 dark:text-slate-300 block mb-1.5">
                   Case Study Title *
@@ -1447,7 +1764,12 @@ const AdminDashboard = () => {
                   type="text"
                   required
                   value={assignmentForm.title}
-                  onChange={(e) => setAssignmentForm({ ...assignmentForm, title: e.target.value })}
+                  onChange={(e) =>
+                    setAssignmentForm({
+                      ...assignmentForm,
+                      title: e.target.value,
+                    })
+                  }
                   placeholder="e.g. Quarterly CPI Price Deflation & Double-Deflation GVA Reconciliation"
                   className="w-full p-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white outline-hidden focus:ring-2 focus:ring-blue-500"
                 />
@@ -1460,7 +1782,12 @@ const AdminDashboard = () => {
                   </label>
                   <select
                     value={assignmentForm.domain}
-                    onChange={(e) => setAssignmentForm({ ...assignmentForm, domain: e.target.value })}
+                    onChange={(e) =>
+                      setAssignmentForm({
+                        ...assignmentForm,
+                        domain: e.target.value,
+                      })
+                    }
                     className="w-full p-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white outline-hidden"
                   >
                     {DOMAIN_OPTIONS.map((d) => (
@@ -1479,7 +1806,12 @@ const AdminDashboard = () => {
                     type="text"
                     required
                     value={assignmentForm.targetCompetency}
-                    onChange={(e) => setAssignmentForm({ ...assignmentForm, targetCompetency: e.target.value })}
+                    onChange={(e) =>
+                      setAssignmentForm({
+                        ...assignmentForm,
+                        targetCompetency: e.target.value,
+                      })
+                    }
                     placeholder="e.g. Price Statistics & Index Compilation"
                     className="w-full p-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white outline-hidden"
                   />
@@ -1493,7 +1825,12 @@ const AdminDashboard = () => {
                   </label>
                   <select
                     value={assignmentForm.assignedCadre}
-                    onChange={(e) => setAssignmentForm({ ...assignmentForm, assignedCadre: e.target.value })}
+                    onChange={(e) =>
+                      setAssignmentForm({
+                        ...assignmentForm,
+                        assignedCadre: e.target.value,
+                      })
+                    }
                     className="w-full p-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white outline-hidden"
                   >
                     {CADRE_OPTIONS.map((c) => (
@@ -1510,7 +1847,12 @@ const AdminDashboard = () => {
                   </label>
                   <select
                     value={assignmentForm.difficulty}
-                    onChange={(e) => setAssignmentForm({ ...assignmentForm, difficulty: e.target.value })}
+                    onChange={(e) =>
+                      setAssignmentForm({
+                        ...assignmentForm,
+                        difficulty: e.target.value,
+                      })
+                    }
                     className="w-full p-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white outline-hidden"
                   >
                     <option value="Beginner">Beginner</option>
@@ -1529,7 +1871,12 @@ const AdminDashboard = () => {
                     min={1}
                     max={20}
                     value={assignmentForm.estimatedHours}
-                    onChange={(e) => setAssignmentForm({ ...assignmentForm, estimatedHours: Number(e.target.value) })}
+                    onChange={(e) =>
+                      setAssignmentForm({
+                        ...assignmentForm,
+                        estimatedHours: Number(e.target.value),
+                      })
+                    }
                     className="w-full p-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white outline-hidden"
                   />
                 </div>
@@ -1543,7 +1890,12 @@ const AdminDashboard = () => {
                   rows={4}
                   required
                   value={assignmentForm.scenario}
-                  onChange={(e) => setAssignmentForm({ ...assignmentForm, scenario: e.target.value })}
+                  onChange={(e) =>
+                    setAssignmentForm({
+                      ...assignmentForm,
+                      scenario: e.target.value,
+                    })
+                  }
                   placeholder="Describe the operational challenge, field data anomalies, or National Accounts revision scenario..."
                   className="w-full p-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white outline-hidden focus:ring-2 focus:ring-blue-500"
                 />
@@ -1556,7 +1908,12 @@ const AdminDashboard = () => {
                 <textarea
                   rows={3}
                   value={assignmentForm.instructions}
-                  onChange={(e) => setAssignmentForm({ ...assignmentForm, instructions: e.target.value })}
+                  onChange={(e) =>
+                    setAssignmentForm({
+                      ...assignmentForm,
+                      instructions: e.target.value,
+                    })
+                  }
                   placeholder="1. Instruction one&#10;2. Instruction two&#10;3. Instruction three"
                   className="w-full p-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white outline-hidden focus:ring-2 focus:ring-blue-500"
                 />
@@ -1576,7 +1933,9 @@ const AdminDashboard = () => {
                   className="flex-1 py-3 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold shadow-md cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2"
                 >
                   <FaTasks size={11} />
-                  <span>{assignmentSubmitting ? "Assigning..." : "Assign to Cadre"}</span>
+                  <span>
+                    {assignmentSubmitting ? "Assigning..." : "Assign to Cadre"}
+                  </span>
                 </button>
               </div>
             </form>
@@ -1596,7 +1955,8 @@ const AdminDashboard = () => {
                   Case Study Submission Review
                 </h3>
                 <p className="text-xs text-blue-600 dark:text-blue-400 font-semibold">
-                  Officer: {viewingSubmission.userId?.name} ({viewingSubmission.userId?.jobRole})
+                  Officer: {viewingSubmission.userId?.name} (
+                  {viewingSubmission.userId?.jobRole})
                 </p>
               </div>
               <button
@@ -1609,7 +1969,9 @@ const AdminDashboard = () => {
 
             <div className="space-y-4 text-xs">
               <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/70 border border-slate-200/60 dark:border-slate-700/60 space-y-1">
-                <span className="text-[10px] font-bold text-slate-400 uppercase">Case Study</span>
+                <span className="text-[10px] font-bold text-slate-400 uppercase">
+                  Case Study
+                </span>
                 <h4 className="font-bold text-sm text-slate-900 dark:text-white">
                   {viewingSubmission.assignmentTitle}
                 </h4>
@@ -1632,7 +1994,8 @@ const AdminDashboard = () => {
                       SankhyaIQ™ AI Neural Evaluation
                     </span>
                     <span className="px-3 py-1 rounded-xl bg-emerald-600 text-white font-black text-xs">
-                      {viewingSubmission.aiEvaluation.overallScore}% • Grade {viewingSubmission.aiEvaluation.grade}
+                      {viewingSubmission.aiEvaluation.overallScore}% • Grade{" "}
+                      {viewingSubmission.aiEvaluation.grade}
                     </span>
                   </div>
 
@@ -1642,14 +2005,21 @@ const AdminDashboard = () => {
 
                   {viewingSubmission.aiEvaluation.rubricScores?.length > 0 && (
                     <div className="space-y-1.5 pt-2 border-t border-emerald-200/60 dark:border-emerald-800/60">
-                      {viewingSubmission.aiEvaluation.rubricScores.map((r, i) => (
-                        <div key={i} className="flex items-center justify-between text-[11px]">
-                          <span className="text-slate-700 dark:text-slate-300">{r.criterion}</span>
-                          <span className="font-bold text-emerald-700 dark:text-emerald-400">
-                            {r.score} / {r.maxScore || 25}
-                          </span>
-                        </div>
-                      ))}
+                      {viewingSubmission.aiEvaluation.rubricScores.map(
+                        (r, i) => (
+                          <div
+                            key={i}
+                            className="flex items-center justify-between text-[11px]"
+                          >
+                            <span className="text-slate-700 dark:text-slate-300">
+                              {r.criterion}
+                            </span>
+                            <span className="font-bold text-emerald-700 dark:text-emerald-400">
+                              {r.score} / {r.maxScore || 25}
+                            </span>
+                          </div>
+                        ),
+                      )}
                     </div>
                   )}
                 </div>
