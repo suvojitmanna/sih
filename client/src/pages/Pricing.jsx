@@ -6,6 +6,7 @@ import axios from "axios";
 import toast from "react-hot-toast";
 import { ServerUrl } from "../App";
 import Navbar from "../components/Navbar";
+import Footer from "../components/Footer";
 
 const Pricing = () => {
   const navigate = useNavigate();
