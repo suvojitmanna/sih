@@ -1,349 +1,465 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { motion, AnimatePresence } from "framer-motion";
-import { BsCoin, BsRobot, BsChevronDown } from "react-icons/bs";
-import { FaUserAstronaut, FaHistory } from "react-icons/fa";
-import { HiOutlineLogout } from "react-icons/hi";
-import { useNavigate } from "react-router-dom";
+import {
+  BsChevronDown,
+  BsBarChartLine,
+  BsRobot,
+  BsShieldLock,
+  BsFillCameraVideoFill,
+  BsSun,
+  BsMoonStars,
+  BsDisplay,
+} from "react-icons/bs";
+import {
+  FaUserGraduate,
+  FaCertificate,
+  FaFileUpload,
+  FaTasks,
+  FaBrain,
+  FaUserTie,
+  FaHistory,
+  FaFilePdf,
+  FaFileAlt,
+  FaHome,
+  FaDesktop,
+} from "react-icons/fa";
+import { HiOutlineLogout, HiMenu, HiX, HiSparkles } from "react-icons/hi";
+import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
 import { ServerUrl } from "../App";
 import { setUserData } from "../redux/userSlice";
 import { useOutsideClick } from "../utils/outsideClick";
+import { generateCompetencyPDF } from "../utils/pdfGenerator";
+import { useTheme } from "../context/ThemeContext";
 import AuthModel from "./AuthModel";
+import toast from "react-hot-toast";
 
 const Navbar = () => {
   const { userData } = useSelector((state) => state.user);
-  const [showCreditPopup, setShowCreditPopup] = useState(false);
   const [showUserPopup, setShowUserPopup] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [showAuth, setShowAuth] = useState(false);
+
   const navigate = useNavigate();
+  const location = useLocation();
   const dispatch = useDispatch();
 
-  const creditRef = useOutsideClick(() => setShowCreditPopup(false));
+  const { theme, setTheme, resolvedTheme } = useTheme();
   const userRef = useOutsideClick(() => setShowUserPopup(false));
-  const [showAuth, setShowAuth] = useState(false);
 
   const handleLogout = async () => {
     try {
       await axios.post(
         `${ServerUrl}/api/auth/logout`,
         {},
-        {
-          withCredentials: true,
-        },
+        { withCredentials: true }
       );
-
       localStorage.removeItem("token");
       localStorage.removeItem("user");
-
       sessionStorage.clear();
-
       dispatch(setUserData(null));
-
-      setShowCreditPopup(false);
       setShowUserPopup(false);
-
-      navigate("/");
+      navigate("/auth");
     } catch (error) {
       console.log(error);
     }
   };
 
-  // Popup Animation Variants
+  const handleDownloadDossier = () => {
+    if (!userData) {
+      setShowAuth(true);
+      return;
+    }
+    toast.success("Preparing Official Performance Dossier (PDF)... 📄");
+    generateCompetencyPDF({
+      user: userData,
+      profile: userData,
+      competencies: userData.competencies || [],
+      skillGaps: userData.skillGaps || [],
+      learningPath: userData.learningPath || [],
+    });
+  };
+
+  // The 4 Specific Primary Nav Links requested by User
+  const navLinks = [
+    { label: "Home", path: "/", icon: FaHome },
+    { label: "Dashboard", path: "/dashboard", icon: BsBarChartLine },
+    { label: "History", path: "/history", icon: FaHistory },
+    { label: "AI Models", path: "/ai-models", icon: HiSparkles, isAiModel: true },
+  ];
+
+  if (userData?.role === "admin") {
+    navLinks.push({ label: "Admin Portal", path: "/admin", icon: BsShieldLock });
+  }
+
   const popupVariants = {
     hidden: { opacity: 0, y: 10, scale: 0.95 },
     visible: { opacity: 1, y: 0, scale: 1 },
     exit: { opacity: 0, y: 8, scale: 0.95 },
   };
+
   return (
-    <nav className="fixed top-0 left-0 right-0 z-[100] px-4 pt-6 flex justify-center">
-      <motion.div
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ type: "spring", damping: 20, stiffness: 100 }}
-        className="w-full max-w-6xl bg-white/80 backdrop-blur-xl border border-white/40 shadow-[0_8px_32px_rgba(0,0,0,0.08)] rounded-[2rem] px-6 md:px-10 py-3 flex justify-between items-center pointer-events-auto"
-      >
-        {/* Logo Section */}
-        <div
-          onClick={() => navigate("/")}
-          className="flex items-center gap-3 cursor-pointer group"
-        >
-          <div className="bg-gradient-to-tr from-indigo-600 to-violet-500 text-white p-2.5 rounded-2xl shadow-lg group-hover:rotate-6 transition-transform duration-300">
-            <BsRobot size={22} />
-          </div>
-          <h1 className="font-bold text-xl tracking-tight text-slate-800 hidden md:block">
-            InterView
-            <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-violet-500">
-              IQ.AI
-            </span>
-          </h1>
-        </div>
+    <>
+      <nav className="fixed top-0 left-0 right-0 z-[100] bg-white/85 dark:bg-slate-950/85 backdrop-blur-2xl border-b border-slate-200/70 dark:border-slate-800/80 shadow-[0_4px_30px_rgba(0,0,0,0.03)] transition-all">
+        {/* Tricolor National Government Ribbon */}
+        <div className="h-1 w-full bg-gradient-to-r from-[#FF9933] via-white to-[#138808]" />
 
-        {/* Right Section */}
-        <div className="flex items-center gap-4 relative">
-          {/* Credit Pill */}
-          <div ref={creditRef} className="relative">
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={() => {
-                if (!userData) {
-                  setShowAuth(true);
-                  return;
-                }
-                setShowCreditPopup(!showCreditPopup);
-                setShowUserPopup(false);
-              }}
-              className="flex items-center gap-2.5 bg-slate-100/50 hover:bg-white border border-slate-200/60 px-4 py-2 rounded-full transition-all cursor-pointer group"
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16 sm:h-18">
+            {/* Left: MoSPI & NSSTA Brand Logo */}
+            <div
+              onClick={() => navigate("/")}
+              className="flex items-center gap-3 cursor-pointer group select-none"
             >
-              <BsCoin
-                className="text-amber-500 group-hover:rotate-12 transition-transform"
-                size={20}
-              />
-              <span className="font-bold text-slate-700">
-                {userData?.credits || 0}
-              </span>
-              <BsChevronDown
-                size={12}
-                className={`text-slate-400 transition-transform duration-300 ${showCreditPopup ? "rotate-180" : ""}`}
-              />
-            </motion.button>
-
-            <AnimatePresence>
-              {showCreditPopup && (
-                <motion.div
-                  variants={popupVariants}
-                  initial="hidden"
-                  animate="visible"
-                  exit="exit"
-                  className="group absolute top-full mt-4 w-[95vw] sm:w-[360px] max-w-[360px] left-1/2 sm:left-auto -translate-x-[63%] sm:translate-x-5 right-auto sm:right-0 rounded-[24px] sm:rounded-[32px] border border-white/30 bg-white/80 backdrop-blur-2xl shadow-[0_25px_80px_-20px_rgba(15,23,42,0.22)] transition-all duration-500 p-4 sm:p-7 z-50 origin-top-right overflow-hidden"
-                >
-                  {/* Border Glow */}
-                  <div className="absolute inset-0 rounded-[24px] sm:rounded-[32px] ring-1 ring-inset ring-white/40 pointer-events-none" />
-
-                  {/* Ambient Glows */}
-                  <div className="absolute -top-28 -right-20 w-40 sm:w-56 h-40 sm:h-56 bg-indigo-200/40 rounded-full blur-3xl" />
-
-                  <div className="absolute -bottom-28 -left-20 w-40 sm:w-56 h-40 sm:h-56 bg-fuchsia-200/30 rounded-full blur-3xl" />
-
-                  {/* Top Gradient Line */}
-                  <div className="absolute top-0 inset-x-0 h-[3px] bg-gradient-to-r from-indigo-500 via-violet-500 to-fuchsia-500" />
-
-                  <div className="relative">
-                    {/* Credits Badge */}
-                    <div className="inline-flex items-center gap-3 px-3 sm:px-4 py-2 rounded-full bg-white/75 border border-slate-200/80 shadow-sm">
-                      <div className="flex items-center justify-center w-8 h-8 rounded-full bg-emerald-100">
-                        <BsCoin className="text-emerald-500" size={16} />
-                      </div>
-
-                      <div className="flex flex-col leading-none">
-                        <span className="text-[9px] sm:text-[10px] uppercase tracking-[0.22em] font-semibold text-slate-400">
-                          Credits
-                        </span>
-
-                        <span className="text-xs sm:text-sm font-bold text-slate-800">
-                          {userData?.credits || 0} remaining
-                        </span>
-                      </div>
-
-                      <div className="ml-1 w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                    </div>
-
-                    {/* Heading */}
-                    <div className="mt-3">
-                      <h3 className="text-[20px] sm:text-[24px] leading-[1.2] tracking-tight font-bold text-slate-900">
-                        Continue your{" "}
-                        <span className="bg-gradient-to-r from-indigo-600 via-violet-600 to-fuchsia-600 bg-clip-text text-transparent">
-                          AI interview preparation
-                        </span>
-                      </h3>
-
-                      <p className="mt-4 text-[13px] sm:text-[15px] leading-6 sm:leading-7 text-slate-600">
-                        Unlock more{" "}
-                        <span className="bg-gradient-to-r from-indigo-600 via-violet-600 to-fuchsia-600 bg-clip-text text-transparent font-bold">
-                          sessions, deeper feedback, and uninterrupted
-                        </span>{" "}
-                        practice whenever you need it.
-                      </p>
-                    </div>
-
-                    {/* Progress */}
-                    <div className="mt-5">
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-[11px] sm:text-xs font-medium text-slate-500">
-                          Remaining credits
-                        </span>
-
-                        <span className="text-[11px] sm:text-xs font-semibold text-slate-700">
-                          {userData?.credits || 0}/100
-                        </span>
-                      </div>
-
-                      <div className="h-[6px] rounded-full bg-slate-200/70 overflow-hidden">
-                        <motion.div
-                          initial={{ width: 0 }}
-                          animate={{
-                            width: `${Math.min(userData?.credits || 0, 100)}%`,
-                          }}
-                          transition={{
-                            duration: 0.9,
-                            ease: [0.22, 1, 0.36, 1],
-                          }}
-                          className={`h-full rounded-full transition-all duration-100 ${
-                            (userData?.credits || 0) < 100
-                              ? "bg-gradient-to-r from-rose-500 via-orange-400 to-amber-400"
-                              : "bg-gradient-to-r from-emerald-500 via-indigo-500 to-violet-500"
-                          }`}
-                        />
-                      </div>
-                    </div>
-
-                    {/* Primary Button */}
-                    <button
-                      onClick={() => navigate("/pricing")}
-                      className="group/button relative mt-5 w-full overflow-hidden bg-slate-900 py-3 sm:py-4  text-sm sm:text-base font-semibold text-white transition-all duration-300 hover:scale-[1.015] hover:-translate-y-[1px] hover:shadow-[0_20px_45px_rgba(79,70,229,0.35)] active:scale-[0.985] rounded-2xl sm:rounded-3xl cursor-pointer "
-                    >
-                      {/* Hover Gradient */}
-                      <div className="absolute inset-0 opacity-0 transition-opacity duration-500 group-hover/button:opacity-100 bg-gradient-to-r from-indigo-600 via-violet-600 to-fuchsia-600" />
-
-                      {/* Shine Effect */}
-                      <div className="absolute inset-0 -translate-x-full group-hover/button:translate-x-full transition-transform duration-1000 bg-gradient-to-r from-transparent via-white/20 to-transparent skew-x-12" />
-
-                      <span className="relative z-10 flex items-center justify-center gap-2">
-                        Get More Credits
-                      </span>
-                    </button>
-
-                    {/* Secondary Button */}
-                    <button
-                      onClick={() => setShowCreditPopup(false)}
-                      className=" mt-4 w-full text-xs sm:text-sm text-slate-400 hover:text-slate-600 transition-colors cursor-pointer underline font-bold "
-                    >
-                      Maybe later
-                    </button>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-
-          {/* User Profile */}
-          <div ref={userRef} className="relative">
-            <motion.button
-              whileHover={{ scale: 1.02, y: -1 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={() => {
-                if (!userData) {
-                  setShowAuth(true);
-                  return;
-                }
-                setShowUserPopup(!showUserPopup);
-                setShowCreditPopup(false);
-              }}
-              className="group relative w-11 h-11 bg-slate-900 rounded-2xl flex items-center justify-center text-white overflow-hidden border border-white/20 shadow-[0_8px_30px_rgb(0,0,0,0.12)] cursor-pointer transition-shadow hover:shadow-indigo-500/20"
-            >
-              {userData ? (
-                userData.image ? (
-                  <img
-                    src={userData?.image}
-                    alt="user"
-                    referrerPolicy="no-referrer"
-                    crossOrigin="anonymous"
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                  />
-                ) : (
-                  <span className="font-bold text-sm tracking-tight">
-                    {userData.name
-                      .split(" ")
-                      .map((n) => n[0])
-                      .join("")
-                      .slice(0, 2)
-                      .toUpperCase()}
+              <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-slate-950 via-blue-900 to-indigo-900 text-white flex items-center justify-center shadow-lg group-hover:scale-105 transition-all duration-300 border border-blue-500/30">
+                <span className="font-black text-xs sm:text-sm tracking-wider">NSSTA</span>
+              </div>
+              <div className="flex flex-col">
+                <div className="flex items-center gap-1.5">
+                  <span className="font-black text-sm sm:text-base text-slate-900 dark:text-white tracking-tight">
+                    MoSPI <span className="text-blue-600 dark:text-blue-400">SkillIQ</span>
                   </span>
-                )
-              ) : (
-                <FaUserAstronaut
-                  size={18}
-                  className="text-slate-400 group-hover:text-white transition-colors"
-                />
-              )}
-            </motion.button>
+                  <span className="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-extrabold bg-blue-50 dark:bg-blue-950/80 text-blue-700 dark:text-blue-300 uppercase tracking-wider border border-blue-200/80 dark:border-blue-800">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                    <span>SankhyaIQ AI</span>
+                  </span>
+                </div>
+                <span className="text-[10px] text-slate-500 dark:text-slate-400 font-semibold hidden md:block">
+                  National Statistical Systems Training Academy
+                </span>
+              </div>
+            </div>
 
-            <AnimatePresence>
-              {showUserPopup && (
-                <motion.div
-                  variants={popupVariants}
-                  initial="hidden"
-                  animate="visible"
-                  exit="exit"
-                  className="absolute right-0 mt-3 w-64 bg-white/80 backdrop-blur-2xl rounded-[1.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.1)] border border-slate-200/60 overflow-hidden z-50 origin-top-right"
+            {/* Desktop Navigation Links: Home, Dashboard, History, AI Models */}
+            <div className="hidden md:flex items-center gap-1.5 bg-slate-100/80 dark:bg-slate-900/80 p-1.5 rounded-2xl border border-slate-200/60 dark:border-slate-800 text-xs font-bold text-slate-600 dark:text-slate-300 shadow-inner">
+              {navLinks.map((link) => {
+                const Icon = link.icon;
+                const isActive = location.pathname === link.path;
+                return (
+                  <button
+                    key={link.path}
+                    onClick={() => {
+                      if (!userData && link.path !== "/" && link.path !== "/ai-models") {
+                        setShowAuth(true);
+                        return;
+                      }
+                      navigate(link.path);
+                    }}
+                    className={`relative flex items-center gap-2 px-4 py-2 rounded-xl transition-all cursor-pointer ${
+                      isActive
+                        ? link.isAiModel
+                          ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md font-black"
+                          : "bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 shadow-xs font-black"
+                        : link.isAiModel
+                        ? "text-blue-700 dark:text-blue-300 hover:bg-blue-50/80 dark:hover:bg-blue-950/60 font-extrabold"
+                        : "hover:bg-white/60 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-white"
+                    }`}
+                  >
+                    {link.isAiModel && (
+                      <span className="w-2 h-2 rounded-full bg-amber-400 animate-ping mr-0.5" />
+                    )}
+                    <Icon size={14} className={isActive ? (link.isAiModel ? "text-amber-300" : "text-blue-600 dark:text-blue-400") : "text-slate-400"} />
+                    <span>{link.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Right Action Section: Quick Dossier & User Profile */}
+            <div className="flex items-center gap-2 sm:gap-2.5">
+              {/* Quick PDF Dossier Button */}
+              {userData && (
+                <button
+                  onClick={handleDownloadDossier}
+                  title="Download Official Performance Dossier (PDF)"
+                  className="hidden xl:flex items-center gap-1.5 px-3 py-2 text-xs font-bold text-slate-700 dark:text-slate-200 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 border border-slate-200/80 dark:border-slate-700 rounded-2xl transition-all cursor-pointer shadow-xs"
                 >
-                  {/* Header Section */}
-                  <div className="px-5 py-4 bg-gradient-to-b from-slate-50/50 to-transparent">
-                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.15em] mb-3">
-                      Account Workspace
-                    </p>
+                  <FaFilePdf size={13} className="text-red-500" />
+                  <span>Dossier PDF</span>
+                </button>
+              )}
 
-                    <div className="flex items-center gap-3">
-                      <div className="relative group">
-                        <div className="absolute -inset-0.5 bg-gradient-to-r from-indigo-500 to-fuchsia-500 rounded-xl blur opacity-20 group-hover:opacity-40 transition duration-1000"></div>
-                        <div className="relative w-10 h-10 rounded-xl overflow-hidden bg-slate-900 flex items-center justify-center text-white text-xs font-bold ring-2 ring-white">
-                          {userData?.image ? (
-                            <img
-                              src={userData.image}
-                              alt="avatar"
-                              referrerPolicy="no-referrer"
-                              crossOrigin="anon"
-                              className="w-full h-full object-cover"
-                            />
-                          ) : (
-                            userData?.name?.charAt(0).toUpperCase()
-                          )}
+              {/* User Profile Avatar / Sign In */}
+              <div ref={userRef} className="relative">
+                {userData ? (
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => setShowUserPopup(!showUserPopup)}
+                    className="flex items-center gap-2 p-1.5 pl-2.5 rounded-2xl bg-slate-100/90 dark:bg-slate-800/90 hover:bg-slate-200/70 border border-slate-200 dark:border-slate-700 transition-all cursor-pointer shadow-xs"
+                  >
+                    <div className="flex flex-col text-right hidden sm:block">
+                      <span className="text-xs font-black text-slate-900 dark:text-slate-100 leading-tight truncate max-w-[130px]">
+                        {userData.name}
+                      </span>
+                      <span className="text-[10px] text-blue-600 dark:text-blue-400 font-bold truncate max-w-[130px]">
+                        {userData.jobRole || userData.role || "Officer"}
+                      </span>
+                    </div>
+
+                    <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-blue-700 to-indigo-700 text-white flex items-center justify-center font-black text-xs shadow-md">
+                      {userData.name ? userData.name.charAt(0).toUpperCase() : <FaUserGraduate size={14} />}
+                    </div>
+                    <BsChevronDown size={11} className={`text-slate-400 transition-transform ${showUserPopup ? "rotate-180" : ""}`} />
+                  </motion.button>
+                ) : (
+                  <button
+                    onClick={() => navigate("/auth")}
+                    className="flex items-center gap-1.5 px-4 py-2 bg-gradient-to-r from-blue-700 to-indigo-700 hover:from-blue-800 hover:to-indigo-800 text-white rounded-xl text-xs font-black shadow-md transition-all cursor-pointer"
+                  >
+                    <FaUserGraduate size={13} />
+                    <span>Officer Sign In</span>
+                  </button>
+                )}
+
+                {/* Profile Dropdown with Theme Selector */}
+                <AnimatePresence>
+                  {showUserPopup && userData && (
+                    <motion.div
+                      variants={popupVariants}
+                      initial="hidden"
+                      animate="visible"
+                      exit="exit"
+                      className="absolute right-0 mt-3 w-80 bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden z-50 origin-top-right"
+                    >
+                      {/* Header */}
+                      <div className="p-4 bg-gradient-to-br from-slate-50 to-blue-50/40 dark:from-slate-800/80 dark:to-blue-950/40 border-b border-slate-100 dark:border-slate-800">
+                        <div className="flex items-center gap-3">
+                          <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-blue-700 to-indigo-700 text-white flex items-center justify-center font-black text-sm shadow-md">
+                            {userData.name ? userData.name.charAt(0).toUpperCase() : "O"}
+                          </div>
+                          <div className="flex flex-col min-w-0">
+                            <span className="font-black text-sm text-slate-900 dark:text-white truncate">
+                              {userData.name}
+                            </span>
+                            <span className="text-xs text-slate-500 dark:text-slate-400 truncate">
+                              {userData.email}
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className="mt-3 pt-2.5 border-t border-slate-200/60 dark:border-slate-700 flex items-center justify-between text-[11px]">
+                          <span className="font-semibold text-slate-600 dark:text-slate-300">Cadre:</span>
+                          <span className="font-bold text-blue-700 dark:text-blue-400 truncate max-w-[180px]">
+                            {userData.jobRole || "ISS Officer"}
+                          </span>
+                        </div>
+                        <div className="mt-1 flex items-center justify-between text-[11px]">
+                          <span className="font-semibold text-slate-600 dark:text-slate-300">Competency:</span>
+                          <span className="font-black text-emerald-600 dark:text-emerald-400">
+                            {userData.overallCompetencyScore || 65}% ({userData.overallLevel || "Intermediate"})
+                          </span>
                         </div>
                       </div>
 
-                      <div className="flex flex-col min-w-0">
-                        <span className="font-semibold text-slate-900 truncate text-sm leading-none mb-1">
-                          {userData?.name}
-                        </span>
-                        <span className="text-xs text-slate-500 truncate leading-none">
-                          {userData?.email}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
+                      {/* Quick Profile Links */}
+                      <div className="p-2 space-y-1">
+                        <button
+                          onClick={() => {
+                            setShowUserPopup(false);
+                            navigate("/dashboard");
+                          }}
+                          className="w-full text-left px-3.5 py-2.5 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-800 text-xs font-bold text-slate-700 dark:text-slate-200 flex items-center gap-2.5 transition-colors cursor-pointer"
+                        >
+                          <BsBarChartLine size={14} className="text-blue-600" />
+                          <span>My Performance Dashboard</span>
+                        </button>
 
-                  {/* Menu Actions */}
-                  <div className="p-2 space-y-1">
-                    <button
-                      onClick={() => navigate("/history")}
-                      className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-slate-100/80 text-slate-600 hover:text-indigo-600 font-medium transition-all duration-200 group cursor-pointer"
-                    >
-                      <div className="w-8 h-8 rounded-lg bg-slate-50 flex items-center justify-center group-hover:bg-white group-hover:shadow-sm transition-all">
-                        <FaHistory size={14} />
-                      </div>
-                      <span className="text-[13px]">Activity History</span>
-                    </button>
+                        <button
+                          onClick={() => {
+                            setShowUserPopup(false);
+                            navigate("/ai-models");
+                          }}
+                          className="w-full text-left px-3.5 py-2.5 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-800 text-xs font-bold text-slate-700 dark:text-slate-200 flex items-center gap-2.5 transition-colors cursor-pointer"
+                        >
+                          <HiSparkles size={14} className="text-amber-500" />
+                          <span>AI Models & Workflows Hub</span>
+                        </button>
 
-                    <div className="h-px bg-slate-100 my-1 mx-2" />
+                        <button
+                          onClick={() => {
+                            setShowUserPopup(false);
+                            handleDownloadDossier();
+                          }}
+                          className="w-full text-left px-3.5 py-2.5 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-800 text-xs font-bold text-slate-700 dark:text-slate-200 flex items-center gap-2.5 transition-colors cursor-pointer"
+                        >
+                          <FaFilePdf size={14} className="text-rose-600" />
+                          <span>Export Official Dossier (PDF)</span>
+                        </button>
 
-                    <button
-                      onClick={handleLogout}
-                      className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-red-50 text-red-500 font-medium transition-all duration-200 group cursor-pointer"
-                    >
-                      <div className="w-8 h-8 rounded-lg bg-red-50/50 flex items-center justify-center group-hover:bg-white group-hover:shadow-sm transition-all">
-                        <HiOutlineLogout size={16} />
+                        <button
+                          onClick={() => {
+                            setShowUserPopup(false);
+                            navigate("/history");
+                          }}
+                          className="w-full text-left px-3.5 py-2.5 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-800 text-xs font-bold text-slate-700 dark:text-slate-200 flex items-center gap-2.5 transition-colors cursor-pointer"
+                        >
+                          <FaHistory size={14} className="text-indigo-600" />
+                          <span>Interview History & Scorecards</span>
+                        </button>
                       </div>
-                      <span className="text-[13px]">Sign Out</span>
-                    </button>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
+
+                      {/* Theme Mode Selector (Shown when User Icon Clicked) */}
+                      <div className="p-3 bg-slate-50/80 dark:bg-slate-800/60 border-t border-slate-100 dark:border-slate-800 space-y-2">
+                        <div className="flex items-center justify-between px-1">
+                          <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+                            {theme === "dark" ? (
+                              <BsMoonStars className="text-indigo-400" size={12} />
+                            ) : theme === "light" ? (
+                              <BsSun className="text-amber-500" size={12} />
+                            ) : (
+                              <BsDisplay className="text-blue-500" size={12} />
+                            )}
+                            <span>Appearance</span>
+                          </span>
+                          <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950 text-blue-600 dark:text-blue-400 border border-blue-200/50 dark:border-blue-800/50 capitalize">
+                            {theme === "system" ? "System Default" : `${theme} Mode`}
+                          </span>
+                        </div>
+
+                        <div className="grid grid-cols-3 gap-1 bg-slate-200/70 dark:bg-slate-900/80 p-1 rounded-2xl border border-slate-200/50 dark:border-slate-800 text-xs font-bold">
+                          <button
+                            onClick={() => setTheme("system")}
+                            className={`flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-xl transition-all cursor-pointer ${
+                              theme === "system"
+                                ? "bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 shadow-sm font-black"
+                                : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+                            }`}
+                          >
+                            <BsDisplay size={12} />
+                            <span>System</span>
+                          </button>
+
+                          <button
+                            onClick={() => setTheme("light")}
+                            className={`flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-xl transition-all cursor-pointer ${
+                              theme === "light"
+                                ? "bg-white dark:bg-slate-800 text-amber-500 shadow-sm font-black"
+                                : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+                            }`}
+                          >
+                            <BsSun size={12} />
+                            <span>Light</span>
+                          </button>
+
+                          <button
+                            onClick={() => setTheme("dark")}
+                            className={`flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-xl transition-all cursor-pointer ${
+                              theme === "dark"
+                                ? "bg-white dark:bg-slate-800 text-indigo-400 shadow-sm font-black"
+                                : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+                            }`}
+                          >
+                            <BsMoonStars size={12} />
+                            <span>Dark</span>
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Logout */}
+                      <div className="p-2 border-t border-slate-100 dark:border-slate-800">
+                        <button
+                          onClick={handleLogout}
+                          className="w-full px-3.5 py-2 rounded-2xl hover:bg-rose-50 dark:hover:bg-rose-950/60 text-xs font-bold text-rose-600 dark:text-rose-400 flex items-center gap-2.5 transition-colors cursor-pointer"
+                        >
+                          <HiOutlineLogout size={16} />
+                          <span>Sign Out</span>
+                        </button>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+
+              {/* Mobile Menu Toggle */}
+              <button
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                className="md:hidden p-2 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+              >
+                {mobileMenuOpen ? <HiX size={22} /> : <HiMenu size={22} />}
+              </button>
+            </div>
           </div>
         </div>
-      </motion.div>
+
+        {/* Mobile Dropdown Drawer */}
+        <AnimatePresence>
+          {mobileMenuOpen && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              className="md:hidden border-t border-slate-200 dark:border-slate-800 bg-white/95 dark:bg-slate-950/95 backdrop-blur-2xl px-4 py-4 space-y-3"
+            >
+              <div className="grid grid-cols-2 gap-2">
+                {navLinks.map((link) => {
+                  const Icon = link.icon;
+                  const isActive = location.pathname === link.path;
+                  return (
+                    <button
+                      key={link.path}
+                      onClick={() => {
+                        setMobileMenuOpen(false);
+                        if (!userData && link.path !== "/" && link.path !== "/ai-models") {
+                          setShowAuth(true);
+                          return;
+                        }
+                        navigate(link.path);
+                      }}
+                      className={`flex items-center gap-2 p-3 rounded-2xl text-xs font-bold text-left transition-colors ${
+                        isActive
+                          ? "bg-blue-600 text-white"
+                          : "bg-slate-50 dark:bg-slate-900 text-slate-700 dark:text-slate-300"
+                      }`}
+                    >
+                      <Icon size={15} />
+                      <span>{link.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Mobile Theme Selector */}
+              <div className="p-3 bg-slate-50 dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-2">
+                <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">
+                  Theme: {theme === "system" ? "System Default" : `${theme} Mode`}
+                </span>
+                <div className="grid grid-cols-3 gap-1 bg-slate-200/80 dark:bg-slate-800 p-1 rounded-xl text-xs font-bold">
+                  <button
+                    onClick={() => setTheme("system")}
+                    className={`py-1.5 rounded-lg text-center ${
+                      theme === "system" ? "bg-white dark:bg-slate-700 text-blue-600 font-black shadow-xs" : "text-slate-600 dark:text-slate-400"
+                    }`}
+                  >
+                    System
+                  </button>
+                  <button
+                    onClick={() => setTheme("light")}
+                    className={`py-1.5 rounded-lg text-center ${
+                      theme === "light" ? "bg-white dark:bg-slate-700 text-amber-500 font-black shadow-xs" : "text-slate-600 dark:text-slate-400"
+                    }`}
+                  >
+                    Light
+                  </button>
+                  <button
+                    onClick={() => setTheme("dark")}
+                    className={`py-1.5 rounded-lg text-center ${
+                      theme === "dark" ? "bg-white dark:bg-slate-700 text-indigo-400 font-black shadow-xs" : "text-slate-600 dark:text-slate-400"
+                    }`}
+                  >
+                    Dark
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </nav>
+
+      {/* Auth Modal Trigger */}
       {showAuth && <AuthModel onClose={() => setShowAuth(false)} />}
-    </nav>
+    </>
   );
 };
 

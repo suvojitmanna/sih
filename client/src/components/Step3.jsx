@@ -89,32 +89,34 @@ const Step3 = ({ report }) => {
     doc.rect(0, 0, pageWidth, pageHeight, "F");
 
     // =========== PREMIUM TOP HEADER ===========
-    doc.setFillColor(16, 185, 129);
-    doc.rect(0, 0, pageWidth, 60, "F");
+    doc.setFillColor(30, 58, 138); // Deep MoSPI Navy #1E3A8A
+    doc.rect(0, 0, pageWidth, 55, "F");
 
-    // Decorative Circle
-    doc.setFillColor(52, 211, 153);
-    doc.circle(pageWidth - 18, 12, 20, "F");
-    doc.setFillColor(110, 231, 183);
-    doc.circle(pageWidth - 32, 18, 8, "F");
+    // Tricolor Ribbon
+    doc.setFillColor(255, 153, 51);
+    doc.rect(0, 55, pageWidth / 3, 2, "F");
+    doc.setFillColor(255, 255, 255);
+    doc.rect(pageWidth / 3, 55, pageWidth / 3, 2, "F");
+    doc.setFillColor(19, 136, 8);
+    doc.rect((pageWidth / 3) * 2, 55, pageWidth / 3, 2, "F");
 
     // =========== TITLE ===========
-
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(28);
+    doc.setFontSize(20);
     doc.setTextColor(255, 255, 255);
-    doc.text("AI Interview Report", margin, 23);
+    doc.text("MoSPI • NSSTA — AI Interview Scorecard", margin, 20);
     doc.setFont("helvetica", "normal");
-    doc.setFontSize(11);
-    doc.text("Premium AI-powered interview performance analytics", margin, 32);
+    doc.setFontSize(10);
+    doc.setTextColor(219, 234, 254);
+    doc.text("Official Cadre Mock Viva Voce & Technical Performance Analytics", margin, 28);
 
     // ========== USER DETAILS ===========
-
-    const today = new Date().toLocaleDateString();
-    doc.setFontSize(10);
-    doc.text(`Generated: ${today}`, margin, 42);
-    doc.text(`Candidate: ${userData?.name || "Anonymous User"}`, margin, 49);
-    currentY = 75;
+    const today = new Date().toLocaleDateString("en-IN");
+    doc.setFontSize(9);
+    doc.setTextColor(191, 219, 254);
+    doc.text(`Candidate / Officer: ${userData?.name || "Statistical Officer"} (${userData?.jobRole || "Cadre Officer"})`, margin, 38);
+    doc.text(`Evaluation Date: ${today} | Verified by SankhyaIQ™ AI Neural Engine`, margin, 46);
+    currentY = 68;
 
     // ========== OVERALL SCORE CARD ===========
 
@@ -350,40 +352,40 @@ const Step3 = ({ report }) => {
   };
 
   return (
-    <div className="min-h-screen bg-white relative overflow-hidden px-4 sm:px-8 lg:px-14 py-10">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 relative overflow-hidden px-4 sm:px-8 lg:px-14 py-10 transition-colors duration-300">
       {/* Gradient Blur Background */}
-      <div className="absolute top-0 left-0 w-72 h-72 bg-emerald-200 blur-[120px] rounded-full opacity-40"></div>
-      <div className="absolute bottom-0 right-0 w-96 h-96 bg-green-100 blur-[140px] rounded-full opacity-50"></div>
+      <div className="absolute top-0 left-0 w-72 h-72 bg-emerald-300/20 dark:bg-emerald-500/10 blur-[120px] rounded-full opacity-40"></div>
+      <div className="absolute bottom-0 right-0 w-96 h-96 bg-blue-300/20 dark:bg-blue-500/10 blur-[140px] rounded-full opacity-50"></div>
 
       {/* Header */}
       <div className="relative z-10 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 mb-10">
         <div className="flex items-center gap-5">
           <button
             onClick={() => navigate("/history")}
-            className="group bg-white border border-gray-200 p-2 sm:p-4 rounded-2xl hover:bg-emerald-50 transition-all duration-300 shadow-lg ml-[5px] -mt-[90px] sm:-mt-[30px] cursor-pointer"
+            className="group bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-2 sm:p-4 rounded-2xl hover:bg-emerald-50 dark:hover:bg-emerald-950/60 transition-all duration-300 shadow-md ml-[5px] -mt-[90px] sm:-mt-[30px] cursor-pointer"
           >
-            <FaArrowLeft className="text-gray-700 group-hover:text-emerald-600 group-hover:-translate-x-1 transition-all duration-300 " />
+            <FaArrowLeft className="text-slate-700 dark:text-slate-300 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 group-hover:-translate-x-1 transition-all duration-300" />
           </button>
 
           <div className="-ml-[10px]">
-            <h1 className="text-4xl sm:text-5xl font-black tracking-tight text-gray-900 whitespace-nowrap">
+            <h1 className="text-3xl sm:text-5xl font-black tracking-tight text-slate-900 dark:text-white whitespace-nowrap">
               Interview{" "}
               <span className="bg-gradient-to-r from-emerald-500 to-green-400 bg-clip-text text-transparent">
                 Analytics
               </span>
             </h1>
 
-            <p className="text-gray-500 mt-3 text-sm sm:text-base">
-              AI-powered interview intelligence dashboard
+            <p className="text-slate-500 dark:text-slate-400 mt-2 text-xs sm:text-sm font-medium">
+              SankhyaIQ™ AI official competency scorecard & diagnostic evaluation
             </p>
           </div>
         </div>
 
         <button
           onClick={downloadPDF}
-          className="bg-gradient-to-r from-emerald-500 to-green-400 hover:scale-105 active:scale-95 transition-all duration-300 shadow-xl shadow-emerald-200 px-6 py-4 rounded-3xl font-semibold text-white cursor-pointer"
+          className="bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 hover:scale-105 active:scale-95 transition-all duration-300 shadow-lg px-6 py-3.5 rounded-2xl font-bold text-xs text-white cursor-pointer"
         >
-          Download Report
+          Download Report (PDF)
         </button>
       </div>
 
@@ -395,9 +397,11 @@ const Step3 = ({ report }) => {
           <motion.div
             initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-white border border-gray-100 rounded-3xl p-8 shadow-[0_10px_40px_rgba(0,0,0,0.06)]"
+            className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-3xl p-8 shadow-xs"
           >
-            <p className="text-gray-500 text-sm mb-6">Overall Performance</p>
+            <p className="text-slate-500 dark:text-slate-400 text-xs font-bold uppercase tracking-wider mb-6">
+              Overall Performance
+            </p>
 
             <div className="w-36 h-36 mx-auto">
               <CircularProgressbar
@@ -406,18 +410,18 @@ const Step3 = ({ report }) => {
                 styles={buildStyles({
                   textSize: "16px",
                   pathColor: "#10b981",
-                  textColor: "#111827",
-                  trailColor: "#e5e7eb",
+                  textColor: "#10b981",
+                  trailColor: "#334155",
                 })}
               />
             </div>
 
             <div className="mt-6 text-center">
-              <h3 className="text-2xl font-bold text-gray-900">
+              <h3 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">
                 {performanceText}
               </h3>
 
-              <p className="text-gray-500 mt-2 text-sm">{shortTagline}</p>
+              <p className="text-slate-500 dark:text-slate-400 mt-1.5 text-xs">{shortTagline}</p>
             </div>
           </motion.div>
 
@@ -426,24 +430,24 @@ const Step3 = ({ report }) => {
             initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="bg-white border border-gray-100 rounded-3xl p-8 shadow-[0_10px_40px_rgba(0,0,0,0.06)]"
+            className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-3xl p-8 shadow-xs"
           >
-            <h3 className="text-xl font-bold text-gray-900 mb-8">
+            <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-6">
               Skill Evaluation
             </h3>
 
-            <div className="space-y-7">
+            <div className="space-y-6">
               {skills.map((s, i) => (
                 <div key={i}>
-                  <div className="flex justify-between mb-3">
-                    <span className="text-gray-700">{s.label}</span>
+                  <div className="flex justify-between mb-2 text-xs font-bold">
+                    <span className="text-slate-700 dark:text-slate-300">{s.label}</span>
 
-                    <span className="font-bold text-emerald-500">
+                    <span className="text-emerald-600 dark:text-emerald-400">
                       {s.value}/10
                     </span>
                   </div>
 
-                  <div className="h-3 bg-gray-100 rounded-full overflow-hidden">
+                  <div className="h-2.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
                     <motion.div
                       initial={{ width: 0 }}
                       animate={{ width: `${s.value * 10}%` }}
@@ -464,19 +468,19 @@ const Step3 = ({ report }) => {
             initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="bg-white border border-gray-100 rounded-3xl p-8 shadow-[0_10px_40px_rgba(0,0,0,0.06)]"
+            className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-3xl p-6 sm:p-8 shadow-xs"
           >
-            <div className="flex items-center justify-between mb-8">
-              <h3 className="text-xl font-bold text-gray-900">
-                Performance Trend
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-lg font-bold text-slate-900 dark:text-white">
+                Question Performance Trend
               </h3>
 
-              <div className="bg-emerald-50 text-emerald-600 px-4 py-2 rounded-xl text-sm font-medium">
+              <div className="bg-emerald-50 dark:bg-emerald-950/80 text-emerald-600 dark:text-emerald-400 px-3 py-1 rounded-xl text-xs font-bold">
                 Live Analytics
               </div>
             </div>
 
-            <div className="h-72">
+            <div className="h-64 sm:h-72">
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={questionWiseScoreData}>
                   <defs>
@@ -486,16 +490,17 @@ const Step3 = ({ report }) => {
                     </linearGradient>
                   </defs>
 
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#334155" opacity={0.2} />
 
-                  <XAxis dataKey="name" stroke="#64748b" />
+                  <XAxis dataKey="name" stroke="#64748b" textAnchor="middle" />
                   <YAxis domain={[0, 10]} stroke="#64748b" />
 
                   <Tooltip
                     contentStyle={{
-                      background: "#fff",
-                      borderRadius: "16px",
-                      border: "1px solid #e5e7eb",
+                      backgroundColor: "#0f172a",
+                      color: "#fff",
+                      borderRadius: "12px",
+                      border: "1px solid #334155",
                     }}
                   />
 
@@ -505,68 +510,66 @@ const Step3 = ({ report }) => {
                     stroke="#10b981"
                     fillOpacity={1}
                     fill="url(#colorScore)"
-                    strokeWidth={4}
+                    strokeWidth={3}
                   />
                 </AreaChart>
               </ResponsiveContainer>
             </div>
           </motion.div>
+
           <motion.div
             initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
-            className="bg-white border border-gray-100 rounded-3xl p-8 shadow-[0_10px_40px_rgba(0,0,0,0.06)]"
+            className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-3xl p-6 sm:p-8 shadow-xs"
           >
-            <div className="flex items-center justify-between mb-8">
-              <h3 className="text-2xl font-bold text-gray-900">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-xl font-bold text-slate-900 dark:text-white">
                 Question Breakdown
               </h3>
 
-              <div className="bg-emerald-50 text-emerald-600 px-4 py-2 rounded-xl text-sm font-semibold">
+              <div className="bg-emerald-50 dark:bg-emerald-950/80 text-emerald-600 dark:text-emerald-400 px-3 py-1 rounded-xl text-xs font-bold">
                 AI Evaluation
               </div>
             </div>
 
-            <div className="space-y-6">
+            <div className="space-y-5">
               {questionWiseScore.map((q, i) => (
                 <motion.div
                   key={i}
-                  whileHover={{ y: -3 }}
+                  whileHover={{ y: -2 }}
                   transition={{ duration: 0.2 }}
-                  className="bg-gradient-to-br from-white to-gray-50 border border-gray-100 rounded-3xl p-6 hover:shadow-xl transition-all duration-300"
+                  className="bg-slate-50/70 dark:bg-slate-800/50 border border-slate-200/70 dark:border-slate-700/60 rounded-2xl p-5 hover:shadow-md transition-all"
                 >
                   {/* Top */}
-                  <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-5 mb-6">
+                  <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-4">
                     <div className="flex-1">
-                      <p className="text-xs uppercase tracking-wider text-gray-400 mb-3">
+                      <p className="text-[10px] uppercase font-bold tracking-wider text-slate-400 mb-1.5">
                         Question {i + 1}
                       </p>
 
-                      <h4 className="text-lg sm:text-xl font-bold text-gray-900 leading-relaxed">
+                      <h4 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white leading-relaxed">
                         {q.question || "Question not available"}
                       </h4>
                     </div>
 
                     {/* Score Badge */}
-                    <div className="bg-gradient-to-r from-emerald-500 to-green-400 text-white px-5 py-3 rounded-2xl font-bold shadow-lg shadow-emerald-100 min-w-[90px] text-center">
+                    <div className="bg-gradient-to-r from-emerald-600 to-green-600 text-white px-4 py-2 rounded-xl font-bold text-xs shadow-sm min-w-[75px] text-center shrink-0">
                       {q.score ?? 0}/10
                     </div>
                   </div>
 
-                  {/* Divider */}
-                  <div className="h-px bg-gray-100 mb-6"></div>
-
                   {/* Feedback */}
-                  <div className="bg-emerald-50 border border-emerald-100 rounded-2xl p-5">
-                    <div className="flex items-center gap-2 mb-3">
+                  <div className="bg-emerald-50/60 dark:bg-emerald-950/40 border border-emerald-100 dark:border-emerald-900/60 rounded-xl p-4">
+                    <div className="flex items-center gap-2 mb-2">
                       <div className="w-2 h-2 rounded-full bg-emerald-500"></div>
 
-                      <p className="text-emerald-700 font-semibold text-sm">
-                        AI Feedback
+                      <p className="text-emerald-700 dark:text-emerald-400 font-bold text-xs">
+                        AI Cadre Feedback
                       </p>
                     </div>
 
-                    <p className="text-gray-700 leading-8 text-[15px]">
+                    <p className="text-slate-700 dark:text-slate-300 leading-relaxed text-xs">
                       {q.feedback?.trim()
                         ? q.feedback
                         : "No feedback available for this question."}

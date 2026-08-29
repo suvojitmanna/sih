@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { ServerUrl } from "../App";
+import Navbar from "../components/Navbar";
 
 const Pricing = () => {
   const navigate = useNavigate();
@@ -15,57 +16,57 @@ const Pricing = () => {
   const plans = [
     {
       id: "free",
-      name: "Free Plan",
+      name: "Standard Cadre Plan",
       icon: <FaBolt />,
       price: "₹0",
       credits: 100,
-      description: "Perfect for beginners starting interview preparation.",
+      description: "Standard allocation for statistical officers and learners.",
       features: [
-        "100 AI Interview Credits",
-        "Basic Performance Report",
-        "Voice Interview Access",
-        "Limited History Tracking",
+        "100 AI Cadre Interview Credits",
+        "Official Competency Matrix Access",
+        "Voice AI Viva Voce Access",
+        "Standard Performance Dossier Export",
       ],
       button: "Current Plan",
       disabled: true,
-      color: "from-gray-400 to-gray-600",
+      color: "from-slate-400 to-slate-600",
     },
 
     {
       id: "basic",
-      name: "Starter Pack",
+      name: "Officer Starter Pack",
       icon: <FaBolt />,
       price: "₹100",
       credits: 150,
       description:
-        "Best for focused practice and improving interview confidence.",
+        "Expanded capacity for comprehensive mock interview drills.",
       features: [
         "150 AI Interview Credits",
-        "Detailed AI Feedback",
-        "Performance Analytics",
-        "Full Interview History",
+        "Detailed SankhyaIQ Diagnostic Feedback",
+        "Domain-Wise Benchmark Analytics",
+        "Unlimited Attempt Scorecards",
       ],
-      button: "Get Started",
-      color: "from-emerald-400 to-green-600",
+      button: "Upgrade Pack",
+      color: "from-emerald-500 to-green-600",
     },
 
     {
       id: "pro",
-      name: "Pro Pack",
+      name: "Executive NSSTA Pack",
       icon: <FaCrown />,
       price: "₹500",
       credits: 650,
-      badge: "POPULAR",
-      description: "Advanced AI interview preparation for serious candidates.",
+      badge: "RECOMMENDED",
+      description: "Full capacity bundle for intensive cadre promotion and exam boards.",
       features: [
-        "650 AI Interview Credits",
-        "Advanced AI Feedback",
-        "Skill Trend Analysis",
+        "650 AI Viva Credits",
+        "Deep Neural Model Assessment",
+        "4-Domain Radar Diagnostics",
         "Priority AI Processing",
-        "Unlimited Interview History",
+        "Official PDF Dossiers with QR Verification",
       ],
-      button: "Upgrade Pro",
-      color: "from-violet-500 to-indigo-600",
+      button: "Upgrade Executive",
+      color: "from-blue-600 to-indigo-600",
     },
   ];
 
@@ -94,36 +95,31 @@ const Pricing = () => {
         currency: result.data.order.currency,
         order_id: result.data.order.id,
 
-        name: "AI Interview",
+        name: "MoSPI SkillIQ",
 
         description: `${plan.name} - ${plan.credits} Credits`,
 
-        handler: async function (response) {
+        handler: async (response) => {
           try {
             const verify = await axios.post(
               `${ServerUrl}/api/payment/verify`,
-              {
-                razorpay_order_id: response.razorpay_order_id,
-
-                razorpay_payment_id: response.razorpay_payment_id,
-
-                razorpay_signature: response.razorpay_signature,
-              },
+              response,
               {
                 withCredentials: true,
               },
             );
 
-            toast.success(verify.data.message);
-
-            navigate("/");
+            if (verify.data.success) {
+              toast.success("Credits Added Successfully! ✨");
+              navigate("/dashboard");
+            }
           } catch (error) {
             toast.error("Payment verification failed");
           }
         },
 
         theme: {
-          color: "#10b981",
+          color: "#2563eb",
         },
       };
 
@@ -142,29 +138,29 @@ const Pricing = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#f5f7fb] px-6 py-16 overflow-hidden">
-      {/* Top Blur Background */}
-      <div className="absolute top-0 left-0 w-[400px] h-[400px] bg-emerald-200 rounded-full blur-3xl opacity-30"></div>
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 px-4 sm:px-6 py-16 overflow-hidden transition-colors duration-300">
+      <Navbar />
 
-      <div className="absolute bottom-0 right-0 w-[400px] h-[400px] bg-violet-200 rounded-full blur-3xl opacity-30"></div>
+      {/* Top Blur Background */}
+      <div className="absolute top-0 left-0 w-[400px] h-[400px] bg-blue-300/20 dark:bg-blue-500/10 rounded-full blur-3xl opacity-30 pointer-events-none"></div>
+      <div className="absolute bottom-0 right-0 w-[400px] h-[400px] bg-emerald-300/20 dark:bg-emerald-500/10 rounded-full blur-3xl opacity-30 pointer-events-none"></div>
 
       {/* Header */}
-      <div className="max-w-7xl mx-auto flex items-start gap-4 mb-16 relative z-10">
+      <div className="max-w-7xl mx-auto flex items-start gap-4 mb-16 relative z-10 pt-16">
         <button
           onClick={() => navigate("/")}
-          className="p-1 sm:p-3 -mt-[30px] rounded-2xl bg-white shadow-lg border border-gray-200 hover:scale-105 transition cursor-pointer"
+          className="p-3 rounded-2xl bg-white dark:bg-slate-800 shadow-md border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:scale-105 transition cursor-pointer"
         >
-          <FaArrowLeft className="text-gray-700" />
+          <FaArrowLeft />
         </button>
 
         <div className="w-full text-center">
-          <h1 className="text-5xl font-extrabold text-gray-800 whitespace-nowrap">
-            Pricing Plans
+          <h1 className="text-3xl sm:text-5xl font-black text-slate-900 dark:text-white">
+            Capacity Credits & Subscription
           </h1>
 
-          <p className="text-gray-500 mt-4 text-lg max-w-2xl mx-auto">
-            Choose the perfect plan and unlock premium AI interview preparation
-            tools.
+          <p className="text-slate-500 dark:text-slate-400 mt-3 text-xs sm:text-sm max-w-2xl mx-auto">
+            Choose your AI interview credits allocation for high-stakes cadre viva voce practice.
           </p>
         </div>
       </div>
@@ -181,59 +177,59 @@ const Pricing = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.15 }}
               whileHover={{
-                y: -10,
-                scale: 1.03,
+                y: -8,
+                scale: 1.02,
               }}
               onClick={() => !plan.disabled && setSelectedPlan(plan.id)}
               className={`relative rounded-[32px] p-[1px] transition-all duration-500
-              
-              ${isSelected ? `bg-gradient-to-br ${plan.color}` : "bg-gray-200"}
+              ${isSelected ? `bg-gradient-to-br ${plan.color}` : "bg-slate-200 dark:bg-slate-800"}
               `}
             >
               {/* Inner Card */}
-              <div className="bg-white rounded-[32px] p-8 h-full shadow-xl">
-                {/* Badge */}
-                {plan.badge && (
-                  <div className="absolute top-5 right-5 bg-gradient-to-r from-orange-400 to-pink-500 text-white text-xs font-bold px-4 py-1 rounded-full shadow">
-                    {plan.badge}
-                  </div>
-                )}
-
-                {/* Icon */}
-                <div
-                  className={`w-16 h-16 rounded-2xl flex items-center justify-center text-white text-2xl bg-gradient-to-br ${plan.color} shadow-lg`}
-                >
-                  {plan.icon}
-                </div>
-
-                {/* Name */}
-                <h2 className="text-3xl font-bold text-gray-800 mt-6">
-                  {plan.name}
-                </h2>
-
-                {/* Price */}
-                <div className="mt-5">
-                  <span className="text-5xl font-extrabold text-gray-900">
-                    {plan.price}
-                  </span>
-
-                  <p className="text-gray-500 mt-2">{plan.credits} Credits</p>
-                </div>
-
-                {/* Description */}
-                <p className="text-gray-500 mt-6 leading-relaxed">
-                  {plan.description}
-                </p>
-
-                {/* Features */}
-                <div className="mt-8 space-y-4">
-                  {plan.features.map((feature, i) => (
-                    <div key={i} className="flex items-center gap-3">
-                      <FaCheckCircle className="text-emerald-500" />
-
-                      <span className="text-gray-700">{feature}</span>
+              <div className="bg-white dark:bg-slate-900 rounded-[32px] p-8 h-full shadow-xl border border-slate-200/60 dark:border-slate-800 flex flex-col justify-between">
+                <div>
+                  {/* Badge */}
+                  {plan.badge && (
+                    <div className="absolute top-5 right-5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-[10px] font-extrabold px-3 py-1 rounded-full shadow-sm">
+                      {plan.badge}
                     </div>
-                  ))}
+                  )}
+
+                  {/* Icon */}
+                  <div
+                    className={`w-14 h-14 rounded-2xl flex items-center justify-center text-white text-xl bg-gradient-to-br ${plan.color} shadow-md`}
+                  >
+                    {plan.icon}
+                  </div>
+
+                  {/* Name */}
+                  <h2 className="text-2xl font-black text-slate-900 dark:text-white mt-5">
+                    {plan.name}
+                  </h2>
+
+                  {/* Price */}
+                  <div className="mt-4">
+                    <span className="text-4xl sm:text-5xl font-black text-slate-900 dark:text-white">
+                      {plan.price}
+                    </span>
+
+                    <p className="text-slate-500 dark:text-slate-400 mt-1 text-xs font-bold">{plan.credits} AI Viva Credits</p>
+                  </div>
+
+                  {/* Description */}
+                  <p className="text-slate-600 dark:text-slate-300 mt-4 text-xs leading-relaxed">
+                    {plan.description}
+                  </p>
+
+                  {/* Features */}
+                  <div className="mt-6 space-y-3">
+                    {plan.features.map((feature, i) => (
+                      <div key={i} className="flex items-center gap-2.5 text-xs">
+                        <FaCheckCircle className="text-emerald-500 shrink-0" size={13} />
+                        <span className="text-slate-700 dark:text-slate-300 font-medium">{feature}</span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
 
                 {/* Button */}
@@ -246,12 +242,11 @@ const Pricing = () => {
                       handlePayment(plan);
                     }
                   }}
-                  className={`w-full mt-10 py-4 rounded-2xl font-bold text-lg transition-all duration-300
-                  
+                  className={`w-full mt-8 py-3.5 rounded-2xl font-bold text-xs transition-all duration-300
                   ${
                     plan.disabled
-                      ? "bg-gray-200 text-gray-500 cursor-not-allowed"
-                      : `bg-gradient-to-r ${plan.color} text-white hover:scale-105 shadow-lg cursor-pointer`
+                      ? "bg-slate-100 dark:bg-slate-800 text-slate-400 cursor-not-allowed"
+                      : `bg-gradient-to-r ${plan.color} text-white hover:scale-102 shadow-md cursor-pointer`
                   }
                   `}
                 >
@@ -264,9 +259,11 @@ const Pricing = () => {
       </div>
 
       {/* Bottom */}
-      <div className="text-center mt-16 text-gray-500 relative z-10">
-        Secure Payments Powered By Razorpay
+      <div className="text-center mt-12 mb-12 text-slate-400 text-xs relative z-10 font-medium">
+        Secure Indian Banking & UPI Payments Powered By Razorpay
       </div>
+
+      <Footer />
     </div>
   );
 };

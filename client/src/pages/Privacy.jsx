@@ -2,6 +2,8 @@ import { motion, useScroll, useSpring } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { HiArrowLeft, HiOutlineShieldCheck, HiOutlineLockClosed, HiOutlineDatabase } from "react-icons/hi";
 import { useEffect } from "react";
+import Navbar from "../components/Navbar";
+import Footer from "../components/Footer";
 
 const PrivacyPolicy = () => {
   const navigate = useNavigate();
@@ -11,47 +13,50 @@ const PrivacyPolicy = () => {
     damping: 30,
     restDelta: 0.001
   });
+
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
 
   const sections = [
-    { id: "collection", title: "1. Information Collection", icon: <HiOutlineDatabase /> },
-    { id: "usage", title: "2. Data Usage", icon: <HiOutlineShieldCheck /> },
-    { id: "security", title: "3. Data Security", icon: <HiOutlineLockClosed /> },
+    { id: "collection", title: "1. Official Information Collection", icon: <HiOutlineDatabase /> },
+    { id: "usage", title: "2. Cadre Evaluation & Data Usage", icon: <HiOutlineShieldCheck /> },
+    { id: "security", title: "3. Data Protection & DPDP Compliance", icon: <HiOutlineLockClosed /> },
   ];
 
   return (
-    <div className="min-h-screen bg-[#fcfcfd] selection:bg-indigo-100">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 selection:bg-blue-100 dark:selection:bg-blue-900 transition-colors duration-300">
+      <Navbar />
+
       {/* Progress Bar */}
       <motion.div
-        className="fixed top-0 left-0 right-0 h-1 bg-indigo-600 origin-left z-50"
+        className="fixed top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-600 to-indigo-600 origin-left z-50"
         style={{ scaleX }}
       />
 
-      <div className="max-w-6xl mx-auto px-6 py-12 md:py-24">
-        <div className="flex flex-col lg:flex-row gap-16">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-12 md:py-24 pt-28">
+        <div className="flex flex-col lg:flex-row gap-12 lg:gap-16">
           
           {/* Left Sidebar - Navigation */}
-          <aside className="lg:w-1/4 lg:sticky lg:top-12 h-fit">
+          <aside className="lg:w-1/4 lg:sticky lg:top-24 h-fit">
             <button 
               onClick={() => navigate(-1)}
-              className="flex items-center gap-2 text-slate-400 hover:text-indigo-600 transition-all mb-10 group font-medium cursor-pointer"
+              className="flex items-center gap-2 text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-all mb-8 group font-bold text-xs cursor-pointer"
             >
               <HiArrowLeft className="group-hover:-translate-x-1 transition-transform" />
-              Back to Dashboard
+              <span>Back to Previous Screen</span>
             </button>
 
-            <nav className="hidden lg:block space-y-2">
-              <p className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-4 px-4">Contents</p>
+            <nav className="hidden lg:block space-y-2 bg-white dark:bg-slate-900 p-4 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xs">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-3 px-2">Contents</p>
               {sections.map((section) => (
                 <a
                   key={section.id}
                   href={`#${section.id}`}
-                  className="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-500 hover:bg-white hover:text-indigo-600 hover:shadow-sm transition-all border border-transparent hover:border-slate-100"
+                  className="flex items-center gap-3 px-3 py-2.5 rounded-2xl text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-blue-600 dark:hover:text-blue-400 transition-all text-xs font-semibold"
                 >
-                  <span className="text-lg">{section.icon}</span>
-                  <span className="text-sm font-semibold">{section.title}</span>
+                  <span className="text-base text-blue-600 dark:text-blue-400">{section.icon}</span>
+                  <span>{section.title}</span>
                 </a>
               ))}
             </nav>
@@ -63,95 +68,92 @@ const PrivacyPolicy = () => {
             animate={{ opacity: 1, y: 0 }}
             className="lg:w-3/4"
           >
-            <div className="bg-white rounded-[3rem] p-10 md:p-16 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100/80">
-              <header className="mb-12 border-b border-slate-50 pb-12">
-                <div className="inline-flex items-center px-3 py-1 rounded-full bg-indigo-50 text-indigo-600 text-xs font-bold mb-4">
-                  LEGAL DOCUMENT
+            <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] p-8 sm:p-14 shadow-xl border border-slate-200/80 dark:border-slate-800 space-y-12">
+              <header className="border-b border-slate-100 dark:border-slate-800 pb-8">
+                <div className="inline-flex items-center px-3 py-1 rounded-full bg-blue-50 dark:bg-blue-950 text-blue-700 dark:text-blue-300 text-[10px] font-extrabold tracking-wider uppercase mb-4 border border-blue-200/60 dark:border-blue-800/60">
+                  GOVERNMENT DATA GOVERNANCE & PRIVACY
                 </div>
-                <h1 className="text-5xl font-black text-slate-900 tracking-tight mb-4">
-                  Privacy Policy
+                <h1 className="text-3xl sm:text-4xl font-black text-slate-900 dark:text-white tracking-tight mb-2">
+                  Official Data Privacy & Security Policy
                 </h1>
-                <p className="text-slate-400 font-medium tracking-wide">
-                  Effective Date: <span className="text-slate-600 font-semibold">October 24, 2023</span>
+                <p className="text-xs font-bold text-slate-400">
+                  National Statistical Systems Training Academy (NSSTA) • Ministry of Statistics and Programme Implementation (MoSPI)
                 </p>
               </header>
 
-              <div className="space-y-16 text-slate-600 text-lg leading-relaxed">
+              <div className="space-y-12 text-slate-600 dark:text-slate-300 text-sm sm:text-base leading-relaxed">
                 
-                <section id="collection" className="scroll-mt-12">
-                  <h2 className="text-2xl font-bold text-slate-800 mb-6 flex items-center gap-3">
-                    <span className="w-8 h-8 rounded-lg bg-indigo-600 text-white flex items-center justify-center text-sm italic">1</span>
-                    Information We Collect
+                <section id="collection" className="scroll-mt-24 space-y-4">
+                  <h2 className="text-xl font-black text-slate-900 dark:text-white flex items-center gap-3">
+                    <span className="w-7 h-7 rounded-xl bg-blue-600 text-white flex items-center justify-center text-xs font-bold">1</span>
+                    Official Information Collection
                   </h2>
-                  <p className="mb-4">
-                    At <span className="text-indigo-600 font-bold">InterviewIQ.AI</span>, we value your trust above all else. When you authenticate via Google, we access:
+                  <p>
+                    The <span className="text-blue-600 dark:text-blue-400 font-bold">MoSPI • NSSTA SkillIQ Platform</span> operates strictly in compliance with the Digital Personal Data Protection (DPDP) Act and Government of India statistical confidentiality standards. When you log in, we record:
                   </p>
-                  <div className="grid md:grid-cols-3 gap-4 mb-6">
-                    {["Full Name", "Email Address", "Profile Picture"].map((item) => (
-                      <div key={item} className="p-4 rounded-2xl bg-slate-50 border border-slate-100 text-sm font-bold text-slate-700 text-center">
+                  <div className="grid sm:grid-cols-3 gap-3">
+                    {["Official / Gov Email", "Cadre & Division Designation", "Competency Assessments"].map((item) => (
+                      <div key={item} className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/70 border border-slate-200/80 dark:border-slate-700 text-xs font-bold text-slate-800 dark:text-slate-200 text-center">
                         {item}
                       </div>
                     ))}
                   </div>
-                  <p className="bg-indigo-50/50 p-6 rounded-2xl border-l-4 border-indigo-500 italic">
-                    "We capture audio/video data and text transcripts during mock interviews solely to provide 
-                    qualitative AI feedback. These sessions are never used for marketing purposes."
-                  </p>
+                  <div className="p-5 rounded-2xl bg-blue-50/70 dark:bg-blue-950/40 border border-blue-200/80 dark:border-blue-800 text-xs text-blue-900 dark:text-blue-200 leading-relaxed">
+                    Voice audio responses recorded during AI Cadre Mock Interviews are processed securely in real-time solely to compute diagnostic scoring metrics and are never used for commercial or external marketing purposes.
+                  </div>
                 </section>
 
-                <section id="usage" className="scroll-mt-12">
-                  <h2 className="text-2xl font-bold text-slate-800 mb-6 flex items-center gap-3">
-                    <span className="w-8 h-8 rounded-lg bg-indigo-600 text-white flex items-center justify-center text-sm italic">2</span>
-                    How We Use Your Data
+                <section id="usage" className="scroll-mt-24 space-y-4">
+                  <h2 className="text-xl font-black text-slate-900 dark:text-white flex items-center gap-3">
+                    <span className="w-7 h-7 rounded-xl bg-blue-600 text-white flex items-center justify-center text-xs font-bold">2</span>
+                    Cadre Evaluation & Data Usage
                   </h2>
-                  <div className="space-y-4">
+                  <div className="space-y-3">
                     {[
-                      { title: "AI Analysis", desc: "Generating performance metrics and behavioral insights." },
-                      { title: "Session History", desc: "Archiving your past performances for progress tracking." },
-                      { title: "Billing", desc: "Managing credit limits and secure subscription status." }
+                      { title: "Competency Gap Diagnostic", desc: "Generating personalized 4-Domain strength radar and recommendation pathways." },
+                      { title: "iGOT Karmayogi Course Mapping", desc: "Curating tailored e-learning modules based on assessed weakness areas." },
+                      { title: "Official Dossier Generation", desc: "Compiling printable NSSTA-certified performance documentation in PDF." }
                     ].map((item, index) => (
-                      <div key={index} className="flex gap-4 group">
-                        <div className="mt-1.5 w-2 h-2 rounded-full bg-indigo-400 group-hover:scale-150 transition-transform shadow-sm shadow-indigo-200" />
+                      <div key={index} className="flex gap-3.5 p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-700/60">
+                        <div className="mt-1 w-2 h-2 rounded-full bg-blue-600 shrink-0" />
                         <div>
-                          <h4 className="font-bold text-slate-800">{item.title}</h4>
-                          <p className="text-base text-slate-500">{item.desc}</p>
+                          <h4 className="font-bold text-xs text-slate-900 dark:text-white">{item.title}</h4>
+                          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{item.desc}</p>
                         </div>
                       </div>
                     ))}
                   </div>
                 </section>
 
-                <section id="security" className="scroll-mt-12">
-                  <h2 className="text-2xl font-bold text-slate-800 mb-6 flex items-center gap-3">
-                    <span className="w-8 h-8 rounded-lg bg-indigo-600 text-white flex items-center justify-center text-sm italic">3</span>
-                    Data Security & Integrity
+                <section id="security" className="scroll-mt-24 space-y-4">
+                  <h2 className="text-xl font-black text-slate-900 dark:text-white flex items-center gap-3">
+                    <span className="w-7 h-7 rounded-xl bg-blue-600 text-white flex items-center justify-center text-xs font-bold">3</span>
+                    Data Protection & DPDP Compliance
                   </h2>
-                  <p className="mb-6">
-                    We implement <strong>AES-256 encryption</strong> at rest and TLS encryption in transit. 
-                    We do not sell your personal data. Interview data is shared with our AI processors 
-                    (OpenAI/Google Cloud) via encrypted API calls under Data Processing Addendums (DPA).
+                  <p>
+                    All survey data, mock evaluations, and learner metrics are protected with <strong>AES-256 encryption at rest</strong> and TLS 1.3 in transit.
                   </p>
-                  <div className="p-6 rounded-3xl bg-slate-900 text-slate-300 text-sm">
-                    <div className="flex items-center gap-2 mb-2 text-white font-bold">
-                      <HiOutlineLockClosed className="text-emerald-400" />
-                      Zero-Knowledge Architecture Goal
+                  <div className="p-5 rounded-2xl bg-slate-900 dark:bg-slate-950 text-slate-300 text-xs border border-slate-800 space-y-2">
+                    <div className="flex items-center gap-2 text-white font-bold text-sm">
+                      <HiOutlineLockClosed className="text-emerald-400" size={18} />
+                      <span>Zero Third-Party Data Monetization</span>
                     </div>
-                    We are constantly working toward minimizing data retention and improving our security protocols.
+                    <p className="text-slate-400">
+                      The platform strictly adheres to National Data Governance standards and Gov-CERT cybersecurity guidelines.
+                    </p>
                   </div>
                 </section>
 
               </div>
 
-              <footer className="mt-20 pt-10 border-t border-slate-100 text-center text-slate-400 text-sm">
-                Questions regarding this policy? Reach out at 
-                <a href="mailto:privacy@interviewiq.ai" className="ml-1 text-indigo-600 font-bold hover:underline">
-                  privacy@interviewiq.ai
-                </a>
+              <footer className="pt-8 border-t border-slate-100 dark:border-slate-800 text-center text-slate-400 text-xs">
+                Official Capacity Building Secretariat • National Statistical Systems Training Academy (NSSTA)
               </footer>
             </div>
           </motion.main>
         </div>
       </div>
+      <Footer />
     </div>
   );
 };

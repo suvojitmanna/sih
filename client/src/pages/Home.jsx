@@ -1,447 +1,893 @@
 import React, { useState } from "react";
-import Navbar from "../components/Navbar";
 import { useSelector } from "react-redux";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import CountUpModule from "react-countup";
-import { HiSparkles } from "react-icons/hi";
 import { useNavigate } from "react-router-dom";
-import AuthModel from "../components/AuthModel";
-import { BsClock, BsFileEarmarkText, BsMic, BsRobot } from "react-icons/bs";
-import ai_ans from "../assets/ai-ans.png";
-import config from "../assets/confi.png";
-import credit from "../assets/credit.png";
-import history from "../assets/history.png";
-import HR from "../assets/HR.png";
-import MM from "../assets/MM.png";
-import pdf from "../assets/pdf.png";
-import tech from "../assets/tech.png";
-import resume from "../assets/resume.png";
-import { BiBarChart } from "react-icons/bi";
+import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
+import AuthModel from "../components/AuthModel";
+import {
+  FaUserGraduate,
+  FaTasks,
+  FaFileAlt,
+  FaBrain,
+  FaCertificate,
+  FaFileUpload,
+  FaArrowRight,
+  FaAward,
+  FaShieldAlt,
+  FaUserTie,
+  FaLayerGroup,
+  FaCheckCircle,
+  FaFilePdf,
+  FaHistory,
+  FaChartLine,
+  FaLaptopCode,
+  FaQuestionCircle,
+  FaChevronDown,
+  FaPlay,
+  FaLock,
+  FaCloud,
+} from "react-icons/fa";
+import {
+  BsFillCameraVideoFill,
+  BsRobot,
+  BsBarChartLine,
+  BsShieldCheck,
+  BsLightningChargeFill,
+  BsCheck2Circle,
+} from "react-icons/bs";
+import { HiSparkles } from "react-icons/hi";
+import { generateCompetencyPDF } from "../utils/pdfGenerator";
+import toast from "react-hot-toast";
+import PageTransition from "../components/PageTransition";
+import { ScrollReveal, ScrollRevealStagger, ScrollRevealItem } from "../components/ScrollReveal";
 
 const CountUp = CountUpModule.default || CountUpModule;
-const Home = () => {
 
+const Home = () => {
   const navigate = useNavigate();
   const [showAuth, setShowAuth] = useState(false);
+  const [activeFaq, setActiveFaq] = useState(null);
   const { userData } = useSelector((state) => state.user);
+
+  const handleProtectedAction = (route) => {
+    if (userData) {
+      navigate(route);
+    } else {
+      setShowAuth(true);
+    }
+  };
+
+  const handleDownloadSampleDossier = () => {
+    toast.success("Generating Official MoSPI Competency Dossier (PDF)... 📄");
+    generateCompetencyPDF({
+      user: userData || { name: "Cadre Statistical Officer", jobRole: "Indian Statistical Service (ISS) Officer" },
+      profile: userData || { name: "Cadre Statistical Officer", jobRole: "Indian Statistical Service (ISS) Officer", department: "NSSO / MoSPI", overallCompetencyScore: 78, overallLevel: "Advanced" },
+      competencies: [
+        { competencyName: "Sampling Techniques & Estimation", domain: "Statistical", score: 85, level: "Advanced" },
+        { competencyName: "National Accounts (SNA 2008)", domain: "Statistical", score: 80, level: "Advanced" },
+        { competencyName: "Statistical Computing & Automated Survey Data Processing", domain: "Technical", score: 45, level: "Beginner" },
+        { competencyName: "Price Statistics (CPI/WPI)", domain: "Statistical", score: 88, level: "Expert" },
+        { competencyName: "Data Privacy & DPDP Compliance", domain: "Governance", score: 72, level: "Intermediate" },
+      ],
+      skillGaps: [
+        { competencyName: "Statistical Computing & Automated Survey Data Processing", priority: "High", currentLevel: "Beginner", requiredLevel: "Intermediate", recommendedAction: "Complete iGOT Automated Statistical Computing 20-Hour Module" },
+        { competencyName: "Microdata Analytics & Survey Weighting Methodologies", priority: "High", currentLevel: "Intermediate", requiredLevel: "Advanced", recommendedAction: "Attend NSSTA Residential Sampling Workshop" },
+      ],
+      learningPath: [
+        { step: 1, title: "Automated Statistical Computing & Microdata Processing in Government", provider: "iGOT Karmayogi", skillAddressed: "Statistical Computing", duration: "20 Hours", priority: "High" },
+        { step: 2, title: "Microdata Analytics & Survey Weighting Methodologies", provider: "NSSTA TPAC In-Service", skillAddressed: "Microdata Analytics", duration: "16 Hours", priority: "High" },
+        { step: 3, title: "Periodic Labour Force Survey (PLFS) Methodology", provider: "iGOT Karmayogi (NSSO)", skillAddressed: "Labour Statistics", duration: "10 Hours", priority: "Medium" },
+      ],
+    });
+  };
+
+  const faqList = [
+    {
+      q: "How does the AI Skill Intelligence Platform identify competency gaps?",
+      a: "The SankhyaIQ™ AI Neural Engine benchmarks the officer's verified profile (designation, cadre, previous training, and multi-domain self-ratings) against official MoSPI cadre benchmarks (ISS, SSS, FOD, DES). Any score falling below the cadre standard is classified into High, Medium, or Foundational priority gaps with actionable remediation targets.",
+    },
+    {
+      q: "How are iGOT Karmayogi and NSSTA residential modules integrated into the learning pathway?",
+      a: "The platform dynamically maps each evaluated deficit to verified iGOT Karmayogi digital courses and NSSTA TPAC in-service residential programmes. The pathway is ordered sequentially from foundational concepts to advanced practical workshops.",
+    },
+    {
+      q: "How does the AI Cadre Mock Interview Bot evaluate oral viva voce answers?",
+      a: "Using real-time speech recognition (Speech-to-Text) and Google Gemini AI, the interview studio analyzes spoken answers for conceptual correctness, communication clarity, and confidence. It provides question-by-question scoring and generates an official MoSPI PDF Scorecard.",
+    },
+    {
+      q: "Can trainers author objective MCQs from custom survey circulars?",
+      a: "Yes. In the MCQ Question Studio, trainers can upload any survey manual, circular, or methodology document (PDF/TXT). The AI extracts key principles and automatically generates 4-option MCQs with comprehensive pedagogical explanations.",
+    },
+    {
+      q: "How are practical case studies and assignments evaluated?",
+      a: "Officers submit written methodology briefs and solutions to real-world scenarios (e.g. NSSO sampling design, quarterly SNA GDP revisions). The AI evaluates submissions against a 4-criterion 100-mark rubric and awards immediate competency score boosts.",
+    },
+  ];
+
   return (
-    <div className="min-h-screen bg-[#f3f3f3] flex flex-col">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 flex flex-col transition-colors">
       <Navbar />
-      <div className="max-w-6xl w-full mx-auto">
-        <div className="flex-1 px-4 sm:px-6 lg:px-8 py-10 sm:py-16 lg:py-20">
-          <div className="relative overflow-hidden py-16 sm:py-20 lg:py-24">
-            {/* Background Effects */}
-            <div className="absolute inset-0 -z-10 bg-gradient-to-b from-white via-green-50/40 to-white" />
 
-            <div className="absolute top-10 sm:top-20 left-1/2 -translate-x-1/2 w-[280px] sm:w-[400px] lg:w-[500px] h-[280px] sm:h-[400px] lg:h-[500px] bg-green-200/20 blur-3xl rounded-full" />
+      <PageTransition>
+        <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-20 space-y-24">
+        {/* ======================================================== */}
+        {/* 1. SAAS HERO SECTION                                     */}
+        {/* ======================================================== */}
+        <section className="relative overflow-hidden pt-8 pb-14 text-center space-y-8">
+          {/* Background Ambient Glows */}
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] sm:w-[850px] h-[300px] sm:h-[500px] bg-gradient-to-r from-blue-500/15 via-indigo-500/10 to-teal-500/15 blur-3xl rounded-full pointer-events-none -z-10" />
 
-            {/* Top Badge */}
-            <div className="flex justify-center mb-6 sm:mb-8 px-4">
-              <motion.div
-                initial={{ opacity: 0, y: -15 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5 }}
-                className="group"
-              >
-                <div className="bg-white/70 backdrop-blur-xl border border-white/50 px-4 sm:px-5 py-2 rounded-full shadow-[0_8px_40px_rgba(0,0,0,0.08)] flex items-center gap-2 hover:shadow-[0_12px_50px_rgba(34,197,94,0.15)] transition-all duration-300">
-                  <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center shadow-md">
-                    <HiSparkles size={14} className="text-white" />
-                  </div>
-
-                  <span className="text-xs sm:text-sm font-medium tracking-wide text-gray-700 text-center">
-                    AI Powered Smart Interview Platform
-                  </span>
-                </div>
-              </motion.div>
-            </div>
-
-            {/* Hero Section */}
-            <div className="text-center max-w-6xl mx-auto px-4 sm:px-6">
-              <motion.h1
-                initial={{ opacity: 0, y: 40 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.7 }}
-                className="text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-bold leading-[1.15] tracking-tight text-gray-900"
-              >
-                Practice interviews with <br />
-                <span className="relative inline-flex items-center mt-3 sm:mt-4">
-                  <span className="absolute inset-0 bg-gradient-to-r from-green-400/30 to-emerald-500/30 blur-2xl rounded-full" />
-
-                  <span className="relative bg-gradient-to-r from-green-500 to-emerald-600 bg-clip-text text-transparent">
-                    AI Intelligence
-                  </span>
-                </span>
-              </motion.h1>
-
-              <motion.p
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.9 }}
-                className="mt-6 sm:mt-8 text-base sm:text-lg md:text-xl text-gray-500 leading-relaxed max-w-3xl mx-auto px-2"
-              >
-                Role-based mock interviews with intelligent follow-ups, adaptive
-                difficulty, voice interaction and real-time AI performance
-                evaluation.
-              </motion.p>
-
-              {/* CTA Buttons */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2, duration: 0.6 }}
-                className="flex flex-col sm:flex-row flex-wrap justify-center items-center gap-4 sm:gap-5 mt-10 sm:mt-14"
-              >
-                {/* Primary Button */}
-                <motion.button
-                  onClick={() => {
-                    if (!userData) {
-                      setShowAuth(true);
-                      return;
-                    }
-                    navigate("/interview");
-                  }}
-                  whileHover={{
-                    y: -4,
-                    scale: 1.02,
-                  }}
-                  whileTap={{ scale: 0.97 }}
-                  className="relative overflow-hidden bg-black text-white w-full sm:w-auto px-8 sm:px-10 py-3.5 sm:py-4 rounded-2xl font-medium shadow-[0_15px_50px_rgba(0,0,0,0.2)] hover:shadow-[0_20px_60px_rgba(0,0,0,0.28)] transition-all duration-300 cursor-pointer"
-                >
-                  <span className="relative z-10 flex items-center justify-center gap-2">
-                    Start Interview
-                  </span>
-
-                  <div className="absolute inset-0 bg-gradient-to-r from-gray-900 to-black opacity-0 hover:opacity-100 transition-opacity duration-300" />
-                </motion.button>
-
-                {/* Secondary Button */}
-                <motion.button
-                  onClick={() => {
-                    if (!userData) {
-                      setShowAuth(true);
-                      return;
-                    }
-                    navigate("/history");
-                  }}
-                  whileHover={{
-                    y: -4,
-                    scale: 1.02,
-                  }}
-                  whileTap={{ scale: 0.97 }}
-                  className="bg-white/80 backdrop-blur-xl border border-gray-200 text-gray-800 w-full sm:w-auto px-8 sm:px-10 py-3.5 sm:py-4 rounded-2xl font-medium shadow-[0_10px_40px_rgba(0,0,0,0.08)] hover:shadow-[0_15px_50px_rgba(0,0,0,0.12)] hover:border-gray-300 transition-all duration-300 cursor-pointer"
-                >
-                  View History
-                </motion.button>
-              </motion.div>
-
-              {/* Stats */}
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{
-                  delay: 0.4,
-                  duration: 1.5,
-                  ease: "easeOut",
-                }}
-                className="grid grid-cols-1 sm:grid-cols-3 gap-8 sm:gap-10 mt-14 sm:mt-16 text-sm text-gray-500"
-              >
-                <div>
-                  <span className="text-2xl sm:text-3xl font-bold text-gray-900 flex items-center justify-center">
-                    <CountUp end={100} duration={4} suffix="K+" />
-                  </span>
-                  <p className="mt-1 text-gray-600">Interviews Completed</p>
-                </div>
-
-                <div>
-                  <span className="text-2xl sm:text-3xl font-bold text-gray-900 flex items-center justify-center">
-                    <CountUp end={95} duration={4} suffix="%" />
-                  </span>
-                  <p className="mt-1 text-gray-600">Accuracy Feedback</p>
-                </div>
-
-                <div className="flex flex-col items-center text-center">
-                  <span className="text-2xl sm:text-3xl font-bold text-gray-900 flex items-center justify-center">
-                    <CountUp end={24} duration={4} suffix="/7" />
-                  </span>
-                  <p className="mt-1 text-gray-600">AI Availability</p>
-                </div>
-              </motion.div>
-            </div>
+          {/* Announcement Top Ribbon */}
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-md shadow-slate-200/50 dark:shadow-none cursor-pointer hover:border-blue-300 transition-all">
+            <span className="flex h-2 w-2 relative">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+            </span>
+            <span className="text-[11px] sm:text-xs font-bold text-slate-700 dark:text-slate-300">
+              National Statistical Capacity Building Mandate • MoSPI & NSSTA
+            </span>
           </div>
-          <div className="flex flex-col md:flex-row justify-center items-center gap-10 mb-15">
-            {[
-              {
-                icon: <BsRobot size={24} />,
-                step: "STEP-1",
-                title: "Role & Experience Selection",
-                desc: "AI adjust difficulty based on selected job role.",
-              },
-              {
-                icon: <BsMic size={24} />,
-                step: "STEP-2",
-                title: "Smart Voice Interview",
-                desc: "Dynamic follow-up questions based on your answers.",
-              },
-              {
-                icon: <BsClock size={24} />,
-                step: "STEP-3",
-                title: "Timer Based simulation",
-                desc: "Real interview pressure with time tracking.",
-              },
-            ].map((item, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 60 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6 + index * 0.2 }}
-                whileHover={{ duration: 0.8, scale: 1.06 }}
-                className={`relative bg-white rounded-3xl border-2 border-green-100 hover:border-green-600 p-10 w-80 max-w-[90%] shadow-md hover:shadow-2xl transition-all duration-300
-            ${index === 0 ? "rotate-[-4deg]" : ""}
-            ${index === 1 ? "rotate-[-3deg] md:mt-6 shadow-xl" : ""}
-            ${index === 2 ? "rotate-[-4deg]" : ""}
-            `}
-              >
-                <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-white border-2 border-green-500 text-green-600 w-16 h-16 rounded-2xl flex items-center justify-center shadow-lg ">
-                  {item.icon}
-                </div>
-                <div className="pt-10 text-center">
-                  <div className="text-xs text-green-600 font-semibold mb-2 tracking-wider">
-                    {item.step}
-                  </div>
-                  <h3 className="font-semibold mb-3 text-lg ">{item.title}</h3>
-                  <p className="text-sm text-gray-500 leading-relaxed">
-                    {item.desc}{" "}
-                  </p>
-                </div>
-              </motion.div>
-            ))}
+
+          {/* Main SaaS Headline */}
+          <div className="max-w-4xl mx-auto space-y-5">
+            <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight text-slate-900 dark:text-white leading-[1.12]">
+              The AI Skill Intelligence &{" "}
+              <span className="bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-600 bg-clip-text text-transparent">
+                Capacity Building OS
+              </span>{" "}
+              for Official Statistics
+            </h1>
+
+            <p className="text-sm sm:text-base lg:text-lg text-slate-600 dark:text-slate-400 max-w-3xl mx-auto leading-relaxed">
+              Empowering India's Official Statistical System with multi-domain competency mapping, automated skill-gap analysis, curated <strong>iGOT Karmayogi</strong> and <strong>NSSTA residential learning pathways</strong>, real-world case studies, and live mock viva voce boards.
+            </p>
           </div>
-          <div className="relative mb-15">
-            {/* Section Heading */}
-            <motion.div
-              initial={{ opacity: 0, y: 40 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{
-                duration: 0.8,
-                ease: "easeOut",
-              }}
-              className="text-center mb-20"
+
+          {/* Primary Action Buttons */}
+          <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4 pt-3">
+            <button
+              onClick={() => handleProtectedAction("/learning-path")}
+              className="px-7 py-3.5 rounded-2xl bg-gradient-to-r from-blue-700 via-indigo-700 to-blue-800 hover:from-blue-800 hover:to-indigo-800 text-white font-bold text-xs sm:text-sm shadow-xl shadow-blue-500/25 hover:shadow-blue-500/35 transition-all flex items-center gap-2.5 cursor-pointer active:scale-95"
             >
-              <h2 className="text-5xl md:text-6xl font-bold tracking-tight text-gray-900">
-                Advanced AI{" "}
-                <span className="bg-gradient-to-r from-green-500 to-emerald-600 bg-clip-text text-transparent">
-                  Capabilities
-                </span>
-              </h2>
+              <FaCertificate size={15} />
+              <span>Start Learning (iGOT Pathways)</span>
+              <FaArrowRight size={11} />
+            </button>
 
-              <p className="text-gray-500 mt-5 text-lg max-w-2xl mx-auto leading-relaxed">
-                Experience next-generation AI interview simulations powered by
-                intelligent analysis, adaptive questioning, and real-time
-                feedback.
-              </p>
-            </motion.div>
-
-            {/* Cards */}
-            <div className="grid md:grid-cols-2 gap-8">
-              {[
-                {
-                  image: ai_ans,
-                  icon: <BiBarChart size={20} />,
-                  title: "AI Answer Evaluation",
-                  desc: "Advanced AI analyzes communication clarity, technical depth, confidence, and delivery in real time.",
-                },
-                {
-                  image: resume,
-                  icon: <BsFileEarmarkText size={20} />,
-                  title: "Resume Based Interview",
-                  desc: "Generate personalized interview questions based on your resume, projects, and experience.",
-                },
-                {
-                  image: pdf,
-                  icon: <BsFileEarmarkText size={20} />,
-                  title: "Download PDF Reports",
-                  desc: "Receive detailed reports with strengths, weaknesses, AI insights, and improvement strategies.",
-                },
-                {
-                  image: history,
-                  icon: <BiBarChart size={20} />,
-                  title: "History & Analytics",
-                  desc: "Track interview growth with performance analytics, scoring trends, and topic-level insights.",
-                },
-              ].map((item, index) => (
-                <motion.div
-                  key={index}
-                  initial={{ opacity: 0, y: 40 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{
-                    duration: 0.7,
-                    delay: index * 0.2,
-                  }}
-                  whileHover={{
-                    y: -10,
-                  }}
-                  className="group relative overflow-hidden  rounded-[32px] border border-white/40  bg-white/70 backdrop-blur-xl shadow-[0_10px_40px_rgba(0,0,0,0.06)] hover:shadow-[0_20px_60px_rgba(34,197,94,0.16)] transition-all duration-500 "
-                >
-                  {/* Glow Background */}
-                  <div className="absolute inset-0 bg-gradient-to-br from-green-50 via-transparent to-emerald-100 opacity-0 group-hover:opacity-100 transition duration-500" />
-
-                  <div className="relative z-10 flex flex-col lg:flex-row items-center">
-                    {/* Image Section */}
-                    <div className="w-full lg:w-1/2 p-6">
-                      <div className=" relative overflow-hidden rounded-3xl bg-gradient-to-br from-green-100  to-emerald-50 p-4 ">
-                        <img
-                          src={item.image}
-                          alt={item.title}
-                          className=" w-full h-auto object-contain max-h-72 transition-transform duration-700 group-hover:scale-105
-                "
-                        />
-
-                        {/* Decorative Blur */}
-                        <div className="absolute -bottom-10 -right-10 w-32 h-32 bg-green-300/30 blur-3xl rounded-full" />
-                      </div>
-                    </div>
-
-                    {/* Content Section */}
-                    <div className="w-full lg:w-1/2 p-8 lg:pr-10">
-                      {/* Icon */}
-                      <div className=" mb-6 w-14 h-14 rounded-2xl bg-gradient-to-br from-green-500 to-emerald-600 text-white flex items-center justify-center shadow-[0_10px_25px_rgba(34,197,94,0.35)] ">
-                        {item.icon}
-                      </div>
-
-                      {/* Title */}
-                      <h3 className="text-2xl font-bold text-gray-900 mb-4 leading-snug">
-                        {item.title}
-                      </h3>
-
-                      {/* Description */}
-                      <p className="text-gray-600 leading-relaxed text-[15px]">
-                        {item.desc}
-                      </p>
-
-                      {/* Small Accent Line */}
-                      <div className="mt-6 w-14 h-1 rounded-full bg-gradient-to-r from-green-500 to-emerald-500" />
-                    </div>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-          </div>
-          <div className="relative mb-15">
-            {/* Heading */}
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.9 }}
-              className="text-center mb-16"
+            <button
+              onClick={() => handleProtectedAction("/ai-models")}
+              className="px-6 py-3.5 rounded-2xl bg-white dark:bg-slate-900 hover:bg-slate-50 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-800 font-bold text-xs sm:text-sm shadow-md transition-all flex items-center gap-2 cursor-pointer"
             >
-              <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-gray-900">
-                Multiple Interview{" "}
-                <span className="bg-gradient-to-r from-green-500 to-emerald-600 bg-clip-text text-transparent">
-                  Models
-                </span>
-              </h2>
+              <HiSparkles size={15} className="text-amber-500" />
+              <span>Explore AI Models Hub</span>
+            </button>
 
-              <p className="mt-4 text-gray-500 text-base max-w-2xl mx-auto leading-relaxed">
-                Simulate different interview environments with AI-powered
-                adaptive questioning and personalized evaluations.
+            {!userData ? (
+              <button
+                onClick={() => navigate("/auth")}
+                className="px-6 py-3.5 rounded-2xl bg-slate-900 hover:bg-slate-800 text-white dark:bg-slate-800 dark:hover:bg-slate-700 font-bold text-xs sm:text-sm shadow-md transition-all flex items-center gap-2 cursor-pointer"
+              >
+                <FaUserGraduate size={14} className="text-emerald-400" />
+                <span>Officer Sign Up / Sign In</span>
+              </button>
+            ) : (
+              <button
+                onClick={() => navigate("/dashboard")}
+                className="px-6 py-3.5 rounded-2xl bg-slate-900 hover:bg-slate-800 text-white dark:bg-slate-800 dark:hover:bg-slate-700 font-bold text-xs sm:text-sm shadow-md transition-all flex items-center gap-2 cursor-pointer"
+              >
+                <BsBarChartLine size={13} className="text-emerald-400" />
+                <span>Open Officer Dashboard</span>
+              </button>
+            )}
+          </div>
+
+          {/* Quick Pillar Ribbon */}
+          <div className="pt-8 flex flex-wrap items-center justify-center gap-6 text-xs font-semibold text-slate-500 dark:text-slate-400">
+            <span className="flex items-center gap-1.5">
+              <FaCheckCircle className="text-emerald-500" size={13} />
+              <span>4-Domain Competency Framework</span>
+            </span>
+            <span className="flex items-center gap-1.5">
+              <FaCheckCircle className="text-emerald-500" size={13} />
+              <span>iGOT Karmayogi API Integration</span>
+            </span>
+            <span className="flex items-center gap-1.5">
+              <FaCheckCircle className="text-emerald-500" size={13} />
+              <span>NSSTA In-Service Residential Programmes</span>
+            </span>
+            <span className="flex items-center gap-1.5">
+              <FaCheckCircle className="text-emerald-500" size={13} />
+              <span>Google Gemini AI Engine</span>
+            </span>
+          </div>
+        </section>
+
+        {/* ======================================================== */}
+        {/* 2. STATISTICAL METRICS STRIP                            */}
+        {/* ======================================================== */}
+        <ScrollReveal direction="up" delay={0.05}>
+          <section className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-5 text-center shadow-xs">
+              <div className="text-2xl sm:text-3xl font-black text-blue-700 dark:text-blue-400">
+                <CountUp end={12500} duration={2} separator="," />+
+              </div>
+              <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block mt-1">
+                Cadre Officers Mapped
+              </span>
+            </div>
+
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-5 text-center shadow-xs">
+              <div className="text-2xl sm:text-3xl font-black text-indigo-600 dark:text-indigo-400">
+                <CountUp end={450} duration={2} />+
+              </div>
+              <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block mt-1">
+                Curated iGOT & NSSTA Modules
+              </span>
+            </div>
+
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-5 text-center shadow-xs">
+              <div className="text-2xl sm:text-3xl font-black text-emerald-600 dark:text-emerald-400">
+                <CountUp end={96} duration={2} />%
+              </div>
+              <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block mt-1">
+                Skill-Gap Assessment Accuracy
+              </span>
+            </div>
+
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-5 text-center shadow-xs">
+              <div className="text-2xl sm:text-3xl font-black text-amber-500">
+                100% Real-Time
+              </div>
+              <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block mt-1">
+                SankhyaIQ AI Neural Grading
+              </span>
+            </div>
+          </section>
+        </ScrollReveal>
+
+        {/* ======================================================== */}
+        {/* 3. WHOLE WEBSITE OVERVIEW & 6-PHASE SYSTEM ARCHITECTURE  */}
+        {/* ======================================================== */}
+        <ScrollReveal direction="up" delay={0.1}>
+          <section className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-10 shadow-xs space-y-8">
+          <div className="space-y-2">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 dark:bg-blue-950 text-blue-700 dark:text-blue-300 text-xs font-bold uppercase tracking-wider">
+              <BsShieldCheck size={13} />
+              <span>Whole Website & Platform Architecture Overview</span>
+            </div>
+            <h2 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white">
+              End-to-End Official Statistics Capacity Building Lifecycle
+            </h2>
+            <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed max-w-4xl">
+              The platform bridges the gap between learner profiles, cadre standards, and national learning repositories through a structured 6-phase intelligent lifecycle.
+            </p>
+          </div>
+
+          {/* 6 Lifecycle Steps Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            <div className="p-5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/70 dark:border-slate-700 space-y-2.5">
+              <div className="w-8 h-8 rounded-xl bg-blue-600 text-white flex items-center justify-center font-black text-xs shadow-md">
+                01
+              </div>
+              <h3 className="font-bold text-sm text-slate-900 dark:text-white">
+                Officer Profiling & Cadre Benchmarking
+              </h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+                Captures designation, department, work tenure, previous trainings, and cadre role (ISS, SSS, FOD, DES).
               </p>
-            </motion.div>
+            </div>
 
-            {/* Cards */}
-            <div className="grid md:grid-cols-2 gap-6">
-              {[
-                {
-                  image: HR,
-                  title: "HR Interview Mode",
-                  desc: "Behavioral and communication-focused interview simulations.",
-                },
-                {
-                  image: tech,
-                  title: "Technical Interview Mode",
-                  desc: "Role-specific technical interviews with adaptive AI questions.",
-                },
-                {
-                  image: config,
-                  title: "Confidence Detection",
-                  desc: "Analyze speaking confidence, tone, and hesitation patterns.",
-                },
-                {
-                  image: credit,
-                  title: "Flexible Credit System",
-                  desc: "Unlock premium AI interview sessions and advanced analytics.",
-                },
-              ].map((item, index) => (
-                <motion.div
-                  key={index}
-                  initial={{ opacity: 0, y: 40 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{
-                    duration: 0.8,
-                    delay: index * 0.18,
-                    ease: "easeOut",
-                  }}
-                  whileHover={{
-                    y: -8,
-                    scale: 1.01,
-                  }}
-                  className="group relative overflow-hidden rounded-[24px] border border-white/40 bg-white/70 backdrop-blur-xl shadow-[0_8px_30px_rgba(0,0,0,0.05)] hover:shadow-[0_16px_40px_rgba(34,197,94,0.12)] transition-all duration-500"
-                >
-                  {/* Hover Glow */}
-                  <div className="absolute inset-0 bg-gradient-to-br from-green-50 via-transparent to-emerald-100 opacity-0 group-hover:opacity-100 transition duration-500" />
+            <div className="p-5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/70 dark:border-slate-700 space-y-2.5">
+              <div className="w-8 h-8 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-black text-xs shadow-md">
+                02
+              </div>
+              <h3 className="font-bold text-sm text-slate-900 dark:text-white">
+                Multi-Domain Competency Assessment
+              </h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+                Evaluates competencies across 4 official domains (Statistical, Technical, Governance, Managerial) using self-ratings & AI inference.
+              </p>
+            </div>
 
-                  <div className="relative z-10 flex flex-col lg:flex-row items-center gap-3 p-4 lg:p-5">
-                    {/* Image Side */}
-                    <div className="w-full lg:w-1/2">
-                      <div className=" relative overflow-hidden rounded-2xl bg-gradient-to-br from-green-100  to-emerald-50 p-3 ">
-                        <img
-                          src={item.image}
-                          alt={item.title}
-                          className=" w-full h-auto object-contain max-h-44 transition-transform duration-700 group-hover:scale-105 "
-                        />
+            <div className="p-5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/70 dark:border-slate-700 space-y-2.5">
+              <div className="w-8 h-8 rounded-xl bg-rose-600 text-white flex items-center justify-center font-black text-xs shadow-md">
+                03
+              </div>
+              <h3 className="font-bold text-sm text-slate-900 dark:text-white">
+                Automated Skill-Gap Diagnostics
+              </h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+                Plots performance on interactive bar charts against the 75% benchmark, highlighting critical weaknesses in red (&lt;50%).
+              </p>
+            </div>
 
-                        {/* Blur Decoration */}
-                        <div className="absolute -bottom-10 -right-10 w-24 h-24 bg-green-300/20 blur-3xl rounded-full" />
-                      </div>
-                    </div>
+            <div className="p-5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/70 dark:border-slate-700 space-y-2.5">
+              <div className="w-8 h-8 rounded-xl bg-amber-600 text-white flex items-center justify-center font-black text-xs shadow-md">
+                04
+              </div>
+              <h3 className="font-bold text-sm text-slate-900 dark:text-white">
+                Weakness-Driven Pathway Synthesis
+              </h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+                Maps each deficit directly to specific iGOT Karmayogi digital courses & NSSTA residential in-service workshops.
+              </p>
+            </div>
 
-                    {/* Content Side */}
-                    <div className="w-full lg:w-1/2">
-                      {/* Mini Badge */}
-                      <div className="inline-flex items-center px-3 py-1 rounded-full bg-green-100 text-green-700 text-[10px] font-semibold tracking-wider mb-4">
-                        AI POWERED
-                      </div>
+            <div className="p-5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/70 dark:border-slate-700 space-y-2.5">
+              <div className="w-8 h-8 rounded-xl bg-emerald-600 text-white flex items-center justify-center font-black text-xs shadow-md">
+                05
+              </div>
+              <h3 className="font-bold text-sm text-slate-900 dark:text-white">
+                Continuous AI Assessment & Viva Voce
+              </h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+                Reinforces capacity with diagnostic quizzes, case study submissions, document-to-MCQ generation, and mock board interviews.
+              </p>
+            </div>
 
-                      {/* Title */}
-                      <h3 className="text-xl font-bold text-gray-900 mb-3 leading-snug">
-                        {item.title}
-                      </h3>
-
-                      {/* Description */}
-                      <p className="text-gray-600 leading-relaxed text-sm">
-                        {item.desc}
-                      </p>
-
-                      {/* Bottom Accent */}
-                      <div className="mt-5 w-14 h-1 rounded-full bg-gradient-to-r from-green-500 to-emerald-500" />
-                    </div>
-                  </div>
-                </motion.div>
-              ))}
+            <div className="p-5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/70 dark:border-slate-700 space-y-2.5">
+              <div className="w-8 h-8 rounded-xl bg-cyan-600 text-white flex items-center justify-center font-black text-xs shadow-md">
+                06
+              </div>
+              <h3 className="font-bold text-sm text-slate-900 dark:text-white">
+                Official PDF Dossier & Cadre Records
+              </h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+                Generates verifiable MoSPI • NSSTA Performance Dossiers with national seals for official cadre career progression.
+              </p>
             </div>
           </div>
-        </div>
-      </div>
+        </section>
+        </ScrollReveal>
+
+        {/* ======================================================== */}
+        {/* 4. DETAILED 4-DOMAIN COMPETENCY FRAMEWORK               */}
+        {/* ======================================================== */}
+        <ScrollReveal direction="up" delay={0.1}>
+          <section className="space-y-6">
+            <div className="text-center max-w-3xl mx-auto space-y-2">
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 dark:bg-blue-950 text-blue-700 dark:text-blue-300 text-xs font-bold uppercase tracking-wider">
+                <FaLayerGroup size={12} />
+                <span>Official Competency Framework (MoSPI / NSSTA)</span>
+              </div>
+              <h2 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white">
+                The 4 Core Domains of Official Statistics
+              </h2>
+              <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
+                Meticulously structured across statistical methods, computing pipelines, digital governance, and leadership.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Domain 1 */}
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-7 shadow-xs space-y-4">
+              <div className="flex items-center gap-3">
+                <div className="p-3 rounded-2xl bg-blue-50 dark:bg-blue-950/60 text-blue-600">
+                  <FaBrain size={22} />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-slate-900 dark:text-white">
+                    1. Statistical Competencies
+                  </h3>
+                  <span className="text-[11px] text-blue-600 dark:text-blue-400 font-semibold">
+                    Core Methodologies & National Indicator Governance
+                  </span>
+                </div>
+              </div>
+
+              <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+                Foundational concepts required for reliable national data collection, indicator compilation, and macroeconomic aggregation.
+              </p>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs font-medium text-slate-700 dark:text-slate-300 pt-2 border-t border-slate-100 dark:border-slate-800">
+                <div className="flex items-center gap-2">
+                  <BsCheck2Circle className="text-emerald-500 shrink-0" />
+                  <span>Survey Design & Sampling Frames</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <BsCheck2Circle className="text-emerald-500 shrink-0" />
+                  <span>National Accounts (SNA 2008) & GVA</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <BsCheck2Circle className="text-emerald-500 shrink-0" />
+                  <span>Price Statistics (CPI, WPI, Inflation)</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <BsCheck2Circle className="text-emerald-500 shrink-0" />
+                  <span>Labour Statistics (PLFS Rounds)</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <BsCheck2Circle className="text-emerald-500 shrink-0" />
+                  <span>Industrial Statistics (ASI, IIP)</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <BsCheck2Circle className="text-emerald-500 shrink-0" />
+                  <span>Data Quality Assurance & UN-NQAF</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Domain 2 */}
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-7 shadow-xs space-y-4">
+              <div className="flex items-center gap-3">
+                <div className="p-3 rounded-2xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600">
+                  <FaLaptopCode size={22} />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-slate-900 dark:text-white">
+                    2. Technical & Computational Competencies
+                  </h3>
+                  <span className="text-[11px] text-indigo-600 dark:text-indigo-400 font-semibold">
+                    Automated Data Pipelines, Spatial & Predictive Analytics
+                  </span>
+                </div>
+              </div>
+
+              <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+                Modern analytical methods for processing massive microdata sets, registry linkage, automated validation, and spatial mapping.
+              </p>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs font-medium text-slate-700 dark:text-slate-300 pt-2 border-t border-slate-100 dark:border-slate-800">
+                <div className="flex items-center gap-2">
+                  <BsCheck2Circle className="text-emerald-500 shrink-0" />
+                  <span>Statistical Computing & Automation</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <BsCheck2Circle className="text-emerald-500 shrink-0" />
+                  <span>Microdata Analytics & Design Weights</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <BsCheck2Circle className="text-emerald-500 shrink-0" />
+                  <span>Database Systems & Registry Linkage</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <BsCheck2Circle className="text-emerald-500 shrink-0" />
+                  <span>Econometric Time-Series Modeling</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <BsCheck2Circle className="text-emerald-500 shrink-0" />
+                  <span>GIS & Geospatial Statistical Mapping</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <BsCheck2Circle className="text-emerald-500 shrink-0" />
+                  <span>Machine Learning & Predictive Analytics</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Domain 3 */}
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-7 shadow-xs space-y-4">
+              <div className="flex items-center gap-3">
+                <div className="p-3 rounded-2xl bg-teal-50 dark:bg-teal-950/60 text-teal-600">
+                  <FaShieldAlt size={22} />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-slate-900 dark:text-white">
+                    3. Digital Governance & Security
+                  </h3>
+                  <span className="text-[11px] text-teal-600 dark:text-teal-400 font-semibold">
+                    DPDP Act Compliance, Data Protection & Cloud Infrastructure
+                  </span>
+                </div>
+              </div>
+
+              <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+                Protecting public data assets, ensuring statutory anonymization compliance, and leveraging sovereign cloud ecosystems.
+              </p>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs font-medium text-slate-700 dark:text-slate-300 pt-2 border-t border-slate-100 dark:border-slate-800">
+                <div className="flex items-center gap-2">
+                  <BsCheck2Circle className="text-emerald-500 shrink-0" />
+                  <span>DPDP Act 2023 & Anonymization Audit</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <BsCheck2Circle className="text-emerald-500 shrink-0" />
+                  <span>Statistical Disclosure Control (k-Anonymity)</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <BsCheck2Circle className="text-emerald-500 shrink-0" />
+                  <span>Cybersecurity & CERT-In Guidelines</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <BsCheck2Circle className="text-emerald-500 shrink-0" />
+                  <span>Digital Public Infrastructure (DPI)</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <BsCheck2Circle className="text-emerald-500 shrink-0" />
+                  <span>MeghRaj Government Cloud Architecture</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <BsCheck2Circle className="text-emerald-500 shrink-0" />
+                  <span>e-Sign & Digital Signature Security</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Domain 4 */}
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-7 shadow-xs space-y-4">
+              <div className="flex items-center gap-3">
+                <div className="p-3 rounded-2xl bg-amber-50 dark:bg-amber-950/60 text-amber-600">
+                  <FaUserTie size={22} />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-slate-900 dark:text-white">
+                    4. Behavioural & Managerial Competencies
+                  </h3>
+                  <span className="text-[11px] text-amber-600 dark:text-amber-400 font-semibold">
+                    Cadre Leadership, Policy Translation & Project Oversight
+                  </span>
+                </div>
+              </div>
+
+              <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+                Strategic statistical administration, managing complex nation-wide surveys, and communicating data insights to top policy makers.
+              </p>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs font-medium text-slate-700 dark:text-slate-300 pt-2 border-t border-slate-100 dark:border-slate-800">
+                <div className="flex items-center gap-2">
+                  <BsCheck2Circle className="text-emerald-500 shrink-0" />
+                  <span>Evidence-Based Policy & Decision Making</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <BsCheck2Circle className="text-emerald-500 shrink-0" />
+                  <span>Large-Scale Survey Project Management</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <BsCheck2Circle className="text-emerald-500 shrink-0" />
+                  <span>Statistical Leadership & Team Governance</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <BsCheck2Circle className="text-emerald-500 shrink-0" />
+                  <span>Strategic Dissemination & Communication</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <BsCheck2Circle className="text-emerald-500 shrink-0" />
+                  <span>Digital Transformation & Change Management</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <BsCheck2Circle className="text-emerald-500 shrink-0" />
+                  <span>Inter-Agency & State DES Coordination</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+        </ScrollReveal>
+
+        {/* ======================================================== */}
+        {/* 5. THE 5 CORE AI ASSESSMENT & LEARNING PILLARS          */}
+        {/* ======================================================== */}
+        <ScrollReveal direction="up" delay={0.1}>
+          <section className="space-y-6">
+            <div className="text-center max-w-3xl mx-auto space-y-2">
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 dark:bg-blue-950 text-blue-700 dark:text-blue-300 text-xs font-bold uppercase tracking-wider">
+                <HiSparkles className="text-amber-400" size={14} />
+                <span>Full AI Ecosystem (Powered by Google Gemini API)</span>
+              </div>
+              <h2 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white">
+                The 5 AI Learning & Assessment Pillars
+              </h2>
+              <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
+                Integrated, end-to-end intelligent tools built specifically for official statistics capacity building.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {/* Pillar 1: Quizzes */}
+            <div
+              onClick={() => handleProtectedAction("/quizzes")}
+              className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-xs hover:shadow-xl hover:border-emerald-400 transition-all space-y-4 cursor-pointer group flex flex-col justify-between"
+            >
+              <div className="space-y-3">
+                <div className="p-3 rounded-2xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 w-fit group-hover:scale-110 transition-transform">
+                  <FaTasks size={20} />
+                </div>
+                <h3 className="font-bold text-base text-slate-900 dark:text-white flex items-center justify-between">
+                  <span>1. Diagnostic Quizzes</span>
+                  <span className="text-[10px] font-extrabold text-emerald-600 bg-emerald-50 dark:bg-emerald-950 px-2 py-0.5 rounded-full">
+                    Adaptive Tests
+                  </span>
+                </h3>
+                <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+                  Generate timed statistical diagnostic tests across official domains with question palettes, instant evaluation, and topic-level mastery heatmaps.
+                </p>
+              </div>
+              <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5 pt-2">
+                <span>Launch Quiz Studio</span>
+                <FaArrowRight size={10} />
+              </span>
+            </div>
+
+            {/* Pillar 2: Assignments */}
+            <div
+              onClick={() => handleProtectedAction("/assignments")}
+              className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-xs hover:shadow-xl hover:border-amber-400 transition-all space-y-4 cursor-pointer group flex flex-col justify-between"
+            >
+              <div className="space-y-3">
+                <div className="p-3 rounded-2xl bg-amber-50 dark:bg-amber-950/60 text-amber-600 w-fit group-hover:scale-110 transition-transform">
+                  <FaFileAlt size={20} />
+                </div>
+                <h3 className="font-bold text-base text-slate-900 dark:text-white flex items-center justify-between">
+                  <span>2. Case Study Assignments</span>
+                  <span className="text-[10px] font-extrabold text-amber-600 bg-amber-50 dark:bg-amber-950 px-2 py-0.5 rounded-full">
+                    Rubric Scoring
+                  </span>
+                </h3>
+                <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+                  Solve real-world MoSPI operational assignments (sampling frames, SNA GVA revision, DPDP anonymization) with instant rubric-based AI grading.
+                </p>
+              </div>
+              <span className="text-xs font-bold text-amber-600 dark:text-amber-400 flex items-center gap-1.5 pt-2">
+                <span>Explore Case Studies</span>
+                <FaArrowRight size={10} />
+              </span>
+            </div>
+
+            {/* Pillar 3: MCQ Question Studio */}
+            <div
+              onClick={() => handleProtectedAction("/materials")}
+              className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-xs hover:shadow-xl hover:border-purple-400 transition-all space-y-4 cursor-pointer group flex flex-col justify-between"
+            >
+              <div className="space-y-3">
+                <div className="p-3 rounded-2xl bg-purple-50 dark:bg-purple-950/60 text-purple-600 w-fit group-hover:scale-110 transition-transform">
+                  <FaFileUpload size={20} />
+                </div>
+                <h3 className="font-bold text-base text-slate-900 dark:text-white flex items-center justify-between">
+                  <span>3. MCQ Question Studio</span>
+                  <span className="text-[10px] font-extrabold text-purple-600 bg-purple-50 dark:bg-purple-950 px-2 py-0.5 rounded-full">
+                    Document-to-MCQ
+                  </span>
+                </h3>
+                <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+                  Upload official survey manuals, circulars, or methodology PDFs/TXT to automatically author structured 4-option MCQs with pedagogical rationales.
+                </p>
+              </div>
+              <span className="text-xs font-bold text-purple-600 dark:text-purple-400 flex items-center gap-1.5 pt-2">
+                <span>Upload & Generate MCQs</span>
+                <FaArrowRight size={10} />
+              </span>
+            </div>
+
+            {/* Pillar 4: AI Mock Interview Bot & Report */}
+            <div
+              onClick={() => handleProtectedAction("/interview")}
+              className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-xs hover:shadow-xl hover:border-blue-400 transition-all space-y-4 cursor-pointer group flex flex-col justify-between"
+            >
+              <div className="space-y-3">
+                <div className="p-3 rounded-2xl bg-blue-50 dark:bg-blue-950/60 text-blue-600 w-fit group-hover:scale-110 transition-transform">
+                  <BsFillCameraVideoFill size={20} />
+                </div>
+                <h3 className="font-bold text-base text-slate-900 dark:text-white flex items-center justify-between">
+                  <span>4. AI Interview Bot & Report</span>
+                  <span className="text-[10px] font-extrabold text-blue-600 bg-blue-50 dark:bg-blue-950 px-2 py-0.5 rounded-full">
+                    Avatar & Voice
+                  </span>
+                </h3>
+                <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+                  Practice board interviews with realistic video avatars, real-time voice speech recognition, and instant downloadable MoSPI PDF scorecards.
+                </p>
+              </div>
+              <span className="text-xs font-bold text-blue-600 dark:text-blue-400 flex items-center gap-1.5 pt-2">
+                <span>Start Mock Viva Voce</span>
+                <FaArrowRight size={10} />
+              </span>
+            </div>
+
+            {/* Pillar 5: SankhyaCopilot AI Chatbot */}
+            <div
+              onClick={() => handleProtectedAction("/chat")}
+              className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-xs hover:shadow-xl hover:border-indigo-400 transition-all space-y-4 cursor-pointer group flex flex-col justify-between"
+            >
+              <div className="space-y-3">
+                <div className="p-3 rounded-2xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 w-fit group-hover:scale-110 transition-transform">
+                  <BsRobot size={20} />
+                </div>
+                <h3 className="font-bold text-base text-slate-900 dark:text-white flex items-center justify-between">
+                  <span>5. SankhyaCopilot AI Tutor</span>
+                  <span className="text-[10px] font-extrabold text-indigo-600 bg-indigo-50 dark:bg-indigo-950 px-2 py-0.5 rounded-full">
+                    24/7 Domain Bot
+                  </span>
+                </h3>
+                <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+                  24/7 official statistical methodology tutor explaining complex sampling formulas, national accounts sequence, CPI weights, and iGOT modules.
+                </p>
+              </div>
+              <span className="text-xs font-bold text-indigo-600 dark:text-indigo-400 flex items-center gap-1.5 pt-2">
+                <span>Chat with SankhyaCopilot</span>
+                <FaArrowRight size={10} />
+              </span>
+            </div>
+
+            {/* Pillar 6: AI Models Hub */}
+            <div
+              onClick={() => handleProtectedAction("/ai-models")}
+              className="bg-gradient-to-br from-blue-900 via-indigo-900 to-slate-900 text-white rounded-3xl p-6 shadow-lg hover:shadow-2xl transition-all space-y-4 cursor-pointer group flex flex-col justify-between"
+            >
+              <div className="space-y-3">
+                <div className="p-3 rounded-2xl bg-white/10 text-amber-300 w-fit group-hover:scale-110 transition-transform">
+                  <HiSparkles size={20} />
+                </div>
+                <h3 className="font-bold text-base text-white flex items-center justify-between">
+                  <span>AI Models & Workflows Hub</span>
+                  <span className="text-[10px] font-black text-amber-300 bg-white/10 px-2 py-0.5 rounded-full uppercase">
+                    7 Models Active
+                  </span>
+                </h3>
+                <p className="text-xs text-slate-300 leading-relaxed">
+                  Explore multi-phase workflow diagrams, step-by-step executions, input requirements, and launch any neural tool directly.
+                </p>
+              </div>
+              <span className="text-xs font-bold text-amber-300 flex items-center gap-1.5 pt-2">
+                <span>Open Workflows Hub</span>
+                <FaArrowRight size={10} />
+              </span>
+            </div>
+          </div>
+        </section>
+        </ScrollReveal>
+
+        {/* ======================================================== */}
+        {/* 6. OFFICIAL PDF DOSSIER EXPORT SHOWCASE                  */}
+        {/* ======================================================== */}
+        <ScrollReveal direction="up" delay={0.1}>
+          <section className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-slate-900 dark:to-blue-950/40 border border-blue-200/80 dark:border-blue-900/60 rounded-3xl p-6 sm:p-10 shadow-xs flex flex-col lg:flex-row items-center justify-between gap-8">
+            <div className="space-y-4 max-w-2xl">
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300 text-xs font-bold uppercase tracking-wider">
+                <FaFilePdf className="text-red-500" size={13} />
+                <span>Official Government of India Document Standard</span>
+              </div>
+              <h2 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white">
+                Official MoSPI • NSSTA Performance Dossier
+              </h2>
+              <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+                Export comprehensive, verifiable PDF competency dossiers featuring official deep navy banners, the Indian tricolor ribbon, full competency score matrices, prioritized weakness breakdowns, and verified training roadmaps.
+              </p>
+              <div className="flex flex-wrap items-center gap-3 pt-2">
+                <button
+                  onClick={handleDownloadSampleDossier}
+                  className="px-6 py-3 rounded-2xl bg-blue-700 hover:bg-blue-800 text-white font-bold text-xs shadow-md shadow-blue-500/20 transition-all flex items-center gap-2 cursor-pointer"
+                >
+                  <FaFilePdf size={14} className="text-red-300" />
+                  <span>Download Sample Official Dossier (PDF)</span>
+                </button>
+
+                <button
+                  onClick={() => handleProtectedAction("/competencies")}
+                  className="px-5 py-3 rounded-2xl bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700 font-bold text-xs hover:bg-slate-50 transition-all flex items-center gap-1.5 cursor-pointer shadow-xs"
+                >
+                  <span>Assess My Competencies</span>
+                  <FaArrowRight size={10} />
+                </button>
+              </div>
+            </div>
+
+            <div className="w-full lg:w-80 bg-white dark:bg-slate-900 border-2 border-slate-300 dark:border-slate-700 rounded-2xl p-4 shadow-xl space-y-3 shrink-0">
+              <div className="h-3 w-full bg-gradient-to-r from-[#FF9933] via-white to-[#138808] rounded-full" />
+              <div className="p-3 bg-blue-900 text-white rounded-xl text-center space-y-1">
+                <span className="text-[9px] font-bold text-blue-200 uppercase tracking-wider block">MoSPI • NSSTA Official</span>
+                <span className="text-xs font-black block">SkillIQ Intelligence Dossier</span>
+              </div>
+              <div className="space-y-1.5 text-[10px] text-slate-600 dark:text-slate-300">
+                <div className="flex justify-between border-b border-slate-100 dark:border-slate-800 pb-1">
+                  <span>Verification Seal:</span>
+                  <span className="font-bold text-emerald-600">SankhyaIQ™ AI</span>
+                </div>
+                <div className="flex justify-between border-b border-slate-100 dark:border-slate-800 pb-1">
+                  <span>Benchmark Cadre:</span>
+                  <span className="font-bold text-blue-600">ISS / SSS / FOD</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Training Framework:</span>
+                  <span className="font-bold">iGOT & NSSTA TPAC</span>
+                </div>
+              </div>
+            </div>
+          </section>
+        </ScrollReveal>
+
+        {/* ======================================================== */}
+        {/* 7. FREQUENTLY ASKED QUESTIONS (FAQ)                      */}
+        {/* ======================================================== */}
+        <ScrollReveal direction="up" delay={0.1}>
+          <section className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-10 shadow-xs space-y-6">
+            <div className="space-y-2">
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 dark:bg-blue-950 text-blue-700 dark:text-blue-300 text-xs font-bold uppercase tracking-wider">
+                <FaQuestionCircle size={12} />
+                <span>Frequently Asked Questions</span>
+              </div>
+              <h2 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white">
+                Everything You Need to Know About the Platform
+              </h2>
+            </div>
+
+            <div className="space-y-3">
+              {faqList.map((faq, index) => {
+                const isOpen = activeFaq === index;
+                return (
+                  <div
+                    key={index}
+                    className="border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden transition-all"
+                  >
+                    <button
+                      onClick={() => setActiveFaq(isOpen ? null : index)}
+                      className="w-full p-4 sm:p-5 text-left flex items-center justify-between gap-4 font-bold text-xs sm:text-sm text-slate-900 dark:text-white bg-slate-50/70 dark:bg-slate-800/40 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+                    >
+                      <span>{faq.q}</span>
+                      <FaChevronDown
+                        size={12}
+                        className={`text-slate-400 shrink-0 transition-transform duration-200 ${
+                          isOpen ? "rotate-180 text-blue-600" : ""
+                        }`}
+                      />
+                    </button>
+
+                    <AnimatePresence>
+                      {isOpen && (
+                        <motion.div
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: "auto" }}
+                          exit={{ opacity: 0, height: 0 }}
+                          className="p-4 sm:p-5 bg-white dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800 text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed"
+                        >
+                          {faq.a}
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+        </ScrollReveal>
+
+        {/* ======================================================== */}
+        {/* 8. CALL TO ACTION BANNER                                */}
+        {/* ======================================================== */}
+        <ScrollReveal direction="scale" delay={0.1}>
+          <section className="bg-gradient-to-r from-blue-900 via-indigo-900 to-slate-900 text-white rounded-3xl p-8 sm:p-12 shadow-2xl relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-6">
+            <div className="space-y-3 max-w-2xl">
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-500/20 text-blue-300 text-xs font-bold uppercase border border-blue-400/20">
+                <HiSparkles className="text-amber-400" size={13} />
+                <span>Future-Ready Statistical Workforce</span>
+              </div>
+              <h2 className="text-2xl sm:text-4xl font-black tracking-tight">
+                Begin Your Official Statistical Capacity Journey Today
+              </h2>
+              <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                Join thousands of statistical officers from NSSO, CSO, and state DES. Complete your competency assessment and synthesize your personalized iGOT Karmayogi learning pathway.
+              </p>
+            </div>
+
+            <div className="flex flex-col sm:flex-row items-center gap-3 shrink-0">
+              <button
+                onClick={() => handleProtectedAction("/learning-path")}
+                className="px-7 py-3.5 rounded-2xl bg-white text-blue-900 hover:bg-slate-100 font-black text-xs sm:text-sm shadow-xl transition-all flex items-center gap-2 cursor-pointer"
+              >
+                <FaCertificate size={15} />
+                <span>Start Learning Now</span>
+              </button>
+
+              {!userData && (
+                <button
+                  onClick={() => navigate("/auth")}
+                  className="px-6 py-3.5 rounded-2xl bg-white/10 hover:bg-white/20 text-white border border-white/20 font-bold text-xs sm:text-sm backdrop-blur-md transition-all flex items-center gap-2 cursor-pointer"
+                >
+                  <FaUserGraduate size={14} />
+                  <span>Create Officer Account</span>
+                </button>
+              )}
+            </div>
+          </section>
+        </ScrollReveal>
+      </main>
+      </PageTransition>
+
+      <Footer />
+
+      {/* Auth Modal Trigger */}
       {showAuth && <AuthModel onClose={() => setShowAuth(false)} />}
-      <div className="relative overflow-hidden bg-gradient-to-b from-white via-green-50/30 to-white">
-        <div className="max-w-6xl w-full mx-auto">
-          <Footer />
-        </div>
-      </div>
     </div>
   );
 };

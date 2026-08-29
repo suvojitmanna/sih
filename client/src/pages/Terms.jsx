@@ -4,10 +4,12 @@ import { useNavigate } from "react-router-dom";
 import {
   HiArrowLeft,
   HiOutlineScale,
-  HiOutlineCreditCard,
+  HiOutlineBookOpen,
   HiOutlineCpuChip,
   HiOutlineHandRaised,
 } from "react-icons/hi2";
+import Navbar from "../components/Navbar";
+import Footer from "../components/Footer";
 
 const TermsOfService = () => {
   const navigate = useNavigate();
@@ -23,212 +25,125 @@ const TermsOfService = () => {
   }, []);
 
   const sections = [
-    { id: "acceptance", title: "1. Acceptance", icon: <HiOutlineScale /> },
-    { id: "payments", title: "2. Payments", icon: <HiOutlineCreditCard /> },
-    {
-      id: "limitations",
-      title: "3. AI Limitations",
-      icon: <HiOutlineCpuChip />,
-    },
-    { id: "conduct", title: "4. User Conduct", icon: <HiOutlineHandRaised /> },
+    { id: "acceptance", title: "1. Acceptance of Terms", icon: <HiOutlineScale /> },
+    { id: "cadre-standards", title: "2. Official Cadre Standards", icon: <HiOutlineBookOpen /> },
+    { id: "ai-methodology", title: "3. AI Evaluation Methodology", icon: <HiOutlineCpuChip /> },
+    { id: "code-of-conduct", title: "4. User Code of Conduct", icon: <HiOutlineHandRaised /> },
   ];
 
   return (
-    <div className="min-h-screen bg-[#fcfcfd] selection:bg-indigo-100">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 selection:bg-blue-100 dark:selection:bg-blue-900 transition-colors duration-300">
+      <Navbar />
+
       {/* Progress Bar */}
       <motion.div
-        className="fixed top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-indigo-500 to-violet-500 origin-left z-50"
+        className="fixed top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-600 to-indigo-600 origin-left z-50"
         style={{ scaleX }}
       />
 
-      <div className="max-w-6xl mx-auto px-6 py-12 md:py-24">
-        <div className="flex flex-col lg:flex-row gap-16">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-12 md:py-24 pt-28">
+        <div className="flex flex-col lg:flex-row gap-12 lg:gap-16">
           {/* Left Sidebar - Navigation */}
-          <aside className="lg:w-1/4 lg:sticky lg:top-12 h-fit">
+          <aside className="lg:w-1/4 lg:sticky lg:top-24 h-fit">
             <button
               onClick={() => navigate(-1)}
-              className="flex items-center gap-2 text-slate-400 hover:text-indigo-600 transition-all mb-10 group font-semibold cursor-pointer"
+              className="flex items-center gap-2 text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-all mb-8 group font-bold text-xs cursor-pointer"
             >
               <HiArrowLeft className="group-hover:-translate-x-1 transition-transform" />
-              Return
+              <span>Back to Previous Screen</span>
             </button>
 
-            <nav className="hidden lg:block space-y-1">
-              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 mb-4 px-4">
+            <nav className="hidden lg:block space-y-2 bg-white dark:bg-slate-900 p-4 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xs">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-3 px-2">
                 Agreement Sections
               </p>
               {sections.map((section) => (
                 <a
                   key={section.id}
                   href={`#${section.id}`}
-                  className="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-500 hover:bg-white hover:text-indigo-600 hover:shadow-md hover:shadow-indigo-500/5 transition-all border border-transparent hover:border-slate-100"
+                  className="flex items-center gap-3 px-3 py-2.5 rounded-2xl text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-blue-600 dark:hover:text-blue-400 transition-all text-xs font-semibold"
                 >
-                  <span className="text-xl">{section.icon}</span>
-                  <span className="text-sm font-bold">{section.title}</span>
+                  <span className="text-base text-blue-600 dark:text-blue-400">{section.icon}</span>
+                  <span>{section.title}</span>
                 </a>
               ))}
             </nav>
           </aside>
 
-          {/* Right Content */}
+          {/* Main Legal Content */}
           <motion.main
-            initial={{ opacity: 0, y: 30 }}
+            initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="lg:w-3/4"
+            className="lg:w-3/4 space-y-8"
           >
-            <div className="bg-white rounded-[3rem] p-8 md:p-20 shadow-[0_20px_50px_rgba(0,0,0,0.02)] border border-slate-100">
-              <header className="mb-16">
-                <div className="inline-flex items-center px-4 py-1.5 rounded-full bg-slate-900 text-white text-[10px] font-black uppercase tracking-widest mb-6">
-                  Terms & Conditions
+            <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] p-8 sm:p-14 shadow-xl border border-slate-200/80 dark:border-slate-800 space-y-12">
+              <header className="border-b border-slate-100 dark:border-slate-800 pb-8">
+                <div className="inline-flex items-center px-3 py-1 rounded-full bg-blue-50 dark:bg-blue-950 text-blue-700 dark:text-blue-300 text-[10px] font-extrabold tracking-wider uppercase mb-4 border border-blue-200/60 dark:border-blue-800/60">
+                  TERMS OF SERVICE & TRAINING GOVERNANCE
                 </div>
-                <h1 className="text-5xl font-black text-slate-900 tracking-tight mb-6">
-                  Terms of Service
+                <h1 className="text-3xl sm:text-4xl font-black text-slate-900 dark:text-white tracking-tight mb-2">
+                  Official Terms of Use
                 </h1>
-                <div className="flex items-center gap-4 text-slate-400 text-sm font-medium">
-                  <span>Last Modified: October 2023</span>
-                  <span className="w-1.5 h-1.5 rounded-full bg-slate-200" />
-                  <span>Version 2.1</span>
-                </div>
+                <p className="text-xs font-bold text-slate-400">
+                  National Statistical Systems Training Academy (NSSTA) • Ministry of Statistics and Programme Implementation (MoSPI)
+                </p>
               </header>
 
-              <div className="space-y-20 text-slate-600 leading-[1.8]">
-                {/* Section 1 */}
-                <section id="acceptance" className="scroll-mt-16">
-                  <div className="flex items-center gap-4 mb-6">
-                    <div className="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-xl">
-                      <HiOutlineScale />
-                    </div>
-                    <h2 className="text-2xl font-black text-slate-800 tracking-tight">
-                      Acceptance of Terms
-                    </h2>
-                  </div>
-                  <p className="text-lg">
-                    By accessing and using{" "}
-                    <span className="text-slate-900 font-bold">
-                      InterviewIQ.AI
-                    </span>
-                    , you enter into a legally binding agreement. Our services
-                    are designed to help you excel, but they require your
-                    acknowledgment of the rules outlined herein. If these terms
-                    do not align with your expectations, we respectfully ask
-                    that you discontinue use of the platform.
+              <div className="space-y-12 text-slate-600 dark:text-slate-300 text-sm sm:text-base leading-relaxed">
+                {/* 1. Acceptance */}
+                <section id="acceptance" className="scroll-mt-24 space-y-4">
+                  <h2 className="text-xl font-black text-slate-900 dark:text-white flex items-center gap-3">
+                    <span className="w-7 h-7 rounded-xl bg-blue-600 text-white flex items-center justify-center text-xs font-bold">1</span>
+                    Acceptance of Terms
+                  </h2>
+                  <p>
+                    By registering or accessing the <span className="text-blue-600 dark:text-blue-400 font-bold">MoSPI • NSSTA SkillIQ Platform</span>, you agree to adhere to these official training rules, National Quality Assurance Framework (NQAF) standards, and applicable government cybersecurity policies.
                   </p>
                 </section>
 
-                {/* Section 2 */}
-                <section id="payments" className="scroll-mt-16">
-                  <div className="flex items-center gap-4 mb-6">
-                    <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl">
-                      <HiOutlineCreditCard />
-                    </div>
-                    <h2 className="text-2xl font-black text-slate-800 tracking-tight">
-                      Credits and Payments
-                    </h2>
-                  </div>
-                  <p className="mb-8">
-                    We utilize a credit-based ecosystem to deliver
-                    high-performance AI compute.
+                {/* 2. Cadre Standards */}
+                <section id="cadre-standards" className="scroll-mt-24 space-y-4">
+                  <h2 className="text-xl font-black text-slate-900 dark:text-white flex items-center gap-3">
+                    <span className="w-7 h-7 rounded-xl bg-blue-600 text-white flex items-center justify-center text-xs font-bold">2</span>
+                    Official Cadre Standards
+                  </h2>
+                  <p>
+                    This platform serves officers of the Indian Statistical Service (ISS), Subordinate Statistical Service (SSS / JSO / SSO), Field Operations Division (FOD), and allied statistical divisions. All competencies, learning pathways, and quizzes are designed to benchmark skills against national statistical standards.
                   </p>
-                  <div className="grid md:grid-cols-2 gap-6">
-                    <div className="p-6 rounded-[2rem] bg-slate-50 border border-slate-100">
-                      <h4 className="font-bold text-slate-900 mb-2">
-                        Usage Ratio
-                      </h4>
-                      <p className="text-sm">
-                        One credit typically facilitates a single full-length
-                        interview session including analysis.
-                      </p>
-                    </div>
-                    <div className="p-6 rounded-[2rem] bg-amber-50/50 border border-amber-100">
-                      <h4 className="font-bold text-amber-900 mb-2">
-                        Non-Refundable
-                      </h4>
-                      <p className="text-sm text-amber-800/80">
-                        To maintain service quality and server costs, all credit
-                        purchases are final and non-refundable.
-                      </p>
-                    </div>
-                  </div>
                 </section>
 
-                {/* Section 3 */}
-                <section id="limitations" className="scroll-mt-16">
-                  <div className="flex items-center gap-4 mb-6">
-                    <div className="w-12 h-12 rounded-2xl bg-violet-50 text-violet-600 flex items-center justify-center text-xl">
-                      <HiOutlineCpuChip />
-                    </div>
-                    <h2 className="text-2xl font-black text-slate-800 tracking-tight">
-                      AI Limitations
-                    </h2>
-                  </div>
-                  <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-[2.5rem] p-8 md:p-10 text-slate-300 relative overflow-hidden shadow-2xl">
-                    <div className="relative z-10">
-                      <p className="text-lg leading-relaxed mb-0">
-                        While our AI models are trained on world-class interview
-                        methodologies, the feedback provided is for{" "}
-                        <span className="text-white font-bold underline decoration-indigo-500 underline-offset-4">
-                          educational purposes only
-                        </span>
-                        . InterviewIQ.AI does not guarantee specific employment
-                        outcomes, salary negotiations, or success in external
-                        hiring processes.
-                      </p>
-                    </div>
-                    <div className="absolute top-[-20%] right-[-10%] w-64 h-64 bg-indigo-500/10 blur-[80px] rounded-full" />
-                  </div>
+                {/* 3. AI Methodology */}
+                <section id="ai-methodology" className="scroll-mt-24 space-y-4">
+                  <h2 className="text-xl font-black text-slate-900 dark:text-white flex items-center gap-3">
+                    <span className="w-7 h-7 rounded-xl bg-blue-600 text-white flex items-center justify-center text-xs font-bold">3</span>
+                    SankhyaIQ™ AI Neural Engine Evaluation
+                  </h2>
+                  <p>
+                    Evaluations generated during AI Cadre Mock Interviews and automated case studies are advisory diagnostic tools intended for self-improvement and professional capacity building.
+                  </p>
                 </section>
 
-                {/* Section 4 */}
-                <section id="conduct" className="scroll-mt-16">
-                  <div className="flex items-center gap-4 mb-6">
-                    <div className="w-12 h-12 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center text-xl">
-                      <HiOutlineHandRaised />
-                    </div>
-                    <h2 className="text-2xl font-black text-slate-800 tracking-tight">
-                      User Conduct
-                    </h2>
-                  </div>
-                  <ul className="space-y-4">
-                    {[
-                      "No reverse-engineering of proprietary AI prompt structures.",
-                      "No automated scraping or 'botting' of interview sessions.",
-                      "No sharing of accounts to bypass individual credit limits.",
-                      "Compliance with all local and international privacy laws.",
-                    ].map((rule, i) => (
-                      <li
-                        key={i}
-                        className="flex items-start gap-4 p-4 rounded-2xl hover:bg-slate-50 transition-colors"
-                      >
-                        <span className="flex-shrink-0 w-6 h-6 rounded-full bg-slate-200 text-slate-600 flex items-center justify-center text-[10px] font-bold">
-                          0{i + 1}
-                        </span>
-                        <span className="font-medium text-slate-700">
-                          {rule}
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
+                {/* 4. User Conduct */}
+                <section id="code-of-conduct" className="scroll-mt-24 space-y-4">
+                  <h2 className="text-xl font-black text-slate-900 dark:text-white flex items-center gap-3">
+                    <span className="w-7 h-7 rounded-xl bg-blue-600 text-white flex items-center justify-center text-xs font-bold">4</span>
+                    User Code of Conduct
+                  </h2>
+                  <p>
+                    Users must maintain the confidentiality of their official login credentials. Attempting to reverse engineer or extract proprietary evaluation models is strictly prohibited.
+                  </p>
                 </section>
               </div>
 
-              <footer className="mt-24 pt-12 border-t border-slate-100 flex flex-col md:flex-row justify-between items-center gap-6">
-                <p className="text-slate-400 text-sm font-medium">
-                  © 2026 InterviewIQ.AI Global Systems
-                </p>
-                <div className="flex gap-8">
-                  <button className="text-xs font-bold text-indigo-600 uppercase tracking-widest hover:opacity-70 transition-opacity">
-                    Contact Support
-                  </button>
-                  <button className="text-xs font-bold text-slate-400 uppercase tracking-widest hover:text-slate-600 transition-colors">
-                    Compliance PDF
-                  </button>
-                </div>
+              <footer className="pt-8 border-t border-slate-100 dark:border-slate-800 text-center text-slate-400 text-xs">
+                Official Capacity Building Secretariat • National Statistical Systems Training Academy (NSSTA)
               </footer>
             </div>
           </motion.main>
         </div>
       </div>
+      <Footer />
     </div>
   );
 };

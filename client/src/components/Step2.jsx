@@ -317,12 +317,12 @@ const Step2 = ({ interviewData, onFinish }) => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-100 flex items-center justify-center p-4 sm:p-6">
-      <div className="w-full max-w-7xl min-h-[80vh] bg-white rounded-3xl shadow-2xl border border-gray-200 flex flex-col lg:flex-row overflow-hidden">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex items-center justify-center p-4 sm:p-6 transition-colors duration-300">
+      <div className="w-full max-w-7xl min-h-[80vh] bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 flex flex-col lg:flex-row overflow-hidden">
         {/* Left Panel */}
-        <div className="w-full lg:w-[35%] bg-white flex flex-col items-center p-6 space-y-6 border-r border-gray-200">
+        <div className="w-full lg:w-[35%] bg-slate-50/60 dark:bg-slate-950/50 flex flex-col items-center p-6 space-y-6 border-r border-slate-200 dark:border-slate-800">
           {/* AI Video */}
-          <div className="w-full max-w-md rounded-2xl overflow-hidden shadow-2xl">
+          <div className="w-full max-w-md rounded-2xl overflow-hidden shadow-2xl border border-slate-200 dark:border-slate-700">
             <video
               src={videoSource}
               key={videoSource}
@@ -335,77 +335,90 @@ const Step2 = ({ interviewData, onFinish }) => {
           </div>
 
           {subtitle && (
-            <div className="w-full max-w-md bg-gray-50 border border-gray-200 rounded-xl p-4 shadow-sm">
-              <p className="text-gray-700 text-sm sm:text-base font-medium text-center leading-relaxed">
+            <div className="w-full max-w-md bg-white dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-xl p-4 shadow-xs">
+              <p className="text-slate-700 dark:text-slate-200 text-xs sm:text-sm font-medium text-center leading-relaxed">
                 {subtitle}
               </p>
             </div>
           )}
 
           {/* Status Card */}
-          <div className="w-full max-w-md bg-white border border-gray-200 rounded-2xl shadow-md px-6 py-2 space-y-2">
-            <div className="flex justify-between items-center">
-              <span className=" text-gray-500">Interview Status</span>
+          <div className="w-full max-w-md bg-white dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm px-6 py-4 space-y-3">
+            <div className="flex justify-between items-center text-xs">
+              <span className="text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider">
+                Interview Status
+              </span>
 
               {isAIPlaying && (
                 <div className="flex items-center gap-2">
-                  <span className="relative flex h-3 w-3">
+                  <span className="relative flex h-2.5 w-2.5">
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
+                    <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
                   </span>
-                  <span className="font-semibold text-emerald-600">
+                  <span className="font-bold text-emerald-600 dark:text-emerald-400 text-xs">
                     AI Speaking
                   </span>
                 </div>
               )}
             </div>
 
-            <div className="h-px bg-gray-200"></div>
+            <div className="h-px bg-slate-200 dark:bg-slate-700"></div>
 
             {/* Timer */}
-            <div className="flex justify-center">
+            <div className="flex justify-center py-1">
               <Timer
                 timeLeft={timeLeft}
                 totalTime={currentQuestion?.timeLimit}
               />
             </div>
 
-            <div className="h-px bg-gray-200"></div>
+            <div className="h-px bg-slate-200 dark:bg-slate-700"></div>
 
             {/* Stats */}
-            <div className="grid grid-cols-2 gap-6 text-center">
+            <div className="grid grid-cols-2 gap-4 text-center">
               <div className="flex flex-col">
-                <span className="text-2xl font-bold text-emerald-600">
+                <span className="text-2xl font-black text-emerald-600 dark:text-emerald-400">
                   {currentIndex + 1}
                 </span>
 
-                <span className="text-xs text-gray-400">Current Question</span>
+                <span className="text-[10px] uppercase font-bold text-slate-400">Current Question</span>
               </div>
 
               <div className="flex flex-col">
-                <span className="text-2xl font-bold text-emerald-600">
+                <span className="text-2xl font-black text-emerald-600 dark:text-emerald-400">
                   {questions?.length || 0}
                 </span>
 
-                <span className="text-xs text-gray-400">Total Questions</span>
+                <span className="text-[10px] uppercase font-bold text-slate-400">Total Questions</span>
               </div>
             </div>
           </div>
         </div>
 
-        <div className="flex-1 flex flex-col p-4 bg-white">
-          <h2 className="text-2xl sm:text-2xl font-bold mb-2 text-emerald-600 pl-3">
-            AI Smart Interview
-          </h2>
+        {/* Right Panel */}
+        <div className="flex-1 flex flex-col p-6 sm:p-8 bg-white dark:bg-slate-900">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white">
+              SankhyaIQ™ <span className="text-blue-600 dark:text-blue-400">Cadre Viva Simulator</span>
+            </h2>
+            <span className="text-xs font-bold text-slate-400">
+              Official Assessment Session
+            </span>
+          </div>
 
           {/* Question Card */}
           {!isIntroPhase && (
-            <div className="bg-gray-50 border border-gray-200 rounded-2xl p-5 sm:p-4 shadow-sm mb-6">
-              <p className="text-xs sm:text-sm font-medium text-emerald-600">
-                Question {currentIndex + 1} of {questions?.length}
-              </p>
+            <div className="bg-slate-50 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700 rounded-2xl p-5 sm:p-6 shadow-xs mb-6">
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-xs font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">
+                  Question {currentIndex + 1} of {questions?.length}
+                </p>
+                <span className="text-[11px] font-semibold text-slate-400">
+                  Time Remaining: {timeLeft}s
+                </span>
+              </div>
 
-              <h3 className="text-lg sm:text-xl font-semibold text-gray-800 leading-relaxed">
+              <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white leading-relaxed">
                 {currentQuestion?.question}.
               </h3>
             </div>
@@ -414,50 +427,54 @@ const Step2 = ({ interviewData, onFinish }) => {
           {/* Answer Section */}
           <div className="flex flex-col flex-1">
             <textarea
-              placeholder="Type your answer or speaking here..."
+              placeholder="Type your official answer or speak aloud using your microphone..."
               onChange={(e) => setAnswer(e.target.value)}
               value={answer}
-              className="flex-1 min-h-[260px] w-full bg-gray-100 p-4 sm:p-5 rounded-3xl border border-gray-200 resize-none outline-none text-gray-800 placeholder:text-gray-400 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200"
+              className="flex-1 min-h-[240px] w-full bg-slate-50 dark:bg-slate-800/80 p-4 sm:p-5 rounded-2xl border border-slate-200 dark:border-slate-700 resize-none outline-hidden text-slate-900 dark:text-white placeholder:text-slate-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all text-xs sm:text-sm leading-relaxed"
             />
             {!feedback ? (
-              <div className="flex items-center gap-4 mt-6 ">
+              <div className="flex items-center gap-4 mt-6">
                 <motion.button
                   whileTap={{ scale: 0.9 }}
                   onClick={toggleMic}
-                  className="w-12 h-12 sm:w-14 sm:h-14 flex items-center justify-center rounded-full bg-black text-white shadow-lg cursor-pointer "
+                  className={`w-12 h-12 sm:w-14 sm:h-14 flex items-center justify-center rounded-2xl transition-all shadow-md cursor-pointer ${
+                    isMicOn
+                      ? "bg-emerald-600 text-white shadow-emerald-500/20"
+                      : "bg-slate-800 dark:bg-slate-700 text-slate-400"
+                  }`}
+                  title={isMicOn ? "Microphone active (listening)" : "Microphone muted"}
                 >
                   {isMicOn ? (
-                    <FaMicrophone size={20} />
+                    <FaMicrophone size={18} />
                   ) : (
-                    <FaMicrophoneSlash size={20} />
+                    <FaMicrophoneSlash size={18} />
                   )}
                 </motion.button>
                 <motion.button
                   whileTap={{ scale: 0.9 }}
                   onClick={submitAnswer}
                   disabled={isSubmitting}
-                  className="flex-1 bg-gradient-to-r from-emerald-600 to-teal-500 text-white py-3 sm:py-4 rounded-3xl shadow-lg hover:opacity-90 transition font-semibold disabled:bg-gray-500 cursor-pointer "
+                  className="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white py-3.5 sm:py-4 rounded-2xl shadow-lg hover:shadow-blue-500/20 transition-all font-bold text-xs cursor-pointer disabled:opacity-50"
                 >
-                  {isSubmitting ? "Submitting..." : "Submit Answer"}
+                  {isSubmitting ? "Evaluating with AI..." : "Submit Answer & Evaluate"}
                 </motion.button>
               </div>
             ) : (
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                className="mt-6 bg-emerald-50 border border-emerald-200 p-5 rounded-2xl shadow-sm"
+                className="mt-6 bg-emerald-50/80 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/80 p-5 rounded-2xl shadow-xs space-y-3"
               >
-                <p className="text-emerald-700 font-medium mb-4">
-                  {" "}
-                  {feedback}{" "}
+                <p className="text-emerald-800 dark:text-emerald-300 font-semibold text-xs leading-relaxed">
+                  {feedback}
                 </p>
                 <button
                   onClick={handleNext}
-                  className="group w-full bg-gradient-to-r from-emerald-600 to-teal-500 text-white py-3 rounded-3xl shadow-md hover:opacity-90 transition flex items-center justify-center gap-2 cursor-pointer"
+                  className="group w-full bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white py-3 rounded-xl shadow-md transition-all font-bold text-xs flex items-center justify-center gap-2 cursor-pointer"
                 >
-                  Next
+                  <span>Continue to Next Question</span>
                   <BsArrowRight
-                    size={18}
+                    size={16}
                     className="transition-transform duration-300 group-hover:translate-x-1"
                   />
                 </button>

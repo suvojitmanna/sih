@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import Navbar from "../components/Navbar";
+import Footer from "../components/Footer";
 
 import {
   motion,
@@ -134,8 +136,9 @@ const InterviewHistory = () => {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="relative min-h-screen overflow-hidden bg-gradient-to-br from-slate-50 via-white to-emerald-50 py-10 px-4"
+      className="relative min-h-screen overflow-hidden bg-gradient-to-br from-slate-50 via-white to-emerald-50 dark:from-slate-950 dark:via-slate-900 dark:to-blue-950 pt-24 pb-12 px-4 transition-colors duration-300"
     >
+      <Navbar />
       {/* Scroll Progress */}
       <motion.div
         className="fixed top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-emerald-500 to-cyan-500 origin-left z-[100]"
@@ -146,16 +149,16 @@ const InterviewHistory = () => {
           y: y1,
           rotate: rotateGlow,
         }}
-        className="absolute top-0 left-0 w-[28rem] h-[28rem] bg-emerald-300/20 blur-3xl rounded-full"
+        className="absolute top-0 left-0 w-[28rem] h-[28rem] bg-emerald-300/20 dark:bg-emerald-500/10 blur-3xl rounded-full"
       />
       <motion.div
         style={{
           y: y2,
           rotate: rotateGlow,
         }}
-        className="absolute bottom-0 right-0 w-[28rem] h-[28rem] bg-cyan-300/20 blur-3xl rounded-full"
+        className="absolute bottom-0 right-0 w-[28rem] h-[28rem] bg-cyan-300/20 dark:bg-cyan-500/10 blur-3xl rounded-full"
       />
-      <div className="absolute inset-0 opacity-[0.02] bg-[radial-gradient(circle_at_center,black_1px,transparent_1px)] [background-size:24px_24px]" />
+      <div className="absolute inset-0 opacity-[0.02] dark:opacity-[0.04] bg-[radial-gradient(circle_at_center,black_1px,transparent_1px)] dark:bg-[radial-gradient(circle_at_center,white_1px,transparent_1px)] [background-size:24px_24px]" />
 
       <div className="relative max-w-6xl mx-auto">
         {/* Header */}
@@ -172,25 +175,25 @@ const InterviewHistory = () => {
             scale: headerScale,
             opacity: headerOpacity,
           }}
-          className="sticky top-4 z-50 backdrop-blur-2xl bg-white/70 border border-white/50 rounded-3xl p-6 shadow-[0_8px_40px_rgba(0,0,0,0.08)] mb-10"
+          className="sticky top-4 z-50 backdrop-blur-2xl bg-white/80 dark:bg-slate-900/85 border border-slate-200/80 dark:border-slate-800 rounded-3xl p-6 shadow-xl mb-10"
         >
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
             {/* Left */}
             <div className="flex items-center sm:gap-5">
               <button
                 onClick={() => navigate("/")}
-                className="group p-1 sm:p-4 rounded-2xl bg-white border border-gray-200 text-gray-600 hover:bg-emerald-50 hover:text-emerald-600 hover:border-emerald-200 transition-all duration-300 shadow-sm cursor-pointer -ml-[10px] -mt-[100px] sm:-mt-[30px] "
+                className="group p-2 sm:p-4 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-emerald-50 dark:hover:bg-emerald-950/60 hover:text-emerald-600 dark:hover:text-emerald-400 hover:border-emerald-200 dark:hover:border-emerald-700 transition-all duration-300 shadow-sm cursor-pointer"
               >
                 <FaArrowLeft className="group-hover:-translate-x-1 transition-transform duration-300" />
               </button>
 
               <div>
-                <h1 className="text-4xl font-black tracking-tight text-gray-900 pt-4">
-                  Interview <span className="text-emerald-600">History</span>
+                <h1 className="text-3xl sm:text-4xl font-black tracking-tight text-slate-900 dark:text-white">
+                  Interview <span className="text-emerald-600 dark:text-emerald-400">History</span>
                 </h1>
 
-                <p className="text-gray-500 mt-2 font-medium">
-                  Review your interview reports and analytics.
+                <p className="text-slate-500 dark:text-slate-400 mt-1 text-xs sm:text-sm font-medium">
+                  Review your official cadre viva voce transcripts and performance scorecards.
                 </p>
               </div>
             </div>
@@ -199,17 +202,17 @@ const InterviewHistory = () => {
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 w-full lg:w-auto">
               <motion.div
                 whileHover={{ y: -4 }}
-                className="bg-white/80 border border-gray-100 rounded-2xl px-5 py-4 shadow-sm"
+                className="bg-white/90 dark:bg-slate-800/90 border border-slate-200/80 dark:border-slate-700 rounded-2xl px-5 py-4 shadow-xs"
               >
                 <div className="flex items-center gap-3">
-                  <div className="p-3 rounded-xl bg-emerald-100 text-emerald-600">
+                  <div className="p-3 rounded-xl bg-emerald-100 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400">
                     <FaBriefcase />
                   </div>
                   <div>
-                    <p className="text-xs uppercase tracking-widest text-gray-400 font-bold">
+                    <p className="text-[10px] uppercase tracking-widest text-slate-400 font-bold">
                       Total
                     </p>
-                    <h3 className="text-2xl font-black text-gray-800">
+                    <h3 className="text-2xl font-black text-slate-900 dark:text-white">
                       {interviews.length}
                     </h3>
                   </div>
@@ -218,17 +221,17 @@ const InterviewHistory = () => {
 
               <motion.div
                 whileHover={{ y: -4 }}
-                className="bg-white/80 border border-gray-100 rounded-2xl px-5 py-4 shadow-sm"
+                className="bg-white/90 dark:bg-slate-800/90 border border-slate-200/80 dark:border-slate-700 rounded-2xl px-5 py-4 shadow-xs"
               >
                 <div className="flex items-center gap-3">
-                  <div className="p-3 rounded-xl bg-cyan-100 text-cyan-600">
+                  <div className="p-3 rounded-xl bg-cyan-100 dark:bg-cyan-950 text-cyan-600 dark:text-cyan-400">
                     <FaChartLine />
                   </div>
                   <div>
-                    <p className="text-xs uppercase tracking-widest text-gray-400 font-bold">
+                    <p className="text-[10px] uppercase tracking-widest text-slate-400 font-bold">
                       Average
                     </p>
-                    <h3 className="text-2xl font-black text-gray-800">
+                    <h3 className="text-2xl font-black text-slate-900 dark:text-white">
                       {averageScore}
                     </h3>
                   </div>
@@ -237,17 +240,17 @@ const InterviewHistory = () => {
 
               <motion.div
                 whileHover={{ y: -4 }}
-                className="bg-white/80 border border-gray-100 rounded-2xl px-5 py-4 shadow-sm"
+                className="bg-white/90 dark:bg-slate-800/90 border border-slate-200/80 dark:border-slate-700 rounded-2xl px-5 py-4 shadow-xs"
               >
                 <div className="flex items-center gap-3">
-                  <div className="p-3 rounded-xl bg-yellow-100 text-yellow-600">
+                  <div className="p-3 rounded-xl bg-amber-100 dark:bg-amber-950 text-amber-600 dark:text-amber-400">
                     <FaTrophy />
                   </div>
                   <div>
-                    <p className="text-xs uppercase tracking-widest text-gray-400 font-bold">
+                    <p className="text-[10px] uppercase tracking-widest text-slate-400 font-bold">
                       Best
                     </p>
-                    <h3 className="text-2xl font-black text-gray-800">
+                    <h3 className="text-2xl font-black text-slate-900 dark:text-white">
                       {bestScore}
                     </h3>
                   </div>
@@ -263,7 +266,7 @@ const InterviewHistory = () => {
             {[1, 2, 3].map((n) => (
               <div
                 key={n}
-                className="h-36 rounded-3xl bg-gradient-to-r from-gray-100 via-gray-50 to-gray-100 animate-pulse"
+                className="h-36 rounded-3xl bg-slate-200 dark:bg-slate-800/60 animate-pulse border border-slate-300/40 dark:border-slate-700/50"
               />
             ))}
           </div>
@@ -271,27 +274,26 @@ const InterviewHistory = () => {
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="bg-white/80 backdrop-blur-2xl border border-white rounded-3xl p-16 text-center shadow-xl"
+            className="bg-white/90 dark:bg-slate-900/90 backdrop-blur-2xl border border-slate-200 dark:border-slate-800 rounded-3xl p-16 text-center shadow-xl"
           >
             <div className="max-w-sm mx-auto">
-              <div className="w-24 h-24 mx-auto rounded-full bg-gradient-to-br from-emerald-100 to-cyan-100 flex items-center justify-center mb-6 shadow-[0_0_60px_rgba(16,185,129,0.25)] animate-pulse">
-                <FaBriefcase className="text-emerald-600 text-3xl" />
+              <div className="w-24 h-24 mx-auto rounded-full bg-gradient-to-br from-emerald-100 to-cyan-100 dark:from-emerald-950 dark:to-cyan-950 flex items-center justify-center mb-6 shadow-[0_0_60px_rgba(16,185,129,0.25)] animate-pulse">
+                <FaBriefcase className="text-emerald-600 dark:text-emerald-400 text-3xl" />
               </div>
 
-              <h2 className="text-3xl font-bold text-gray-800">
-                No Interviews Yet
+              <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white">
+                No Interviews Recorded Yet
               </h2>
 
-              <p className="text-gray-500 mt-3 leading-relaxed">
-                Start your first mock interview and track your growth like a
-                pro.
+              <p className="text-slate-500 dark:text-slate-400 mt-3 text-xs sm:text-sm leading-relaxed">
+                Take your first AI-driven Cadre Mock Viva Voce and track your growth on your official dashboard.
               </p>
 
               <button
                 onClick={() => navigate("/interview")}
-                className="mt-8 px-8 py-3 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold transition-all duration-300 shadow-lg hover:shadow-emerald-300 hover:scale-105"
+                className="mt-8 px-8 py-3 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs transition-all duration-300 shadow-lg hover:shadow-emerald-300 hover:scale-105 cursor-pointer"
               >
-                Start Interview
+                Start Interview Session
               </button>
             </div>
           </motion.div>
@@ -312,34 +314,21 @@ const InterviewHistory = () => {
             {interviews.map((item, index) => {
               const score = item.finalScore || 0;
 
-              const gradId = `grad-${index}`;
-
-              const scoreColor =
-                score >= 8
-                  ? "text-emerald-500"
-                  : score >= 5
-                    ? "text-amber-500"
-                    : "text-rose-500";
-
-              const progressOffset = 214 - (214 * score) / 10;
-
               return (
                 <motion.div
-                  key={item.id || index}
+                  key={item.id || item._id || index}
                   initial={{
                     opacity: 0,
-                    x: index % 2 === 0 ? -180 : 180,
-                    y: 100,
-                    scale: 0.8,
-                    rotate: index % 2 === 0 ? -8 : 8,
-                    filter: "blur(14px)",
+                    x: index % 2 === 0 ? -120 : 120,
+                    y: 60,
+                    scale: 0.9,
+                    filter: "blur(10px)",
                   }}
                   whileInView={{
                     opacity: 1,
                     x: 0,
                     y: 0,
                     scale: 1,
-                    rotate: 0,
                     filter: "blur(0px)",
                   }}
                   viewport={{
@@ -347,21 +336,15 @@ const InterviewHistory = () => {
                     amount: 0.2,
                   }}
                   transition={{
-                    duration: 1,
+                    duration: 0.8,
                     ease: [0.22, 1, 0.36, 1],
                   }}
                   whileHover={{
-                    y: -14,
-                    scale: 1.03,
-                    rotateX: 5,
-                    rotateY: 5,
+                    y: -8,
+                    scale: 1.01,
                     transition: {
                       duration: 0.3,
                     },
-                  }}
-                  style={{
-                    transformStyle: "preserve-3d",
-                    perspective: 1000,
                   }}
                   onClick={() => navigate(`/report/${item._id}`)}
                   className={`group relative cursor-pointer rounded-[32px] p-[1px] overflow-hidden ${
@@ -386,67 +369,50 @@ const InterviewHistory = () => {
                   {/* Glow */}
                   <motion.div
                     animate={{
-                      opacity: [0.4, 0.8, 0.4],
+                      opacity: [0.3, 0.6, 0.3],
                       scale: [1, 1.1, 1],
                     }}
                     transition={{
                       duration: 4,
                       repeat: Infinity,
                     }}
-                    className="absolute -top-20 -right-20 w-56 h-56 bg-emerald-400/20 blur-3xl rounded-full"
+                    className="absolute -top-20 -right-20 w-56 h-56 bg-emerald-400/20 dark:bg-emerald-500/10 blur-3xl rounded-full"
                   />
 
                   {/* Card */}
-                  <motion.div
-                    whileHover={{
-                      boxShadow: "0 30px 80px rgba(16,185,129,0.20)",
-                    }}
-                    className="relative h-full rounded-[30px] bg-white/85 backdrop-blur-2xl border border-white/60 p-7 overflow-hidden transition-all duration-500"
-                  >
-                    {/* Grid Pattern */}
-                    <div className="absolute inset-0 opacity-[0.03] bg-[radial-gradient(circle_at_center,black_1px,transparent_1px)] [background-size:20px_20px]" />
-
-                    {/* Hover Shine */}
-                    <motion.div
-                      initial={{ x: "-120%" }}
-                      whileHover={{ x: "220%" }}
-                      transition={{
-                        duration: 1.2,
-                        ease: "easeInOut",
-                      }}
-                      className="absolute top-0 left-0 w-1/2 h-full bg-gradient-to-r from-transparent via-white/40 to-transparent skew-x-12"
-                    />
-
+                  <div className="relative h-full rounded-[30px] bg-white/95 dark:bg-slate-900/95 backdrop-blur-2xl border border-white/60 dark:border-slate-800 p-6 sm:p-8 overflow-hidden transition-all duration-500">
                     <div className="relative flex flex-col lg:flex-row lg:items-center justify-between gap-8">
                       {/* Left Side */}
                       <div className="flex-1">
-                        <div className="flex flex-wrap items-center gap-3 mb-5">
-                          <motion.span
-                            whileHover={{ scale: 1.08 }}
-                            className={`px-4 py-1 rounded-full text-[11px] font-bold uppercase tracking-widest ${
+                        <div className="flex flex-wrap items-center gap-3 mb-4">
+                          <span
+                            className={`px-3.5 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-widest ${
                               item.status === "completed"
-                                ? "bg-emerald-50 text-emerald-600"
-                                : "bg-yellow-50 text-yellow-600"
+                                ? "bg-emerald-50 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800"
+                                : "bg-amber-50 dark:bg-amber-950/80 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800"
                             }`}
                           >
-                            {item.status}
-                          </motion.span>
+                            {item.status || "Completed"}
+                          </span>
 
-                          <div className="flex items-center gap-2 text-gray-400 text-sm">
-                            <FaCalendarAlt size={12} />
-                            {new Date(item.createdAt).toLocaleDateString(
-                              undefined,
-                              {
-                                year: "numeric",
-                                month: "short",
-                                day: "numeric",
-                              },
-                            )}
+                          <div className="flex items-center gap-1.5 text-slate-400 text-xs font-semibold">
+                            <FaCalendarAlt size={11} />
+                            <span>
+                              {new Date(item.createdAt).toLocaleDateString(
+                                undefined,
+                                {
+                                  year: "numeric",
+                                  month: "short",
+                                  day: "numeric",
+                                },
+                              )}
+                            </span>
                           </div>
                         </div>
+
                         <button
                           onClick={(e) => {
-                            e.stopPropagation(); // Stops the card navigation
+                            e.stopPropagation();
                             if (
                               window.confirm(
                                 "Are you sure you want to delete this interview record?",
@@ -455,84 +421,68 @@ const InterviewHistory = () => {
                               deleteInterview(item.id || item._id);
                             }
                           }}
-                          className="absolute top-0 right-0 px-4 py-2 rounded-bl-2xl rounded-tr-[28px] bg-red-50 text-red-500 hover:bg-red-500 hover:text-white transition-all duration-300 text-[10px] font-extrabold uppercase tracking-widest shadow-sm z-10 cursor-pointer "
+                          className="absolute top-0 right-0 px-4 py-2 rounded-bl-2xl rounded-tr-[28px] bg-rose-50 dark:bg-rose-950/80 text-rose-600 dark:text-rose-400 hover:bg-rose-600 hover:text-white transition-all duration-300 text-[10px] font-extrabold uppercase tracking-widest shadow-xs z-10 cursor-pointer"
                         >
                           Delete
                         </button>
 
                         {/* Role */}
-                        <motion.h2
-                          whileHover={{ x: 6 }}
-                          className="text-3xl font-black tracking-tight text-gray-800 group-hover:text-emerald-600 transition-all duration-300"
-                        >
+                        <h2 className="text-xl sm:text-2xl font-black tracking-tight text-slate-900 dark:text-white group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-all duration-300">
                           {item.role}
-                        </motion.h2>
+                        </h2>
 
                         {/* Rating Component */}
                         <div className="flex items-center gap-1 mt-2 mb-4">
                           {renderStars(item.finalScore || 0)}
-                          <span className="text-xs font-bold text-gray-400 ml-2">
+                          <span className="text-xs font-bold text-slate-400 ml-2">
                             ({((item.finalScore || 0) / 2).toFixed(1)} / 5)
                           </span>
                         </div>
 
                         {/* Tags */}
-                        <div className="flex flex-wrap items-center gap-3 mt-5">
-                          <motion.span
-                            whileHover={{ scale: 1.06 }}
-                            className="px-4 py-2 rounded-xl bg-gray-100 text-gray-700 text-sm font-semibold"
-                          >
+                        <div className="flex flex-wrap items-center gap-2.5 mt-4">
+                          <span className="px-3.5 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-bold">
                             {item.experience}
-                          </motion.span>
+                          </span>
 
-                          <span className="text-gray-300">•</span>
+                          <span className="text-slate-300 dark:text-slate-600">•</span>
 
-                          <motion.span
-                            whileHover={{ scale: 1.06 }}
-                            className="px-4 py-2 rounded-xl bg-cyan-50 text-cyan-700 text-sm font-semibold capitalize"
-                          >
-                            {item.mode} Mode
-                          </motion.span>
+                          <span className="px-3.5 py-1.5 rounded-xl bg-cyan-50 dark:bg-cyan-950/70 text-cyan-700 dark:text-cyan-300 text-xs font-bold capitalize">
+                            {item.mode || "Technical"} Mode
+                          </span>
                         </div>
                       </div>
 
                       {/* Right Side */}
-                      <div className="flex items-center justify-between lg:justify-end gap-8 border-t lg:border-t-0 pt-6 lg:pt-0">
+                      <div className="flex items-center justify-between lg:justify-end gap-6 border-t lg:border-t-0 border-slate-100 dark:border-slate-800 pt-5 lg:pt-0">
                         {/* Score Circle */}
-                        <motion.div
-                          initial={{ rotate: -180, scale: 0 }}
-                          whileInView={{ rotate: 0, scale: 1 }}
-                          transition={{
-                            duration: 1.2,
-                            type: "spring",
-                          }}
-                          className="relative w-28 h-28"
-                        >
-                          <svg className="w-28 h-28 rotate-[-90deg]">
+                        <div className="relative w-24 h-24">
+                          <svg className="w-24 h-24 rotate-[-90deg]">
                             <circle
-                              cx="56"
-                              cy="56"
-                              r="40"
-                              stroke="#E5E7EB"
-                              strokeWidth="8"
+                              cx="48"
+                              cy="48"
+                              r="36"
+                              stroke="currentColor"
+                              className="text-slate-200 dark:text-slate-800"
+                              strokeWidth="7"
                               fill="none"
                             />
 
                             <motion.circle
-                              cx="56"
-                              cy="56"
-                              r="40"
+                              cx="48"
+                              cy="48"
+                              r="36"
                               stroke={`url(#grad-${index})`}
-                              strokeWidth="8"
+                              strokeWidth="7"
                               fill="none"
-                              strokeDasharray="251"
-                              initial={{ strokeDashoffset: 251 }}
+                              strokeDasharray="226"
+                              initial={{ strokeDashoffset: 226 }}
                               whileInView={{
                                 strokeDashoffset:
-                                  251 - (251 * (item.finalScore || 0)) / 10,
+                                  226 - (226 * (item.finalScore || 0)) / 10,
                               }}
                               transition={{
-                                duration: 1.8,
+                                duration: 1.5,
                                 ease: "easeOut",
                               }}
                               strokeLinecap="round"
@@ -553,41 +503,28 @@ const InterviewHistory = () => {
                           </svg>
 
                           <div className="absolute inset-0 flex flex-col items-center justify-center">
-                            <motion.span
-                              initial={{ opacity: 0, y: 10 }}
-                              whileInView={{ opacity: 1, y: 0 }}
-                              transition={{ delay: 0.5 }}
-                              className={`text-3xl font-black ${
+                            <span
+                              className={`text-2xl font-black ${
                                 item.finalScore >= 8
-                                  ? "text-emerald-500"
+                                  ? "text-emerald-500 dark:text-emerald-400"
                                   : item.finalScore >= 5
-                                    ? "text-amber-500"
-                                    : "text-rose-500"
+                                    ? "text-amber-500 dark:text-amber-400"
+                                    : "text-rose-500 dark:text-rose-400"
                               }`}
                             >
                               {item.finalScore || 0}
-                            </motion.span>
+                            </span>
 
-                            <span className="text-[10px] uppercase text-gray-400 tracking-[3px] font-bold">
+                            <span className="text-[9px] uppercase text-slate-400 tracking-[2px] font-bold">
                               SCORE
                             </span>
                           </div>
-                        </motion.div>
+                        </div>
 
                         {/* Arrow Button */}
-                        <motion.div
-                          whileHover={{
-                            x: 10,
-                            rotate: -10,
-                            scale: 1.12,
-                          }}
-                          whileTap={{
-                            scale: 0.95,
-                          }}
-                          className="p-5 rounded-2xl bg-gray-50 text-gray-500 group-hover:bg-emerald-600 group-hover:text-white transition-all duration-300 shadow-md"
-                        >
-                          <HiOutlineArrowNarrowRight size={28} />
-                        </motion.div>
+                        <div className="p-4 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 group-hover:bg-emerald-600 group-hover:text-white transition-all duration-300 shadow-md">
+                          <HiOutlineArrowNarrowRight size={22} />
+                        </div>
                       </div>
                     </div>
 
@@ -600,7 +537,7 @@ const InterviewHistory = () => {
                       }}
                       className="absolute bottom-0 left-0 h-[3px] bg-gradient-to-r from-emerald-400 via-cyan-400 to-violet-500"
                     />
-                  </motion.div>
+                  </div>
                 </motion.div>
               );
             })}
@@ -609,7 +546,10 @@ const InterviewHistory = () => {
       </div>
 
       {/* Bottom Fade */}
-      <div className="fixed bottom-0 left-0 w-full h-32 bg-gradient-to-t from-white/80 to-transparent pointer-events-none z-10" />
+      <div className="fixed bottom-0 left-0 w-full h-24 bg-gradient-to-t from-slate-50/80 dark:from-slate-950/80 to-transparent pointer-events-none z-10" />
+      <div className="relative z-20 mt-12 -mx-4 -mb-12">
+        <Footer />
+      </div>
     </motion.div>
   );
 };
