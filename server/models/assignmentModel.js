@@ -53,6 +53,32 @@ const assignmentSchema = new mongoose.Schema(
         sampleDataOrReference: {
             type: String,
         },
+        isCustomDispatched: {
+            type: Boolean,
+            default: false,
+        },
+        assignedBy: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "User",
+            default: null,
+        },
+        assignedToUserId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "User",
+            default: null,
+        },
+        assignedCadre: {
+            type: String,
+            default: "All",
+        },
+        dueDate: {
+            type: Date,
+            default: null,
+        },
+        adminNotes: {
+            type: String,
+            default: "",
+        },
     },
     { timestamps: true }
 );

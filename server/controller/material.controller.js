@@ -1,6 +1,7 @@
 import fs from "fs";
 import * as pdfjsLib from "pdfjs-dist/legacy/build/pdf.mjs";
 import Material from "../models/materialModel.js";
+import MaterialRequest from "../models/materialRequestModel.js";
 import Quiz from "../models/quizModel.js";
 import { generateMCQsFromText } from "../services/aiService.js";
 
@@ -149,6 +150,54 @@ export const getMaterialById = async (req, res) => {
         return res.status(200).json({
             success: true,
             material,
+        });
+    } catch (error) {
+        return res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+// 5. User submits a Study Material Request to Admin
+export const requestMaterial = async (req, res) => {
+    try {
+        const { topic, domain, description, urgency = "Normal" } = req.body;
+        if (!topic || !description) {
+            return res.status(400).json({ success: false, message: "Please specify both the topic and detailed requirements." });
+        }
+
+        const user = req.user;
+        const newRequest = await MaterialRequest.create({
+            requesterId: user._id,
+            requesterName: user.name || "Statistical Officer",
+            requesterEmail: user.email,
+            requesterCadre: user.jobRole || "Statistical Officer",
+            requesterDepartment: user.department || "MoSPI Headquarters",
+            topic: topic.trim(),
+            domain: domain || "Statistical Competencies",
+            description: description.trim(),
+            urgency,
+            status: "pending",
+        });
+
+        return res.status(201).json({
+            success: true,
+            message: "Study material request successfully submitted to the Academy Secretariat.",
+            request: newRequest,
+        });
+    } catch (error) {
+        console.error("[REQUEST MATERIAL ERROR]", error);
+        return res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+// 6. User gets their own Study Material Requests & Dispatched Resources
+export const getMyMaterialRequests = async (req, res) => {
+    try {
+        const requests = await MaterialRequest.find({ requesterId: req.user._id })
+            .sort({ createdAt: -1 });
+
+        return res.status(200).json({
+            success: true,
+            requests,
         });
     } catch (error) {
         return res.status(500).json({ success: false, message: error.message });

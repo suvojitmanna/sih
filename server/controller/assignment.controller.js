@@ -102,10 +102,28 @@ export const OFFICIAL_ASSIGNMENTS = [
 export const getAssignments = async (req, res) => {
     try {
         const { domain } = req.query;
-        let assignments = [...OFFICIAL_ASSIGNMENTS];
+        let baseAssignments = [...OFFICIAL_ASSIGNMENTS];
+
+        // Fetch custom assignments created by Admin from MongoDB
+        let dbAssignments = [];
+        try {
+            const query = {
+                $or: [
+                    { assignedToUserId: req.user?._id },
+                    { assignedToUserId: null },
+                    { assignedCadre: "All" },
+                    { assignedCadre: { $regex: req.user?.jobRole || "", $options: "i" } }
+                ]
+            };
+            dbAssignments = await Assignment.find(query).lean();
+        } catch (dbErr) {
+            console.error("[DB ASSIGNMENTS FETCH ERROR]", dbErr);
+        }
+
+        let combined = [...dbAssignments, ...baseAssignments];
 
         if (domain && domain !== "All") {
-            assignments = assignments.filter((a) => a.domain.toLowerCase().includes(domain.toLowerCase()));
+            combined = combined.filter((a) => a.domain.toLowerCase().includes(domain.toLowerCase()));
         }
 
         // Fetch user's completed submissions if authenticated
@@ -114,10 +132,12 @@ export const getAssignments = async (req, res) => {
             userSubmissions = await AssignmentSubmission.find({ userId: req.user._id }).lean();
         }
 
-        const enriched = assignments.map((asgn) => {
-            const submission = userSubmissions.find((s) => s.assignmentId === asgn._id || s.assignmentTitle === asgn.title);
+        const enriched = combined.map((asgn) => {
+            const asgnId = asgn._id?.toString() || asgn.id;
+            const submission = userSubmissions.find((s) => s.assignmentId === asgnId || s.assignmentTitle === asgn.title);
             return {
                 ...asgn,
+                _id: asgnId,
                 hasSubmitted: !!submission,
                 submission: submission || null,
             };
@@ -138,7 +158,15 @@ export const getAssignments = async (req, res) => {
 export const getAssignmentById = async (req, res) => {
     try {
         const { id } = req.params;
-        const assignment = OFFICIAL_ASSIGNMENTS.find((a) => a._id === id);
+        let assignment = OFFICIAL_ASSIGNMENTS.find((a) => a._id === id);
+
+        if (!assignment) {
+            try {
+                assignment = await Assignment.findById(id).lean();
+            } catch (err) {
+                // Not a mongo object id
+            }
+        }
 
         if (!assignment) {
             return res.status(404).json({ success: false, message: "Assignment not found" });

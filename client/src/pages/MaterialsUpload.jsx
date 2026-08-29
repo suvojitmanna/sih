@@ -15,9 +15,13 @@ import {
   FaPlay,
   FaListAlt,
   FaHandSparkles,
+  FaPaperPlane,
+  FaBookOpen,
+  FaHourglassHalf,
+  FaDownload,
 } from "react-icons/fa";
 import { HiSparkles } from "react-icons/hi";
-import { BsShieldCheck } from "react-icons/bs";
+import { BsShieldCheck, BsFillSendFill } from "react-icons/bs";
 
 const DOMAINS = [
   "Statistical Competencies",
@@ -29,6 +33,7 @@ const DOMAINS = [
 const MaterialsUpload = () => {
   const navigate = useNavigate();
   const [materials, setMaterials] = useState([]);
+  const [myRequests, setMyRequests] = useState([]);
   const [selectedFile, setSelectedFile] = useState(null);
   const [title, setTitle] = useState("");
   const [domain, setDomain] = useState(DOMAINS[0]);
@@ -42,13 +47,28 @@ const MaterialsUpload = () => {
   const [numQuestions, setNumQuestions] = useState(5);
   const [difficulty, setDifficulty] = useState("Medium");
 
+  // Study Material Request Modal
+  const [showRequestModal, setShowRequestModal] = useState(false);
+  const [requestForm, setRequestForm] = useState({
+    topic: "",
+    domain: DOMAINS[0],
+    description: "",
+    urgency: "Normal",
+  });
+  const [requestSubmitting, setRequestSubmitting] = useState(false);
+
   const fetchMaterials = async () => {
     try {
-      const { data } = await axios.get(`${ServerUrl}/api/materials/list`, {
-        withCredentials: true,
-      });
-      if (data.success) {
-        setMaterials(data.materials || []);
+      const [matRes, reqRes] = await Promise.all([
+        axios.get(`${ServerUrl}/api/materials/list`, { withCredentials: true }),
+        axios.get(`${ServerUrl}/api/materials/my-requests`, { withCredentials: true }),
+      ]);
+
+      if (matRes.data.success) {
+        setMaterials(matRes.data.materials || []);
+      }
+      if (reqRes.data.success) {
+        setMyRequests(reqRes.data.requests || []);
       }
     } catch (error) {
       console.error("Fetch materials error:", error);
@@ -98,135 +118,233 @@ const MaterialsUpload = () => {
       if (data.success) {
         toast.success("Learning material uploaded & extracted! ✨");
         setSelectedMaterial(data.material);
-        setSelectedFile(null);
         setTitle("");
+        setSelectedFile(null);
         fetchMaterials();
       }
     } catch (error) {
-      toast.error(
-        error.response?.data?.message || "Failed to upload material.",
-      );
+      toast.error(error.response?.data?.message || "Failed to upload material");
     } finally {
       setUploading(false);
     }
   };
 
-  const handleGenerateMcqs = async (mat) => {
-    const targetMat = mat || selectedMaterial;
-    if (!targetMat) return;
-
+  const handleGenerateMcqs = async (material) => {
+    setSelectedMaterial(material);
     setGenLoading(true);
     try {
       const { data } = await axios.post(
-        `${ServerUrl}/api/materials/${targetMat._id}/generate-mcqs`,
-        { numQuestions, difficulty },
+        `${ServerUrl}/api/materials/${material._id}/generate-mcqs`,
+        {
+          numQuestions,
+          difficulty,
+        },
         { withCredentials: true },
       );
 
       if (data.success) {
-        toast.success(
-          `Generated ${data.mcqs.length} MCQs! Assessment ready. 🚀`,
-        );
-        setGeneratedMcqs(data.mcqs);
-        fetchMaterials();
+        setGeneratedMcqs(data.mcqs || []);
+        toast.success(`Generated ${data.mcqs.length} Official MCQs with Rationale! 🎉`);
       }
     } catch (error) {
       toast.error(
-        error.response?.data?.message ||
-          "Failed to generate MCQs from document.",
+        error.response?.data?.message || "Failed to generate questions",
       );
     } finally {
       setGenLoading(false);
     }
   };
 
+  const handleRequestSubmit = async (e) => {
+    e.preventDefault();
+    if (!requestForm.topic || !requestForm.description) {
+      toast.error("Please fill in topic and detailed requirement.");
+      return;
+    }
+    setRequestSubmitting(true);
+    try {
+      const { data } = await axios.post(
+        `${ServerUrl}/api/materials/request`,
+        requestForm,
+        { withCredentials: true }
+      );
+      if (data.success) {
+        toast.success("Study material request submitted to NSSTA Secretariat! 📄✨");
+        setShowRequestModal(false);
+        setRequestForm({
+          topic: "",
+          domain: DOMAINS[0],
+          description: "",
+          urgency: "Normal",
+        });
+        fetchMaterials();
+      }
+    } catch (error) {
+      toast.error("Error submitting study material request.");
+    } finally {
+      setRequestSubmitting(false);
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col transition-colors duration-300">
       <Navbar />
 
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-16 space-y-8">
         {/* Header */}
-        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-xs">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 dark:bg-blue-950 text-blue-700 dark:text-blue-300 text-xs font-bold uppercase tracking-wider mb-2">
-            <BsShieldCheck size={13} />
-            <span>NSSTA AI Question Authoring Studio</span>
+        <div className="bg-gradient-to-r from-slate-900 via-blue-950 to-slate-900 text-white rounded-3xl p-6 sm:p-8 shadow-xl border border-slate-800 flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+          <div>
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/20 text-blue-300 border border-blue-400/30 text-xs font-bold uppercase tracking-wider mb-2">
+              <BsShieldCheck size={13} />
+              <span>SankhyaIQ™ AI Neural Document Engine</span>
+            </div>
+            <h1 className="text-2xl sm:text-3xl font-black tracking-tight">
+              Learning Materials, Guidelines & Question Generator
+            </h1>
+            <p className="text-xs sm:text-sm text-slate-300 mt-1 max-w-2xl">
+              Upload official MoSPI manuals, NSS instruction books, and National Accounts reports. Request custom study guidelines from the NSSTA Academy Secretariat.
+            </p>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-slate-900 dark:text-white">
-            Upload Learning Materials & Generate AI MCQs
-          </h1>
-          <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
-            Upload official survey manuals, circulars, or methodology documents
-            (PDF/TXT) to automatically generate structured 4-option MCQs with
-            official explanations using SankhyaIQ™ AI Neural Engine.
-          </p>
+
+          <button
+            onClick={() => setShowRequestModal(true)}
+            className="px-5 py-3 rounded-2xl bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white font-bold text-xs shadow-lg transition-all flex items-center gap-2 cursor-pointer w-fit"
+          >
+            <FaBookOpen size={13} />
+            <span>Request Study Material from NSSTA</span>
+          </button>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          {/* Left Column: Upload Form */}
-          <div className="lg:col-span-5 space-y-6">
-            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-xs space-y-4">
-              <h2 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                <FaFileUpload className="text-blue-600" />
-                <span>Upload Training Document</span>
-              </h2>
+        {/* ========================================================== */}
+        {/* SECTION: OFFICER MATERIAL REQUESTS & ACADEMY DISPATCHES */}
+        {/* ========================================================== */}
+        {myRequests.length > 0 && (
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-xs space-y-4">
+            <h2 className="text-sm font-black text-slate-900 dark:text-white flex items-center gap-2">
+              <FaBookOpen className="text-amber-500" />
+              <span>My Study Material Requests & Academy Dispatches</span>
+            </h2>
 
-              <form onSubmit={handleUpload} className="space-y-4">
-                {/* File Dropzone */}
-                <div className="border-2 border-dashed border-slate-300 dark:border-slate-700 hover:border-blue-500 rounded-2xl p-6 text-center transition-all bg-slate-50/50 dark:bg-slate-800/40 cursor-pointer relative">
-                  <input
-                    type="file"
-                    accept=".pdf,.txt,.docx"
-                    onChange={handleFileChange}
-                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                  />
-                  <div className="flex flex-col items-center gap-2">
-                    <div className="w-12 h-12 rounded-2xl bg-blue-50 dark:bg-blue-950 text-blue-600 flex items-center justify-center">
-                      <FaFilePdf size={22} />
-                    </div>
-                    {selectedFile ? (
-                      <div>
-                        <span className="font-bold text-xs text-blue-600 dark:text-blue-400 block truncate max-w-[200px]">
-                          {selectedFile.name}
-                        </span>
-                        <span className="text-[10px] text-slate-400">
-                          {(selectedFile.size / (1024 * 1024)).toFixed(2)} MB
-                        </span>
-                      </div>
-                    ) : (
-                      <div>
-                        <span className="text-xs font-bold text-slate-800 dark:text-slate-200">
-                          Click to select or drop document
-                        </span>
-                        <span className="text-[10px] text-slate-400 block mt-0.5">
-                          Supports PDF, DOCX, TXT (Max 15MB)
-                        </span>
-                      </div>
-                    )}
+            <div className="grid md:grid-cols-2 gap-4">
+              {myRequests.map((req) => (
+                <div
+                  key={req._id}
+                  className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/80 space-y-2.5"
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="font-bold text-xs text-slate-900 dark:text-white">
+                      {req.topic}
+                    </span>
+                    <span
+                      className={`px-2.5 py-0.5 rounded-full text-[10px] font-black ${
+                        req.status === "fulfilled"
+                          ? "bg-emerald-50 dark:bg-emerald-950 text-emerald-600 border border-emerald-200 dark:border-emerald-800"
+                          : "bg-amber-50 dark:bg-amber-950 text-amber-600 border border-amber-200 dark:border-amber-800"
+                      }`}
+                    >
+                      {req.status === "fulfilled" ? "Dispatched by NSSTA" : "Pending Secretariat"}
+                    </span>
                   </div>
-                </div>
 
-                <div>
-                  <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">
-                    Document Title
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="e.g. NSS 78th Round Survey Manual"
-                    value={title}
-                    onChange={(e) => setTitle(e.target.value)}
-                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3.5 py-2.5 text-xs focus:border-blue-500"
-                  />
-                </div>
+                  <p className="text-slate-600 dark:text-slate-300 text-xs leading-relaxed">
+                    {req.description}
+                  </p>
 
+                  {req.dispatchedMaterialTitle && (
+                    <div className="p-3 rounded-xl bg-emerald-50/80 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 space-y-1.5 text-xs">
+                      <div className="flex items-center justify-between">
+                        <span className="font-bold text-emerald-900 dark:text-emerald-300">
+                          📄 {req.dispatchedMaterialTitle}
+                        </span>
+                        {req.dispatchedMaterialUrl && (
+                          <a
+                            href={req.dispatchedMaterialUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-blue-600 dark:text-blue-400 font-bold hover:underline"
+                          >
+                            Open Reference Link
+                          </a>
+                        )}
+                      </div>
+                      {req.dispatchedMaterialText && (
+                        <p className="text-slate-700 dark:text-slate-300 text-[11px] whitespace-pre-wrap leading-relaxed">
+                          {req.dispatchedMaterialText}
+                        </p>
+                      )}
+                      {req.adminResponseNote && (
+                        <p className="text-[10px] text-emerald-700 dark:text-emerald-400 font-medium">
+                          <strong>Note:</strong> {req.adminResponseNote}
+                        </p>
+                      )}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <div className="grid lg:grid-cols-12 gap-8 items-start">
+          {/* Left Form */}
+          <div className="lg:col-span-5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-8 shadow-xs space-y-6">
+            <h2 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+              <FaFileUpload className="text-blue-600" />
+              <span>Upload Training Document</span>
+            </h2>
+
+            <form onSubmit={handleUpload} className="space-y-4 text-xs">
+              {/* File Drop Area */}
+              <div className="border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-2xl p-6 text-center hover:border-blue-500 transition-colors bg-slate-50/50 dark:bg-slate-800/50">
+                <input
+                  type="file"
+                  id="material-file"
+                  accept=".pdf,.txt,.docx,.doc"
+                  onChange={handleFileChange}
+                  className="hidden"
+                />
+                <label
+                  htmlFor="material-file"
+                  className="cursor-pointer flex flex-col items-center gap-2"
+                >
+                  <div className="w-12 h-12 rounded-2xl bg-blue-50 dark:bg-blue-950 text-blue-600 flex items-center justify-center">
+                    <FaFilePdf size={24} />
+                  </div>
+                  <span className="font-bold text-slate-700 dark:text-slate-300 text-xs">
+                    {selectedFile
+                      ? selectedFile.name
+                      : "Click to browse official files"}
+                  </span>
+                  <span className="text-[10px] text-slate-400">
+                    Supports PDF, DOCX, TXT (Max 15MB)
+                  </span>
+                </label>
+              </div>
+
+              {/* Title */}
+              <div>
+                <label className="font-bold text-slate-700 dark:text-slate-300 block mb-1">
+                  Document Title
+                </label>
+                <input
+                  type="text"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  placeholder="e.g. National Sample Survey 79th Round Manual"
+                  className="w-full p-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white outline-hidden focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+
+              {/* Domain & Topic */}
+              <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">
-                    Competency Domain
+                  <label className="font-bold text-slate-700 dark:text-slate-300 block mb-1">
+                    Domain
                   </label>
                   <select
                     value={domain}
                     onChange={(e) => setDomain(e.target.value)}
-                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3.5 py-2.5 text-xs font-medium focus:border-blue-500"
+                    className="w-full p-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white outline-hidden"
                   >
                     {DOMAINS.map((d) => (
                       <option key={d} value={d}>
@@ -235,68 +353,66 @@ const MaterialsUpload = () => {
                     ))}
                   </select>
                 </div>
-
                 <div>
-                  <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">
-                    Statistical Topic
+                  <label className="font-bold text-slate-700 dark:text-slate-300 block mb-1">
+                    Topic
                   </label>
                   <input
                     type="text"
-                    required
-                    placeholder="e.g. Sampling & Listing Methodology"
                     value={topic}
                     onChange={(e) => setTopic(e.target.value)}
-                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3.5 py-2.5 text-xs focus:border-blue-500"
+                    placeholder="e.g. Price Indices"
+                    className="w-full p-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white outline-hidden"
                   />
                 </div>
+              </div>
 
-                <button
-                  type="submit"
-                  disabled={uploading || !selectedFile}
-                  className="w-full py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
-                >
-                  {uploading ? (
-                    <span className="inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  ) : (
-                    <>
-                      <FaFileUpload size={13} />
-                      <span>Upload & Extract Text</span>
-                    </>
-                  )}
-                </button>
-              </form>
-            </div>
+              <button
+                type="submit"
+                disabled={uploading}
+                className="w-full py-3.5 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-md shadow-blue-500/20 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+              >
+                {uploading ? (
+                  <span className="inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                ) : (
+                  <>
+                    <FaFileUpload size={13} />
+                    <span>Upload & Process Document</span>
+                  </>
+                )}
+              </button>
+            </form>
           </div>
 
-          {/* Right Column: Uploaded Repository & Generated MCQs View */}
+          {/* Right Section: MCQ Generator & Library */}
           <div className="lg:col-span-7 space-y-6">
-            {/* Generated MCQs Display if active */}
+            {/* Generated MCQs Display */}
             {generatedMcqs.length > 0 && (
-              <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-slate-900 dark:to-blue-950 border-2 border-blue-200 dark:border-blue-800 rounded-3xl p-6 shadow-md space-y-4">
+              <div className="bg-white dark:bg-slate-900 border border-emerald-200 dark:border-emerald-900/60 rounded-3xl p-6 shadow-md space-y-4">
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2 text-blue-700 dark:text-blue-300 font-bold text-sm">
-                    <FaHandSparkles className="text-amber-400" />
-                    <span>
-                      Generated MCQs Preview ({generatedMcqs.length} Questions)
-                    </span>
+                  <div className="flex items-center gap-2">
+                    <span className="w-3 h-3 rounded-full bg-emerald-500 animate-ping" />
+                    <h3 className="font-bold text-sm text-slate-900 dark:text-white">
+                      AI Generated Diagnostic MCQs ({generatedMcqs.length})
+                    </h3>
                   </div>
                   <button
                     onClick={() => navigate("/quizzes")}
-                    className="px-3.5 py-1.5 rounded-xl bg-blue-600 text-white font-bold text-xs flex items-center gap-1.5 shadow-xs cursor-pointer"
+                    className="px-3 py-1.5 rounded-xl bg-emerald-600 text-white font-bold text-xs shadow-xs hover:bg-emerald-700 transition cursor-pointer"
                   >
-                    <span>Go to Quiz Hub</span>
+                    Take in Quiz Mode
                   </button>
                 </div>
 
-                <div className="space-y-3 max-h-96 overflow-y-auto pr-1">
+                <div className="space-y-4 text-xs">
                   {generatedMcqs.map((q, idx) => (
                     <div
                       key={idx}
-                      className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-2 text-xs"
+                      className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-700/60 space-y-2"
                     >
-                      <h4 className="font-bold text-slate-900 dark:text-white leading-snug">
+                      <p className="font-bold text-slate-900 dark:text-white">
                         {idx + 1}. {q.question}
-                      </h4>
+                      </p>
 
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 text-slate-600 dark:text-slate-300 pl-2">
                         {q.options.map((opt, oIdx) => (
@@ -380,6 +496,115 @@ const MaterialsUpload = () => {
           </div>
         </div>
       </main>
+
+      {/* ========================================================== */}
+      {/* MODAL: REQUEST STUDY MATERIAL FROM NSSTA */}
+      {/* ========================================================== */}
+      {showRequestModal && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl border border-slate-200 dark:border-slate-800 space-y-6">
+            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
+              <div>
+                <h3 className="text-lg font-black text-slate-900 dark:text-white">
+                  Request Study Material / Guideline
+                </h3>
+                <p className="text-xs text-slate-500">
+                  Submit a direct learning material requisition to the NSSTA Secretariat.
+                </p>
+              </div>
+              <button
+                onClick={() => setShowRequestModal(false)}
+                className="text-slate-400 hover:text-slate-600 text-lg cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+
+            <form onSubmit={handleRequestSubmit} className="space-y-4 text-xs">
+              <div>
+                <label className="font-bold text-slate-700 dark:text-slate-300 block mb-1.5">
+                  Requested Topic / Framework *
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={requestForm.topic}
+                  onChange={(e) => setRequestForm({ ...requestForm, topic: e.target.value })}
+                  placeholder="e.g. Periodic Labour Force Survey (PLFS) Weighting & Sampling Manual"
+                  className="w-full p-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white outline-hidden focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="font-bold text-slate-700 dark:text-slate-300 block mb-1.5">
+                    Competency Domain
+                  </label>
+                  <select
+                    value={requestForm.domain}
+                    onChange={(e) => setRequestForm({ ...requestForm, domain: e.target.value })}
+                    className="w-full p-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white outline-hidden"
+                  >
+                    {DOMAINS.map((d) => (
+                      <option key={d} value={d}>
+                        {d}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="font-bold text-slate-700 dark:text-slate-300 block mb-1.5">
+                    Urgency
+                  </label>
+                  <select
+                    value={requestForm.urgency}
+                    onChange={(e) => setRequestForm({ ...requestForm, urgency: e.target.value })}
+                    className="w-full p-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white outline-hidden"
+                  >
+                    <option value="Normal">Normal</option>
+                    <option value="High">High (Cadre Exam)</option>
+                    <option value="Critical">Critical (Survey Launch)</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="font-bold text-slate-700 dark:text-slate-300 block mb-1.5">
+                  Detailed Learning Requirement *
+                </label>
+                <textarea
+                  rows={4}
+                  required
+                  value={requestForm.description}
+                  onChange={(e) => setRequestForm({ ...requestForm, description: e.target.value })}
+                  placeholder="Explain why you need this material and any specific formulas, methodologies, or survey rounds you want covered..."
+                  className="w-full p-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white outline-hidden focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+
+              <div className="flex gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowRequestModal(false)}
+                  className="flex-1 py-3 rounded-2xl bg-slate-100 dark:bg-slate-800 font-bold text-slate-600 dark:text-slate-300 cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={requestSubmitting}
+                  className="flex-1 py-3 rounded-2xl bg-amber-600 hover:bg-amber-700 text-white font-bold shadow-md cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2"
+                >
+                  <BsFillSendFill size={11} />
+                  <span>{requestSubmitting ? "Submitting..." : "Send Request to Admin"}</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
       <Footer />
     </div>
   );
