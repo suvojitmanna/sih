@@ -120,8 +120,6 @@ const ChatPage = () => {
           createNewChat={handleCreateNewChat}
           deleteChat={handleDeleteChat}
           userData={userData}
-          theme={theme}
-          setTheme={setTheme}
         />
 
         {/* Chat Box Area */}

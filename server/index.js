@@ -76,3 +76,5 @@ connectDb()
     .catch((err) => {
         console.error("DB connection failed:", err.message);
     });
+
+export default app;
