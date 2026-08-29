@@ -1,8 +1,7 @@
 import axios from "axios";
 
 const GOOGLE_CLIENT_ID =
-  import.meta.env.VITE_GOOGLE_CLIENT_ID ||
-  "824239371589-vh5b90pa8i1iab58lu7lo2kt55m270rl.apps.googleusercontent.com";
+  import.meta.env.VITE_GOOGLE_CLIENT_ID
 
 // Helper to dynamically load the Google Identity Services (GSI) script
 const loadGoogleScript = () => {

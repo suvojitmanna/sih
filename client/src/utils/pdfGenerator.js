@@ -85,12 +85,40 @@ export const generateCompetencyPDF = ({
   doc.setTextColor(71, 85, 105);
 
   const col1X = margin + 5;
-  const col2X = margin + 65;
-  const col3X = margin + 125;
+  const col2X = margin + 68;
+  const col3X = margin + 131;
 
-  doc.text(`Cadre Role: ${profile?.jobRole || user?.jobRole || "ISS Officer"}`, col1X, currentY + 15);
-  doc.text(`Department: ${profile?.department || user?.department || "NSSO / MoSPI"}`, col2X, currentY + 15);
-  doc.text(`Experience: ${profile?.workExperience || "3+ Years"}`, col3X, currentY + 15);
+  const colWidth = 55;
+
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(8);
+
+  doc.text(
+    doc.splitTextToSize(
+      `Cadre Role: ${profile?.jobRole || user?.jobRole || "ISS Officer"}`,
+      colWidth
+    ),
+    col1X,
+    currentY + 15
+  );
+
+  doc.text(
+    doc.splitTextToSize(
+      `Department: ${profile?.department || user?.department || "NSSO / MoSPI"}`,
+      colWidth
+    ),
+    col2X,
+    currentY + 15
+  );
+
+  doc.text(
+    doc.splitTextToSize(
+      `Experience: ${profile?.workExperience || "3+ Years"}`,
+      colWidth
+    ),
+    col3X,
+    currentY + 15
+  );
 
   doc.text(`Active Skill Gaps: ${skillGaps.length} Areas`, col1X, currentY + 22);
   doc.text(`Pathway Modules: ${learningPath.length} Assigned`, col2X, currentY + 22);

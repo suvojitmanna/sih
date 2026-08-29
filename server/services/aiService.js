@@ -91,9 +91,6 @@ export const callGeminiOrFallback = async (prompt, systemInstruction = "") => {
     throw new Error("SankhyaIQ AI Service is temporarily unavailable. Please check your GEMINI_API_KEY configuration.");
 };
 
-// ==========================================
-// 1. COMPETENCY ASSESSMENT ENGINE
-// ==========================================
 export const generateCompetencyAssessment = async ({ profile = {}, selfRatings = {}, quizHistory = [] }) => {
     const prompt = `
 You are the SankhyaIQ AI Neural Engine, the official AI evaluator for India's National Statistical Systems Training Academy (NSSTA), Ministry of Statistics & Programme Implementation (MoSPI).
@@ -185,9 +182,9 @@ Return STRICTLY a JSON object with this exact schema:
     };
 };
 
-// ==========================================
+
 // 2. SKILL GAP ANALYSIS ENGINE
-// ==========================================
+
 export const analyzeSkillGaps = async ({ currentCompetencies = [], targetRole = "Indian Statistical Service (ISS) Officer", department = "MoSPI" }) => {
     const benchmark = ROLE_BENCHMARK_PROFILES[targetRole] || ROLE_BENCHMARK_PROFILES["Indian Statistical Service (ISS) Officer"];
 
@@ -264,9 +261,9 @@ Return STRICTLY a JSON object with this exact schema:
     };
 };
 
-// ==========================================
+
 // 3. PERSONALIZED LEARNING PATHWAY
-// ==========================================
+
 export const generateLearningPath = async ({ competencyGaps = [], jobRole = "Statistical Officer", department = "MoSPI", availableCourses = [] }) => {
     const prompt = `
 You are the SankhyaIQ AI Curriculum Director at NSSTA, designing a personalized capacity building pathway for:
@@ -329,9 +326,9 @@ Return STRICTLY a JSON object with this exact schema:
     };
 };
 
-// ==========================================
+
 // 4. MCQ GENERATION FROM UPLOADED MATERIAL
-// ==========================================
+
 export const generateMCQsFromText = async ({ textContent = "", documentTitle = "Survey Manual", domain = "Statistical Competencies", numQuestions = 5, difficulty = "Medium" }) => {
     const trimmed = textContent.slice(0, 8000); // Token safety
     const prompt = `
@@ -398,9 +395,9 @@ Return STRICTLY a JSON array of objects with schema:
     ];
 };
 
-// ==========================================
+
 // 5. ON-DEMAND STATISTICAL QUIZ GENERATOR
-// ==========================================
+
 export const generateQuiz = async ({ topic = "Sampling Techniques & Estimation", domain = "Statistical Competencies", difficulty = "Medium", numQuestions = 5 }) => {
     const prompt = `
 You are the SankhyaIQ AI Statistical Assessment Wing at NSSTA.
@@ -468,10 +465,6 @@ Return STRICTLY a JSON object with schema:
         ],
     };
 };
-
-// ==========================================
-// 6. QUIZ EVALUATION & TOPIC DIAGNOSTICS
-// ==========================================
 export const evaluateQuizSubmission = async ({ quiz = {}, userAnswers = [], timeTakenSeconds = 60 }) => {
     let correctCount = 0;
     const evaluatedQuestions = [];
@@ -535,9 +528,6 @@ export const evaluateQuizSubmission = async ({ quiz = {}, userAnswers = [], time
     };
 };
 
-// ==========================================
-// 7. AI LEARNING ASSISTANT (STATISTICAL COPILOT)
-// ==========================================
 export const generateAIAssistantResponse = async ({ conversationHistory = [], userMessage = "", learnerContext = {} }) => {
     const systemPrompt = `
 You are "SankhyaCopilot", the dedicated AI Learning and Statistical Intelligence Copilot powered by the SankhyaIQ AI Neural Engine for the National Statistical Systems Training Academy (NSSTA), Ministry of Statistics & Programme Implementation (MoSPI), Government of India.
@@ -569,9 +559,9 @@ Learner Profile Context:
     return "Namaste. In official statistics, ensure you verify the sampling frame and apply the appropriate design weights. For further guidance, explore our NSSTA modules or specify your inquiry on survey methodology, GDP estimation, or statistical computing.";
 };
 
-// ==========================================
+
 // 8. ADAPTIVE RECOMMENDATIONS
-// ==========================================
+
 export const generateAdaptiveRecommendations = async ({ weakTopics = [], recentScores = [], currentPath = [] }) => {
     if (!weakTopics.length) return currentPath;
 
@@ -606,9 +596,9 @@ Return STRICTLY a JSON array of 2 recommended modules with schema:
     return currentPath;
 };
 
-// ==========================================
+
 // 9. ASSIGNMENT EVALUATION ENGINE (GEMINI AI)
-// ==========================================
+
 export const evaluateAssignmentSubmission = async ({ assignment = {}, submissionText = "", learnerProfile = {} }) => {
     const prompt = `
 You are the Chief Academic Evaluator for the National Statistical Systems Training Academy (NSSTA), Ministry of Statistics & Programme Implementation (MoSPI).
