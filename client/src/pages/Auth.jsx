@@ -8,8 +8,7 @@ import toast from "react-hot-toast";
 import { motion, AnimatePresence } from "framer-motion";
 import { FaUserGraduate, FaShieldAlt, FaKey, FaEnvelope, FaBuilding, FaIdCard, FaArrowLeft } from "react-icons/fa";
 import { BsCheckCircleFill, BsShieldLockFill } from "react-icons/bs";
-import { auth, provider } from "../utils/Firebase";
-import { signInWithPopup } from "firebase/auth";
+import { signInWithGooglePopup } from "../utils/googleAuth";
 
 const CADRE_OPTIONS = [
   "Indian Statistical Service (ISS) Officer",
@@ -39,19 +38,19 @@ const Auth = ({ isModel = false }) => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  // Handle Google OAuth Sign In
+  // Handle Google OAuth Sign In (Without Firebase)
   const handleGoogleAuth = async () => {
     setLoading(true);
     try {
-      const result = await signInWithPopup(auth, provider);
-      const user = result.user;
+      const googleUser = await signInWithGooglePopup();
 
       const { data } = await axios.post(
         `${ServerUrl}/api/auth/google`,
         {
-          name: user.displayName,
-          email: user.email,
-          image: user.photoURL,
+          name: googleUser.name,
+          email: googleUser.email,
+          image: googleUser.image,
+          accessToken: googleUser.accessToken,
         },
         { withCredentials: true }
       );
@@ -61,13 +60,13 @@ const Auth = ({ isModel = false }) => {
       if (data.token) {
         localStorage.setItem("token", data.token);
       }
-      toast.success(`Welcome, ${loggedUser.name || user.displayName || "Officer"}! Signed in with Google. 🚀`);
+      toast.success(`Welcome, ${loggedUser.name || googleUser.name || "Officer"}! Signed in with Google. 🚀`);
       if (!isModel) {
         navigate("/");
       }
     } catch (error) {
       console.error("[GOOGLE SIGN IN ERROR]", error);
-      if (error.code === "auth/popup-closed-by-user" || error.code === "auth/cancelled-popup-request") {
+      if (error.message?.includes("closed") || error.message?.includes("popup_closed")) {
         toast.error("Google sign-in popup was closed.");
       } else {
         toast.error(error.response?.data?.message || error.message || "Google authentication failed.");

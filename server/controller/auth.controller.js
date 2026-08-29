@@ -381,7 +381,23 @@ export const resendOtp = async (req, res) => {
 export const googleAuth = async (req, res) => {
     const isProduction = process.env.NODE_ENV === "production";
     try {
-        const { name, email, image } = req.body;
+        let { name, email, image, accessToken } = req.body;
+
+        if (!email && accessToken) {
+            try {
+                const googleRes = await axios.get("https://www.googleapis.com/oauth2/v3/userinfo", {
+                    headers: { Authorization: `Bearer ${accessToken}` },
+                });
+                if (googleRes.data?.email) {
+                    email = googleRes.data.email;
+                    name = googleRes.data.name || name;
+                    image = googleRes.data.picture || image;
+                }
+            } catch (err) {
+                console.error("[GOOGLE TOKEN VERIFY ERROR]", err.message);
+            }
+        }
+
         if (!email) {
             return res.status(400).json({ success: false, message: "Email is required for Google authentication." });
         }
@@ -447,9 +463,6 @@ export const googleAuth = async (req, res) => {
     }
 };
 
-// ==========================================
-// 7. LOGOUT (PRESERVED)
-// ==========================================
 export const logout = async (req, res) => {
     try {
         const isProduction = process.env.NODE_ENV === "production";

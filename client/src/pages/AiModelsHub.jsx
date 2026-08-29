@@ -5,7 +5,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import {
-  FaUserTie,
   FaTasks,
   FaFileAlt,
   FaFileUpload,
@@ -15,19 +14,12 @@ import {
   FaCheckCircle,
   FaPlay,
   FaLayerGroup,
-  FaRobot,
-  FaShieldAlt,
-  FaTerminal,
-  FaCogs,
-  FaChartLine,
 } from "react-icons/fa";
 import {
   BsFillCameraVideoFill,
   BsRobot,
-  BsBarChartLine,
   BsShieldCheck,
   BsLightningChargeFill,
-  BsArrowRightCircleFill,
   BsSliders,
 } from "react-icons/bs";
 import { HiSparkles } from "react-icons/hi";
