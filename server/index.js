@@ -17,6 +17,7 @@ import igotRouter from "./routes/igot.route.js";
 import tpacRouter from "./routes/tpac.route.js";
 import adminRouter from "./routes/admin.route.js";
 import assignmentRouter from "./routes/assignment.route.js";
+import supportRouter from "./routes/supportMessage.route.js";
 
 dotenv.config();
 const app = express();
@@ -54,8 +55,11 @@ app.use("/api/materials", materialRouter);
 app.use("/api/igot", igotRouter);
 app.use("/api/tpac", tpacRouter);
 
-// Admin Analytics
+// Admin Analytics & Oversight
 app.use("/api/admin", adminRouter);
+
+// Real-Time Admin & Officer Live Helpdesk Communications
+app.use("/api/support", supportRouter);
 
 // Conversational AI Assistant & Community
 app.use("/api/chat", chatRouter);

@@ -27,6 +27,7 @@ import { Toaster } from "react-hot-toast";
 
 import AiCursorFollower from "./components/AiCursorFollower";
 import ScrollProgressBar from "./components/ScrollProgressBar";
+import LiveAdminChatWidget from "./components/LiveAdminChatWidget";
 
 export const ServerUrl = import.meta.env.VITE_BASE_URL || "http://localhost:5000";
 
@@ -229,6 +230,7 @@ const App = () => {
         <Route path="/privacy" element={<PrivacyPolicy />} />
         <Route path="/welcome" element={<Home />} />
       </Routes>
+      <LiveAdminChatWidget />
     </>
   );
 };
