@@ -7,10 +7,12 @@ import { setUserData } from "../redux/userSlice";
 import { ServerUrl } from "../App";
 import axios from "axios";
 import toast from "react-hot-toast";
+import { useTheme } from "../context/ThemeContext";
 
 const ChatPage = () => {
   const dispatch = useDispatch();
   const { userData } = useSelector((state) => state.user);
+  const { theme, setTheme } = useTheme();
 
   const [chats, setChats] = useState([]);
   const [selectedChat, setSelectedChat] = useState(null);
@@ -120,6 +122,8 @@ const ChatPage = () => {
           createNewChat={handleCreateNewChat}
           deleteChat={handleDeleteChat}
           userData={userData}
+          theme={theme}
+          setTheme={setTheme}
         />
 
         {/* Chat Box Area */}

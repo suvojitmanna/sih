@@ -25,9 +25,15 @@ const ChatSidebar = ({
   createNewChat,
   deleteChat,
   userData,
+  theme: propTheme,
+  setTheme: propSetTheme,
 }) => {
   const navigate = useNavigate();
-  const { theme, setTheme, resolvedTheme, toggleTheme } = useTheme();
+  const themeContext = useTheme();
+  const theme = propTheme || themeContext?.theme || "system";
+  const setTheme = propSetTheme || themeContext?.setTheme;
+  const resolvedTheme = themeContext?.resolvedTheme || (theme === "dark" ? "dark" : "light");
+  const toggleTheme = themeContext?.toggleTheme;
   const [search, setSearch] = useState("");
 
   const filteredChats = chats?.filter((chat) => {
