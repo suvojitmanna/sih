@@ -31,11 +31,20 @@ const ChatBox = ({
   const [mode, setMode] = useState("text");
   const [isListening, setIsListening] = useState(false);
 
+  const activeChatIdRef = useRef(selectedChat?._id || null);
+
   useEffect(() => {
     if (selectedChat) {
-      setMessages(selectedChat.messages || []);
+      // Only overwrite messages if user switched to a different chat session
+      if (selectedChat._id !== activeChatIdRef.current) {
+        setMessages(selectedChat.messages || []);
+        activeChatIdRef.current = selectedChat._id;
+      }
     } else {
-      setMessages([]);
+      if (activeChatIdRef.current !== null) {
+        setMessages([]);
+        activeChatIdRef.current = null;
+      }
     }
   }, [selectedChat]);
 
@@ -95,7 +104,7 @@ const ChatBox = ({
     setLoading(false);
   };
 
-  const createChatIfNeeded = async () => {
+  const createChatIfNeeded = async (firstUserMsg) => {
     if (selectedChat?._id) return selectedChat._id;
 
     try {
@@ -106,8 +115,13 @@ const ChatBox = ({
       );
 
       if (data.success) {
-        setChats((prev) => [data.chat, ...prev]);
-        setSelectedChat(data.chat);
+        const newChatObj = {
+          ...data.chat,
+          messages: firstUserMsg ? [firstUserMsg] : [],
+        };
+        activeChatIdRef.current = data.chat._id;
+        setChats((prev) => [newChatObj, ...prev]);
+        setSelectedChat(newChatObj);
         return data.chat._id;
       }
     } catch (error) {
@@ -146,42 +160,43 @@ const ChatBox = ({
     }
   };
 
-  const onSubmit = async (e) => {
-    e.preventDefault();
-    if (loading || !prompt.trim() || !userData) return;
+  const handleSendMessage = async (customPrompt, customMode) => {
+    const textToSend = (customPrompt !== undefined ? customPrompt : prompt).trim();
+    const activeMode = customMode || mode;
 
-    const requiredCredits = mode === "image" ? 2 : 1;
+    if (loading || !textToSend || !userData) return;
+
+    const requiredCredits = activeMode === "image" ? 2 : 1;
     if ((userData.credits || 0) < requiredCredits) {
       toast.error(`Not enough credits! Minimum ${requiredCredits} required.`);
       return;
     }
 
     setLoading(true);
-    const promptCopy = prompt;
     setPrompt("");
 
-    const chatId = await createChatIfNeeded();
+    const userMessage = {
+      role: "user",
+      content: textToSend,
+      timestamp: new Date(),
+      isImage: activeMode === "image",
+    };
+
+    setMessages((prev) => [...prev, userMessage]);
+
+    const chatId = await createChatIfNeeded(userMessage);
     if (!chatId) {
       setLoading(false);
       return;
     }
 
-    const userMessage = {
-      role: "user",
-      content: promptCopy,
-      timestamp: new Date(),
-      isImage: false,
-    };
-
-    setMessages((prev) => [...prev, userMessage]);
-
     try {
       controllerRef.current = new AbortController();
 
-      const endpoint = mode === "image" ? "/api/message/image" : "/api/message/text";
+      const endpoint = activeMode === "image" ? "/api/message/image" : "/api/message/text";
       const { data } = await axiosInstance.post(
         endpoint,
-        { chatId, prompt: promptCopy },
+        { chatId, prompt: textToSend },
         {
           withCredentials: true,
           signal: controllerRef.current.signal,
@@ -190,16 +205,19 @@ const ChatBox = ({
 
       if (data.success) {
         const newReply = { ...data.reply, isNew: true };
+        
         setMessages((prev) => [...prev, newReply]);
 
         setSelectedChat((prev) => {
           if (!prev) return prev;
+          const currentMsgs = prev.messages || [];
           return {
             ...prev,
-            messages: [...(prev.messages || []), userMessage, newReply],
+            messages: [...currentMsgs, newReply],
             updatedAt: new Date(),
           };
         });
+
         setChats((prevChats) => {
           const existing = prevChats.find((c) => c._id === chatId);
           if (!existing) return prevChats;
@@ -207,7 +225,7 @@ const ChatBox = ({
           return [
             {
               ...existing,
-              messages: [...(existing.messages || []), userMessage, newReply],
+              messages: [...(existing.messages || []), newReply],
               updatedAt: new Date(),
             },
             ...filtered,
@@ -231,9 +249,13 @@ const ChatBox = ({
     }
   };
 
+  const onSubmit = (e) => {
+    e?.preventDefault?.();
+    handleSendMessage();
+  };
+
   return (
     <div className="flex-1 flex flex-col h-full w-full min-h-0 justify-between overflow-hidden relative">
-      {/* Top Header Bar */}
       <div className="flex items-center justify-between px-3.5 sm:px-5 py-2.5 sm:py-3 border-b border-slate-200/80 dark:border-slate-800 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md shrink-0 z-10">
         <div className="flex items-center gap-2.5 min-w-0">
           <button
@@ -276,7 +298,6 @@ const ChatBox = ({
         </div>
       </div>
 
-      {/* Messages Scroll Area */}
       <div
         ref={containerRef}
         className="flex-1 min-h-0 overflow-y-auto p-3.5 sm:p-5 md:p-6 space-y-2.5 custom-scrollbar"
@@ -321,11 +342,10 @@ const ChatBox = ({
                 <div
                   key={idx}
                   onClick={() => {
-                    setPrompt(item.desc);
-                    if (item.title.includes("Infographic")) setMode("image");
-                    else setMode("text");
+                    const chosenMode = item.title.includes("Infographic") ? "image" : "text";
+                    handleSendMessage(item.desc, chosenMode);
                   }}
-                  className="p-3 rounded-2xl bg-white/90 dark:bg-slate-800/90 border border-slate-200/80 dark:border-slate-700/60 shadow-xs hover:shadow-md hover:border-indigo-400 dark:hover:border-indigo-500 transition-all cursor-pointer text-left group"
+                  className="p-3 rounded-2xl bg-white/90 dark:bg-slate-800/90 border border-slate-200/80 dark:border-slate-700/60 shadow-xs hover:shadow-md hover:border-indigo-400 dark:hover:border-indigo-500 transition-all cursor-pointer text-left group hover:-translate-y-0.5"
                 >
                   <div className="flex items-center gap-1.5 font-bold text-xs text-slate-800 dark:text-slate-200 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
                     {item.icon}
@@ -349,26 +369,31 @@ const ChatBox = ({
         ))}
 
         {loading && (
-          <div className="flex items-center gap-2.5 px-3 sm:px-4 py-2">
-            <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-indigo-600 to-violet-500 text-white flex items-center justify-center shadow-xs shrink-0">
-              <BsRobot size={13} />
+          <div className="flex items-start gap-3 my-3 px-2 sm:px-4 animate-fadeIn">
+            <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-indigo-600 via-indigo-700 to-violet-600 text-white flex items-center justify-center shadow-md shrink-0 mt-1">
+              <BsRobot size={15} />
             </div>
-            <div className="flex items-center gap-1.5 px-3.5 py-2.5 rounded-2xl bg-white/90 dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 shadow-xs">
-              <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-bounce" />
-              <span
-                className="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-bounce"
-                style={{ animationDelay: "0.2s" }}
-              />
-              <span
-                className="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-bounce"
-                style={{ animationDelay: "0.4s" }}
-              />
+            <div className="flex flex-col gap-2 px-5 py-3.5 rounded-[22px] bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl border border-slate-200/80 dark:border-slate-800 shadow-sm">
+              <div className="flex items-center gap-2 text-xs font-bold text-indigo-600 dark:text-indigo-400">
+                <span className="w-2 h-2 rounded-full bg-indigo-500 animate-ping" />
+                <span>SankhyaCopilot is generating reasoning...</span>
+              </div>
+              <div className="flex items-center gap-1.5 pt-0.5">
+                <span className="w-2 h-2 rounded-full bg-indigo-500 animate-bounce" />
+                <span
+                  className="w-2 h-2 rounded-full bg-indigo-500 animate-bounce"
+                  style={{ animationDelay: "0.2s" }}
+                />
+                <span
+                  className="w-2 h-2 rounded-full bg-indigo-500 animate-bounce"
+                  style={{ animationDelay: "0.4s" }}
+                />
+              </div>
             </div>
           </div>
         )}
       </div>
 
-      {/* Fixed Bottom Input Bar */}
       <div className="p-2.5 sm:p-3.5 w-full bg-white/80 dark:bg-slate-950/80 backdrop-blur-xl border-t border-slate-200/80 dark:border-slate-800 shrink-0 z-10">
         <form
           onSubmit={onSubmit}
@@ -393,12 +418,18 @@ const ChatBox = ({
             type="text"
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                onSubmit(e);
+              }
+            }}
             placeholder={
               mode === "image"
                 ? "Describe the visual or diagram you want to synthesize..."
                 : "Ask methodology formulas, circular queries, or survey rules..."
             }
-            className="flex-1 text-xs sm:text-sm bg-transparent text-slate-800 dark:text-slate-100 placeholder:text-slate-400 outline-none min-w-0 px-2"
+            className="flex-1 text-xs sm:text-sm bg-transparent text-slate-800 dark:text-slate-100 placeholder:text-slate-400 outline-none min-w-0 px-2 font-medium"
           />
 
           <div className="flex items-center gap-1.5 shrink-0 pr-0.5">

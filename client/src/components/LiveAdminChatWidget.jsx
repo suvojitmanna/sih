@@ -335,9 +335,8 @@ const LiveAdminChatWidget = () => {
 
           {isOpen && (
             <div
-              className={`w-[320px] sm:w-[380px] max-w-[calc(100vw-24px)] bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 flex flex-col overflow-hidden transition-all duration-300 ${
-                isMinimized ? "h-[68px]" : "h-[580px] max-h-[85vh]"
-              }`}
+              className={`w-[320px] sm:w-[380px] max-w-[calc(100vw-24px)] bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 flex flex-col overflow-hidden transition-all duration-300 ${isMinimized ? "h-[68px]" : "h-[580px] max-h-[85vh]"
+                }`}
             >
               <div className="h-1.5 w-full grid grid-cols-3">
                 <div className="bg-[#FF9933]" />
@@ -511,8 +510,8 @@ const LiveAdminChatWidget = () => {
 
                             <div
                               className={`max-w-[85%] p-3.5 rounded-3xl text-xs leading-relaxed space-y-2 shadow-xs ${isOfficer
-                                  ? "bg-gradient-to-tr from-blue-700 to-indigo-700 text-white rounded-br-xs"
-                                  : "bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 rounded-bl-xs border border-slate-200 dark:border-slate-700"
+                                ? "bg-gradient-to-tr from-blue-700 to-indigo-700 text-white rounded-br-xs"
+                                : "bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 rounded-bl-xs border border-slate-200 dark:border-slate-700"
                                 }`}
                             >
                               <p className="whitespace-pre-wrap">{msg.message}</p>
@@ -545,8 +544,8 @@ const LiveAdminChatWidget = () => {
                                         msg.attachmentName || "attachment"
                                       }
                                       className={`p-2.5 rounded-2xl text-[11px] font-bold flex items-center justify-between gap-2 transition ${isOfficer
-                                          ? "bg-blue-800 text-white hover:bg-blue-900"
-                                          : "bg-slate-100 dark:bg-slate-700 text-slate-800 dark:text-slate-200"
+                                        ? "bg-blue-800 text-white hover:bg-blue-900"
+                                        : "bg-slate-100 dark:bg-slate-700 text-slate-800 dark:text-slate-200"
                                         }`}
                                     >
                                       <div className="flex items-center gap-2 truncate">

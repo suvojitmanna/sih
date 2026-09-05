@@ -28,7 +28,6 @@ const ChatPage = () => {
       const { data } = await axiosInstance.get("/api/chat/get");
       if (data.success) {
         setChats(data.chats || []);
-        setSelectedChat(null);
       }
     } catch (error) {
       console.error("Fetch chats error:", error);
@@ -36,10 +35,10 @@ const ChatPage = () => {
   };
 
   useEffect(() => {
-    if (userData) {
+    if (userData?._id) {
       fetchUserChats();
     }
-  }, [userData]);
+  }, [userData?._id]);
 
   const handleCreateNewChat = () => {
     setSelectedChat(null);
