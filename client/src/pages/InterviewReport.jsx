@@ -30,9 +30,9 @@ const InterviewReport = () => {
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col transition-colors duration-300">
       <Navbar />
-      <div className="flex-1 pt-18">
+      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 pt-19 pb-12">
         <Step3 report={report} />
-      </div>
+      </main>
       <Footer />
     </div>
   );

@@ -78,7 +78,7 @@ const ChatPage = () => {
     <div className="h-screen w-full overflow-hidden bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col transition-colors duration-300">
       <Navbar />
 
-      <div className="flex-1 max-w-7xl w-full mx-auto pt-18 sm:pt-20 pb-2 sm:pb-3 px-2 sm:px-4 flex gap-3 sm:gap-4 overflow-hidden min-h-0">
+      <div className="flex-1 max-w-7xl w-full mx-auto pt-18 sm:pt-19 pb-2 sm:pb-3 px-2 sm:px-4 flex gap-3 sm:gap-4 overflow-hidden min-h-0">
         {/* Chat Sidebar */}
         <ChatSidebar
           isMenuOpen={isMenuOpen}

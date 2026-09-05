@@ -35,7 +35,6 @@ const ChatBox = ({
 
   useEffect(() => {
     if (selectedChat) {
-      // Only overwrite messages if user switched to a different chat session
       if (selectedChat._id !== activeChatIdRef.current) {
         setMessages(selectedChat.messages || []);
         activeChatIdRef.current = selectedChat._id;
@@ -55,43 +54,89 @@ const ChatBox = ({
     });
   }, [messages, loading]);
 
-  useEffect(() => {
+  const isListeningRef = useRef(false);
+
+  const handleVoiceInput = async () => {
     const SpeechRecognition =
       window.SpeechRecognition || window.webkitSpeechRecognition;
 
-    if (!SpeechRecognition) return;
-
-    const recognition = new SpeechRecognition();
-    recognition.lang = "en-US";
-    recognition.continuous = false;
-    recognition.interimResults = true;
-
-    recognition.onstart = () => setIsListening(true);
-    recognition.onresult = (event) => {
-      let transcript = "";
-      for (let i = 0; i < event.results.length; i++) {
-        transcript += event.results[i][0].transcript;
-      }
-      setPrompt(transcript);
-    };
-    recognition.onend = () => setIsListening(false);
-    recognition.onerror = () => {
-      setIsListening(false);
-      toast.error("Microphone input error");
-    };
-
-    recognitionRef.current = recognition;
-  }, []);
-
-  const handleVoiceInput = () => {
-    if (!recognitionRef.current) {
+    if (!SpeechRecognition) {
       toast.error("Speech Recognition not supported in this browser.");
       return;
     }
-    if (isListening) {
-      recognitionRef.current.stop();
-    } else {
-      recognitionRef.current.start();
+
+    if (isListeningRef.current) {
+      isListeningRef.current = false;
+      setIsListening(false);
+      if (recognitionRef.current) {
+        try {
+          recognitionRef.current.stop();
+        } catch { }
+      }
+      return;
+    }
+
+    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        stream.getTracks().forEach((track) => track.stop());
+      } catch (e) {
+        if (e.name === "NotAllowedError" || e.name === "PermissionDeniedError") {
+          toast.error("Microphone access blocked. Please allow microphone in browser URL bar.");
+          return;
+        }
+      }
+    }
+
+    try {
+      if (recognitionRef.current) {
+        try {
+          recognitionRef.current.stop();
+        } catch (error) {
+          console.log(error);
+        }
+      }
+
+      const recognition = new SpeechRecognition();
+      recognition.lang = navigator.language || "en-US";
+      recognition.continuous = false;
+      recognition.interimResults = true;
+
+      const initialPrompt = prompt;
+
+      recognition.onstart = () => {
+        isListeningRef.current = true;
+        setIsListening(true);
+      };
+
+      recognition.onresult = (event) => {
+        let transcript = "";
+        for (let i = 0; i < event.results.length; i++) {
+          transcript += event.results[i][0].transcript;
+        }
+        setPrompt(initialPrompt ? `${initialPrompt} ${transcript}` : transcript);
+      };
+
+      recognition.onend = () => {
+        isListeningRef.current = false;
+        setIsListening(false);
+      };
+
+      recognition.onerror = (event) => {
+        console.warn("Speech error:", event.error);
+        isListeningRef.current = false;
+        setIsListening(false);
+        if (event.error === "not-allowed" || event.error === "service-not-allowed") {
+          toast.error("Microphone permission denied.");
+        }
+      };
+
+      recognitionRef.current = recognition;
+      recognition.start();
+    } catch (err) {
+      console.error("Speech error:", err);
+      isListeningRef.current = false;
+      setIsListening(false);
     }
   };
 
@@ -205,7 +250,7 @@ const ChatBox = ({
 
       if (data.success) {
         const newReply = { ...data.reply, isNew: true };
-        
+
         setMessages((prev) => [...prev, newReply]);
 
         setSelectedChat((prev) => {
@@ -436,11 +481,10 @@ const ChatBox = ({
             <button
               type="button"
               onClick={handleVoiceInput}
-              className={`p-2 sm:p-2.5 rounded-full transition-all cursor-pointer ${
-                isListening
+              className={`p-2 sm:p-2.5 rounded-full transition-all cursor-pointer ${isListening
                   ? "bg-red-500 text-white animate-pulse"
                   : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
-              }`}
+                }`}
               title={isListening ? "Listening..." : "Speak message"}
             >
               <FaMicrophone size={12} />

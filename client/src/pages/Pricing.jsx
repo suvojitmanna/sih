@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { FaArrowLeft, FaCheckCircle, FaCrown, FaBolt } from "react-icons/fa";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { setUserData } from "../redux/userSlice";
 import { motion } from "framer-motion";
 import axios from "axios";
 import toast from "react-hot-toast";
@@ -11,6 +13,8 @@ import BackButton from "../components/BackButton";
 
 const Pricing = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const dispatch = useDispatch();
 
   const [selectedPlan, setSelectedPlan] = useState("basic");
   const [loading, setLoading] = useState(null);
@@ -113,7 +117,20 @@ const Pricing = () => {
 
             if (verify.data.success) {
               toast.success("Credits Added Successfully! ✨");
-              navigate("/dashboard");
+              if (verify.data.user) {
+                dispatch(setUserData(verify.data.user));
+              }
+
+              // Return to previous page where user came from
+              if (location.state?.from) {
+                navigate(location.state.from);
+              } else if (window.history.state && window.history.state.idx > 0) {
+                navigate(-1);
+              } else if (window.history.length > 1) {
+                navigate(-1);
+              } else {
+                navigate("/dashboard");
+              }
             }
           } catch (error) {
             toast.error("Payment verification failed");

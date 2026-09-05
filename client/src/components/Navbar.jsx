@@ -41,11 +41,7 @@ const Navbar = () => {
 
   const handleLogout = async () => {
     try {
-      await axios.post(
-        `${ServerUrl}/api/auth/logout`,
-        {},
-        { withCredentials: true }
-      );
+      await axios.post(`${ServerUrl}/api/auth/logout`, {}, { withCredentials: true });
       localStorage.removeItem("token");
       localStorage.removeItem("user");
       sessionStorage.clear();
@@ -135,15 +131,14 @@ const Navbar = () => {
                       }
                       navigate(link.path);
                     }}
-                    className={`relative flex items-center gap-2 px-4 py-2 rounded-xl transition-all cursor-pointer ${
-                      isActive
-                        ? link.isAiModel
-                          ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md font-black"
-                          : "bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 shadow-xs font-black"
-                        : link.isAiModel
+                    className={`relative flex items-center gap-2 px-4 py-2 rounded-xl transition-all cursor-pointer ${isActive
+                      ? link.isAiModel
+                        ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md font-black"
+                        : "bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 shadow-xs font-black"
+                      : link.isAiModel
                         ? "text-blue-700 dark:text-blue-300 hover:bg-blue-50/80 dark:hover:bg-blue-950/60 font-extrabold"
                         : "hover:bg-white/60 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-white"
-                    }`}
+                      }`}
                   >
                     {link.isAiModel && (
                       <span className="w-2 h-2 rounded-full bg-amber-400 animate-ping mr-0.5" />
@@ -156,18 +151,7 @@ const Navbar = () => {
             </div>
 
             <div className="flex items-center gap-2 sm:gap-2.5">
-              {userData && (
-                <button
-                  onClick={handleDownloadDossier}
-                  title="Download Official Performance Dossier (PDF)"
-                  className="hidden xl:flex items-center gap-1.5 px-3 py-2 text-xs font-bold text-slate-700 dark:text-slate-200 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 border border-slate-200/80 dark:border-slate-700 rounded-2xl transition-all cursor-pointer shadow-xs"
-                >
-                  <FaFilePdf size={13} className="text-red-500" />
-                  <span>Dossier PDF</span>
-                </button>
-              )}
 
-              {/* User Profile Avatar / Sign In */}
               <div ref={userRef} className="relative">
                 {userData ? (
                   <motion.button
@@ -200,7 +184,6 @@ const Navbar = () => {
                   </button>
                 )}
 
-                {/* Profile Dropdown with Theme Selector */}
                 <AnimatePresence>
                   {showUserPopup && userData && (
                     <motion.div
@@ -210,7 +193,6 @@ const Navbar = () => {
                       exit="exit"
                       className="absolute right-0 mt-3 w-80 bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden z-50 origin-top-right"
                     >
-                      {/* Header */}
                       <div className="p-4 bg-gradient-to-br from-slate-50 to-blue-50/40 dark:from-slate-800/80 dark:to-blue-950/40 border-b border-slate-100 dark:border-slate-800">
                         <div className="flex items-center gap-3">
                           <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-blue-700 to-indigo-700 text-white flex items-center justify-center font-black text-sm shadow-md">
@@ -232,6 +214,7 @@ const Navbar = () => {
                             {userData.jobRole || "ISS Officer"}
                           </span>
                         </div>
+
                         <div className="mt-1 flex items-center justify-between text-[11px]">
                           <span className="font-semibold text-slate-600 dark:text-slate-300">Competency:</span>
                           <span className="font-black text-emerald-600 dark:text-emerald-400">
@@ -240,8 +223,23 @@ const Navbar = () => {
                         </div>
                       </div>
 
-                      {/* Quick Profile Links */}
                       <div className="p-2 space-y-1">
+                        <button
+                          onClick={() => {
+                            setShowUserPopup(false);
+                            navigate("/pricing");
+                          }}
+                          className="w-full text-left px-3.5 py-2.5 rounded-2xl hover:bg-amber-50/60 dark:hover:bg-amber-950/40 text-xs font-bold text-slate-700 dark:text-slate-200 flex items-center justify-between transition-colors cursor-pointer group"
+                        >
+                          <div className="flex items-center gap-2.5">
+                            <HiSparkles size={14} className="text-amber-500 group-hover:scale-110 transition-transform" />
+                            <span>AI Credits & Plans</span>
+                          </div>
+                          <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-900/60 text-amber-700 dark:text-amber-300 border border-amber-300/50 dark:border-amber-700/50">
+                            {userData.credits ?? 0} Left
+                          </span>
+                        </button>
+
                         <button
                           onClick={() => {
                             setShowUserPopup(false);
@@ -287,7 +285,6 @@ const Navbar = () => {
                         </button>
                       </div>
 
-                      {/* Theme Mode Selector (Shown when User Icon Clicked) */}
                       <div className="p-3 bg-slate-50/80 dark:bg-slate-800/60 border-t border-slate-100 dark:border-slate-800 space-y-2">
                         <div className="flex items-center justify-between px-1">
                           <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
@@ -308,11 +305,10 @@ const Navbar = () => {
                         <div className="grid grid-cols-3 gap-1 bg-slate-200/70 dark:bg-slate-900/80 p-1 rounded-2xl border border-slate-200/50 dark:border-slate-800 text-xs font-bold">
                           <button
                             onClick={() => setTheme("system")}
-                            className={`flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-xl transition-all cursor-pointer ${
-                              theme === "system"
-                                ? "bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 shadow-sm font-black"
-                                : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
-                            }`}
+                            className={`flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-xl transition-all cursor-pointer ${theme === "system"
+                              ? "bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 shadow-sm font-black"
+                              : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+                              }`}
                           >
                             <BsDisplay size={12} />
                             <span>System</span>
@@ -320,11 +316,10 @@ const Navbar = () => {
 
                           <button
                             onClick={() => setTheme("light")}
-                            className={`flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-xl transition-all cursor-pointer ${
-                              theme === "light"
-                                ? "bg-white dark:bg-slate-800 text-amber-500 shadow-sm font-black"
-                                : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
-                            }`}
+                            className={`flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-xl transition-all cursor-pointer ${theme === "light"
+                              ? "bg-white dark:bg-slate-800 text-amber-500 shadow-sm font-black"
+                              : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+                              }`}
                           >
                             <BsSun size={12} />
                             <span>Light</span>
@@ -332,11 +327,10 @@ const Navbar = () => {
 
                           <button
                             onClick={() => setTheme("dark")}
-                            className={`flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-xl transition-all cursor-pointer ${
-                              theme === "dark"
-                                ? "bg-white dark:bg-slate-800 text-indigo-400 shadow-sm font-black"
-                                : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
-                            }`}
+                            className={`flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-xl transition-all cursor-pointer ${theme === "dark"
+                              ? "bg-white dark:bg-slate-800 text-indigo-400 shadow-sm font-black"
+                              : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+                              }`}
                           >
                             <BsMoonStars size={12} />
                             <span>Dark</span>
@@ -344,7 +338,6 @@ const Navbar = () => {
                         </div>
                       </div>
 
-                      {/* Logout */}
                       <div className="p-2 border-t border-slate-100 dark:border-slate-800">
                         <button
                           onClick={handleLogout}
@@ -359,7 +352,6 @@ const Navbar = () => {
                 </AnimatePresence>
               </div>
 
-              {/* Mobile Menu Toggle */}
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                 className="md:hidden p-2 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
@@ -370,7 +362,6 @@ const Navbar = () => {
           </div>
         </div>
 
-        {/* Mobile Dropdown Drawer */}
         <AnimatePresence>
           {mobileMenuOpen && (
             <motion.div
@@ -379,6 +370,31 @@ const Navbar = () => {
               exit={{ opacity: 0, height: 0 }}
               className="md:hidden border-t border-slate-200 dark:border-slate-800 bg-white/95 dark:bg-slate-950/95 backdrop-blur-2xl px-4 py-4 space-y-3"
             >
+              {userData && (
+                <div className="flex items-center justify-between p-3 bg-amber-50/80 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/80 rounded-2xl">
+                  <div className="flex items-center gap-2">
+                    <HiSparkles size={16} className="text-amber-500 animate-pulse" />
+                    <div>
+                      <span className="text-xs font-bold text-slate-800 dark:text-slate-200 block">
+                        AI Interaction Credits
+                      </span>
+                      <span className="text-[10px] text-amber-600 dark:text-amber-400 font-extrabold">
+                        {userData.credits ?? 0} Credits Available
+                      </span>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => {
+                      setMobileMenuOpen(false);
+                      navigate("/pricing");
+                    }}
+                    className="px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-xs font-black shadow-xs cursor-pointer uppercase tracking-wider text-[10px]"
+                  >
+                    Top Up
+                  </button>
+                </div>
+              )}
+
               <div className="grid grid-cols-2 gap-2">
                 {navLinks.map((link) => {
                   const Icon = link.icon;
@@ -394,11 +410,10 @@ const Navbar = () => {
                         }
                         navigate(link.path);
                       }}
-                      className={`flex items-center gap-2 p-3 rounded-2xl text-xs font-bold text-left transition-colors ${
-                        isActive
-                          ? "bg-blue-600 text-white"
-                          : "bg-slate-50 dark:bg-slate-900 text-slate-700 dark:text-slate-300"
-                      }`}
+                      className={`flex items-center gap-2 p-3 rounded-2xl text-xs font-bold text-left transition-colors ${isActive
+                        ? "bg-blue-600 text-white"
+                        : "bg-slate-50 dark:bg-slate-900 text-slate-700 dark:text-slate-300"
+                        }`}
                     >
                       <Icon size={15} />
                       <span>{link.label}</span>
@@ -407,7 +422,6 @@ const Navbar = () => {
                 })}
               </div>
 
-              {/* Mobile Theme Selector */}
               <div className="p-3 bg-slate-50 dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-2">
                 <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">
                   Theme: {theme === "system" ? "System Default" : `${theme} Mode`}
@@ -415,25 +429,22 @@ const Navbar = () => {
                 <div className="grid grid-cols-3 gap-1 bg-slate-200/80 dark:bg-slate-800 p-1 rounded-xl text-xs font-bold">
                   <button
                     onClick={() => setTheme("system")}
-                    className={`py-1.5 rounded-lg text-center ${
-                      theme === "system" ? "bg-white dark:bg-slate-700 text-blue-600 font-black shadow-xs" : "text-slate-600 dark:text-slate-400"
-                    }`}
+                    className={`py-1.5 rounded-lg text-center ${theme === "system" ? "bg-white dark:bg-slate-700 text-blue-600 font-black shadow-xs" : "text-slate-600 dark:text-slate-400"
+                      }`}
                   >
                     System
                   </button>
                   <button
                     onClick={() => setTheme("light")}
-                    className={`py-1.5 rounded-lg text-center ${
-                      theme === "light" ? "bg-white dark:bg-slate-700 text-amber-500 font-black shadow-xs" : "text-slate-600 dark:text-slate-400"
-                    }`}
+                    className={`py-1.5 rounded-lg text-center ${theme === "light" ? "bg-white dark:bg-slate-700 text-amber-500 font-black shadow-xs" : "text-slate-600 dark:text-slate-400"
+                      }`}
                   >
                     Light
                   </button>
                   <button
                     onClick={() => setTheme("dark")}
-                    className={`py-1.5 rounded-lg text-center ${
-                      theme === "dark" ? "bg-white dark:bg-slate-700 text-indigo-400 font-black shadow-xs" : "text-slate-600 dark:text-slate-400"
-                    }`}
+                    className={`py-1.5 rounded-lg text-center ${theme === "dark" ? "bg-white dark:bg-slate-700 text-indigo-400 font-black shadow-xs" : "text-slate-600 dark:text-slate-400"
+                      }`}
                   >
                     Dark
                   </button>
@@ -444,7 +455,6 @@ const Navbar = () => {
         </AnimatePresence>
       </nav>
 
-      {/* Auth Modal Trigger */}
       {showAuth && <AuthModel onClose={() => setShowAuth(false)} />}
     </>
   );

@@ -85,11 +85,15 @@ export const verifyPayment = async (req, res) => {
         await payment.save();
 
         // Add credits to user
-        const updatedUser= await User.findByIdAndUpdate(payment.userId, {
-            $inc: {
-                credits: payment.credits,
+        const updatedUser = await User.findByIdAndUpdate(
+            payment.userId,
+            {
+                $inc: {
+                    credits: payment.credits,
+                },
             },
-        });
+            { new: true }
+        );
 
         return res.status(200).json({
             success: true,

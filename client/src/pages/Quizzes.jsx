@@ -102,7 +102,7 @@ const Quizzes = () => {
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col">
       <Navbar />
 
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-16 space-y-6">
+      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 pt-19 pb-16 space-y-3">
         {/* Back Navigation Bar */}
         <div className="flex items-center justify-between">
           <BackButton fallbackUrl="/ai-models" label="Back to AI Models" />
@@ -131,21 +131,19 @@ const Quizzes = () => {
             <div className="flex bg-slate-100 dark:bg-slate-800 p-1.5 rounded-2xl border border-slate-200 dark:border-slate-700 text-xs font-bold">
               <button
                 onClick={() => setActiveTab("explore")}
-                className={`px-3.5 py-2 rounded-xl transition-all cursor-pointer ${
-                  activeTab === "explore"
+                className={`px-3.5 py-2 rounded-xl transition-all cursor-pointer ${activeTab === "explore"
                     ? "bg-white dark:bg-slate-900 text-blue-700 dark:text-blue-400 shadow-xs"
                     : "text-slate-500 hover:text-slate-900 dark:hover:text-white"
-                }`}
+                  }`}
               >
                 Available Quizzes
               </button>
               <button
                 onClick={() => setActiveTab("history")}
-                className={`px-3.5 py-2 rounded-xl transition-all cursor-pointer ${
-                  activeTab === "history"
+                className={`px-3.5 py-2 rounded-xl transition-all cursor-pointer ${activeTab === "history"
                     ? "bg-white dark:bg-slate-900 text-blue-700 dark:text-blue-400 shadow-xs"
                     : "text-slate-500 hover:text-slate-900 dark:hover:text-white"
-                }`}
+                  }`}
               >
                 My Past Attempts
               </button>
@@ -168,64 +166,63 @@ const Quizzes = () => {
               <CardGridSkeleton count={6} />
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-              {quizzes.map((quiz) => (
-                <div
-                  key={quiz._id}
-                  className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-5 shadow-xs hover:border-blue-400 transition-all flex flex-col justify-between"
-                >
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <span className="text-[10px] font-extrabold text-blue-700 dark:text-blue-400 bg-blue-50 dark:bg-blue-950 px-2.5 py-0.5 rounded-full uppercase">
-                        {quiz.domain}
+                {quizzes.map((quiz) => (
+                  <div
+                    key={quiz._id}
+                    className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-5 shadow-xs hover:border-blue-400 transition-all flex flex-col justify-between"
+                  >
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] font-extrabold text-blue-700 dark:text-blue-400 bg-blue-50 dark:bg-blue-950 px-2.5 py-0.5 rounded-full uppercase">
+                          {quiz.domain}
+                        </span>
+                        <span
+                          className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${quiz.difficulty === "Hard"
+                              ? "bg-rose-100 text-rose-700"
+                              : quiz.difficulty === "Easy"
+                                ? "bg-emerald-100 text-emerald-700"
+                                : "bg-amber-100 text-amber-700"
+                            }`}
+                        >
+                          {quiz.difficulty}
+                        </span>
+                      </div>
+
+                      <h4 className="font-bold text-sm sm:text-base text-slate-900 dark:text-white leading-snug">
+                        {quiz.title}
+                      </h4>
+
+                      <div className="flex items-center gap-4 text-xs text-slate-500">
+                        <span className="flex items-center gap-1.5">
+                          <FaTasks size={11} className="text-blue-500" />
+                          <span>{quiz.questions?.length || 5} Questions</span>
+                        </span>
+                        <span className="flex items-center gap-1.5">
+                          <FaClock size={11} className="text-amber-500" />
+                          <span>{quiz.timeLimitMinutes || 10} Mins</span>
+                        </span>
+                      </div>
+
+                      <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 text-[11px] text-slate-600 dark:text-slate-400">
+                        Topic: <strong>{quiz.topic}</strong>
+                      </div>
+                    </div>
+
+                    <div className="mt-5 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
+                      <span className="text-[11px] font-bold text-slate-400">
+                        Pass Mark: 60%
                       </span>
-                      <span
-                        className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                          quiz.difficulty === "Hard"
-                            ? "bg-rose-100 text-rose-700"
-                            : quiz.difficulty === "Easy"
-                              ? "bg-emerald-100 text-emerald-700"
-                              : "bg-amber-100 text-amber-700"
-                        }`}
+                      <button
+                        onClick={() => navigate(`/quiz/${quiz._id}`)}
+                        className="px-4 py-2 rounded-xl bg-gradient-to-r from-blue-700 to-indigo-700 text-white font-bold text-xs flex items-center gap-1.5 hover:shadow-md transition-all cursor-pointer"
                       >
-                        {quiz.difficulty}
-                      </span>
-                    </div>
-
-                    <h4 className="font-bold text-sm sm:text-base text-slate-900 dark:text-white leading-snug">
-                      {quiz.title}
-                    </h4>
-
-                    <div className="flex items-center gap-4 text-xs text-slate-500">
-                      <span className="flex items-center gap-1.5">
-                        <FaTasks size={11} className="text-blue-500" />
-                        <span>{quiz.questions?.length || 5} Questions</span>
-                      </span>
-                      <span className="flex items-center gap-1.5">
-                        <FaClock size={11} className="text-amber-500" />
-                        <span>{quiz.timeLimitMinutes || 10} Mins</span>
-                      </span>
-                    </div>
-
-                    <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 text-[11px] text-slate-600 dark:text-slate-400">
-                      Topic: <strong>{quiz.topic}</strong>
+                        <FaPlay size={10} />
+                        <span>Start Assessment</span>
+                      </button>
                     </div>
                   </div>
-
-                  <div className="mt-5 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
-                    <span className="text-[11px] font-bold text-slate-400">
-                      Pass Mark: 60%
-                    </span>
-                    <button
-                      onClick={() => navigate(`/quiz/${quiz._id}`)}
-                      className="px-4 py-2 rounded-xl bg-gradient-to-r from-blue-700 to-indigo-700 text-white font-bold text-xs flex items-center gap-1.5 hover:shadow-md transition-all cursor-pointer"
-                    >
-                      <FaPlay size={10} />
-                      <span>Start Assessment</span>
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
             )}
           </div>
         )}
@@ -281,11 +278,10 @@ const Quizzes = () => {
                         </td>
                         <td className="p-3.5">
                           <span
-                            className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                              att.passed
+                            className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${att.passed
                                 ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300"
                                 : "bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-300"
-                            }`}
+                              }`}
                           >
                             {att.passed ? "Passed" : "Needs Review"}
                           </span>

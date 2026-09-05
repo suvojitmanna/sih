@@ -211,8 +211,8 @@ const MaterialsUpload = () => {
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col transition-colors duration-300">
       <Navbar />
 
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-16 space-y-6">
-        {/* Back Navigation Bar */}
+      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 pt-19 pb-16 space-y-3">
+
         <div className="flex items-center justify-between">
           <BackButton fallbackUrl="/ai-models" label="Back to AI Models" />
           <span className="text-xs font-bold text-slate-500 dark:text-slate-400">
@@ -220,7 +220,6 @@ const MaterialsUpload = () => {
           </span>
         </div>
 
-        {/* Header */}
         <div className="bg-gradient-to-r from-slate-900 via-blue-950 to-slate-900 text-white rounded-3xl p-6 sm:p-8 shadow-xl border border-slate-800 flex flex-col md:flex-row md:items-center md:justify-between gap-6">
           <div>
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/20 text-blue-300 border border-blue-400/30 text-xs font-bold uppercase tracking-wider mb-2">
@@ -244,9 +243,6 @@ const MaterialsUpload = () => {
           </button>
         </div>
 
-        {/* ========================================================== */}
-        {/* SECTION: OFFICER MATERIAL REQUESTS & ACADEMY DISPATCHES */}
-        {/* ========================================================== */}
         {myRequests.length > 0 && (
           <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-xs space-y-4">
             <h2 className="text-sm font-black text-slate-900 dark:text-white flex items-center gap-2">
@@ -310,7 +306,6 @@ const MaterialsUpload = () => {
                         )}
                       </div>
 
-                      {/* Render Dispatched File/Image if present */}
                       {req.dispatchedFileData && (
                         <div className="pt-1 flex items-center gap-2">
                           <a
@@ -353,7 +348,6 @@ const MaterialsUpload = () => {
         )}
 
         <div className="grid lg:grid-cols-12 gap-8 items-start">
-          {/* Left Form */}
           <div className="lg:col-span-5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-8 shadow-xs space-y-6">
             <h2 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
               <FaFileUpload className="text-blue-600" />
@@ -361,7 +355,6 @@ const MaterialsUpload = () => {
             </h2>
 
             <form onSubmit={handleUpload} className="space-y-4 text-xs">
-              {/* File Drop Area */}
               <div className="border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-2xl p-6 text-center hover:border-blue-500 transition-colors bg-slate-50/50 dark:bg-slate-800/50">
                 <input
                   type="file"
@@ -392,7 +385,6 @@ const MaterialsUpload = () => {
                 </label>
               </div>
 
-              {/* Title */}
               <div>
                 <label className="font-bold text-slate-700 dark:text-slate-300 block mb-1">
                   Document Title
@@ -406,7 +398,6 @@ const MaterialsUpload = () => {
                 />
               </div>
 
-              {/* Domain & Topic */}
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="font-bold text-slate-700 dark:text-slate-300 block mb-1">
@@ -455,9 +446,7 @@ const MaterialsUpload = () => {
             </form>
           </div>
 
-          {/* Right Section: MCQ Generator & Library */}
           <div className="lg:col-span-7 space-y-6">
-            {/* Generated MCQs Display */}
             {generatedMcqs.length > 0 && (
               <div className="bg-white dark:bg-slate-900 border border-emerald-200 dark:border-emerald-900/60 rounded-3xl p-6 shadow-md space-y-4">
                 <div className="flex items-center justify-between">
@@ -509,7 +498,6 @@ const MaterialsUpload = () => {
               </div>
             )}
 
-            {/* Uploaded Materials List */}
             <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-xs space-y-4">
               <h2 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
                 <FaListAlt className="text-blue-600" />
@@ -583,9 +571,6 @@ const MaterialsUpload = () => {
         </div>
       </main>
 
-      {/* ========================================================== */}
-      {/* MODAL: REQUEST STUDY MATERIAL FROM NSSTA */}
-      {/* ========================================================== */}
       {showRequestModal && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="bg-white dark:bg-slate-900 rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl border border-slate-200 dark:border-slate-800 space-y-6">
@@ -703,9 +688,6 @@ const MaterialsUpload = () => {
         </div>
       )}
 
-      {/* ========================================================== */}
-      {/* MODAL: IMAGE / FILE PREVIEW */}
-      {/* ========================================================== */}
       {previewFile && (
         <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="bg-white dark:bg-slate-900 rounded-3xl max-w-2xl w-full p-6 shadow-2xl border border-slate-200 dark:border-slate-800 space-y-4">

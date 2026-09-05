@@ -171,8 +171,7 @@ const CompetencyAssessment = () => {
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col">
       <Navbar />
 
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-16 space-y-6">
-        {/* Back Navigation Bar */}
+      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 pt-19 pb-16 space-y-3">
         <div className="flex items-center justify-between">
           <BackButton fallbackUrl="/ai-models" label="Back to AI Models" />
           <span className="text-xs font-bold text-slate-500 dark:text-slate-400">
@@ -180,7 +179,6 @@ const CompetencyAssessment = () => {
           </span>
         </div>
 
-        {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-xs">
           <div>
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 dark:bg-blue-950 text-blue-700 dark:text-blue-300 text-xs font-bold uppercase tracking-wider mb-2">
@@ -198,31 +196,27 @@ const CompetencyAssessment = () => {
           <div className="flex bg-slate-100 dark:bg-slate-800 p-1.5 rounded-2xl border border-slate-200 dark:border-slate-700 text-xs font-bold">
             <button
               onClick={() => setActiveTab("form")}
-              className={`px-4 py-2 rounded-xl transition-all cursor-pointer ${
-                activeTab === "form"
+              className={`px-4 py-2 rounded-xl transition-all cursor-pointer ${activeTab === "form"
                   ? "bg-white dark:bg-slate-900 text-blue-700 dark:text-blue-400 shadow-xs"
                   : "text-slate-500 hover:text-slate-900 dark:hover:text-white"
-              }`}
+                }`}
             >
               Self-Rating Form
             </button>
             <button
               onClick={() => setActiveTab("results")}
-              className={`px-4 py-2 rounded-xl transition-all cursor-pointer ${
-                activeTab === "results"
+              className={`px-4 py-2 rounded-xl transition-all cursor-pointer ${activeTab === "results"
                   ? "bg-white dark:bg-slate-900 text-blue-700 dark:text-blue-400 shadow-xs"
                   : "text-slate-500 hover:text-slate-900 dark:hover:text-white"
-              }`}
+                }`}
             >
               Assessed Matrix & Gaps
             </button>
           </div>
         </div>
 
-        {/* TAB 1: SELF-RATING & EVALUATION FORM */}
         {activeTab === "form" && (
           <form onSubmit={handleRunAssessment} className="space-y-6">
-            {/* Section 1: Official Cadre Profile */}
             <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-xs space-y-4">
               <h2 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
                 <FaUserTie className="text-blue-600" />
@@ -306,7 +300,6 @@ const CompetencyAssessment = () => {
               </div>
             </div>
 
-            {/* Section 2: 4-Domain Competency Rating Sliders */}
             <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-xs space-y-6">
               <div>
                 <h2 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
@@ -366,7 +359,6 @@ const CompetencyAssessment = () => {
               </div>
             </div>
 
-            {/* Submission Action */}
             <div className="flex justify-end">
               <button
                 type="submit"
@@ -386,10 +378,8 @@ const CompetencyAssessment = () => {
           </form>
         )}
 
-        {/* TAB 2: ASSESSED MATRIX & GAPS */}
         {activeTab === "results" && (
           <div className="space-y-6">
-            {/* Overall Score Summary */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-xs flex items-center gap-4">
                 <div className="w-14 h-14 rounded-2xl bg-blue-50 dark:bg-blue-950 text-blue-600 flex items-center justify-center font-black text-xl">
@@ -431,7 +421,6 @@ const CompetencyAssessment = () => {
               </div>
             </div>
 
-            {/* Quick Action Bar */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-slate-900 dark:to-blue-950/40 p-4 rounded-2xl border border-blue-200/80 dark:border-blue-900/60">
               <div className="flex items-center gap-2 text-xs font-bold text-slate-800 dark:text-slate-200">
                 <HiSparkles size={16} className="text-amber-400" />
@@ -465,7 +454,6 @@ const CompetencyAssessment = () => {
               </div>
             </div>
 
-            {/* Competency Matrix Table */}
             <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-xs space-y-4">
               <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
                 <FaBrain className="text-blue-600" />
@@ -493,9 +481,8 @@ const CompetencyAssessment = () => {
                         <td className="p-3.5 text-slate-500 font-medium">{comp.domain}</td>
                         <td className="p-3.5">
                           <span
-                            className={`font-black ${
-                              comp.score >= 75 ? "text-emerald-600" : comp.score >= 55 ? "text-blue-600" : "text-amber-600"
-                            }`}
+                            className={`font-black ${comp.score >= 75 ? "text-emerald-600" : comp.score >= 55 ? "text-blue-600" : "text-amber-600"
+                              }`}
                           >
                             {comp.score}%
                           </span>

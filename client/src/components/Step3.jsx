@@ -90,15 +90,22 @@ const Step3 = ({ report }) => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 relative overflow-hidden px-4 sm:px-8 lg:px-14 py-10 transition-colors duration-300">
+    <div className="w-full relative overflow-hidden py-4 sm:py-0 transition-colors duration-300">
       {/* Gradient Blur Background */}
-      <div className="absolute top-0 left-0 w-72 h-72 bg-emerald-300/20 dark:bg-emerald-500/10 blur-[120px] rounded-full opacity-40"></div>
-      <div className="absolute bottom-0 right-0 w-96 h-96 bg-blue-300/20 dark:bg-blue-500/10 blur-[140px] rounded-full opacity-50"></div>
+      <div className="absolute top-0 left-0 w-72 h-72 bg-emerald-300/20 dark:bg-emerald-500/10 blur-[120px] rounded-full opacity-40 pointer-events-none"></div>
+      <div className="absolute bottom-0 right-0 w-96 h-96 bg-blue-300/20 dark:bg-blue-500/10 blur-[140px] rounded-full opacity-50 pointer-events-none"></div>
+
+      {/* Back Navigation Bar below Navbar */}
+      <div className="relative z-10 flex items-center justify-between mb-3">
+        <BackButton fallbackUrl="/history" label="Back to Interview History" />
+        <span className="text-xs font-bold text-slate-500 dark:text-slate-400 hidden sm:inline-block">
+          Official MoSPI Cadre Viva Evaluation
+        </span>
+      </div>
 
       {/* Header */}
-      <div className="relative z-10 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 mb-10">
+      <div className="relative z-10 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 mb-4">
         <div className="flex items-center gap-4 sm:gap-5">
-          <BackButton fallbackUrl="/history" label="Back" />
 
           <div>
             <h1 className="text-3xl sm:text-5xl font-black tracking-tight text-slate-900 dark:text-white whitespace-nowrap">

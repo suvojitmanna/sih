@@ -6,15 +6,12 @@ import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import BackButton from "../components/BackButton";
 import {
-  FaArrowLeft,
   FaCheckCircle,
   FaFileAlt,
   FaBrain,
   FaAward,
   FaLightbulb,
-  FaExclamationTriangle,
   FaPaperPlane,
-  FaHistory,
 } from "react-icons/fa";
 import { HiSparkles } from "react-icons/hi";
 import { BsShieldCheck } from "react-icons/bs";
@@ -110,10 +107,9 @@ const AssignmentDetails = () => {
       <Navbar />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-16 space-y-8">
-        {/* Back Link */}
+
         <BackButton to="/assignments" label="Back to All Assignments" />
 
-        {/* Title Header */}
         <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-8 shadow-xs space-y-4">
           <div className="flex flex-wrap items-center gap-2">
             <span className="text-[10px] font-black text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-950 px-2.5 py-0.5 rounded-full uppercase tracking-wider">
@@ -141,9 +137,7 @@ const AssignmentDetails = () => {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-          {/* Left Column: Scenario & Instructions */}
           <div className="lg:col-span-6 space-y-6">
-            {/* Scenario Description */}
             <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-7 shadow-xs space-y-4">
               <h2 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
                 <FaFileAlt className="text-blue-600" />
@@ -154,7 +148,6 @@ const AssignmentDetails = () => {
               </p>
             </div>
 
-            {/* Step-by-Step Deliverables */}
             <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-7 shadow-xs space-y-4">
               <h2 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
                 <BsShieldCheck className="text-emerald-600" />
@@ -169,7 +162,6 @@ const AssignmentDetails = () => {
               </div>
             </div>
 
-            {/* Grading Rubric */}
             <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-7 shadow-xs space-y-4">
               <h2 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
                 <FaAward className="text-amber-500" />
@@ -189,9 +181,7 @@ const AssignmentDetails = () => {
             </div>
           </div>
 
-          {/* Right Column: Submission & AI Evaluation */}
           <div className="lg:col-span-6 space-y-6">
-            {/* If Already Evaluated, show Scorecard */}
             {evaluation && (
               <div className="bg-gradient-to-br from-blue-900 via-indigo-900 to-slate-900 text-white rounded-3xl p-6 sm:p-8 shadow-xl space-y-6">
                 <div className="flex items-center justify-between">
@@ -213,7 +203,6 @@ const AssignmentDetails = () => {
                   </div>
                 </div>
 
-                {/* Rubric Breakdown */}
                 <div className="space-y-3">
                   <h4 className="text-xs font-bold uppercase tracking-wider text-slate-300">Rubric Performance</h4>
                   {(evaluation.rubricScores || []).map((rub, idx) => (
@@ -227,7 +216,6 @@ const AssignmentDetails = () => {
                   ))}
                 </div>
 
-                {/* Strengths & Improvement */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
                   <div className="bg-emerald-950/60 border border-emerald-500/30 p-3.5 rounded-xl space-y-1.5">
                     <h5 className="text-xs font-bold text-emerald-300 flex items-center gap-1">
@@ -254,7 +242,6 @@ const AssignmentDetails = () => {
                   </div>
                 </div>
 
-                {/* Detailed Feedback Note */}
                 <div className="bg-white/10 p-4 rounded-2xl text-xs text-slate-200 leading-relaxed">
                   <span className="font-bold text-amber-300 block mb-1">Evaluator Feedback:</span>
                   {evaluation.detailedFeedback}
@@ -262,7 +249,6 @@ const AssignmentDetails = () => {
               </div>
             )}
 
-            {/* Submission Workspace Form */}
             <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-7 shadow-xs space-y-4">
               <div className="flex items-center justify-between">
                 <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
@@ -301,7 +287,7 @@ const AssignmentDetails = () => {
                   ) : (
                     <>
                       <FaPaperPlane size={12} />
-                      <span>{evaluation ? "Re-Submit for AI Evaluation (Gemini)" : "Submit Solution for AI Evaluation (Gemini)"}</span>
+                      <span>{evaluation ? "Re-Submit for AI Evaluation (SankhyaIQ AI)" : "Submit Solution for AI Evaluation (SankhyaIQ AI)"}</span>
                     </>
                   )}
                 </button>

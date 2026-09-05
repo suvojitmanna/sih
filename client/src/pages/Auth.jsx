@@ -5,11 +5,9 @@ import { setUserData } from "../redux/userSlice";
 import { ServerUrl } from "../App";
 import axios from "axios";
 import toast from "react-hot-toast";
-import { motion, AnimatePresence } from "framer-motion";
-import { FaUserGraduate, FaShieldAlt, FaKey, FaEnvelope, FaBuilding, FaIdCard, FaArrowLeft } from "react-icons/fa";
+import { FaUserGraduate, FaShieldAlt, FaKey, FaEnvelope, FaArrowLeft } from "react-icons/fa";
 import { BsCheckCircleFill, BsShieldLockFill } from "react-icons/bs";
 import { signInWithGooglePopup } from "../utils/googleAuth";
-import BackButton from "../components/BackButton";
 
 const CADRE_OPTIONS = [
   "Indian Statistical Service (ISS) Officer",
@@ -34,12 +32,11 @@ const DEPARTMENT_OPTIONS = [
 
 const Auth = ({ isModel = false }) => {
   const [isLogin, setIsLogin] = useState(true);
-  const [step, setStep] = useState(1); // 1: Credentials, 2: OTP Verification
+  const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  // Handle Google OAuth Sign In (Without Firebase)
   const handleGoogleAuth = async () => {
     setLoading(true);
     try {
@@ -77,7 +74,6 @@ const Auth = ({ isModel = false }) => {
     }
   };
 
-  // Form State
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -86,13 +82,11 @@ const Auth = ({ isModel = false }) => {
   const [department, setDepartment] = useState(DEPARTMENT_OPTIONS[0]);
   const [designation, setDesignation] = useState("Statistical Officer");
 
-  // OTP State (6 individual digits)
   const [otpDigits, setOtpDigits] = useState(["", "", "", "", "", ""]);
   const [countdown, setCountdown] = useState(60);
   const [canResend, setCanResend] = useState(false);
   const inputRefs = useRef([]);
 
-  // Timer countdown for OTP resend
   useEffect(() => {
     let timer;
     if (step === 2 && countdown > 0) {
@@ -105,10 +99,8 @@ const Auth = ({ isModel = false }) => {
     return () => clearInterval(timer);
   }, [step, countdown]);
 
-  // Handle OTP input changes with auto-focus
   const handleOtpChange = (index, value) => {
     if (value.length > 1) {
-      // Handle paste
       const pasted = value.replace(/\D/g, "").slice(0, 6).split("");
       const newDigits = [...otpDigits];
       pasted.forEach((char, i) => {
@@ -260,12 +252,6 @@ const Auth = ({ isModel = false }) => {
       <div className="absolute -top-40 -left-40 w-96 h-96 bg-blue-600/20 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute -bottom-40 -right-40 w-96 h-96 bg-indigo-600/20 rounded-full blur-3xl pointer-events-none" />
 
-      {/* Top Header Logo & Back Navigation */}
-      <div className="max-w-md w-full mx-auto flex items-center justify-between z-10 mb-4">
-        <BackButton fallbackUrl="/" label="Back to Home" variant="pill" />
-        <span className="text-[11px] font-bold text-slate-400">MoSPI SSO</span>
-      </div>
-
       <div className="max-w-md w-full mx-auto text-center z-10">
         <div
           onClick={() => navigate("/")}
@@ -288,31 +274,27 @@ const Auth = ({ isModel = false }) => {
       {/* Main Authentication Card */}
       <div className="max-w-md w-full mx-auto z-10 my-auto">
         <div className="bg-slate-900/80 backdrop-blur-2xl border border-slate-700/80 rounded-3xl p-6 sm:p-8 shadow-2xl">
-          {/* Top Tri-color Line */}
           <div className="h-1 w-full bg-gradient-to-r from-[#FF9933] via-white to-[#138808] rounded-full mb-6" />
 
-          {/* Mode Switcher Tabs (Only in Step 1) */}
           {step === 1 && (
             <div className="grid grid-cols-2 p-1 bg-slate-800/80 rounded-2xl border border-slate-700 mb-6 text-xs font-bold">
               <button
                 type="button"
                 onClick={() => setIsLogin(true)}
-                className={`py-2.5 rounded-xl transition-all cursor-pointer ${
-                  isLogin
+                className={`py-2.5 rounded-xl transition-all cursor-pointer ${isLogin
                     ? "bg-blue-600 text-white shadow-md"
                     : "text-slate-400 hover:text-white"
-                }`}
+                  }`}
               >
                 Officer Sign In
               </button>
               <button
                 type="button"
                 onClick={() => setIsLogin(false)}
-                className={`py-2.5 rounded-xl transition-all cursor-pointer ${
-                  !isLogin
+                className={`py-2.5 rounded-xl transition-all cursor-pointer ${!isLogin
                     ? "bg-blue-600 text-white shadow-md"
                     : "text-slate-400 hover:text-white"
-                }`}
+                  }`}
               >
                 New Registration
               </button>
@@ -361,7 +343,6 @@ const Auth = ({ isModel = false }) => {
                 <span>Continue with Google</span>
               </button>
 
-              {/* Or Divider */}
               <div className="relative my-4 flex items-center justify-center">
                 <div className="border-t border-slate-700/80 w-full" />
                 <span className="bg-slate-900/90 px-3 text-[10px] font-extrabold uppercase tracking-wider text-slate-400 shrink-0">
@@ -372,115 +353,115 @@ const Auth = ({ isModel = false }) => {
 
               <form onSubmit={handleInitiateAuth} className="space-y-4">
 
-              {!isLogin && (
+                {!isLogin && (
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-300 mb-1.5">Full Name</label>
+                    <div className="relative">
+                      <FaUserGraduate className="absolute left-3.5 top-3.5 text-slate-500" size={14} />
+                      <input
+                        type="text"
+                        required
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        placeholder="e.g. Dr. Ramesh Kumar, ISS"
+                        className="w-full bg-slate-800/80 border border-slate-700 rounded-xl pl-10 pr-4 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-hidden focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
+                      />
+                    </div>
+                  </div>
+                )}
+
                 <div>
-                  <label className="block text-xs font-semibold text-slate-300 mb-1.5">Full Name</label>
+                  <label className="block text-xs font-semibold text-slate-300 mb-1.5">Official / Gov Email</label>
                   <div className="relative">
-                    <FaUserGraduate className="absolute left-3.5 top-3.5 text-slate-500" size={14} />
+                    <FaEnvelope className="absolute left-3.5 top-3.5 text-slate-500" size={14} />
                     <input
-                      type="text"
+                      type="email"
                       required
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      placeholder="e.g. Dr. Ramesh Kumar, ISS"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="name@mospi.gov.in / name@gmail.com"
                       className="w-full bg-slate-800/80 border border-slate-700 rounded-xl pl-10 pr-4 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-hidden focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
                     />
                   </div>
                 </div>
-              )}
 
-              <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1.5">Official / Gov Email</label>
-                <div className="relative">
-                  <FaEnvelope className="absolute left-3.5 top-3.5 text-slate-500" size={14} />
-                  <input
-                    type="email"
-                    required
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="name@mospi.gov.in / name@gmail.com"
-                    className="w-full bg-slate-800/80 border border-slate-700 rounded-xl pl-10 pr-4 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-hidden focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
-                  />
+                <div>
+                  <label className="block text-xs font-semibold text-slate-300 mb-1.5">Password</label>
+                  <div className="relative">
+                    <FaKey className="absolute left-3.5 top-3.5 text-slate-500" size={14} />
+                    <input
+                      type="password"
+                      required
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="••••••••"
+                      className="w-full bg-slate-800/80 border border-slate-700 rounded-xl pl-10 pr-4 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-hidden focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
+                    />
+                  </div>
                 </div>
-              </div>
 
-              <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1.5">Password</label>
-                <div className="relative">
-                  <FaKey className="absolute left-3.5 top-3.5 text-slate-500" size={14} />
-                  <input
-                    type="password"
-                    required
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="••••••••"
-                    className="w-full bg-slate-800/80 border border-slate-700 rounded-xl pl-10 pr-4 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-hidden focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
-                  />
-                </div>
-              </div>
+                {!isLogin && (
+                  <>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-[11px] font-semibold text-slate-300 mb-1">Cadre / Job Role</label>
+                        <select
+                          value={jobRole}
+                          onChange={(e) => setJobRole(e.target.value)}
+                          className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-200 focus:border-blue-500"
+                        >
+                          {CADRE_OPTIONS.map((c) => (
+                            <option key={c} value={c}>
+                              {c}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
 
-              {!isLogin && (
-                <>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-[11px] font-semibold text-slate-300 mb-1">Account Role</label>
+                        <select
+                          value={role}
+                          onChange={(e) => setRole(e.target.value)}
+                          className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-200 focus:border-blue-500"
+                        >
+                          <option value="learner">Statistical Learner / Officer</option>
+                          <option value="admin">Training Administrator / NSSTA</option>
+                        </select>
+                      </div>
+                    </div>
+
                     <div>
-                      <label className="block text-[11px] font-semibold text-slate-300 mb-1">Cadre / Job Role</label>
+                      <label className="block text-[11px] font-semibold text-slate-300 mb-1">Department / Division</label>
                       <select
-                        value={jobRole}
-                        onChange={(e) => setJobRole(e.target.value)}
+                        value={department}
+                        onChange={(e) => setDepartment(e.target.value)}
                         className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-200 focus:border-blue-500"
                       >
-                        {CADRE_OPTIONS.map((c) => (
-                          <option key={c} value={c}>
-                            {c}
+                        {DEPARTMENT_OPTIONS.map((d) => (
+                          <option key={d} value={d}>
+                            {d}
                           </option>
                         ))}
                       </select>
                     </div>
-
-                    <div>
-                      <label className="block text-[11px] font-semibold text-slate-300 mb-1">Account Role</label>
-                      <select
-                        value={role}
-                        onChange={(e) => setRole(e.target.value)}
-                        className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-200 focus:border-blue-500"
-                      >
-                        <option value="learner">Statistical Learner / Officer</option>
-                        <option value="admin">Training Administrator / NSSTA</option>
-                      </select>
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-[11px] font-semibold text-slate-300 mb-1">Department / Division</label>
-                    <select
-                      value={department}
-                      onChange={(e) => setDepartment(e.target.value)}
-                      className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-200 focus:border-blue-500"
-                    >
-                      {DEPARTMENT_OPTIONS.map((d) => (
-                        <option key={d} value={d}>
-                          {d}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </>
-              )}
-
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full mt-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white py-3 rounded-xl font-bold text-xs shadow-lg hover:shadow-blue-600/30 active:scale-98 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
-              >
-                {loading ? (
-                  <span className="inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                ) : (
-                  <>
-                    <BsShieldLockFill size={14} />
-                    <span>{isLogin ? "Continue & Send Security Code" : "Register & Send Verification Code"}</span>
                   </>
                 )}
-              </button>
+
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full mt-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white py-3 rounded-xl font-bold text-xs shadow-lg hover:shadow-blue-600/30 active:scale-98 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                >
+                  {loading ? (
+                    <span className="inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  ) : (
+                    <>
+                      <BsShieldLockFill size={14} />
+                      <span>{isLogin ? "Continue & Send Security Code" : "Register & Send Verification Code"}</span>
+                    </>
+                  )}
+                </button>
               </form>
             </div>
           ) : (
@@ -509,7 +490,6 @@ const Auth = ({ isModel = false }) => {
                 </p>
               </div>
 
-              {/* 6-Box Split Input */}
               <div className="flex justify-center gap-2 sm:gap-3">
                 {otpDigits.map((digit, idx) => (
                   <input
@@ -564,7 +544,6 @@ const Auth = ({ isModel = false }) => {
         </div>
       </div>
 
-      {/* Footer Info */}
       <div className="max-w-md w-full mx-auto text-center z-10 text-[11px] text-slate-500">
         © {new Date().getFullYear()} Ministry of Statistics & Programme Implementation (MoSPI).<br />
         Aligned with iGOT Karmayogi & NSSTA TPAC Framework.
