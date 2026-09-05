@@ -4,25 +4,16 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   BsChevronDown,
   BsBarChartLine,
-  BsRobot,
   BsShieldLock,
-  BsFillCameraVideoFill,
   BsSun,
   BsMoonStars,
   BsDisplay,
 } from "react-icons/bs";
 import {
   FaUserGraduate,
-  FaCertificate,
-  FaFileUpload,
-  FaTasks,
-  FaBrain,
-  FaUserTie,
   FaHistory,
   FaFilePdf,
-  FaFileAlt,
   FaHome,
-  FaDesktop,
 } from "react-icons/fa";
 import { HiOutlineLogout, HiMenu, HiX, HiSparkles } from "react-icons/hi";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -81,7 +72,6 @@ const Navbar = () => {
     });
   };
 
-  // The 4 Specific Primary Nav Links requested by User
   const navLinks = [
     { label: "Home", path: "/", icon: FaHome },
     { label: "Dashboard", path: "/dashboard", icon: BsBarChartLine },
@@ -102,36 +92,35 @@ const Navbar = () => {
   return (
     <>
       <nav className="fixed top-0 left-0 right-0 z-[100] bg-white/85 dark:bg-slate-950/85 backdrop-blur-2xl border-b border-slate-200/70 dark:border-slate-800/80 shadow-[0_4px_30px_rgba(0,0,0,0.03)] transition-all">
-        {/* Tricolor National Government Ribbon */}
         <div className="h-1 w-full bg-gradient-to-r from-[#FF9933] via-white to-[#138808]" />
 
         <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16 sm:h-18">
-            {/* Left: MoSPI & NSSTA Brand Logo */}
-            <div
-              onClick={() => navigate("/")}
-              className="flex items-center gap-3 cursor-pointer group select-none"
-            >
-              <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-slate-950 via-blue-900 to-indigo-900 text-white flex items-center justify-center shadow-lg group-hover:scale-105 transition-all duration-300 border border-blue-500/30">
-                <span className="font-black text-xs sm:text-sm tracking-wider">NSSTA</span>
-              </div>
-              <div className="flex flex-col">
-                <div className="flex items-center gap-1.5">
-                  <span className="font-black text-sm sm:text-base text-slate-900 dark:text-white tracking-tight">
-                    MoSPI <span className="text-blue-600 dark:text-blue-400">SkillIQ</span>
-                  </span>
-                  <span className="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-extrabold bg-blue-50 dark:bg-blue-950/80 text-blue-700 dark:text-blue-300 uppercase tracking-wider border border-blue-200/80 dark:border-blue-800">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                    <span>SankhyaIQ AI</span>
+            <div className="flex items-center gap-2 sm:gap-3">
+              <div
+                onClick={() => navigate("/")}
+                className="flex items-center gap-3 cursor-pointer group select-none"
+              >
+                <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-slate-950 via-blue-900 to-indigo-900 text-white flex items-center justify-center shadow-lg group-hover:scale-105 transition-all duration-300 border border-blue-500/30">
+                  <span className="font-black text-xs sm:text-sm tracking-wider">NSSTA</span>
+                </div>
+                <div className="flex flex-col">
+                  <div className="flex items-center gap-1.5">
+                    <span className="font-black text-sm sm:text-base text-slate-900 dark:text-white tracking-tight">
+                      MoSPI <span className="text-blue-600 dark:text-blue-400">SkillIQ</span>
+                    </span>
+                    <span className="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-extrabold bg-blue-50 dark:bg-blue-950/80 text-blue-700 dark:text-blue-300 uppercase tracking-wider border border-blue-200/80 dark:border-blue-800">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                      <span>SankhyaIQ AI</span>
+                    </span>
+                  </div>
+                  <span className="text-[10px] text-slate-500 dark:text-slate-400 font-semibold hidden md:block">
+                    National Statistical Systems Training Academy
                   </span>
                 </div>
-                <span className="text-[10px] text-slate-500 dark:text-slate-400 font-semibold hidden md:block">
-                  National Statistical Systems Training Academy
-                </span>
               </div>
             </div>
 
-            {/* Desktop Navigation Links: Home, Dashboard, History, AI Models */}
             <div className="hidden md:flex items-center gap-1.5 bg-slate-100/80 dark:bg-slate-900/80 p-1.5 rounded-2xl border border-slate-200/60 dark:border-slate-800 text-xs font-bold text-slate-600 dark:text-slate-300 shadow-inner">
               {navLinks.map((link) => {
                 const Icon = link.icon;
@@ -166,9 +155,7 @@ const Navbar = () => {
               })}
             </div>
 
-            {/* Right Action Section: Quick Dossier & User Profile */}
             <div className="flex items-center gap-2 sm:gap-2.5">
-              {/* Quick PDF Dossier Button */}
               {userData && (
                 <button
                   onClick={handleDownloadDossier}

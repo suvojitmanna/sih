@@ -7,6 +7,7 @@ import toast from "react-hot-toast";
 import { ServerUrl } from "../App";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
+import BackButton from "../components/BackButton";
 
 const Pricing = () => {
   const navigate = useNavigate();
@@ -147,13 +148,8 @@ const Pricing = () => {
       <div className="absolute bottom-0 right-0 w-[400px] h-[400px] bg-emerald-300/20 dark:bg-emerald-500/10 rounded-full blur-3xl opacity-30 pointer-events-none"></div>
 
       {/* Header */}
-      <div className="max-w-7xl mx-auto flex items-start gap-4 mb-16 relative z-10 pt-16">
-        <button
-          onClick={() => navigate("/")}
-          className="p-3 rounded-2xl bg-white dark:bg-slate-800 shadow-md border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:scale-105 transition cursor-pointer"
-        >
-          <FaArrowLeft />
-        </button>
+      <div className="max-w-7xl mx-auto flex items-start gap-4 mb-16 relative z-10 pt-5">
+        <BackButton fallbackUrl="/dashboard" label="Back" />
 
         <div className="w-full text-center">
           <h1 className="text-3xl sm:text-5xl font-black text-slate-900 dark:text-white">
@@ -189,7 +185,6 @@ const Pricing = () => {
               {/* Inner Card */}
               <div className="bg-white dark:bg-slate-900 rounded-[32px] p-8 h-full shadow-xl border border-slate-200/60 dark:border-slate-800 flex flex-col justify-between">
                 <div>
-                  {/* Badge */}
                   {plan.badge && (
                     <div className="absolute top-5 right-5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-[10px] font-extrabold px-3 py-1 rounded-full shadow-sm">
                       {plan.badge}
@@ -217,12 +212,10 @@ const Pricing = () => {
                     <p className="text-slate-500 dark:text-slate-400 mt-1 text-xs font-bold">{plan.credits} AI Viva Credits</p>
                   </div>
 
-                  {/* Description */}
                   <p className="text-slate-600 dark:text-slate-300 mt-4 text-xs leading-relaxed">
                     {plan.description}
                   </p>
 
-                  {/* Features */}
                   <div className="mt-6 space-y-3">
                     {plan.features.map((feature, i) => (
                       <div key={i} className="flex items-center gap-2.5 text-xs">
@@ -233,7 +226,6 @@ const Pricing = () => {
                   </div>
                 </div>
 
-                {/* Button */}
                 <button
                   disabled={plan.disabled}
                   onClick={(e) => {

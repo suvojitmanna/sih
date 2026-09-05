@@ -3,6 +3,7 @@ import Navbar from '../components/Navbar';
 import Step1 from '../components/Step1';
 import Step2 from '../components/Step2';
 import Step3 from '../components/Step3';
+import BackButton from '../components/BackButton';
 
 const InterviewPage = () => {
   const [step, setStep] = useState(1);
@@ -11,7 +12,12 @@ const InterviewPage = () => {
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col">
       <Navbar />
-      <div className="flex-1 pt-18">
+      <div className="flex-1 pt-22 pb-12">
+        {step === 1 && (
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 mb-3">
+            <BackButton fallbackUrl="/ai-models" label="Back to AI Models" />
+          </div>
+        )}
         {step === 1 && (
           <Step1
             onStart={(data) => {

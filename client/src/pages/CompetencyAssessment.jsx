@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
+import BackButton from "../components/BackButton";
 import { ServerUrl } from "../App";
 import axios from "axios";
 import toast from "react-hot-toast";
@@ -171,6 +172,14 @@ const CompetencyAssessment = () => {
       <Navbar />
 
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-16 space-y-6">
+        {/* Back Navigation Bar */}
+        <div className="flex items-center justify-between">
+          <BackButton fallbackUrl="/ai-models" label="Back to AI Models" />
+          <span className="text-xs font-bold text-slate-500 dark:text-slate-400">
+            Competency Radar & Framework
+          </span>
+        </div>
+
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-xs">
           <div>

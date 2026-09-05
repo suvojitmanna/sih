@@ -4,6 +4,7 @@ import axios from "axios";
 import { ServerUrl } from "../App";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
+import BackButton from "../components/BackButton";
 import {
   FaTasks,
   FaCheckCircle,
@@ -79,7 +80,15 @@ const Assignments = () => {
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 transition-colors">
       <Navbar />
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-16 space-y-8">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-16 space-y-6">
+        {/* Back Navigation Bar */}
+        <div className="flex items-center justify-between">
+          <BackButton fallbackUrl="/ai-models" label="Back to AI Models" />
+          <span className="text-xs font-bold text-slate-500 dark:text-slate-400">
+            Case Studies Practicum
+          </span>
+        </div>
+
         {/* Header Banner */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-gradient-to-r from-blue-900 via-indigo-900 to-slate-900 text-white p-6 sm:p-8 rounded-3xl shadow-xl relative overflow-hidden">
           <div className="absolute top-0 right-0 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />

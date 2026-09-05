@@ -25,6 +25,7 @@ import {
 import { HiSparkles } from "react-icons/hi";
 import AuthModel from "../components/AuthModel";
 import PageTransition from "../components/PageTransition";
+import BackButton from "../components/BackButton";
 
 const AI_MODELS_DATA = [
   {
@@ -379,6 +380,14 @@ const AiModelsHub = () => {
 
       <PageTransition>
         <main className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 pt-24 pb-16 space-y-6">
+          {/* Back Navigation Bar */}
+          <div className="flex items-center justify-between">
+            <BackButton fallbackUrl="/dashboard" label="Back to Dashboard" />
+            <span className="text-xs font-bold text-slate-500 dark:text-slate-400">
+              SankhyaIQ™ AI Neural Models
+            </span>
+          </div>
+
           {/* Top Header Banner with Tricolor & Glassmorphism */}
           <motion.div
             initial={{ opacity: 0, y: -10 }}
@@ -575,16 +584,19 @@ const AiModelsHub = () => {
                       </div>
                     </div>
 
-                    <motion.button
-                      whileHover={{ scale: 1.03 }}
-                      whileTap={{ scale: 0.97 }}
-                      onClick={() => handleLaunch(activeModel.route)}
-                      className={`px-6 py-3.5 rounded-2xl bg-gradient-to-r ${activeModel.gradient} text-white font-black text-xs sm:text-sm shadow-xl shadow-blue-500/25 transition-all flex items-center gap-2.5 cursor-pointer shrink-0 active:scale-95`}
-                    >
-                      <FaPlay size={11} />
-                      <span>Launch {activeModel.badge}</span>
-                      <FaArrowRight size={11} />
-                    </motion.button>
+                    <div className="flex items-center gap-2">
+                      <BackButton fallbackUrl="/dashboard" label="Back" variant="pill" />
+                      <motion.button
+                        whileHover={{ scale: 1.03 }}
+                        whileTap={{ scale: 0.97 }}
+                        onClick={() => handleLaunch(activeModel.route)}
+                        className={`px-6 py-3.5 rounded-2xl bg-gradient-to-r ${activeModel.gradient} text-white font-black text-xs sm:text-sm shadow-xl shadow-blue-500/25 transition-all flex items-center gap-2.5 cursor-pointer shrink-0 active:scale-95`}
+                      >
+                        <FaPlay size={11} />
+                        <span>Launch {activeModel.badge}</span>
+                        <FaArrowRight size={11} />
+                      </motion.button>
+                    </div>
                   </div>
 
                   {/* 2. Model Performance Metric Strip */}
@@ -691,13 +703,16 @@ const AiModelsHub = () => {
                       interactive view.
                     </span>
 
-                    <button
-                      onClick={() => handleLaunch(activeModel.route)}
-                      className={`w-full sm:w-auto px-6 py-2.5 rounded-xl bg-gradient-to-r ${activeModel.gradient} hover:opacity-95 text-white font-bold text-xs transition-all flex items-center justify-center gap-2 cursor-pointer shadow-md`}
-                    >
-                      <span>Open {activeModel.shortName}</span>
-                      <FaArrowRight size={10} />
-                    </button>
+                    <div className="flex items-center gap-2 w-full sm:w-auto">
+                      <BackButton fallbackUrl="/dashboard" label="Back" variant="pill" />
+                      <button
+                        onClick={() => handleLaunch(activeModel.route)}
+                        className={`w-full sm:w-auto px-6 py-2.5 rounded-xl bg-gradient-to-r ${activeModel.gradient} hover:opacity-95 text-white font-bold text-xs transition-all flex items-center justify-center gap-2 cursor-pointer shadow-md`}
+                      >
+                        <span>Open {activeModel.shortName}</span>
+                        <FaArrowRight size={10} />
+                      </button>
+                    </div>
                   </div>
                 </motion.div>
               </AnimatePresence>

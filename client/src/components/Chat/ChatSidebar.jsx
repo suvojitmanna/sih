@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import moment from "moment";
 import { useNavigate } from "react-router-dom";
-import toast from "react-hot-toast";
 import {
   FaPlus,
   FaSearch,
@@ -15,6 +14,7 @@ import {
 } from "react-icons/fa";
 import { BsRobot } from "react-icons/bs";
 import { useTheme } from "../../context/ThemeContext";
+import BackButton from "../BackButton";
 
 const ChatSidebar = ({
   isMenuOpen,
@@ -48,7 +48,6 @@ const ChatSidebar = ({
 
   return (
     <>
-      {/* Mobile Backdrop */}
       {isMenuOpen && (
         <div
           onClick={() => setIsMenuOpen(false)}
@@ -56,33 +55,39 @@ const ChatSidebar = ({
         />
       )}
 
-      {/* Sidebar Container */}
       <aside
         className={`flex flex-col h-[calc(100vh-5rem)] w-80 max-w-[85vw] p-4 bg-white/95 dark:bg-slate-900/95 border-r border-slate-200 dark:border-slate-800 shadow-xl transition-all duration-300 z-50 md:static fixed left-0 top-20 rounded-2xl md:rounded-3xl my-2 ml-2 md:my-0 md:ml-0 overflow-hidden ${
           isMenuOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
         }`}
       >
-        {/* Top Header */}
-        <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
-          <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-500 text-white shadow-sm">
-              <BsRobot size={18} />
-            </div>
-            <div>
-              <h2 className="font-bold text-sm text-slate-800 dark:text-white">AI Workspace</h2>
-              <p className="text-[10px] text-slate-400">Conversations & Studio</p>
-            </div>
-          </div>
+        <div className="flex items-center justify-between pb-2.5 border-b border-slate-100 dark:border-slate-800 shrink-0">
+          <BackButton
+            fallbackUrl="/ai-models"
+            label="Back to AI Models"
+            variant="subtle"
+            className="text-xs font-semibold text-slate-500 hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400"
+          />
 
           <button
             onClick={() => setIsMenuOpen(false)}
-            className="p-2 rounded-lg text-slate-400 hover:text-slate-700 md:hidden"
+            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 md:hidden cursor-pointer"
+            title="Close menu"
           >
-            <FaTimes size={16} />
+            <FaTimes size={15} />
           </button>
         </div>
 
-        {/* New Chat Button */}
+        <div className="flex items-center gap-2.5 pt-3 pb-1 shrink-0">
+          <div className="p-2 rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-500 text-white shadow-sm shrink-0">
+            <BsRobot size={18} />
+          </div>
+          <div>
+            <h2 className="font-bold text-sm text-slate-800 dark:text-white">AI Workspace</h2>
+            <p className="text-[10px] text-slate-400">Conversations & Studio</p>
+          </div>
+        </div>
+
+        
         <button
           onClick={createNewChat}
           className="flex items-center justify-center gap-2 w-full py-3 mt-4 text-white bg-gradient-to-r from-indigo-600 via-violet-600 to-fuchsia-600 hover:opacity-95 text-sm font-semibold rounded-2xl shadow-[0_8px_20px_rgba(79,70,229,0.25)] hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer shrink-0"
@@ -91,7 +96,6 @@ const ChatSidebar = ({
           <span>New Chat</span>
         </button>
 
-        {/* Search Input */}
         <div className="flex items-center gap-2 px-3 py-2.5 mt-3 bg-slate-100 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/60 rounded-xl focus-within:ring-2 focus-within:ring-indigo-500/30 transition-all shrink-0">
           <FaSearch size={12} className="text-slate-400 shrink-0" />
           <input
@@ -103,7 +107,6 @@ const ChatSidebar = ({
           />
         </div>
 
-        {/* Recent Chats List */}
         <div className="flex-1 overflow-y-auto mt-4 space-y-1.5 pr-1 custom-scrollbar">
           <p className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider px-2 mb-2">
             Recent Sessions
@@ -158,9 +161,7 @@ const ChatSidebar = ({
           )}
         </div>
 
-        {/* Footer Navigation */}
         <div className="pt-3 mt-auto border-t border-slate-100 dark:border-slate-800 space-y-2 shrink-0">
-          {/* Community Images Link */}
           <div
             onClick={() => navigate("/community")}
             className="flex items-center gap-2.5 p-2 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer text-xs font-medium transition-colors"
@@ -169,7 +170,6 @@ const ChatSidebar = ({
             <span>Community Gallery</span>
           </div>
 
-          {/* Credits Box */}
           <div
             onClick={() => navigate("/pricing")}
             className="flex items-center justify-between p-2.5 rounded-xl bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-500/20 text-slate-700 dark:text-slate-200 cursor-pointer hover:border-amber-500/40 transition-all"
@@ -183,7 +183,6 @@ const ChatSidebar = ({
             </span>
           </div>
 
-          {/* Dark / Light Toggle */}
           <div className="flex items-center justify-between p-2 rounded-xl bg-slate-50 dark:bg-slate-800/50 text-xs text-slate-600 dark:text-slate-300">
             <div className="flex items-center gap-2">
               {resolvedTheme === "dark" ? <FaMoon className="text-indigo-400" /> : <FaSun className="text-amber-500" />}

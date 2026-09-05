@@ -51,7 +51,6 @@ import { DashboardSkeleton } from "../components/SkeletonLoader";
 import PageTransition from "../components/PageTransition";
 import { ScrollReveal } from "../components/ScrollReveal";
 
-// High-Contrast Custom X-Axis Tick for perfect visibility in light and dark themes
 const CustomXAxisTick = ({ x, y, payload }) => {
   if (!payload || !payload.value) return null;
   return (
@@ -98,7 +97,6 @@ const Dashboard = () => {
   const [generatingPath, setGeneratingPath] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
 
-  // Live real-time ticking clock
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentTime(new Date());
@@ -156,7 +154,6 @@ const Dashboard = () => {
     }
   };
 
-  // Prepare Radar Chart Data across 4 Domains
   const radarData = [
     {
       domain: "Statistical",
@@ -188,7 +185,6 @@ const Dashboard = () => {
     },
   ];
 
-  // Base raw competencies
   const rawCompetencies = profile?.competencies && profile.competencies.length > 0
     ? profile.competencies
     : [
@@ -202,7 +198,6 @@ const Dashboard = () => {
         { competencyName: "Evidence-Based Policy Leadership", domain: "Managerial", score: 80 },
       ];
 
-  // Prepare Column-Wise Vertical Bar Data
   const columnBarData = rawCompetencies.map((c) => {
     const shortName = getShortCompetencyName(c.competencyName);
     return {
@@ -217,8 +212,6 @@ const Dashboard = () => {
       isMastered: c.score >= 75,
     };
   });
-
-  // Detected Weaknesses filtered for direct learning path mapping
   const weakCompetencies = columnBarData.filter((b) => b.score < 75);
 
   const handleUpdateCourseStatus = async (stepIndex, status) => {
@@ -242,8 +235,14 @@ const Dashboard = () => {
       <Navbar />
 
       <PageTransition skeletonType="dashboard" isLoading={loading}>
-        <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-16 space-y-8">
-          {/* Welcome Cadre Banner with Actions & Live Clock */}
+        <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-16 space-y-6">
+    
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold text-slate-500 dark:text-slate-400">
+              National Statistical Portal
+            </span>
+          </div>
+
         <div className="relative rounded-3xl overflow-hidden bg-gradient-to-r from-slate-950 via-blue-950 to-indigo-950 text-white p-6 sm:p-8 shadow-2xl border border-slate-800">
           <div className="absolute right-0 top-0 w-96 h-full bg-blue-600/15 rounded-full blur-3xl pointer-events-none" />
 
@@ -255,7 +254,6 @@ const Dashboard = () => {
                   <span>National Statistical System • Official Portal</span>
                 </div>
 
-                {/* Live IST Clock with Seconds */}
                 <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/20 border border-emerald-400/30 text-emerald-300 text-xs font-mono font-bold">
                   <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
                   <span>IST: {currentTime.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: true })}</span>
@@ -290,7 +288,6 @@ const Dashboard = () => {
           </div>
         </div>
 
-        {/* Cadre Mock Interview Banner */}
         <ScrollReveal direction="up" delay={0.05}>
           <div className="relative rounded-3xl overflow-hidden bg-gradient-to-r from-slate-900 via-indigo-950 to-blue-950 text-white p-6 sm:p-8 shadow-xl border border-blue-500/20">
             <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
@@ -346,7 +343,6 @@ const Dashboard = () => {
           </div>
         </ScrollReveal>
 
-        {/* KPI Cards Grid */}
         <ScrollReveal direction="up" delay={0.08}>
           <div className="grid grid-cols-2 lg:grid-cols-6 gap-4">
           <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-xs">
@@ -441,9 +437,6 @@ const Dashboard = () => {
         </div>
         </ScrollReveal>
 
-        {/* ========================================================================= */}
-        {/* 1. PERFORMANCE DIAGNOSTICS BAR CHART (COVERS FULL WIDTH SPACE)           */}
-        {/* ========================================================================= */}
         <ScrollReveal direction="up" delay={0.1}>
           <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-8 shadow-xs space-y-6">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-800 pb-4">
@@ -474,7 +467,6 @@ const Dashboard = () => {
             </div>
           </div>
 
-          {/* Full Space Column Bar Chart */}
           <div className="h-96 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={columnBarData} margin={{ left: 10, right: 20, top: 25, bottom: 55 }}>
@@ -527,7 +519,6 @@ const Dashboard = () => {
             </ResponsiveContainer>
           </div>
 
-          {/* Threshold Legend Bar */}
           <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-slate-100 dark:border-slate-800 text-xs">
             <div className="flex items-center gap-4">
               <span className="flex items-center gap-1.5 font-semibold">
@@ -550,10 +541,6 @@ const Dashboard = () => {
           </div>
         </div>
         </ScrollReveal>
-
-        {/* ========================================================================= */}
-        {/* 2. 4-DOMAIN BALANCE: DOMAIN TAXONOMY RADAR (AT BOTTOM OF DIAGNOSTICS)      */}
-        {/* ========================================================================= */}
         <ScrollReveal direction="up" delay={0.1}>
           <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-8 shadow-xs space-y-6">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 dark:border-slate-800 pb-4">
@@ -576,7 +563,6 @@ const Dashboard = () => {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-            {/* Radar Chart Visual */}
             <div className="lg:col-span-6 h-80 w-full flex items-center justify-center">
               <ResponsiveContainer width="100%" height="100%">
                 <RadarChart cx="50%" cy="50%" outerRadius="75%" data={radarData}>
@@ -603,7 +589,6 @@ const Dashboard = () => {
               </ResponsiveContainer>
             </div>
 
-            {/* 4 Domain Cards Grid */}
             <div className="lg:col-span-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
               {radarData.map((d) => (
                 <div
@@ -629,7 +614,6 @@ const Dashboard = () => {
                     {Math.round(d.score)}%
                   </div>
 
-                  {/* Domain Mini Progress Bar */}
                   <div className="w-full bg-slate-200 dark:bg-slate-700 h-2 rounded-full overflow-hidden">
                     <div
                       className={`h-full rounded-full ${
@@ -645,9 +629,6 @@ const Dashboard = () => {
         </div>
         </ScrollReveal>
 
-        {/* ========================================================================= */}
-        {/* 3. RESPONSIVE 4-COLUMN COMPETENCY DIAGNOSTICS GRID                        */}
-        {/* ========================================================================= */}
         <ScrollReveal direction="up" delay={0.1}>
           <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-8 shadow-xs space-y-4">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 dark:border-slate-800 pb-3">
@@ -697,7 +678,6 @@ const Dashboard = () => {
                         {item.fullName}
                       </h4>
 
-                      {/* Progress score */}
                       <div className="space-y-1 pt-1">
                         <div className="flex justify-between text-xs font-bold">
                           <span className={isWeak ? "text-rose-600" : isMastered ? "text-emerald-600" : "text-blue-600"}>
@@ -744,9 +724,6 @@ const Dashboard = () => {
           </div>
         </ScrollReveal>
 
-        {/* ========================================================================= */}
-        {/* 4. DYNAMIC AI GENERATED LEARNING PATHWAY MAPPED DIRECTLY TO WEAKNESSES    */}
-        {/* ========================================================================= */}
         <ScrollReveal direction="up" delay={0.1}>
           <div className="bg-white dark:bg-slate-900 border-2 border-blue-100 dark:border-blue-900/60 rounded-3xl p-6 sm:p-8 shadow-lg space-y-6">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -783,7 +760,6 @@ const Dashboard = () => {
               </div>
             </div>
 
-            {/* Sequential Timeline of Courses */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {(profile?.learningPath || []).map((step, idx) => (
                 <div
@@ -804,7 +780,6 @@ const Dashboard = () => {
                       {step.title}
                     </h3>
 
-                    {/* Target Weakness Pill */}
                     <div className="p-2.5 rounded-xl bg-rose-50/80 dark:bg-rose-950/40 border border-rose-200/60 dark:border-rose-900/60 text-xs">
                       <span className="font-bold text-rose-700 dark:text-rose-300 block">
                         🎯 Targeted Weakness: {step.skillAddressed}
@@ -849,7 +824,6 @@ const Dashboard = () => {
           </div>
         </ScrollReveal>
 
-        {/* AI Recommendations & Copilot Insight */}
         <ScrollReveal direction="scale" delay={0.1}>
           <div className="p-6 sm:p-8 rounded-3xl bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 dark:from-slate-900 dark:via-blue-950/40 dark:to-slate-900 border border-blue-200/80 dark:border-blue-900/60 shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
             <div className="flex items-start gap-4">

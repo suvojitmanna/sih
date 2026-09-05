@@ -9,6 +9,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { FaUserGraduate, FaShieldAlt, FaKey, FaEnvelope, FaBuilding, FaIdCard, FaArrowLeft } from "react-icons/fa";
 import { BsCheckCircleFill, BsShieldLockFill } from "react-icons/bs";
 import { signInWithGooglePopup } from "../utils/googleAuth";
+import BackButton from "../components/BackButton";
 
 const CADRE_OPTIONS = [
   "Indian Statistical Service (ISS) Officer",
@@ -259,7 +260,12 @@ const Auth = ({ isModel = false }) => {
       <div className="absolute -top-40 -left-40 w-96 h-96 bg-blue-600/20 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute -bottom-40 -right-40 w-96 h-96 bg-indigo-600/20 rounded-full blur-3xl pointer-events-none" />
 
-      {/* Top Header Logo */}
+      {/* Top Header Logo & Back Navigation */}
+      <div className="max-w-md w-full mx-auto flex items-center justify-between z-10 mb-4">
+        <BackButton fallbackUrl="/" label="Back to Home" variant="pill" />
+        <span className="text-[11px] font-bold text-slate-400">MoSPI SSO</span>
+      </div>
+
       <div className="max-w-md w-full mx-auto text-center z-10">
         <div
           onClick={() => navigate("/")}

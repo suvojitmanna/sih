@@ -18,6 +18,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { setUserData } from "../redux/userSlice";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
+import BackButton from "./BackButton";
 
 const PRESET_ROLES = [
   "Indian Statistical Service (ISS) Officer",
@@ -131,13 +132,9 @@ const Step1 = ({ onStart }) => {
           className="md:col-span-5 relative bg-gradient-to-br from-slate-900 via-blue-950 to-indigo-950 p-8 sm:p-10 text-white flex flex-col justify-between"
         >
           <div className="space-y-6">
-            <button
-              onClick={() => navigate("/")}
-              className="inline-flex items-center gap-2 text-xs font-bold text-slate-300 hover:text-white transition-colors cursor-pointer"
-            >
-              <FaArrowLeft size={14} />
-              <span>Back to Dashboard</span>
-            </button>
+            <div>
+              <BackButton fallbackUrl="/ai-models" label="Back to AI Models" variant="pill" />
+            </div>
 
             <div className="space-y-2">
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/20 border border-blue-400/30 text-blue-300 text-xs font-bold uppercase tracking-wider">

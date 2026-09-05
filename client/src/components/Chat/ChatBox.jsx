@@ -30,7 +30,6 @@ const ChatBox = ({
   const [mode, setMode] = useState("text");
   const [isListening, setIsListening] = useState(false);
 
-  // Sync messages when selectedChat changes
   useEffect(() => {
     if (selectedChat) {
       setMessages(selectedChat.messages || []);
@@ -39,7 +38,6 @@ const ChatBox = ({
     }
   }, [selectedChat]);
 
-  // Auto-scroll on new message
   useEffect(() => {
     containerRef.current?.scrollTo({
       top: containerRef.current.scrollHeight,
@@ -47,7 +45,6 @@ const ChatBox = ({
     });
   }, [messages, loading]);
 
-  // Voice recognition setup
   useEffect(() => {
     const SpeechRecognition =
       window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -194,7 +191,6 @@ const ChatBox = ({
         const newReply = { ...data.reply, isNew: true };
         setMessages((prev) => [...prev, newReply]);
 
-        // Update selected chat
         setSelectedChat((prev) => {
           if (!prev) return prev;
           return {
@@ -203,8 +199,6 @@ const ChatBox = ({
             updatedAt: new Date(),
           };
         });
-
-        // Reorder recent chats
         setChats((prevChats) => {
           const existing = prevChats.find((c) => c._id === chatId);
           if (!existing) return prevChats;
@@ -238,19 +232,23 @@ const ChatBox = ({
 
   return (
     <div className="flex-1 flex flex-col h-full w-full justify-between overflow-hidden relative">
-      {/* Top Mobile Bar */}
-      <div className="md:hidden flex items-center justify-between p-3 border-b border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md">
-        <button
-          onClick={onOpenSidebar}
-          className="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300"
-        >
-          <FaBars size={16} />
-        </button>
-        <span className="font-bold text-sm text-slate-800 dark:text-white">Smart AI Chat</span>
+
+      <div className="flex items-center justify-between p-3 border-b border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md shrink-0">
+        <div className="flex items-center gap-2">
+          <button
+            onClick={onOpenSidebar}
+            className="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 md:hidden cursor-pointer"
+          >
+            <FaBars size={14} />
+          </button>
+        </div>
+        <span className="font-bold text-xs sm:text-sm text-slate-800 dark:text-white flex items-center gap-1.5">
+          <BsRobot className="text-indigo-600 dark:text-indigo-400" />
+          <span>SankhyaCopilot AI</span>
+        </span>
         <div className="w-8" />
       </div>
 
-      {/* Messages Scroll Area */}
       <div
         ref={containerRef}
         className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-2 custom-scrollbar"
@@ -342,13 +340,11 @@ const ChatBox = ({
         )}
       </div>
 
-      {/* Input Section */}
       <div className="p-3 sm:p-5 w-full bg-white/60 dark:bg-slate-950/60 backdrop-blur-xl border-t border-slate-200/60 dark:border-slate-800">
         <form
           onSubmit={onSubmit}
           className="max-w-4xl mx-auto flex items-center gap-2 p-2 sm:p-2.5 pl-4 rounded-3xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 shadow-lg focus-within:ring-2 focus-within:ring-indigo-500/40 transition-all"
         >
-          {/* Mode Selector */}
           <select
             value={mode}
             onChange={(e) => setMode(e.target.value)}
@@ -364,7 +360,6 @@ const ChatBox = ({
 
           <div className="h-5 w-px bg-slate-300 dark:bg-slate-700 shrink-0" />
 
-          {/* Text Input */}
           <input
             type="text"
             value={prompt}
@@ -377,23 +372,19 @@ const ChatBox = ({
             className="flex-1 text-sm bg-transparent text-slate-800 dark:text-slate-100 placeholder:text-slate-400 outline-none min-w-0 px-2"
           />
 
-          {/* Action Buttons */}
           <div className="flex items-center gap-1.5 shrink-0 pr-1">
-            {/* Mic Voice Button */}
             <button
               type="button"
               onClick={handleVoiceInput}
-              className={`p-2.5 rounded-full transition-all cursor-pointer ${
-                isListening
+              className={`p-2.5 rounded-full transition-all cursor-pointer ${isListening
                   ? "bg-red-500 text-white animate-pulse"
                   : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
-              }`}
+                }`}
               title={isListening ? "Listening..." : "Speak message"}
             >
               <FaMicrophone size={13} />
             </button>
 
-            {/* Send / Stop Button */}
             {loading ? (
               <button
                 type="button"

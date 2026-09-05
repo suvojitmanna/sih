@@ -361,7 +361,16 @@ const Step3 = ({ report }) => {
       <div className="relative z-10 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 mb-10">
         <div className="flex items-center gap-5">
           <button
-            onClick={() => navigate("/history")}
+            onClick={() => {
+              if (window.history.state && window.history.state.idx > 0) {
+                navigate(-1);
+              } else if (window.history.length > 1) {
+                navigate(-1);
+              } else {
+                navigate("/history");
+              }
+            }}
+            title="Go Back"
             className="group bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-2 sm:p-4 rounded-2xl hover:bg-emerald-50 dark:hover:bg-emerald-950/60 transition-all duration-300 shadow-md ml-[5px] -mt-[90px] sm:-mt-[30px] cursor-pointer"
           >
             <FaArrowLeft className="text-slate-700 dark:text-slate-300 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 group-hover:-translate-x-1 transition-all duration-300" />

@@ -24,8 +24,6 @@ import axios from "axios";
 import { useDispatch, useSelector } from "react-redux";
 import { setUserData } from "./redux/userSlice";
 import { Toaster } from "react-hot-toast";
-
-import AiCursorFollower from "./components/AiCursorFollower";
 import ScrollProgressBar from "./components/ScrollProgressBar";
 import LiveAdminChatWidget from "./components/LiveAdminChatWidget";
 
@@ -84,7 +82,6 @@ const App = () => {
     <>
       <Toaster position="top-center" reverseOrder={false} />
       <ScrollProgressBar />
-      <AiCursorFollower />
       <Routes>
         {/* Public SaaS Landing Page */}
         <Route path="/" element={<Home />} />
@@ -99,7 +96,6 @@ const App = () => {
           }
         />
 
-        {/* Competencies, Learning Path, Quizzes & Materials */}
         <Route
           path="/competencies"
           element={

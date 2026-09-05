@@ -181,7 +181,16 @@ const InterviewHistory = () => {
             {/* Left */}
             <div className="flex items-center sm:gap-5">
               <button
-                onClick={() => navigate("/")}
+                onClick={() => {
+                  if (window.history.state && window.history.state.idx > 0) {
+                    navigate(-1);
+                  } else if (window.history.length > 1) {
+                    navigate(-1);
+                  } else {
+                    navigate("/dashboard");
+                  }
+                }}
+                title="Go Back"
                 className="group p-2 sm:p-4 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-emerald-50 dark:hover:bg-emerald-950/60 hover:text-emerald-600 dark:hover:text-emerald-400 hover:border-emerald-200 dark:hover:border-emerald-700 transition-all duration-300 shadow-sm cursor-pointer"
               >
                 <FaArrowLeft className="group-hover:-translate-x-1 transition-transform duration-300" />

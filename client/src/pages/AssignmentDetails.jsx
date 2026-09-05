@@ -4,6 +4,7 @@ import axios from "axios";
 import { ServerUrl } from "../App";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
+import BackButton from "../components/BackButton";
 import {
   FaArrowLeft,
   FaCheckCircle,
@@ -110,13 +111,7 @@ const AssignmentDetails = () => {
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-16 space-y-8">
         {/* Back Link */}
-        <button
-          onClick={() => navigate("/assignments")}
-          className="inline-flex items-center gap-2 text-xs font-bold text-slate-500 hover:text-blue-600 transition-colors cursor-pointer"
-        >
-          <FaArrowLeft size={12} />
-          <span>Back to All Assignments</span>
-        </button>
+        <BackButton to="/assignments" label="Back to All Assignments" />
 
         {/* Title Header */}
         <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-8 shadow-xs space-y-4">

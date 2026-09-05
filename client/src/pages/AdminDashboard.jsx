@@ -531,7 +531,14 @@ const AdminDashboard = () => {
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col transition-colors duration-300">
       <Navbar />
 
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-16 space-y-8">
+      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-16 space-y-6">
+        {/* Back Navigation Bar */}
+        <div className="flex items-center justify-between">
+          <span className="text-xs font-bold text-slate-500 dark:text-slate-400">
+            NSSTA Academy Secretariat
+          </span>
+        </div>
+
         {/* Top Header */}
         <div className="bg-gradient-to-r from-slate-900 via-blue-950 to-slate-900 text-white rounded-3xl p-6 sm:p-8 shadow-xl border border-slate-800 flex flex-col md:flex-row md:items-center md:justify-between gap-6">
           <div>
