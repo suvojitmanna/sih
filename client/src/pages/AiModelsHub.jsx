@@ -25,7 +25,6 @@ import {
 import { HiSparkles } from "react-icons/hi";
 import AuthModel from "../components/AuthModel";
 import PageTransition from "../components/PageTransition";
-import BackButton from "../components/BackButton";
 
 const AI_MODELS_DATA = [
   {
@@ -448,11 +447,10 @@ const AiModelsHub = () => {
                   key={model.id}
                   type="button"
                   onClick={() => setSelectedModelId(model.id)}
-                  className={`shrink-0 flex items-center gap-2.5 px-3.5 py-2.5 rounded-2xl transition-all cursor-pointer select-none text-xs font-bold border ${
-                    isSelected
+                  className={`shrink-0 flex items-center gap-2.5 px-3.5 py-2.5 rounded-2xl transition-all cursor-pointer select-none text-xs font-bold border ${isSelected
                       ? `bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 border-blue-500 shadow-md ring-2 ring-blue-500/20`
                       : "bg-white/80 dark:bg-slate-900/80 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800"
-                  }`}
+                    }`}
                 >
                   <div className={`p-1.5 rounded-xl text-white bg-gradient-to-tr ${model.gradient} shadow-xs`}>
                     <Icon size={14} />
@@ -466,10 +464,9 @@ const AiModelsHub = () => {
             })}
           </div>
 
-          {/* Main Grid: Desktop Sidebar + Active Model Details */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-            {/* Desktop Sidebar (hidden on mobile/tablet) */}
-            <div className="hidden lg:flex lg:col-span-4 flex-col bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl border border-slate-200/80 dark:border-slate-800/80 rounded-3xl p-4 shadow-xl sticky top-24">
+            {/* Desktop Sidebar (hidden on mobile/tablet) - Independent Left Scroll */}
+            <div className="hidden lg:flex lg:col-span-4 flex-col bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl border border-slate-200/80 dark:border-slate-800/80 rounded-3xl p-4 shadow-xl lg:sticky lg:top-24 lg:h-[calc(100vh-7.5rem)] overflow-hidden">
               <div className="px-2 py-2 border-b border-slate-100 dark:border-slate-800/80 flex items-center justify-between shrink-0 mb-2">
                 <div className="flex items-center gap-2">
                   <BsSliders className="text-blue-600 dark:text-blue-400" size={14} />
@@ -482,7 +479,8 @@ const AiModelsHub = () => {
                 </span>
               </div>
 
-              <div className="space-y-2">
+              {/* Scrollable Models List */}
+              <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar space-y-2 pr-1">
                 {AI_MODELS_DATA.map((model) => {
                   const Icon = model.icon;
                   const isSelected = model.id === selectedModelId;
@@ -492,11 +490,10 @@ const AiModelsHub = () => {
                       onClick={() => setSelectedModelId(model.id)}
                       whileHover={{ scale: 1.015 }}
                       whileTap={{ scale: 0.985 }}
-                      className={`w-full text-left p-3.5 rounded-2xl transition-all relative flex items-start gap-3.5 cursor-pointer select-none ${
-                        isSelected
+                      className={`w-full text-left p-3.5 rounded-2xl transition-all relative flex items-start gap-3.5 cursor-pointer select-none ${isSelected
                           ? `bg-gradient-to-r from-blue-50 to-indigo-50/80 dark:from-slate-800/90 dark:to-blue-950/60 border-2 ${model.glowColor} shadow-md`
                           : "hover:bg-slate-50 dark:hover:bg-slate-800/50 border border-transparent"
-                      }`}
+                        }`}
                     >
                       {isSelected && (
                         <motion.div
@@ -511,9 +508,8 @@ const AiModelsHub = () => {
                       )}
 
                       <div
-                        className={`p-3 rounded-2xl text-white bg-gradient-to-tr ${model.gradient} shadow-md shrink-0 mt-0.5 transition-transform duration-300 ${
-                          isSelected ? "scale-105" : "opacity-90"
-                        }`}
+                        className={`p-3 rounded-2xl text-white bg-gradient-to-tr ${model.gradient} shadow-md shrink-0 mt-0.5 transition-transform duration-300 ${isSelected ? "scale-105" : "opacity-90"
+                          }`}
                       >
                         <Icon size={18} />
                       </div>
@@ -556,8 +552,8 @@ const AiModelsHub = () => {
               </div>
             </div>
 
-            {/* Details Panel */}
-            <div className="col-span-12 lg:col-span-8 flex flex-col bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl border border-slate-200/80 dark:border-slate-800/80 rounded-3xl p-5 sm:p-7 shadow-xl overflow-hidden">
+            {/* Details Panel - Independent Right Scroll on Desktop */}
+            <div className="col-span-12 lg:col-span-8 flex flex-col bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl border border-slate-200/80 dark:border-slate-800/80 rounded-3xl p-5 sm:p-7 shadow-xl lg:sticky lg:top-24 lg:h-[calc(100vh-7.5rem)] overflow-y-auto custom-scrollbar">
               <AnimatePresence mode="wait">
                 <motion.div
                   key={activeModel.id}
