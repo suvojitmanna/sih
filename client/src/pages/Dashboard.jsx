@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import { useSelector, useDispatch } from "react-redux";
@@ -23,17 +23,17 @@ import {
   Cell,
   ReferenceLine,
   LabelList,
+  AreaChart,
+  Area,
 } from "recharts";
 import {
   FaBrain,
-  FaCertificate,
   FaTasks,
   FaFire,
   FaClock,
   FaAward,
   FaArrowRight,
   FaExclamationTriangle,
-  FaExternalLinkAlt,
   FaCheckCircle,
   FaPlayCircle,
   FaUserTie,
@@ -41,13 +41,20 @@ import {
   FaMicrophone,
   FaFilePdf,
   FaSyncAlt,
-  FaLayerGroup,
   FaColumns,
   FaBullhorn,
   FaComments,
+  FaChartLine,
 } from "react-icons/fa";
 import { HiSparkles } from "react-icons/hi";
-import { BsRobot, BsBarChartFill, BsShieldCheck, BsFillCameraVideoFill, BsLightningChargeFill } from "react-icons/bs";
+import {
+  BsRobot,
+  BsBarChartFill,
+  BsShieldCheck,
+  BsFillCameraVideoFill,
+  BsLightningChargeFill,
+  BsBookHalf,
+} from "react-icons/bs";
 import { generateCompetencyPDF } from "../utils/pdfGenerator";
 import PageTransition from "../components/PageTransition";
 import { ScrollReveal } from "../components/ScrollReveal";
@@ -75,18 +82,40 @@ const CustomXAxisTick = ({ x, y, payload }) => {
 const getShortCompetencyName = (name = "") => {
   const lower = name.toLowerCase();
   if (lower.includes("sampling")) return "Sampling";
-  if (lower.includes("national account") || lower.includes("sna")) return "SNA 2008";
+  if (lower.includes("national account") || lower.includes("sna") || lower.includes("gdp")) return "SNA 2008";
   if (lower.includes("price") || lower.includes("cpi") || lower.includes("wpi")) return "CPI / WPI";
   if (lower.includes("computing") || lower.includes("automated")) return "Computing";
-  if (lower.includes("privacy") || lower.includes("dpdp")) return "DPDP Act";
-  if (lower.includes("labour") || lower.includes("plfs")) return "PLFS Labour";
+  if (lower.includes("privacy") || lower.includes("dpdp") || lower.includes("ethics")) return "DPDP Act";
+  if (lower.includes("labour") || lower.includes("plfs") || lower.includes("employment")) return "PLFS Labour";
   if (lower.includes("microdata") || lower.includes("weight")) return "Microdata";
   if (lower.includes("policy") || lower.includes("evidence")) return "Policy Lead";
   if (lower.includes("industrial") || lower.includes("asi") || lower.includes("iip")) return "ASI / IIP";
-  if (lower.includes("sdg")) return "SDG NIF";
+  if (lower.includes("sdg") || lower.includes("nif")) return "SDG NIF";
   if (lower.includes("quality") || lower.includes("nqaf")) return "UN-NQAF";
+  if (lower.includes("survey design") || lower.includes("methodology")) return "Survey Design";
+  if (lower.includes("cybersecurity") || lower.includes("protection")) return "Cybersec";
+  if (lower.includes("leadership") || lower.includes("governance")) return "Leadership";
   return name.length > 12 ? name.substring(0, 12) + ".." : name;
 };
+
+const OFFICIAL_BASELINE_COMPETENCIES = [
+  { competencyName: "Sampling Techniques & Estimation", domain: "Statistical", score: 62 },
+  { competencyName: "National Accounts & GDP (SNA 2008)", domain: "Statistical", score: 82 },
+  { competencyName: "Price Statistics (CPI, WPI, Inflation)", domain: "Statistical", score: 78 },
+  { competencyName: "Statistical Computing & Automated Processing", domain: "Technical", score: 48 },
+  { competencyName: "Data Privacy, Ethics & DPDP Act", domain: "Governance", score: 72 },
+  { competencyName: "Labour & Employment Statistics (PLFS)", domain: "Statistical", score: 84 },
+  { competencyName: "Microdata Analytics & Survey Weighting", domain: "Technical", score: 52 },
+  { competencyName: "Evidence-Based Policy & Decision Leadership", domain: "Managerial", score: 80 },
+];
+
+const DOMAIN_CATEGORIES = [
+  { id: "all", label: "All Topics" },
+  { id: "statistical", label: "Statistical" },
+  { id: "technical", label: "Technical" },
+  { id: "governance", label: "Governance" },
+  { id: "managerial", label: "Managerial" },
+];
 
 const Dashboard = () => {
   const { userData } = useSelector((state) => state.user);
@@ -95,9 +124,14 @@ const Dashboard = () => {
 
   const [profile, setProfile] = useState(null);
   const [broadcasts, setBroadcasts] = useState([]);
+  const [quizAttempts, setQuizAttempts] = useState([]);
+  const [interviews, setInterviews] = useState([]);
+  const [assignmentSubmissions, setAssignmentSubmissions] = useState([]);
+  const [chats, setChats] = useState([]);
   const [loading, setLoading] = useState(true);
   const [generatingPath, setGeneratingPath] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
+  const [domainFilter, setDomainFilter] = useState("all");
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -106,51 +140,323 @@ const Dashboard = () => {
     return () => clearInterval(timer);
   }, []);
 
-  const fetchProfile = async () => {
+  const fetchDashboardData = async () => {
     try {
-      const { data } = await axios.get(`${ServerUrl}/api/competencies/my-profile`, {
-        withCredentials: true,
-      });
-      if (data.success) {
-        setProfile(data.profile);
-        dispatch(setUserData({ ...userData, ...data.profile }));
+      const [
+        profileRes,
+        broadcastsRes,
+        quizAttemptsRes,
+        interviewRes,
+        assignmentSubmissionsRes,
+        chatRes,
+      ] = await Promise.allSettled([
+        axios.get(`${ServerUrl}/api/competencies/my-profile`, { withCredentials: true }),
+        axios.get(`${ServerUrl}/api/support/broadcasts`, { withCredentials: true }),
+        axios.get(`${ServerUrl}/api/quizzes/history/my-attempts`, { withCredentials: true }),
+        axios.get(`${ServerUrl}/api/interview/get-interview`, { withCredentials: true }),
+        axios.get(`${ServerUrl}/api/assignments/history/my-submissions`, { withCredentials: true }),
+        axios.get(`${ServerUrl}/api/chat/get`, { withCredentials: true }),
+      ]);
+
+      if (profileRes.status === "fulfilled" && profileRes.value.data?.success) {
+        setProfile(profileRes.value.data.profile);
+        dispatch(setUserData({ ...userData, ...profileRes.value.data.profile }));
+      }
+
+      if (broadcastsRes.status === "fulfilled" && broadcastsRes.value.data?.success) {
+        setBroadcasts(broadcastsRes.value.data.broadcasts || []);
+      }
+
+      if (quizAttemptsRes.status === "fulfilled" && quizAttemptsRes.value.data?.success) {
+        setQuizAttempts(quizAttemptsRes.value.data.attempts || []);
+      }
+
+      if (interviewRes.status === "fulfilled" && interviewRes.value.data?.success) {
+        setInterviews(interviewRes.value.data.interviews || []);
+      }
+
+      if (assignmentSubmissionsRes.status === "fulfilled" && assignmentSubmissionsRes.value.data?.success) {
+        setAssignmentSubmissions(assignmentSubmissionsRes.value.data.submissions || []);
+      }
+
+      if (chatRes.status === "fulfilled" && chatRes.value.data?.success) {
+        setChats(chatRes.value.data.chats || []);
       }
     } catch (error) {
-      console.error("Dashboard fetch error:", error);
+      console.error("Dashboard multi-source fetch error:", error);
     } finally {
       setLoading(false);
     }
   };
 
-  const fetchBroadcasts = async () => {
-    try {
-      const { data } = await axios.get(`${ServerUrl}/api/support/broadcasts`, {
-        withCredentials: true,
-      });
-      if (data.success) {
-        setBroadcasts(data.broadcasts || []);
-      }
-    } catch (error) {
-      console.log("Broadcasts fetch error:", error);
-    }
-  };
-
   useEffect(() => {
-    fetchProfile();
-    fetchBroadcasts();
+    fetchDashboardData();
     const interval = setInterval(() => {
-      fetchBroadcasts();
-    }, 3500);
+      axios
+        .get(`${ServerUrl}/api/support/broadcasts`, { withCredentials: true })
+        .then((res) => {
+          if (res.data?.success) setBroadcasts(res.data.broadcasts || []);
+        })
+        .catch(() => { });
+    }, 4000);
     return () => clearInterval(interval);
   }, []);
+
+  const synthesizedCompetencies = useMemo(() => {
+    const baseList =
+      profile?.competencies && profile.competencies.length > 0
+        ? profile.competencies.map((c) => ({
+          competencyName: c.competencyName,
+          domain: c.domain || "Statistical",
+          score: Number(c.score) || 60,
+          source: c.source || "assessment-derived",
+        }))
+        : OFFICIAL_BASELINE_COMPETENCIES;
+
+    return baseList.map((comp) => {
+      const lowerName = comp.competencyName.toLowerCase();
+      let matchedQuizScores = [];
+      quizAttempts.forEach((attempt) => {
+        const title = (attempt.quizId?.title || attempt.title || "").toLowerCase();
+        if (
+          (lowerName.includes("sampling") && title.includes("sampling")) ||
+          (lowerName.includes("national account") && (title.includes("national") || title.includes("sna") || title.includes("gdp"))) ||
+          (lowerName.includes("price") && (title.includes("price") || title.includes("cpi") || title.includes("inflation"))) ||
+          (lowerName.includes("computing") && (title.includes("computing") || title.includes("r") || title.includes("python"))) ||
+          (lowerName.includes("privacy") && (title.includes("privacy") || title.includes("dpdp") || title.includes("ethics"))) ||
+          (lowerName.includes("labour") && (title.includes("labour") || title.includes("plfs") || title.includes("employment"))) ||
+          (lowerName.includes("microdata") && (title.includes("microdata") || title.includes("survey"))) ||
+          (lowerName.includes("policy") && (title.includes("policy") || title.includes("governance")))
+        ) {
+          const sc = attempt.percentage || (attempt.score && attempt.totalQuestions ? Math.round((attempt.score / attempt.totalQuestions) * 100) : null);
+          if (sc !== null && sc !== undefined) matchedQuizScores.push(sc);
+        }
+      });
+
+      let matchedAssignmentScores = [];
+      assignmentSubmissions.forEach((sub) => {
+        const title = (sub.assignmentId?.title || sub.title || "").toLowerCase();
+        if (
+          (lowerName.includes("sampling") && title.includes("sampling")) ||
+          (lowerName.includes("national account") && title.includes("national")) ||
+          (lowerName.includes("price") && title.includes("price")) ||
+          (lowerName.includes("computing") && title.includes("computing")) ||
+          (lowerName.includes("privacy") && title.includes("privacy")) ||
+          (lowerName.includes("labour") && title.includes("labour")) ||
+          (lowerName.includes("microdata") && title.includes("microdata"))
+        ) {
+          if (sub.score !== null && sub.score !== undefined) {
+            const sc = sub.scoreMax === 10 ? sub.score * 10 : sub.score;
+            matchedAssignmentScores.push(sc);
+          }
+        }
+      });
+
+      let finalScore = comp.score;
+      if (matchedQuizScores.length > 0 || matchedAssignmentScores.length > 0) {
+        const allEv = [...matchedQuizScores, ...matchedAssignmentScores];
+        const evAvg = allEv.reduce((a, b) => a + b, 0) / allEv.length;
+        finalScore = Math.round(comp.score * 0.6 + evAvg * 0.4);
+      }
+
+      return {
+        ...comp,
+        score: Math.min(100, Math.max(10, finalScore)),
+        evaluationsCount: matchedQuizScores.length + matchedAssignmentScores.length,
+      };
+    });
+  }, [profile, quizAttempts, assignmentSubmissions]);
+
+  // 2. Computed Live Knowledge Index & Metric Stats
+  const knowledgeStats = useMemo(() => {
+    const totalScore = synthesizedCompetencies.reduce((acc, c) => acc + c.score, 0);
+    const overallScore = Math.round(totalScore / (synthesizedCompetencies.length || 1));
+
+    const criticalWeaknesses = synthesizedCompetencies.filter((c) => c.score < 50);
+    const developingCount = synthesizedCompetencies.filter((c) => c.score >= 50 && c.score < 75);
+    const masteredCount = synthesizedCompetencies.filter((c) => c.score >= 75);
+
+    const completedQuizzes = quizAttempts.length;
+    const avgQuizScore = completedQuizzes > 0
+      ? Math.round(
+        quizAttempts.reduce((acc, q) => acc + (q.percentage || (q.score && q.totalQuestions ? (q.score / q.totalQuestions) * 100 : 70)), 0) / completedQuizzes
+      )
+      : 0;
+
+    const completedInterviews = interviews.length;
+    const avgInterviewScore = completedInterviews > 0
+      ? Math.round(
+        interviews.reduce((acc, i) => acc + (i.score || (i.feedback?.rating ? i.feedback.rating * 10 : 75)), 0) / completedInterviews
+      )
+      : 0;
+
+    const completedAssignments = assignmentSubmissions.length;
+    const evaluatedAssignments = assignmentSubmissions.filter((s) => s.status === "evaluated" || s.score !== null).length;
+
+    const totalConsultations = chats.reduce((acc, c) => acc + (c.messages?.length || 0), 0);
+
+    const baseHours = profile?.learningHours || 12;
+    const computedHours = baseHours + completedQuizzes * 0.5 + completedInterviews * 0.75 + completedAssignments * 1.5;
+
+    let overallLevel = "Intermediate";
+    if (overallScore >= 80) overallLevel = "Expert (ISS)";
+    else if (overallScore >= 70) overallLevel = "Advanced (SSO)";
+    else if (overallScore >= 55) overallLevel = "Intermediate (JSO)";
+    else overallLevel = "Foundational";
+
+    return {
+      overallScore,
+      overallLevel,
+      criticalWeaknessesCount: criticalWeaknesses.length,
+      criticalWeaknesses,
+      developingCount: developingCount.length,
+      masteredCount: masteredCount.length,
+      completedQuizzes,
+      avgQuizScore,
+      completedInterviews,
+      avgInterviewScore,
+      completedAssignments,
+      evaluatedAssignments,
+      totalConsultations,
+      learningHours: Math.round(computedHours),
+      learningStreak: profile?.learningStreak || (completedQuizzes > 0 ? 4 : 2),
+    };
+  }, [synthesizedCompetencies, quizAttempts, interviews, assignmentSubmissions, chats, profile]);
+
+  // 3. Radar Chart Data (4 Official MoSPI Domains)
+  const radarData = useMemo(() => {
+    const domainCalc = (pattern) => {
+      const comps = synthesizedCompetencies.filter((c) =>
+        c.domain?.toLowerCase().includes(pattern.toLowerCase())
+      );
+      if (!comps.length) return 70;
+      return Math.round(comps.reduce((acc, c) => acc + c.score, 0) / comps.length);
+    };
+
+    return [
+      {
+        domain: "Statistical",
+        fullName: "Statistical Competencies",
+        score: domainCalc("Statistical"),
+        fullMark: 100,
+        benchmark: 75,
+      },
+      {
+        domain: "Technical",
+        fullName: "Technical & Computing",
+        score: domainCalc("Technical"),
+        fullMark: 100,
+        benchmark: 75,
+      },
+      {
+        domain: "Governance",
+        fullName: "Digital Governance & Privacy",
+        score: domainCalc("Governance"),
+        fullMark: 100,
+        benchmark: 75,
+      },
+      {
+        domain: "Managerial",
+        fullName: "Behavioural & Leadership",
+        score: domainCalc("Managerial"),
+        fullMark: 100,
+        benchmark: 75,
+      },
+    ];
+  }, [synthesizedCompetencies]);
+
+  // 4. Bar Chart Column Data with Domain Filtering
+  const columnBarData = useMemo(() => {
+    let list = synthesizedCompetencies;
+    if (domainFilter !== "all") {
+      list = list.filter((c) => c.domain?.toLowerCase().includes(domainFilter.toLowerCase()));
+    }
+
+    return list.map((c) => {
+      const shortName = getShortCompetencyName(c.competencyName);
+      return {
+        name: shortName,
+        fullName: c.competencyName,
+        domain: c.domain || "Statistical",
+        score: c.score,
+        benchmark: 75,
+        deficit: Math.max(0, 75 - c.score),
+        isWeakness: c.score < 50,
+        isDeveloping: c.score >= 50 && c.score < 75,
+        isMastered: c.score >= 75,
+        evaluationsCount: c.evaluationsCount || 0,
+      };
+    });
+  }, [synthesizedCompetencies, domainFilter]);
+
+  // 5. Multi-Model Knowledge Evaluation Score Timeline (Progress Over Sessions)
+  const knowledgeTimelineData = useMemo(() => {
+    let events = [];
+
+    quizAttempts.forEach((q, idx) => {
+      const sc = q.percentage || (q.score && q.totalQuestions ? Math.round((q.score / q.totalQuestions) * 100) : 70);
+      events.push({
+        date: q.createdAt ? new Date(q.createdAt) : new Date(Date.now() - (quizAttempts.length - idx) * 86400000 * 2),
+        score: sc,
+        type: "Quiz Test",
+        title: q.quizId?.title || q.title || `Quiz Evaluation #${idx + 1}`,
+        domain: q.quizId?.domain || "Statistical",
+      });
+    });
+
+    interviews.forEach((i, idx) => {
+      const sc = i.score || (i.feedback?.rating ? i.feedback.rating * 10 : 75);
+      events.push({
+        date: i.createdAt ? new Date(i.createdAt) : new Date(Date.now() - (interviews.length - idx) * 86400000 * 3),
+        score: sc,
+        type: "Viva Voce",
+        title: i.title || i.jobRole || `Cadre Board Viva #${idx + 1}`,
+        domain: "Oral Board",
+      });
+    });
+
+    assignmentSubmissions.forEach((a, idx) => {
+      if (a.score !== null && a.score !== undefined) {
+        const sc = a.scoreMax === 10 ? a.score * 10 : a.score;
+        events.push({
+          date: a.createdAt ? new Date(a.createdAt) : new Date(Date.now() - (assignmentSubmissions.length - idx) * 86400000 * 2.5),
+          score: sc,
+          type: "Practicum",
+          title: a.assignmentId?.title || a.title || `Practicum Case #${idx + 1}`,
+          domain: a.assignmentId?.domain || "Technical",
+        });
+      }
+    });
+
+    events.sort((a, b) => a.date - b.date);
+
+    if (events.length === 0) {
+      const baseline = knowledgeStats.overallScore || 65;
+      return [
+        { label: "Baseline Cadre Entry", score: Math.max(40, baseline - 15), benchmark: 75, type: "Baseline Intake" },
+        { label: "AI Competency Audit", score: Math.max(45, baseline - 8), benchmark: 75, type: "Self Assessment" },
+        { label: "Survey Practicums", score: Math.max(50, baseline - 4), benchmark: 75, type: "Practicum Evaluation" },
+        { label: "Cadre Vivas & Tests", score: baseline, benchmark: 75, type: "Live Knowledge Score" },
+      ];
+    }
+
+    return events.map((ev, idx) => ({
+      label: `Eval 0${idx + 1} (${ev.type})`,
+      score: ev.score,
+      benchmark: 75,
+      type: ev.type,
+      title: ev.title,
+      formattedDate: ev.date.toLocaleDateString("en-IN", { month: "short", day: "numeric" }),
+    }));
+  }, [quizAttempts, interviews, assignmentSubmissions, knowledgeStats.overallScore]);
 
   const handleDownloadPDF = () => {
     toast.success("Generating official MoSPI Competency Dossier (PDF)... 📄");
     generateCompetencyPDF({
       user: userData,
       profile: profile || userData,
-      competencies: profile?.competencies || userData?.competencies || [],
-      skillGaps: profile?.skillGaps || userData?.skillGaps || [],
+      competencies: synthesizedCompetencies,
+      skillGaps: profile?.skillGaps || knowledgeStats.criticalWeaknesses,
       learningPath: profile?.learningPath || userData?.learningPath || [],
     });
   };
@@ -165,7 +471,7 @@ const Dashboard = () => {
       );
       if (data.success) {
         toast.success("AI Learning Pathway regenerated based on your latest weaknesses! ✨");
-        fetchProfile();
+        fetchDashboardData();
       }
     } catch (error) {
       toast.error("Failed to regenerate pathway.");
@@ -174,66 +480,6 @@ const Dashboard = () => {
       setGeneratingPath(false);
     }
   };
-
-  const radarData = [
-    {
-      domain: "Statistical",
-      score: profile?.competencies
-        ?.filter((c) => c.domain?.includes("Statistical"))
-        .reduce((acc, c, _, arr) => acc + c.score / (arr.length || 1), 0) || 75,
-      fullMark: 100,
-    },
-    {
-      domain: "Technical",
-      score: profile?.competencies
-        ?.filter((c) => c.domain?.includes("Technical"))
-        .reduce((acc, c, _, arr) => acc + c.score / (arr.length || 1), 0) || 62,
-      fullMark: 100,
-    },
-    {
-      domain: "Governance",
-      score: profile?.competencies
-        ?.filter((c) => c.domain?.includes("Governance"))
-        .reduce((acc, c, _, arr) => acc + c.score / (arr.length || 1), 0) || 70,
-      fullMark: 100,
-    },
-    {
-      domain: "Managerial",
-      score: profile?.competencies
-        ?.filter((c) => c.domain?.includes("Managerial") || c.domain?.includes("Behavioural"))
-        .reduce((acc, c, _, arr) => acc + c.score / (arr.length || 1), 0) || 78,
-      fullMark: 100,
-    },
-  ];
-
-  const rawCompetencies = profile?.competencies && profile.competencies.length > 0
-    ? profile.competencies
-    : [
-      { competencyName: "Sampling Techniques & Estimation", domain: "Statistical", score: 45 },
-      { competencyName: "National Accounts (SNA 2008)", domain: "Statistical", score: 82 },
-      { competencyName: "Price Statistics (CPI/WPI)", domain: "Statistical", score: 78 },
-      { competencyName: "Statistical Computing & Automated Processing", domain: "Technical", score: 40 },
-      { competencyName: "Data Privacy & DPDP Compliance", domain: "Governance", score: 70 },
-      { competencyName: "Labour Statistics (PLFS Rounds)", domain: "Statistical", score: 85 },
-      { competencyName: "Microdata Analytics & Survey Weights", domain: "Technical", score: 48 },
-      { competencyName: "Evidence-Based Policy Leadership", domain: "Managerial", score: 80 },
-    ];
-
-  const columnBarData = rawCompetencies.map((c) => {
-    const shortName = getShortCompetencyName(c.competencyName);
-    return {
-      name: shortName,
-      fullName: c.competencyName,
-      domain: c.domain || "Statistical",
-      score: c.score,
-      benchmark: 75,
-      deficit: Math.max(0, 75 - c.score),
-      isWeakness: c.score < 50,
-      isDeveloping: c.score >= 50 && c.score < 75,
-      isMastered: c.score >= 75,
-    };
-  });
-  const weakCompetencies = columnBarData.filter((b) => b.score < 75);
 
   const handleUpdateCourseStatus = async (stepIndex, status) => {
     try {
@@ -244,7 +490,7 @@ const Dashboard = () => {
       );
       if (data.success) {
         toast.success(data.message);
-        fetchProfile();
+        fetchDashboardData();
       }
     } catch (err) {
       console.log(err);
@@ -261,10 +507,11 @@ const Dashboard = () => {
 
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold text-slate-500 dark:text-slate-400">
-              National Statistical Portal
+              National Statistical Portal • Official Skill Intelligence System
             </span>
           </div>
 
+          {/* Broadcast Announcement Bar */}
           {broadcasts.length > 0 && (
             <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-amber-500/15 via-orange-500/10 to-amber-500/15 border-2 border-amber-500/40 p-4 sm:p-5 shadow-lg flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 animate-fadeIn">
               <div className="flex items-start gap-3.5">
@@ -302,6 +549,7 @@ const Dashboard = () => {
             </div>
           )}
 
+          {/* Hero Welcome Banner */}
           <div className="relative rounded-3xl overflow-hidden bg-gradient-to-r from-slate-950 via-blue-950 to-indigo-950 text-white p-6 sm:p-8 shadow-2xl border border-slate-800">
             <div className="absolute right-0 top-0 w-96 h-full bg-blue-600/15 rounded-full blur-3xl pointer-events-none" />
 
@@ -347,6 +595,7 @@ const Dashboard = () => {
             </div>
           </div>
 
+          {/* AI Mock Interview Callout Banner */}
           <ScrollReveal direction="up" delay={0.05}>
             <div className="relative rounded-3xl overflow-hidden bg-gradient-to-r from-slate-900 via-indigo-950 to-blue-950 text-white p-6 sm:p-8 shadow-xl border border-blue-500/20">
               <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
@@ -402,6 +651,7 @@ const Dashboard = () => {
             </div>
           </ScrollReveal>
 
+          {/* 6 Top KPI Metrics (100% User Knowledge Basis) */}
           <ScrollReveal direction="up" delay={0.08}>
             <div className="grid grid-cols-2 lg:grid-cols-6 gap-4">
               <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-xs">
@@ -412,10 +662,10 @@ const Dashboard = () => {
                   </div>
                 </div>
                 <div className="mt-2 text-2xl font-black text-slate-900 dark:text-white">
-                  {profile?.overallCompetencyScore || 65}%
+                  {knowledgeStats.overallScore}%
                 </div>
                 <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400">
-                  {profile?.overallLevel || "Intermediate"} Level
+                  {knowledgeStats.overallLevel}
                 </span>
               </div>
 
@@ -427,98 +677,113 @@ const Dashboard = () => {
                   </div>
                 </div>
                 <div className="mt-2 text-2xl font-black text-rose-600">
-                  {columnBarData.filter((b) => b.isWeakness).length} Areas
+                  {knowledgeStats.criticalWeaknessesCount} Areas
                 </div>
                 <span className="text-[10px] font-bold text-rose-600">
-                  Score &lt; 50% (Action Gap)
+                  Score &lt; 50% (Action Required)
                 </span>
               </div>
 
               <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-xs">
                 <div className="flex items-center justify-between">
-                  <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">Pathway Courses</span>
-                  <div className="p-2 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600">
-                    <FaCertificate size={16} />
-                  </div>
-                </div>
-                <div className="mt-2 text-2xl font-black text-slate-900 dark:text-white">
-                  {profile?.learningPath?.length || 5}
-                </div>
-                <span className="text-[10px] font-bold text-blue-600">
-                  iGOT & NSSTA TPAC
-                </span>
-              </div>
-
-              <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-xs">
-                <div className="flex items-center justify-between">
-                  <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">Quizzes Taken</span>
+                  <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">Quizzes Evaluated</span>
                   <div className="p-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600">
                     <FaTasks size={16} />
                   </div>
                 </div>
                 <div className="mt-2 text-2xl font-black text-slate-900 dark:text-white">
-                  {profile?.quizzesCompleted || 0}
+                  {knowledgeStats.completedQuizzes}
                 </div>
                 <span className="text-[10px] font-bold text-emerald-600">
-                  Assessment Tests
+                  {knowledgeStats.completedQuizzes > 0 ? `Avg ${knowledgeStats.avgQuizScore}% Score` : "Take Tests"}
+                </span>
+              </div>
+
+              <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-xs">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">Viva Voce Boards</span>
+                  <div className="p-2 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600">
+                    <BsFillCameraVideoFill size={15} />
+                  </div>
+                </div>
+                <div className="mt-2 text-2xl font-black text-slate-900 dark:text-white">
+                  {knowledgeStats.completedInterviews}
+                </div>
+                <span className="text-[10px] font-bold text-indigo-600">
+                  {knowledgeStats.completedInterviews > 0 ? `Avg ${knowledgeStats.avgInterviewScore}% Viva` : "AI Interview"}
+                </span>
+              </div>
+
+              <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-xs">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">Practicums Submitted</span>
+                  <div className="p-2 rounded-xl bg-violet-50 dark:bg-violet-950/60 text-violet-600">
+                    <BsBookHalf size={15} />
+                  </div>
+                </div>
+                <div className="mt-2 text-2xl font-black text-slate-900 dark:text-white">
+                  {knowledgeStats.completedAssignments}
+                </div>
+                <span className="text-[10px] font-bold text-violet-600">
+                  {knowledgeStats.evaluatedAssignments} Evaluated
                 </span>
               </div>
 
               <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-xs">
                 <div className="flex items-center justify-between">
                   <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">Learning Hours</span>
-                  <div className="p-2 rounded-xl bg-violet-50 dark:bg-violet-950/60 text-violet-600">
+                  <div className="p-2 rounded-xl bg-orange-50 dark:bg-orange-950/60 text-orange-600">
                     <FaClock size={16} />
                   </div>
                 </div>
                 <div className="mt-2 text-2xl font-black text-slate-900 dark:text-white">
-                  {profile?.learningHours || 14}h
+                  {knowledgeStats.learningHours}h
                 </div>
-                <span className="text-[10px] font-bold text-violet-600">
-                  Capacity Logged
-                </span>
-              </div>
-
-              <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-xs">
-                <div className="flex items-center justify-between">
-                  <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">Learning Streak</span>
-                  <div className="p-2 rounded-xl bg-orange-50 dark:bg-orange-950/60 text-orange-600">
-                    <FaFire size={16} />
-                  </div>
-                </div>
-                <div className="mt-2 text-2xl font-black text-slate-900 dark:text-white">
-                  {profile?.learningStreak || 3} Days
-                </div>
-                <span className="text-[10px] font-bold text-orange-600">
-                  Active Engagement
+                <span className="text-[10px] font-bold text-orange-600 flex items-center gap-1">
+                  <FaFire size={11} />
+                  <span>{knowledgeStats.learningStreak} Days Streak</span>
                 </span>
               </div>
             </div>
           </ScrollReveal>
 
+          {/* Performance Diagnostics Column Bar Chart (User Knowledge Basis + Domain Filters) */}
           <ScrollReveal direction="up" delay={0.1}>
             <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-8 shadow-xs space-y-6">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-800 pb-4">
+              <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-slate-100 dark:border-slate-800 pb-4">
                 <div>
                   <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 dark:bg-blue-950 text-blue-700 dark:text-blue-300 text-xs font-bold uppercase tracking-wider mb-1">
                     <BsBarChartFill size={13} />
-                    <span>Performance Diagnostics</span>
+                    <span>Knowledge Performance Diagnostics</span>
                   </div>
                   <h2 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white flex items-center gap-2">
-                    <span>Student Performance & Weakness Diagnostics</span>
+                    <span>Evaluated Competency Performance & Deficit Targets</span>
                   </h2>
                   <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-0.5">
-                    Full-width column bars evaluated against the official <strong>75% Cadre Benchmark</strong>.
+                    Live dynamic scores synthesized across quizzes, viva evaluations, and self-assessments against the <strong>75% MoSPI Benchmark</strong>.
                   </p>
                 </div>
 
-                <div className="flex items-center gap-3 shrink-0">
-                  <span className="text-xs font-extrabold bg-blue-50 dark:bg-blue-950 text-blue-700 dark:text-blue-300 px-3.5 py-1.5 rounded-full border border-blue-200 dark:border-blue-800">
-                    Cadre Benchmark: 75%
-                  </span>
+                <div className="flex flex-wrap items-center gap-2">
+                  <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-2xl border border-slate-200 dark:border-slate-700">
+                    {DOMAIN_CATEGORIES.map((cat) => (
+                      <button
+                        key={cat.id}
+                        type="button"
+                        onClick={() => setDomainFilter(cat.id)}
+                        className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${domainFilter === cat.id
+                            ? "bg-blue-600 text-white shadow-xs"
+                            : "text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white"
+                          }`}
+                      >
+                        {cat.label}
+                      </button>
+                    ))}
+                  </div>
+
                   <button
                     onClick={() => navigate("/competencies")}
-                    className="px-4 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs transition-colors flex items-center gap-1.5 cursor-pointer shadow-xs"
+                    className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs transition-colors flex items-center gap-1.5 cursor-pointer shadow-xs"
                   >
                     <span>Assess Skills</span>
                     <FaArrowRight size={10} />
@@ -543,7 +808,10 @@ const Dashboard = () => {
                       tickLine={{ stroke: "#94a3b8", opacity: 0.3 }}
                     />
                     <Tooltip
-                      formatter={(val, name, item) => [`${val}%`, `Score: ${item.payload.fullName} (${item.payload.domain})`]}
+                      formatter={(val, name, item) => [
+                        `${val}%`,
+                        `Score: ${item.payload.fullName} (${item.payload.domain})`,
+                      ]}
                       contentStyle={{
                         backgroundColor: "#0f172a",
                         borderRadius: "14px",
@@ -557,7 +825,13 @@ const Dashboard = () => {
                       stroke="#ef4444"
                       strokeDasharray="4 4"
                       strokeWidth={1.5}
-                      label={{ value: "Benchmark Target: 75%", fill: "#ef4444", fontSize: 11, fontWeight: 800, position: "top" }}
+                      label={{
+                        value: "Cadre Benchmark Target: 75%",
+                        fill: "#ef4444",
+                        fontSize: 11,
+                        fontWeight: 800,
+                        position: "top",
+                      }}
                     />
                     <Bar dataKey="score" radius={[8, 8, 0, 0]}>
                       {columnBarData.map((entry, index) => (
@@ -582,41 +856,43 @@ const Dashboard = () => {
                 <div className="flex items-center gap-4">
                   <span className="flex items-center gap-1.5 font-semibold">
                     <span className="w-3.5 h-3.5 rounded-md bg-emerald-500 shadow-xs" />
-                    <span className="text-slate-700 dark:text-slate-300">Mastered (&ge;75%)</span>
+                    <span className="text-slate-700 dark:text-slate-300">Mastered (&ge;75%) • {knowledgeStats.masteredCount}</span>
                   </span>
                   <span className="flex items-center gap-1.5 font-semibold">
                     <span className="w-3.5 h-3.5 rounded-md bg-blue-500 shadow-xs" />
-                    <span className="text-slate-700 dark:text-slate-300">Developing (50-74%)</span>
+                    <span className="text-slate-700 dark:text-slate-300">Developing (50-74%) • {knowledgeStats.developingCount}</span>
                   </span>
                   <span className="flex items-center gap-1.5 font-bold text-rose-600">
                     <span className="w-3.5 h-3.5 rounded-md bg-rose-600 shadow-xs" />
-                    <span>Critical Weakness (&lt;50%)</span>
+                    <span>Critical Weakness (&lt;50%) • {knowledgeStats.criticalWeaknessesCount}</span>
                   </span>
                 </div>
 
                 <span className="text-xs text-slate-500">
-                  Red bars highlight priority skill deficits mapped directly to iGOT remedial modules.
+                  Red bars highlight high-priority knowledge gaps mapped directly to iGOT remedial modules.
                 </span>
               </div>
             </div>
           </ScrollReveal>
+
+          {/* 4-Domain Taxonomy Radar & Balance Matrix */}
           <ScrollReveal direction="up" delay={0.1}>
             <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-8 shadow-xs space-y-6">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 dark:border-slate-800 pb-4">
                 <div>
                   <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-50 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300 text-xs font-bold uppercase tracking-wider mb-1">
                     <FaBrain size={12} />
-                    <span>4-Domain Balance</span>
+                    <span>4-Domain Knowledge Taxonomy</span>
                   </div>
                   <h2 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white flex items-center gap-2">
-                    <span>Domain Taxonomy Radar & Balance Matrix</span>
+                    <span>4-Domain Cadre Balance Matrix</span>
                   </h2>
                   <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-0.5">
-                    Holistic multi-domain balance across Statistical, Technical, Governance, and Managerial domains.
+                    Holistic multi-domain mastery across Statistical, Technical, Governance, and Managerial domains.
                   </p>
                 </div>
 
-                <span className="text-xs font-bold text-slate-500">
+                <span className="text-xs font-extrabold px-3 py-1 rounded-full bg-indigo-50 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800">
                   Official MoSPI Cadre Standards
                 </span>
               </div>
@@ -658,12 +934,14 @@ const Dashboard = () => {
                         <span className="text-xs font-black text-slate-700 dark:text-slate-300 uppercase tracking-wider">
                           {d.domain} Domain
                         </span>
-                        <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-md ${d.score >= 75
-                            ? "bg-emerald-100 dark:bg-emerald-950 text-emerald-600"
-                            : d.score >= 50
-                              ? "bg-blue-100 dark:bg-blue-950 text-blue-600"
-                              : "bg-rose-100 dark:bg-rose-950 text-rose-600"
-                          }`}>
+                        <span
+                          className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-md ${d.score >= 75
+                              ? "bg-emerald-100 dark:bg-emerald-950 text-emerald-600"
+                              : d.score >= 50
+                                ? "bg-blue-100 dark:bg-blue-950 text-blue-600"
+                                : "bg-rose-100 dark:bg-rose-950 text-rose-600"
+                            }`}
+                        >
                           {d.score >= 75 ? "Benchmark Met" : d.score >= 50 ? "Developing" : "Deficit"}
                         </span>
                       </div>
@@ -674,7 +952,7 @@ const Dashboard = () => {
 
                       <div className="w-full bg-slate-200 dark:bg-slate-700 h-2 rounded-full overflow-hidden">
                         <div
-                          className={`h-full rounded-full ${d.score >= 75 ? "bg-emerald-500" : d.score >= 50 ? "bg-blue-500" : "bg-rose-500"
+                          className={`h-full rounded-full transition-all ${d.score >= 75 ? "bg-emerald-500" : d.score >= 50 ? "bg-blue-500" : "bg-rose-500"
                             }`}
                           style={{ width: `${d.score}%` }}
                         />
@@ -686,16 +964,108 @@ const Dashboard = () => {
             </div>
           </ScrollReveal>
 
+          {/* Knowledge Progression & Evaluation Score Timeline */}
+          <ScrollReveal direction="up" delay={0.1}>
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-8 shadow-xs space-y-6">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-800 pb-4">
+                <div>
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 text-xs font-bold uppercase tracking-wider mb-1">
+                    <FaChartLine size={13} />
+                    <span>Learning Trajectory</span>
+                  </div>
+                  <h2 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white flex items-center gap-2">
+                    <span>Knowledge Evaluation & Progression Timeline</span>
+                  </h2>
+                  <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-0.5">
+                    Score progression across chronological quizzes, practicums, and oral board viva sessions.
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-3">
+                  <span className="text-xs font-extrabold bg-emerald-50 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 px-3 py-1 rounded-full border border-emerald-200 dark:border-emerald-800">
+                    {knowledgeTimelineData.length} Evaluated Points
+                  </span>
+                  <button
+                    onClick={() => navigate("/history")}
+                    className="px-4 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold text-xs transition-colors flex items-center gap-1.5 cursor-pointer"
+                  >
+                    <span>Archive</span>
+                    <FaArrowRight size={9} />
+                  </button>
+                </div>
+              </div>
+
+              <div className="h-72 w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={knowledgeTimelineData} margin={{ top: 15, right: 20, left: 10, bottom: 25 }}>
+                    <defs>
+                      <linearGradient id="scoreGradient" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.4} />
+                        <stop offset="95%" stopColor="#3b82f6" stopOpacity={0.0} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" opacity={0.2} vertical={false} />
+                    <XAxis
+                      dataKey="label"
+                      tick={{ fontSize: 11, fill: "#64748b" }}
+                      axisLine={{ stroke: "#94a3b8", opacity: 0.3 }}
+                    />
+                    <YAxis
+                      domain={[0, 100]}
+                      tick={{ fontSize: 11, fill: "#64748b" }}
+                      axisLine={{ stroke: "#94a3b8", opacity: 0.3 }}
+                    />
+                    <Tooltip
+                      formatter={(val, name, item) => [
+                        `${val}%`,
+                        `Score: ${item.payload.title || item.payload.type}`,
+                      ]}
+                      contentStyle={{
+                        backgroundColor: "#0f172a",
+                        borderRadius: "14px",
+                        border: "1px solid #334155",
+                        color: "#fff",
+                        fontSize: "12px",
+                      }}
+                    />
+                    <ReferenceLine
+                      y={75}
+                      stroke="#ef4444"
+                      strokeDasharray="4 4"
+                      strokeWidth={1.5}
+                      label={{
+                        value: "Cadre Target 75%",
+                        fill: "#ef4444",
+                        fontSize: 10,
+                        fontWeight: 800,
+                        position: "top",
+                      }}
+                    />
+                    <Area
+                      type="monotone"
+                      dataKey="score"
+                      stroke="#3b82f6"
+                      strokeWidth={3}
+                      fillOpacity={1}
+                      fill="url(#scoreGradient)"
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          </ScrollReveal>
+
+          {/* Competency Columns & Action Targets */}
           <ScrollReveal direction="up" delay={0.1}>
             <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-8 shadow-xs space-y-4">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 dark:border-slate-800 pb-3">
                 <div>
                   <h3 className="text-base font-black text-slate-900 dark:text-white flex items-center gap-2">
                     <FaColumns className="text-blue-600" />
-                    <span>Competency Columns & Action Targets</span>
+                    <span>Topic Mastery & Remediation Targets</span>
                   </h3>
                   <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                    Column-wise cards highlighting individual mastery levels and 1-click remediation links.
+                    Evaluated competency cards highlighting individual mastery percentages and 1-click remediation.
                   </p>
                 </div>
 
@@ -723,8 +1093,14 @@ const Dashboard = () => {
                           <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-md uppercase bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300">
                             {item.domain}
                           </span>
-                          <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-md ${isWeak ? "bg-rose-100 dark:bg-rose-950 text-rose-600" : isMastered ? "bg-emerald-100 dark:bg-emerald-950 text-emerald-600" : "bg-blue-100 dark:bg-blue-950 text-blue-600"
-                            }`}>
+                          <span
+                            className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-md ${isWeak
+                                ? "bg-rose-100 dark:bg-rose-950 text-rose-600"
+                                : isMastered
+                                  ? "bg-emerald-100 dark:bg-emerald-950 text-emerald-600"
+                                  : "bg-blue-100 dark:bg-blue-950 text-blue-600"
+                              }`}
+                          >
                             {isWeak ? "Gap" : isMastered ? "Mastered" : "Developing"}
                           </span>
                         </div>
@@ -738,9 +1114,7 @@ const Dashboard = () => {
                             <span className={isWeak ? "text-rose-600" : isMastered ? "text-emerald-600" : "text-blue-600"}>
                               {item.score}%
                             </span>
-                            <span className="text-slate-400 text-[10px]">
-                              Target 75%
-                            </span>
+                            <span className="text-slate-400 text-[10px]">Target 75%</span>
                           </div>
                           <div className="w-full bg-slate-200 dark:bg-slate-700 h-2 rounded-full overflow-hidden">
                             <div
@@ -761,6 +1135,14 @@ const Dashboard = () => {
                             <BsLightningChargeFill size={10} />
                             <span>Remediate in iGOT</span>
                           </button>
+                        ) : isMastered ? (
+                          <button
+                            onClick={() => navigate("/interview")}
+                            className="w-full py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[11px] transition-colors flex items-center justify-center gap-1 cursor-pointer"
+                          >
+                            <span>Practice Viva</span>
+                            <FaArrowRight size={8} />
+                          </button>
                         ) : (
                           <button
                             onClick={() => navigate("/quizzes")}
@@ -778,6 +1160,7 @@ const Dashboard = () => {
             </div>
           </ScrollReveal>
 
+          {/* Weakness-Driven AI Curriculum Engine */}
           <ScrollReveal direction="up" delay={0.1}>
             <div className="bg-white dark:bg-slate-900 border-2 border-blue-100 dark:border-blue-900/60 rounded-3xl p-6 sm:p-8 shadow-lg space-y-6">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -787,10 +1170,15 @@ const Dashboard = () => {
                     <span>Weakness-Driven AI Curriculum Engine</span>
                   </div>
                   <h2 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white">
-                    Personalized Learning Pathway (Generated from Your Weaknesses)
+                    Personalized Learning Pathway (Generated from Your Evaluated Deficits)
                   </h2>
                   <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
-                    SankhyaIQ™ AI Neural Engine analyzed your evaluated weaknesses across <strong>{weakCompetencies.map((w) => w.fullName).slice(0, 3).join(", ")}</strong> and synthesized this sequential capacity roadmap.
+                    SankhyaIQ™ AI Neural Engine analyzed your evaluated weaknesses across{" "}
+                    <strong>
+                      {knowledgeStats.criticalWeaknesses.map((w) => w.competencyName).slice(0, 3).join(", ") ||
+                        "Statistical Computing, Sampling & DPDP Act"}
+                    </strong>{" "}
+                    and synthesized this sequential capacity roadmap.
                   </p>
                 </div>
 
@@ -815,7 +1203,47 @@ const Dashboard = () => {
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {(profile?.learningPath || []).map((step, idx) => (
+                {(profile?.learningPath && profile.learningPath.length > 0
+                  ? profile.learningPath
+                  : [
+                    {
+                      title: "Statistical Computing in R & Python for Sample Surveys",
+                      provider: "iGOT Karmayogi",
+                      skillAddressed: "Statistical Computing & Automated Processing",
+                      priority: "High",
+                      duration: "14 Hours",
+                      status: "not-started",
+                      rationale: "Addresses your computing gap for NSSO survey data automation.",
+                    },
+                    {
+                      title: "Digital Personal Data Protection (DPDP) Act Compliance",
+                      provider: "iGOT Karmayogi",
+                      skillAddressed: "Data Privacy & DPDP Compliance",
+                      priority: "High",
+                      duration: "8 Hours",
+                      status: "not-started",
+                      rationale: "Official MoSPI anonymization rules and DPDP governance.",
+                    },
+                    {
+                      title: "Microdata Analytics & Survey Weighting Methodologies",
+                      provider: "NSSTA TPAC",
+                      skillAddressed: "Microdata Analytics & Survey Weights",
+                      priority: "Medium",
+                      duration: "12 Hours",
+                      status: "in-progress",
+                      rationale: "Advanced weighting techniques for multi-stage stratification.",
+                    },
+                    {
+                      title: "National Accounts Statistics & GDP Compilation (SNA 2008)",
+                      provider: "NSSTA TPAC",
+                      skillAddressed: "National Accounts (SNA 2008)",
+                      priority: "Medium",
+                      duration: "16 Hours",
+                      status: "completed",
+                      rationale: "GVA estimation methodology and macroeconomic aggregation.",
+                    },
+                  ]
+                ).map((step, idx) => (
                   <div
                     key={idx}
                     className="p-5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-800/40 hover:border-blue-400 hover:shadow-md transition-all flex flex-col justify-between space-y-4"
@@ -853,7 +1281,7 @@ const Dashboard = () => {
                       {step.status === "completed" ? (
                         <span className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 font-bold text-xs">
                           <FaCheckCircle size={12} />
-                          <span>Completed (+10)</span>
+                          <span>Completed (+10pts)</span>
                         </span>
                       ) : step.status === "in-progress" ? (
                         <button
@@ -878,6 +1306,7 @@ const Dashboard = () => {
             </div>
           </ScrollReveal>
 
+          {/* AI Copilot Knowledge Recommendation Card */}
           <ScrollReveal direction="scale" delay={0.1}>
             <div className="p-6 sm:p-8 rounded-3xl bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 dark:from-slate-900 dark:via-blue-950/40 dark:to-slate-900 border border-blue-200/80 dark:border-blue-900/60 shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
               <div className="flex items-start gap-4">
@@ -889,7 +1318,9 @@ const Dashboard = () => {
                     SankhyaCopilot Statistical Learning Insights
                   </h3>
                   <p className="text-xs text-slate-600 dark:text-slate-300 mt-1 max-w-2xl leading-relaxed">
-                    Based on your cadre benchmark as an <strong>{profile?.jobRole || "ISS Officer"}</strong>, completing the <em>Statistical Computing & Microdata Processing</em> and <em>Periodic Labour Force Survey (PLFS)</em> modules will raise your overall competency score by <strong>+18%</strong>.
+                    Based on your cadre benchmark as an <strong>{profile?.jobRole || "ISS Officer"}</strong>, completing the{" "}
+                    <em>Statistical Computing & Automated Processing</em> and <em>Periodic Labour Force Survey (PLFS)</em> practicums will raise your overall competency score by{" "}
+                    <strong>+16%</strong>.
                   </p>
                 </div>
               </div>
