@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { ServerUrl } from "../App";
@@ -10,13 +10,9 @@ import {
   FaCheckCircle,
   FaClock,
   FaArrowRight,
-  FaAward,
-  FaFileAlt,
-  FaChartLine,
   FaBrain,
   FaFilter,
 } from "react-icons/fa";
-import { HiSparkles } from "react-icons/hi";
 import { BsShieldCheck } from "react-icons/bs";
 import toast from "react-hot-toast";
 import { CardGridSkeleton } from "../components/SkeletonLoader";
@@ -34,27 +30,47 @@ const Assignments = () => {
   const [loading, setLoading] = useState(true);
   const [selectedDomain, setSelectedDomain] = useState("All");
   const [mySubmissions, setMySubmissions] = useState([]);
+  const prevAssignmentsCountRef = useRef(null);
 
   useEffect(() => {
-    fetchAssignments();
+    fetchAssignments(false);
     fetchMySubmissions();
+    const interval = setInterval(() => {
+      fetchAssignments(true);
+      fetchMySubmissions();
+    }, 3500);
+    return () => clearInterval(interval);
   }, [selectedDomain]);
 
-  const fetchAssignments = async () => {
+  const fetchAssignments = async (isBackground = false) => {
     try {
-      setLoading(true);
+      if (!isBackground) setLoading(true);
       const res = await axios.get(
         `${ServerUrl}/api/assignments/list${selectedDomain !== "All" ? `?domain=${encodeURIComponent(selectedDomain)}` : ""}`,
         { withCredentials: true }
       );
       if (res.data?.success) {
-        setAssignments(res.data.assignments || []);
+        const asgns = res.data.assignments || [];
+        setAssignments(asgns);
+        if (
+          isBackground &&
+          prevAssignmentsCountRef.current !== null &&
+          asgns.length > prevAssignmentsCountRef.current
+        ) {
+          toast("📋 New official Case Study Assignment published by NSSTA!", {
+            icon: "📋",
+            duration: 5000,
+          });
+        }
+        prevAssignmentsCountRef.current = asgns.length;
       }
     } catch (err) {
-      console.error("Error fetching assignments:", err);
-      toast.error("Failed to load assignments");
+      if (!isBackground) {
+        console.error("Error fetching assignments:", err);
+        toast.error("Failed to load assignments");
+      }
     } finally {
-      setLoading(false);
+      if (!isBackground) setLoading(false);
     }
   };
 

@@ -14,6 +14,7 @@ import {
   FaHistory,
   FaFilePdf,
   FaHome,
+  FaComments,
 } from "react-icons/fa";
 import { HiOutlineLogout, HiMenu, HiX, HiSparkles } from "react-icons/hi";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -282,6 +283,17 @@ const Navbar = () => {
                         >
                           <FaHistory size={14} className="text-indigo-600" />
                           <span>Interview History & Scorecards</span>
+                        </button>
+
+                        <button
+                          onClick={() => {
+                            setShowUserPopup(false);
+                            window.dispatchEvent(new CustomEvent("open-nssta-helpdesk"));
+                          }}
+                          className="w-full text-left px-3.5 py-2.5 rounded-2xl hover:bg-emerald-50/60 dark:hover:bg-emerald-950/40 text-xs font-bold text-slate-700 dark:text-slate-200 flex items-center gap-2.5 transition-colors cursor-pointer"
+                        >
+                          <FaComments size={14} className="text-emerald-500" />
+                          <span>NSSTA Live Chat & Announcements</span>
                         </button>
                       </div>
 

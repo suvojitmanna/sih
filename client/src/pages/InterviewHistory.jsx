@@ -45,7 +45,9 @@ import {
   FaUndo,
   FaChevronLeft,
   FaChevronRight,
+  FaChevronDown,
   FaArrowUp,
+  FaArrowDown,
   FaSpinner,
 } from "react-icons/fa";
 
@@ -55,6 +57,7 @@ import {
   BsShieldCheck,
   BsArrowRight,
   BsSortDown,
+  BsSortUp,
   BsMouse,
 } from "react-icons/bs";
 
@@ -102,6 +105,69 @@ const MODEL_FILTERS = [
     icon: FaBrain,
     badgeColor: "bg-cyan-50 dark:bg-cyan-950/70 text-cyan-700 dark:text-cyan-300 border-cyan-200 dark:border-cyan-800",
     activeColor: "from-cyan-600 via-blue-700 to-indigo-800 text-white shadow-cyan-500/25",
+  },
+];
+
+const SORT_OPTIONS = [
+  {
+    id: "newest",
+    label: "Newest First",
+    icon: BsSortDown,
+    color: "text-blue-600 dark:text-blue-400",
+    iconBg: "bg-blue-100 dark:bg-blue-950/80 text-blue-600 dark:text-blue-400",
+    hoverBg: "hover:bg-blue-50 dark:hover:bg-blue-950/60 hover:text-blue-600 dark:hover:text-blue-400",
+    activeBg: "bg-blue-50 dark:bg-blue-950/80 text-blue-700 dark:text-blue-300 font-bold",
+    badge: "Date ↓",
+  },
+  {
+    id: "oldest",
+    label: "Oldest First",
+    icon: BsSortUp,
+    color: "text-purple-600 dark:text-purple-400",
+    iconBg: "bg-purple-100 dark:bg-purple-950/80 text-purple-600 dark:text-purple-400",
+    hoverBg: "hover:bg-purple-50 dark:hover:bg-purple-950/60 hover:text-purple-600 dark:hover:text-purple-400",
+    activeBg: "bg-purple-50 dark:bg-purple-950/80 text-purple-700 dark:text-purple-300 font-bold",
+    badge: "Date ↑",
+  },
+  {
+    id: "highest",
+    label: "Highest Score",
+    icon: FaTrophy,
+    color: "text-emerald-600 dark:text-emerald-400",
+    iconBg: "bg-emerald-100 dark:bg-emerald-950/80 text-emerald-600 dark:text-emerald-400",
+    hoverBg: "hover:bg-emerald-50 dark:hover:bg-emerald-950/60 hover:text-emerald-600 dark:hover:text-emerald-400",
+    activeBg: "bg-emerald-50 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 font-bold",
+    badge: "Score ↓",
+  },
+  {
+    id: "lowest",
+    label: "Lowest Score",
+    icon: FaChartLine,
+    color: "text-amber-600 dark:text-amber-400",
+    iconBg: "bg-amber-100 dark:bg-amber-950/80 text-amber-600 dark:text-amber-400",
+    hoverBg: "hover:bg-amber-50 dark:hover:bg-amber-950/60 hover:text-amber-600 dark:hover:text-amber-400",
+    activeBg: "bg-amber-50 dark:bg-amber-950/80 text-amber-700 dark:text-amber-300 font-bold",
+    badge: "Score ↑",
+  },
+  {
+    id: "greater-75",
+    label: "Score ≥ 75%",
+    icon: FaArrowUp,
+    color: "text-indigo-600 dark:text-indigo-400",
+    iconBg: "bg-indigo-100 dark:bg-indigo-950/80 text-indigo-600 dark:text-indigo-400",
+    hoverBg: "hover:bg-indigo-50 dark:hover:bg-indigo-950/60 hover:text-indigo-600 dark:hover:text-indigo-400",
+    activeBg: "bg-indigo-50 dark:bg-indigo-950/80 text-indigo-700 dark:text-indigo-300 font-bold",
+    badge: "Top Tier",
+  },
+  {
+    id: "lesser-75",
+    label: "Score < 75%",
+    icon: FaArrowDown,
+    color: "text-rose-600 dark:text-rose-400",
+    iconBg: "bg-rose-100 dark:bg-rose-950/80 text-rose-600 dark:text-rose-400",
+    hoverBg: "hover:bg-rose-50 dark:hover:bg-rose-950/60 hover:text-rose-600 dark:hover:text-rose-400",
+    activeBg: "bg-rose-50 dark:bg-rose-950/80 text-rose-700 dark:text-rose-300 font-bold",
+    badge: "Improve",
   },
 ];
 
@@ -175,11 +241,25 @@ const InterviewHistory = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [sortBy, setSortBy] = useState("newest");
+  const [isSortOpen, setIsSortOpen] = useState(false);
+  const sortDropdownRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (sortDropdownRef.current && !sortDropdownRef.current.contains(e.target)) {
+        setIsSortOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   const [chats, setChats] = useState([]);
   const [interviews, setInterviews] = useState([]);
-  const [assignments, setAssignments] = useState([]);
-  const [quizzes, setQuizzes] = useState([]);
+  const [assignmentSubmissions, setAssignmentSubmissions] = useState([]);
+  const [allAssignments, setAllAssignments] = useState([]);
+  const [quizAttempts, setQuizAttempts] = useState([]);
+  const [allQuizzes, setAllQuizzes] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const INITIAL_VISIBLE_COUNT = 6;
@@ -254,16 +334,24 @@ const InterviewHistory = () => {
     }, 600);
   };
 
-
   useEffect(() => {
     const fetchAllHistories = async () => {
       setLoading(true);
       try {
-        const [chatRes, interviewRes, assignmentRes, quizRes] = await Promise.allSettled([
+        const [
+          chatRes,
+          interviewRes,
+          assignmentSubmissionsRes,
+          allAssignmentsRes,
+          quizAttemptsRes,
+          allQuizzesRes,
+        ] = await Promise.allSettled([
           axios.get(`${ServerUrl}/api/chat/get`, { withCredentials: true }),
           axios.get(`${ServerUrl}/api/interview/get-interview`, { withCredentials: true }),
           axios.get(`${ServerUrl}/api/assignments/history/my-submissions`, { withCredentials: true }),
+          axios.get(`${ServerUrl}/api/assignments/list`, { withCredentials: true }),
           axios.get(`${ServerUrl}/api/quizzes/history/my-attempts`, { withCredentials: true }),
+          axios.get(`${ServerUrl}/api/quizzes/list`, { withCredentials: true }),
         ]);
 
         if (chatRes.status === "fulfilled" && chatRes.value?.data?.chats) {
@@ -272,11 +360,17 @@ const InterviewHistory = () => {
         if (interviewRes.status === "fulfilled" && Array.isArray(interviewRes.value?.data)) {
           setInterviews(interviewRes.value.data);
         }
-        if (assignmentRes.status === "fulfilled" && assignmentRes.value?.data?.submissions) {
-          setAssignments(assignmentRes.value.data.submissions);
+        if (assignmentSubmissionsRes.status === "fulfilled" && assignmentSubmissionsRes.value?.data?.submissions) {
+          setAssignmentSubmissions(assignmentSubmissionsRes.value.data.submissions);
         }
-        if (quizRes.status === "fulfilled" && quizRes.value?.data?.attempts) {
-          setQuizzes(quizRes.value.data.attempts);
+        if (allAssignmentsRes.status === "fulfilled" && allAssignmentsRes.value?.data?.assignments) {
+          setAllAssignments(allAssignmentsRes.value.data.assignments);
+        }
+        if (quizAttemptsRes.status === "fulfilled" && quizAttemptsRes.value?.data?.attempts) {
+          setQuizAttempts(quizAttemptsRes.value.data.attempts);
+        }
+        if (allQuizzesRes.status === "fulfilled" && allQuizzesRes.value?.data?.quizzes) {
+          setAllQuizzes(allQuizzesRes.value.data.quizzes);
         }
       } catch (err) {
         console.error("Error loading multi-model histories:", err);
@@ -334,9 +428,11 @@ const InterviewHistory = () => {
   const unifiedHistory = useMemo(() => {
     const list = [];
 
+    // 1. SankhyaCopilot Chat Sessions
     chats.forEach((c) => {
       const msgCount = c.messages?.length || 0;
-      const lastMsg = msgCount > 0 ? c.messages[msgCount - 1]?.content : "No messages";
+      const lastMsg = msgCount > 0 ? c.messages[msgCount - 1]?.content : "No messages yet";
+      const isComplete = msgCount > 0;
       list.push({
         id: c._id,
         type: "chat",
@@ -346,7 +442,10 @@ const InterviewHistory = () => {
         date: new Date(c.updatedAt || c.createdAt || Date.now()),
         score: null,
         previewText: lastMsg,
-        status: "Active Session",
+        statusGroup: isComplete ? "completed" : "pending",
+        status: isComplete ? "Completed Dialogue" : "Pending Start",
+        actionText: "Resume Chat",
+        actionLink: `/chat/${c._id}`,
         modelName: "SankhyaCopilot AI",
         modelBadge: "Domain Chat",
         gradient: "from-indigo-600 via-purple-600 to-indigo-800",
@@ -357,9 +456,11 @@ const InterviewHistory = () => {
       });
     });
 
+    // 2. Mock Viva Voce Oral Interviews
     interviews.forEach((i) => {
       const sc = i.finalScore || 0;
       const qList = i.question || i.questions || [];
+      const isDone = i.status === "completed" || sc > 0;
       list.push({
         id: i._id,
         type: "interview",
@@ -367,11 +468,16 @@ const InterviewHistory = () => {
         subtitle: `${i.experience || "Intermediate"} • ${(i.mode || "Technical").toUpperCase()} Mode`,
         topic: i.role,
         date: new Date(i.createdAt || Date.now()),
-        score: sc,
+        score: isDone ? sc : null,
         scoreMax: 10,
-        scoreLabel: `${sc} / 10`,
-        previewText: `Spoken Viva Voce session with ${qList.length} questions evaluated.`,
-        status: i.status === "completed" ? "Completed" : "In Progress",
+        scoreLabel: isDone ? `${sc} / 10` : "Pending",
+        previewText: isDone
+          ? `Spoken Viva Voce session with ${qList.length} oral questions evaluated.`
+          : `Mock Viva Voce interview created (${qList.length} questions prepared).`,
+        statusGroup: isDone ? "completed" : "pending",
+        status: isDone ? "Completed" : "Pending / In Progress",
+        actionText: isDone ? "View Report" : "Resume Viva",
+        actionLink: isDone ? `/report/${i._id}` : "/interview",
         modelName: "Cadre Mock Viva Voce",
         modelBadge: "Voice & Video AI",
         gradient: "from-blue-600 via-indigo-600 to-blue-700",
@@ -386,7 +492,12 @@ const InterviewHistory = () => {
       });
     });
 
-    assignments.forEach((a) => {
+    // 3. Case Study Practicums & Assignments
+    const submittedAsgnIds = new Set();
+    assignmentSubmissions.forEach((a) => {
+      const asgnId = a.assignmentId?.toString() || a._id;
+      submittedAsgnIds.add(asgnId);
+      if (a.assignmentTitle) submittedAsgnIds.add(a.assignmentTitle);
       const overallMarks = a.aiEvaluation?.overallScore || 0;
       const grade = a.aiEvaluation?.grade || "A";
       list.push({
@@ -400,7 +511,10 @@ const InterviewHistory = () => {
         scoreMax: 100,
         scoreLabel: `${overallMarks} / 100`,
         previewText: a.aiEvaluation?.detailedFeedback || a.submissionText?.substring(0, 120) + "...",
-        status: "Evaluated",
+        statusGroup: "completed",
+        status: "Completed (Evaluated)",
+        actionText: "View Evaluation",
+        actionLink: `/assignments/${a.assignmentId || a._id}`,
         modelName: "Case Study Rubric Evaluator",
         modelBadge: "4-Criterion Rubric",
         gradient: "from-amber-500 via-orange-600 to-amber-700",
@@ -411,7 +525,42 @@ const InterviewHistory = () => {
       });
     });
 
-    quizzes.forEach((q) => {
+    allAssignments.forEach((a) => {
+      const asgnId = a._id?.toString() || a.id;
+      if (submittedAsgnIds.has(asgnId) || submittedAsgnIds.has(a.title) || a.hasSubmitted) {
+        return;
+      }
+      list.push({
+        id: asgnId,
+        type: "assignment",
+        title: a.title || "Operational Case Study Practicum",
+        subtitle: `${a.targetCompetency || a.domain || "Official Statistics"} • ${a.difficulty || "Intermediate"}`,
+        topic: a.targetCompetency || a.domain || "Practicum",
+        date: new Date(a.createdAt || Date.now()),
+        score: null,
+        scoreMax: 100,
+        scoreLabel: "Pending",
+        previewText: a.scenario?.substring(0, 140) + "...",
+        statusGroup: "pending",
+        status: "Pending Submission",
+        actionText: "Complete Practicum",
+        actionLink: `/assignments/${asgnId}`,
+        modelName: "Case Study Rubric Evaluator",
+        modelBadge: "Assigned Practicum",
+        gradient: "from-amber-500 via-orange-600 to-amber-700",
+        glowBorder: "border-amber-500/30 dark:border-amber-500/40 hover:border-amber-500",
+        icon: FaFileAlt,
+        iconBg: "bg-amber-100 dark:bg-amber-950/80 text-amber-600 dark:text-amber-400",
+        raw: a,
+      });
+    });
+
+    // 4. Timed Diagnostic Quizzes
+    const attemptedQuizIds = new Set();
+    quizAttempts.forEach((q) => {
+      const qId = q.quizId?.toString() || q._id;
+      attemptedQuizIds.add(qId);
+      if (q.quizTitle) attemptedQuizIds.add(q.quizTitle);
       const sc = q.score || 0;
       const totalQ = q.totalQuestions || 0;
       const correct = q.correctCount || 0;
@@ -426,7 +575,10 @@ const InterviewHistory = () => {
         scoreMax: 100,
         scoreLabel: `${sc}%`,
         previewText: q.aiFeedback || `Timed diagnostic examination completed with ${q.accuracy || sc}% accuracy.`,
-        status: q.passed ? "Passed" : "Needs Review",
+        statusGroup: "completed",
+        status: q.passed ? "Completed (Passed)" : "Completed",
+        actionText: "View Breakdown",
+        actionLink: `/quiz/${q.quizId || q._id}`,
         modelName: "Diagnostic Test Engine",
         modelBadge: "Timed Test",
         gradient: "from-teal-500 via-emerald-600 to-teal-700",
@@ -437,6 +589,37 @@ const InterviewHistory = () => {
       });
     });
 
+    allQuizzes.forEach((q) => {
+      const qId = q._id?.toString() || q.id;
+      if (attemptedQuizIds.has(qId) || attemptedQuizIds.has(q.title)) {
+        return;
+      }
+      list.push({
+        id: qId,
+        type: "quiz",
+        title: q.title || `${q.topic || "Diagnostic"} Assessment Test`,
+        subtitle: `${q.topic || "Core Domain"} • ${q.difficulty || "Medium"} • ${q.questions?.length || 5} Questions`,
+        topic: q.topic || "Diagnostic",
+        date: new Date(q.createdAt || Date.now()),
+        score: null,
+        scoreMax: 100,
+        scoreLabel: "Pending",
+        previewText: `Official ${q.topic || "Statistical"} diagnostic assessment ready to attempt.`,
+        statusGroup: "pending",
+        status: "Pending Attempt",
+        actionText: "Attempt Quiz",
+        actionLink: `/quiz/${qId}`,
+        modelName: "Diagnostic Test Engine",
+        modelBadge: "Available Quiz",
+        gradient: "from-teal-500 via-emerald-600 to-teal-700",
+        glowBorder: "border-teal-500/30 dark:border-teal-500/40 hover:border-teal-500",
+        icon: FaTasks,
+        iconBg: "bg-teal-100 dark:bg-teal-950/80 text-teal-600 dark:text-teal-400",
+        raw: q,
+      });
+    });
+
+    // 5. Cadre Competency Profile & Skill Gap Matrix
     if (userData?.competencies && userData.competencies.length > 0) {
       list.push({
         id: "competency-profile-main",
@@ -449,9 +632,36 @@ const InterviewHistory = () => {
         scoreMax: 100,
         scoreLabel: `${userData.overallCompetencyScore || 72}%`,
         previewText: `Assessed across 4 domains (Statistical, Technical, Governance, Managerial) with targeted iGOT learning pathways.`,
-        status: "Active Matrix",
+        statusGroup: "completed",
+        status: "Completed (Active)",
+        actionText: "Open Radar",
+        actionLink: "/competencies",
         modelName: "Cadre Competency Engine",
         modelBadge: "Skill Gap Matrix",
+        gradient: "from-cyan-600 via-blue-700 to-indigo-800",
+        glowBorder: "border-cyan-500/30 dark:border-cyan-500/40 hover:border-cyan-500",
+        icon: FaBrain,
+        iconBg: "bg-cyan-100 dark:bg-cyan-950/80 text-cyan-600 dark:text-cyan-400",
+        raw: userData,
+      });
+    } else {
+      list.push({
+        id: "competency-profile-pending",
+        type: "competency",
+        title: `${userData?.jobRole || "Cadre"} Competency Baseline Assessment`,
+        subtitle: `Skill Gap Matrix & iGOT Learning Pathway Assignment`,
+        topic: "Cadre Matrix Taxonomy",
+        date: new Date(userData?.createdAt || Date.now()),
+        score: null,
+        scoreMax: 100,
+        scoreLabel: "Pending",
+        previewText: `Baseline multi-domain competency assessment has not been finalized yet. Complete your self-assessment radar.`,
+        statusGroup: "pending",
+        status: "Pending Assessment",
+        actionText: "Take Assessment",
+        actionLink: "/competencies",
+        modelName: "Cadre Competency Engine",
+        modelBadge: "Baseline Assessment",
         gradient: "from-cyan-600 via-blue-700 to-indigo-800",
         glowBorder: "border-cyan-500/30 dark:border-cyan-500/40 hover:border-cyan-500",
         icon: FaBrain,
@@ -461,7 +671,33 @@ const InterviewHistory = () => {
     }
 
     return list;
-  }, [chats, interviews, assignments, quizzes, userData]);
+  }, [chats, interviews, assignmentSubmissions, allAssignments, quizAttempts, allQuizzes, userData]);
+
+  const statusCounts = useMemo(() => {
+    let scopeList = unifiedHistory;
+    if (selectedFilter !== "all") {
+      scopeList = scopeList.filter((item) => item.type === selectedFilter);
+    }
+    const completed = scopeList.filter((item) => item.statusGroup === "completed").length;
+    const pending = scopeList.filter((item) => item.statusGroup === "pending").length;
+    const greater75 = scopeList.filter((item) => {
+      if (item.score === null || item.score === undefined) return false;
+      return item.scoreMax === 10 ? item.score >= 7.5 : item.score >= 75;
+    }).length;
+    const lesser75 = scopeList.filter((item) => {
+      if (item.score === null || item.score === undefined) return false;
+      return item.scoreMax === 10 ? item.score < 7.5 : item.score < 75;
+    }).length;
+
+    return {
+      all: scopeList.length,
+      completed,
+      pending,
+      greater75,
+      lesser75,
+      highScore: greater75,
+    };
+  }, [unifiedHistory, selectedFilter]);
 
   const filteredHistory = useMemo(() => {
     let result = unifiedHistory;
@@ -482,33 +718,55 @@ const InterviewHistory = () => {
     }
 
     if (statusFilter === "completed") {
-      result = result.filter(
-        (item) =>
-          item.status === "Completed" ||
-          item.status === "Evaluated" ||
-          item.status === "Passed"
-      );
-    } else if (statusFilter === "high-score") {
+      result = result.filter((item) => item.statusGroup === "completed");
+    } else if (statusFilter === "pending") {
+      result = result.filter((item) => item.statusGroup === "pending");
+    } else if (statusFilter === "greater-75" || statusFilter === "high-score") {
       result = result.filter((item) => {
-        if (item.score === null) return false;
-        return item.scoreMax === 10 ? item.score >= 8 : item.score >= 75;
+        if (item.score === null || item.score === undefined) return false;
+        return item.scoreMax === 10 ? item.score >= 7.5 : item.score >= 75;
       });
-    } else if (statusFilter === "needs-review") {
-      result = result.filter(
-        (item) =>
-          item.status === "Needs Review" ||
-          (item.score !== null &&
-            (item.scoreMax === 10 ? item.score < 5 : item.score < 50))
-      );
+    } else if (statusFilter === "lesser-75") {
+      result = result.filter((item) => {
+        if (item.score === null || item.score === undefined) return false;
+        return item.scoreMax === 10 ? item.score < 7.5 : item.score < 75;
+      });
+    }
+
+    if (sortBy === "greater-75") {
+      result = result.filter((item) => {
+        if (item.score === null || item.score === undefined) return false;
+        return item.scoreMax === 10 ? item.score >= 7.5 : item.score >= 75;
+      });
+    } else if (sortBy === "lesser-75") {
+      result = result.filter((item) => {
+        if (item.score === null || item.score === undefined) return false;
+        return item.scoreMax === 10 ? item.score < 7.5 : item.score < 75;
+      });
     }
 
     result.sort((a, b) => {
-      if (sortBy === "newest") return b.date - a.date;
-      if (sortBy === "oldest") return a.date - b.date;
-      if (sortBy === "score") {
-        const scoreA = a.score !== null ? (a.scoreMax === 10 ? a.score * 10 : a.score) : -1;
-        const scoreB = b.score !== null ? (b.scoreMax === 10 ? b.score * 10 : b.score) : -1;
-        return scoreB - scoreA;
+      if (sortBy === "newest") {
+        return b.date - a.date;
+      }
+      if (sortBy === "oldest") {
+        return a.date - b.date;
+      }
+      if (sortBy === "highest" || sortBy === "score" || sortBy === "greater-75") {
+        const scoreA = a.score !== null && a.score !== undefined ? (a.scoreMax === 10 ? a.score * 10 : a.score) : -1;
+        const scoreB = b.score !== null && b.score !== undefined ? (b.scoreMax === 10 ? b.score * 10 : b.score) : -1;
+        if (scoreA !== scoreB) {
+          return scoreB - scoreA;
+        }
+        return b.date - a.date;
+      }
+      if (sortBy === "lowest" || sortBy === "lesser-75") {
+        const scoreA = a.score !== null && a.score !== undefined ? (a.scoreMax === 10 ? a.score * 10 : a.score) : 9999;
+        const scoreB = b.score !== null && b.score !== undefined ? (b.scoreMax === 10 ? b.score * 10 : b.score) : 9999;
+        if (scoreA !== scoreB) {
+          return scoreA - scoreB;
+        }
+        return b.date - a.date;
       }
       return b.date - a.date;
     });
@@ -580,69 +838,61 @@ const InterviewHistory = () => {
   const counts = useMemo(() => {
     return {
       all: unifiedHistory.length,
-      chat: chats.length,
-      interview: interviews.length,
-      assignment: assignments.length,
-      quiz: quizzes.length,
-      competency: userData?.competencies?.length ? 1 : 0,
+      chat: unifiedHistory.filter((i) => i.type === "chat").length,
+      interview: unifiedHistory.filter((i) => i.type === "interview").length,
+      assignment: unifiedHistory.filter((i) => i.type === "assignment").length,
+      quiz: unifiedHistory.filter((i) => i.type === "quiz").length,
+      competency: unifiedHistory.filter((i) => i.type === "competency").length,
     };
-  }, [unifiedHistory, chats, interviews, assignments, quizzes, userData]);
+  }, [unifiedHistory]);
 
   const headerMetrics = useMemo(() => {
+    const scopeItems = selectedFilter === "all" ? unifiedHistory : unifiedHistory.filter((i) => i.type === selectedFilter);
+    const completedCount = scopeItems.filter((i) => i.statusGroup === "completed").length;
+    const pendingCount = scopeItems.filter((i) => i.statusGroup === "pending").length;
+
     if (selectedFilter === "chat") {
       const totalMessages = chats.reduce((acc, c) => acc + (c.messages?.length || 0), 0);
       return [
-        { label: "Total Chats", value: chats.length, icon: FaComments, color: "text-indigo-600 dark:text-indigo-400", bg: "bg-indigo-100 dark:bg-indigo-950" },
-        { label: "Total Exchanges", value: totalMessages, icon: BsRobot, color: "text-purple-600 dark:text-purple-400", bg: "bg-purple-100 dark:bg-purple-950" },
+        { label: "Total Consultations", value: scopeItems.length, icon: FaComments, color: "text-indigo-600 dark:text-indigo-400", bg: "bg-indigo-100 dark:bg-indigo-950" },
+        { label: "Active Dialogues", value: completedCount, icon: FaCheckCircle, color: "text-emerald-600 dark:text-emerald-400", bg: "bg-emerald-100 dark:bg-emerald-950" },
         { label: "AI Engine", value: "SankhyaCopilot", icon: HiSparkles, color: "text-cyan-600 dark:text-cyan-400", bg: "bg-cyan-100 dark:bg-cyan-950" },
       ];
     }
     if (selectedFilter === "interview") {
-      const completed = interviews.filter((i) => i.status === "completed");
-      const avg = completed.length
-        ? (completed.reduce((acc, i) => acc + (i.finalScore || 0), 0) / completed.length).toFixed(1)
-        : "0.0";
-      const best = completed.length ? Math.max(...completed.map((i) => i.finalScore || 0)) : 0;
       return [
-        { label: "Total Interviews", value: interviews.length, icon: FaBriefcase, color: "text-blue-600 dark:text-blue-400", bg: "bg-blue-100 dark:bg-blue-950" },
-        { label: "Average Viva Score", value: `${avg} / 10`, icon: FaChartLine, color: "text-emerald-600 dark:text-emerald-400", bg: "bg-emerald-100 dark:bg-emerald-950" },
-        { label: "Best Score", value: `${best} / 10`, icon: FaTrophy, color: "text-amber-600 dark:text-amber-400", bg: "bg-amber-100 dark:bg-amber-950" },
+        { label: "Total Viva Sessions", value: scopeItems.length, icon: FaBriefcase, color: "text-blue-600 dark:text-blue-400", bg: "bg-blue-100 dark:bg-blue-950" },
+        { label: "Completed Vivas", value: completedCount, icon: FaCheckCircle, color: "text-emerald-600 dark:text-emerald-400", bg: "bg-emerald-100 dark:bg-emerald-950" },
+        { label: "Pending Vivas", value: pendingCount, icon: FaSpinner, color: "text-amber-600 dark:text-amber-400", bg: "bg-amber-100 dark:bg-amber-950" },
       ];
     }
     if (selectedFilter === "assignment") {
-      const avgMarks = assignments.length
-        ? Math.round(assignments.reduce((acc, a) => acc + (a.aiEvaluation?.overallScore || 0), 0) / assignments.length)
-        : 0;
       return [
-        { label: "Evaluated Case Studies", value: assignments.length, icon: FaFileAlt, color: "text-amber-600 dark:text-amber-400", bg: "bg-amber-100 dark:bg-amber-950" },
-        { label: "Average Marks", value: `${avgMarks} / 100`, icon: FaChartLine, color: "text-orange-600 dark:text-orange-400", bg: "bg-orange-100 dark:bg-orange-950" },
-        { label: "Rubric Criteria", value: "4 Dimensions", icon: BsShieldCheck, color: "text-emerald-600 dark:text-emerald-400", bg: "bg-emerald-100 dark:bg-emerald-950" },
+        { label: "Total Practicums", value: scopeItems.length, icon: FaFileAlt, color: "text-amber-600 dark:text-amber-400", bg: "bg-amber-100 dark:bg-amber-950" },
+        { label: "Completed & Evaluated", value: completedCount, icon: FaCheckCircle, color: "text-emerald-600 dark:text-emerald-400", bg: "bg-emerald-100 dark:bg-emerald-950" },
+        { label: "Pending Submissions", value: pendingCount, icon: FaSpinner, color: "text-amber-600 dark:text-amber-400", bg: "bg-amber-100 dark:bg-amber-950" },
       ];
     }
     if (selectedFilter === "quiz") {
-      const avgAccuracy = quizzes.length
-        ? Math.round(quizzes.reduce((acc, q) => acc + (q.accuracy || q.score || 0), 0) / quizzes.length)
-        : 0;
-      const passedCount = quizzes.filter((q) => q.passed).length;
       return [
-        { label: "Quizzes Attempted", value: quizzes.length, icon: FaTasks, color: "text-teal-600 dark:text-teal-400", bg: "bg-teal-100 dark:bg-teal-950" },
-        { label: "Average Accuracy", value: `${avgAccuracy}%`, icon: FaChartLine, color: "text-cyan-600 dark:text-cyan-400", bg: "bg-cyan-100 dark:bg-cyan-950" },
-        { label: "Passed Attempts", value: `${passedCount} / ${quizzes.length}`, icon: FaCheckCircle, color: "text-emerald-600 dark:text-emerald-400", bg: "bg-emerald-100 dark:bg-emerald-950" },
+        { label: "Total Quizzes", value: scopeItems.length, icon: FaTasks, color: "text-teal-600 dark:text-teal-400", bg: "bg-teal-100 dark:bg-teal-950" },
+        { label: "Completed Tests", value: completedCount, icon: FaCheckCircle, color: "text-emerald-600 dark:text-emerald-400", bg: "bg-emerald-100 dark:bg-emerald-950" },
+        { label: "Pending Attempts", value: pendingCount, icon: FaSpinner, color: "text-amber-600 dark:text-amber-400", bg: "bg-amber-100 dark:bg-amber-950" },
       ];
     }
     if (selectedFilter === "competency") {
       return [
-        { label: "Overall Competency Index", value: `${userData?.overallCompetencyScore || 72}%`, icon: FaBrain, color: "text-cyan-600 dark:text-cyan-400", bg: "bg-cyan-100 dark:bg-cyan-950" },
+        { label: "Competency Radar", value: `${userData?.overallCompetencyScore || 72}% Index`, icon: FaBrain, color: "text-cyan-600 dark:text-cyan-400", bg: "bg-cyan-100 dark:bg-cyan-950" },
         { label: "Identified Skill Gaps", value: userData?.skillGaps?.length || 0, icon: FaChartLine, color: "text-rose-600 dark:text-rose-400", bg: "bg-rose-100 dark:bg-rose-950" },
-        { label: "Assigned Pathway Steps", value: userData?.learningPath?.length || 3, icon: FaGraduationCap, color: "text-indigo-600 dark:text-indigo-400", bg: "bg-indigo-100 dark:bg-indigo-950" },
+        { label: "Pathway Steps", value: userData?.learningPath?.length || 3, icon: FaGraduationCap, color: "text-indigo-600 dark:text-indigo-400", bg: "bg-indigo-100 dark:bg-indigo-950" },
       ];
     }
     return [
-      { label: "Total AI Sessions", value: unifiedHistory.length, icon: FaLayerGroup, color: "text-blue-600 dark:text-blue-400", bg: "bg-blue-100 dark:bg-blue-950" },
-      { label: "Active AI Models", value: "6 Engines", icon: HiSparkles, color: "text-purple-600 dark:text-purple-400", bg: "bg-purple-100 dark:bg-purple-950" },
-      { label: "Official PDF Dossiers", value: "Available", icon: FaFilePdf, color: "text-emerald-600 dark:text-emerald-400", bg: "bg-emerald-100 dark:bg-emerald-950" },
+      { label: "Total Sessions", value: unifiedHistory.length, icon: FaLayerGroup, color: "text-blue-600 dark:text-blue-400", bg: "bg-blue-100 dark:bg-blue-950" },
+      { label: "Completed & Evaluated", value: completedCount, icon: FaCheckCircle, color: "text-emerald-600 dark:text-emerald-400", bg: "bg-emerald-100 dark:bg-emerald-950" },
+      { label: "Pending Officer Actions", value: pendingCount, icon: FaSpinner, color: "text-amber-600 dark:text-amber-400", bg: "bg-amber-100 dark:bg-amber-950" },
     ];
-  }, [selectedFilter, unifiedHistory, chats, interviews, assignments, quizzes, userData]);
+  }, [selectedFilter, unifiedHistory, chats, interviews, assignmentSubmissions, quizAttempts, userData]);
 
   const handleDownloadPDF = (item, e) => {
     if (e) e.stopPropagation();
@@ -653,6 +903,8 @@ const InterviewHistory = () => {
       user: userData,
     });
   };
+
+  const selectedSortOption = SORT_OPTIONS.find((o) => o.id === sortBy) || SORT_OPTIONS[0];
 
   return (
     <motion.div
@@ -685,7 +937,7 @@ const InterviewHistory = () => {
             scale: scrollDirection === "down" ? 0.99 : 1,
           }}
           transition={{ duration: 0.35, ease: "easeOut" }}
-          className="sticky top-4 z-40 backdrop-blur-2xl bg-white/90 dark:bg-slate-900/90 border border-slate-200/80 dark:border-slate-800 rounded-3xl p-6 sm:px-7 sm:py-2 shadow-xl space-y-6"
+          className="sticky top-4 z-40 backdrop-blur-2xl bg-white/90 dark:bg-slate-900/90 border border-slate-200/80 dark:border-slate-800 rounded-3xl p-5 sm:px-7 sm:py-5 shadow-xl space-y-4"
         >
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
             <div>
@@ -717,12 +969,9 @@ const InterviewHistory = () => {
                       <p className="text-[10px] uppercase tracking-wider text-slate-400 font-bold leading-tight truncate">
                         {m.label}
                       </p>
-                      <h3
-                        className="text-sm sm:text-base lg:text-lg font-black text-slate-900 dark:text-white leading-tight truncate"
-                        title={m.value}
-                      >
+                      <p className="text-base sm:text-lg font-black text-slate-900 dark:text-white leading-tight mt-0.5 truncate">
                         {m.value}
-                      </h3>
+                      </p>
                     </div>
                   </motion.div>
                 );
@@ -730,72 +979,183 @@ const InterviewHistory = () => {
             </div>
           </div>
 
-          <div className=" space-y-4">
-            <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3.5 bg-slate-50/90 dark:bg-slate-800/60 p-3.5 sm:p-4 rounded-2xl border border-slate-200/70 dark:border-slate-700/70">
+          <div className="space-y-4 pt-1">
+            {/* Search, Status/Score Filters, Sort, and Reset Bar */}
+            <div className="relative z-30 flex flex-col xl:flex-row items-stretch xl:items-center justify-between gap-3.5 bg-slate-50/90 dark:bg-slate-800/60 backdrop-blur-md p-3.5 sm:p-4 rounded-3xl border border-slate-200/80 dark:border-slate-700/80 shadow-xs">
+              {/* Search input */}
               <div className="relative flex-1 min-w-[260px]">
-                <FaSearch className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs" />
+                <FaSearch className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 text-xs" />
                 <input
                   type="text"
-                  placeholder="Search across all AI transcripts, topics, cadres, questions, feedback..."
+                  placeholder="Search transcripts, topics, cadres, questions, feedback..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-9 pr-8 py-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all font-medium shadow-2xs"
+                  className="w-full pl-9 pr-9 py-2.5 rounded-2xl bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 dark:focus:border-blue-500 transition-all font-medium shadow-2xs"
                 />
                 {searchQuery && (
                   <button
                     onClick={() => setSearchQuery("")}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-xs cursor-pointer"
+                    title="Clear search"
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 w-5 h-5 rounded-full bg-slate-200/80 dark:bg-slate-700/80 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-500 dark:text-slate-300 flex items-center justify-center text-[10px] transition-all cursor-pointer"
                   >
                     <FaTimes />
                   </button>
                 )}
               </div>
 
+              {/* Status & Score Filters + Sort + Reset */}
               <div className="flex flex-wrap items-center gap-2.5">
-
-                <div className="flex items-center gap-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 p-1 rounded-xl shadow-2xs">
+                {/* 3 Core Status Filters (No duplicate score filters) */}
+                <div className="flex flex-wrap items-center gap-1 bg-white/90 dark:bg-slate-900/90 border border-slate-200 dark:border-slate-700/80 p-1 rounded-2xl shadow-2xs">
                   <button
                     onClick={() => setStatusFilter("all")}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${statusFilter === "all"
-                      ? "bg-blue-600 text-white shadow-xs"
-                      : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
-                      }`}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                      statusFilter === "all"
+                        ? "bg-blue-600 text-white shadow-sm shadow-blue-500/25"
+                        : "text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/80"
+                    }`}
                   >
-                    All Status
+                    <FaLayerGroup size={11} />
+                    <span>All Status</span>
+                    <span
+                      className={`px-1.5 py-0.2 rounded-full text-[10px] font-black ${
+                        statusFilter === "all"
+                          ? "bg-white/20 text-white"
+                          : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300"
+                      }`}
+                    >
+                      {statusCounts.all}
+                    </span>
                   </button>
+
                   <button
                     onClick={() => setStatusFilter("completed")}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${statusFilter === "completed"
-                      ? "bg-emerald-600 text-white shadow-xs"
-                      : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
-                      }`}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                      statusFilter === "completed"
+                        ? "bg-emerald-600 text-white shadow-sm shadow-emerald-500/25"
+                        : "text-slate-600 dark:text-slate-300 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-emerald-50/70 dark:hover:bg-emerald-950/40"
+                    }`}
                   >
-                    Completed
+                    <FaCheckCircle
+                      size={11}
+                      className={statusFilter === "completed" ? "text-white" : "text-emerald-500"}
+                    />
+                    <span>Completed</span>
+                    <span
+                      className={`px-1.5 py-0.2 rounded-full text-[10px] font-black ${
+                        statusFilter === "completed"
+                          ? "bg-white/20 text-white"
+                          : "bg-emerald-50 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 border border-emerald-200/50 dark:border-emerald-800/50"
+                      }`}
+                    >
+                      {statusCounts.completed}
+                    </span>
                   </button>
+
                   <button
-                    onClick={() => setStatusFilter("high-score")}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${statusFilter === "high-score"
-                      ? "bg-amber-600 text-white shadow-xs"
-                      : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
-                      }`}
+                    onClick={() => setStatusFilter("pending")}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                      statusFilter === "pending"
+                        ? "bg-amber-600 text-white shadow-sm shadow-amber-500/25"
+                        : "text-slate-600 dark:text-slate-300 hover:text-amber-600 dark:hover:text-amber-400 hover:bg-amber-50/70 dark:hover:bg-amber-950/40"
+                    }`}
                   >
-                    Top Score (≥75%)
+                    <span className={`w-2 h-2 rounded-full ${statusFilter === "pending" ? "bg-white" : "bg-amber-400 animate-ping"}`} />
+                    <span>Pending</span>
+                    <span
+                      className={`px-1.5 py-0.2 rounded-full text-[10px] font-black ${
+                        statusFilter === "pending"
+                          ? "bg-white/20 text-white"
+                          : "bg-amber-50 dark:bg-amber-950/80 text-amber-700 dark:text-amber-300 border border-amber-200/50 dark:border-amber-800/50"
+                      }`}
+                    >
+                      {statusCounts.pending}
+                    </span>
                   </button>
                 </div>
 
-                <div className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-700 dark:text-slate-300 shadow-2xs">
-                  <BsSortDown size={14} className="text-slate-400" />
-                  <select
-                    value={sortBy}
-                    onChange={(e) => setSortBy(e.target.value)}
-                    className="bg-transparent focus:outline-none cursor-pointer pr-1"
+                {/* Custom Interactive Sort & Score Dropdown with Icons and Separate Colors */}
+                <div className="relative z-50" ref={sortDropdownRef}>
+                  <button
+                    type="button"
+                    onClick={() => setIsSortOpen((prev) => !prev)}
+                    className={`flex items-center gap-2 px-3.5 py-2 rounded-2xl border text-xs font-bold transition-all duration-200 shadow-2xs cursor-pointer select-none ${
+                      isSortOpen
+                        ? "bg-blue-50/80 dark:bg-slate-800 border-blue-500 text-blue-600 dark:text-blue-400 ring-2 ring-blue-500/20"
+                        : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700/80 text-slate-700 dark:text-slate-200 hover:border-blue-400 dark:hover:border-blue-500"
+                    }`}
                   >
-                    <option value="newest">Newest First</option>
-                    <option value="oldest">Oldest First</option>
-                    <option value="score">Highest Score</option>
-                  </select>
+                    <selectedSortOption.icon size={13} className={selectedSortOption.color} />
+                    <span className="truncate max-w-[130px]">{selectedSortOption.label}</span>
+                    <FaChevronDown
+                      size={10}
+                      className={`text-slate-400 transition-transform duration-200 ${isSortOpen ? "rotate-180 text-blue-500" : ""}`}
+                    />
+                  </button>
+
+                  <AnimatePresence>
+                    {isSortOpen && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 8, scale: 0.96 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: 6, scale: 0.96 }}
+                        transition={{ duration: 0.15, ease: "easeOut" }}
+                        className="absolute right-0 mt-2 w-64 rounded-2xl bg-white/98 dark:bg-slate-900/98 backdrop-blur-2xl border border-slate-200/90 dark:border-slate-700/90 shadow-2xl p-1.5 z-[100] ring-1 ring-black/5 dark:ring-white/10"
+                      >
+                        <div className="px-2.5 py-1.5 mb-1 border-b border-slate-100 dark:border-slate-800 text-[10px] font-black uppercase tracking-wider text-slate-400 flex items-center justify-between">
+                          <span>Sort & Filter By</span>
+                          <span className="text-[9px] font-normal text-slate-400">6 options</span>
+                        </div>
+                        <div className="space-y-1">
+                          {SORT_OPTIONS.map((opt) => {
+                            const Icon = opt.icon;
+                            const isSelected = sortBy === opt.id;
+
+                            return (
+                              <button
+                                key={opt.id}
+                                type="button"
+                                onClick={() => {
+                                  setSortBy(opt.id);
+                                  setIsSortOpen(false);
+                                }}
+                                className={`w-full flex items-center justify-between gap-2.5 px-3 py-2 rounded-xl text-xs font-bold transition-all duration-150 cursor-pointer text-left ${
+                                  isSelected
+                                    ? opt.activeBg
+                                    : `text-slate-700 dark:text-slate-300 ${opt.hoverBg}`
+                                }`}
+                              >
+                                <div className="flex items-center gap-2.5 min-w-0">
+                                  <span className={`p-1.5 rounded-lg ${opt.iconBg} shrink-0`}>
+                                    <Icon size={12} />
+                                  </span>
+                                  <span className="truncate">{opt.label}</span>
+                                </div>
+
+                                <div className="flex items-center gap-1.5 shrink-0">
+                                  {opt.badge && (
+                                    <span
+                                      className={`px-1.5 py-0.5 rounded-md text-[9px] font-extrabold ${
+                                        isSelected
+                                          ? "bg-white/30 text-current"
+                                          : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
+                                      }`}
+                                    >
+                                      {opt.badge}
+                                    </span>
+                                  )}
+                                  {isSelected && <FaCheck size={10} className="text-current ml-0.5" />}
+                                </div>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
 
+                {/* Reset button */}
                 {(searchQuery || statusFilter !== "all" || sortBy !== "newest") && (
                   <button
                     onClick={() => {
@@ -804,20 +1164,22 @@ const InterviewHistory = () => {
                       setSortBy("newest");
                     }}
                     title="Reset all search and filter options"
-                    className="px-3 py-2 rounded-xl bg-rose-50 dark:bg-rose-950/70 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-800 text-xs font-bold hover:bg-rose-600 hover:text-white transition-all cursor-pointer flex items-center gap-1.5"
+                    className="px-3.5 py-2 rounded-2xl bg-rose-50 dark:bg-rose-950/70 text-rose-600 dark:text-rose-300 border border-rose-200 dark:border-rose-800/80 text-xs font-bold hover:bg-rose-600 hover:text-white dark:hover:bg-rose-600 dark:hover:text-white transition-all cursor-pointer flex items-center gap-1.5 shadow-2xs"
                   >
                     <FaUndo size={10} />
                     <span>Reset</span>
                   </button>
                 )}
 
-                <span className="px-3 py-1.5 rounded-xl bg-slate-200/80 dark:bg-slate-700/80 text-slate-700 dark:text-slate-300 text-[11px] font-extrabold whitespace-nowrap">
+                {/* Counter Badge */}
+                <span className="px-3.5 py-2 rounded-2xl bg-slate-100 dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700/80 text-slate-700 dark:text-slate-300 text-[11px] font-black whitespace-nowrap shadow-2xs">
                   {filteredHistory.length} Sessions
                 </span>
               </div>
             </div>
 
-            <div className="relative flex items-center gap-2">
+            {/* AI Models category selection carousel */}
+            <div className="relative z-10 flex items-center gap-2">
               <AnimatePresence>
                 {canScrollLeft && (
                   <motion.button
@@ -853,18 +1215,20 @@ const InterviewHistory = () => {
                     <button
                       key={f.id}
                       onClick={() => setSelectedFilter(f.id)}
-                      className={`flex-shrink-0 relative flex items-center gap-2 px-4 py-2.5 rounded-2xl text-xs font-bold transition-all duration-300 whitespace-nowrap cursor-pointer select-none ${isSelected
-                        ? `bg-gradient-to-r ${f.activeColor} shadow-md scale-105`
-                        : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white border border-slate-200/60 dark:border-slate-700/60"
-                        }`}
+                      className={`flex-shrink-0 relative flex items-center gap-2 px-4 py-2.5 rounded-2xl text-xs font-bold transition-all duration-300 whitespace-nowrap cursor-pointer select-none ${
+                        isSelected
+                          ? `bg-gradient-to-r ${f.activeColor} shadow-md scale-105`
+                          : "bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white border border-slate-200/80 dark:border-slate-700/80 shadow-2xs"
+                      }`}
                     >
                       <Icon className={isSelected ? "text-white" : "text-slate-500 dark:text-slate-400"} />
                       <span>{f.label}</span>
                       <span
-                        className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold ${isSelected
-                          ? "bg-white/20 text-white"
-                          : "bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300"
-                          }`}
+                        className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold ${
+                          isSelected
+                            ? "bg-white/20 text-white"
+                            : "bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300"
+                        }`}
                       >
                         {count}
                       </span>
@@ -981,9 +1345,18 @@ const InterviewHistory = () => {
                               <span>{item.modelName}</span>
                             </div>
 
-                            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700">
-                              {item.status}
-                            </span>
+                            {item.statusGroup === "completed" ? (
+                              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-black bg-emerald-50 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 shadow-2xs">
+                                <FaCheckCircle size={10} className="text-emerald-500 shrink-0" />
+                                <span>{item.status}</span>
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-black bg-amber-50 dark:bg-amber-950/80 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800 shadow-2xs">
+                                <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-ping shrink-0" />
+                                <span>{item.status}</span>
+                              </span>
+                            )}
+
                             <div className="flex items-center gap-1 text-slate-400 text-xs font-semibold">
                               <FaCalendarAlt size={10} />
                               <span>
@@ -1016,7 +1389,7 @@ const InterviewHistory = () => {
                           </div>
                         </div>
                         <div className="flex items-center justify-between lg:justify-end gap-4 border-t lg:border-t-0 border-slate-100 dark:border-slate-800 pt-4 lg:pt-0">
-                          {item.score !== null && (
+                          {item.score !== null ? (
                             <div className="flex flex-col items-center justify-center px-4 py-2 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-700/60 min-w-[80px]">
                               <span
                                 className={`text-xl font-black ${(item.scoreMax === 10 ? item.score >= 8 : item.score >= 70)
@@ -1032,19 +1405,41 @@ const InterviewHistory = () => {
                                 {item.type === "assignment" ? "MARKS" : item.type === "quiz" ? "ACCURACY" : "SCORE"}
                               </span>
                             </div>
+                          ) : (
+                            <div className="flex flex-col items-center justify-center px-3.5 py-2 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200/60 dark:border-amber-800 min-w-[80px]">
+                              <span className="text-xs font-black text-amber-600 dark:text-amber-400 uppercase tracking-wider">
+                                Pending
+                              </span>
+                              <span className="text-[9px] uppercase tracking-wider text-slate-400 font-bold">
+                                STATUS
+                              </span>
+                            </div>
                           )}
 
                           <div className="flex items-center gap-2">
-                            <button
-                              onClick={(e) => handleDownloadPDF(item, e)}
-                              title="Download Official MoSPI PDF Dossier"
-                              className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-blue-50 dark:bg-blue-950/80 text-blue-600 dark:text-blue-400 hover:bg-blue-600 hover:text-white dark:hover:bg-blue-600 dark:hover:text-white text-xs font-bold transition-all shadow-xs hover:shadow-md cursor-pointer"
-                            >
-                              <FaFilePdf size={13} />
-                              <span className="hidden sm:inline">PDF</span>
-                            </button>
+                            {item.statusGroup === "pending" && item.actionLink ? (
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  navigate(item.actionLink);
+                                }}
+                                className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white text-xs font-black transition-all shadow-sm hover:shadow-md cursor-pointer"
+                              >
+                                <span>{item.actionText || "Complete Now"}</span>
+                                <BsArrowRight size={12} />
+                              </button>
+                            ) : (
+                              <button
+                                onClick={(e) => handleDownloadPDF(item, e)}
+                                title="Download Official MoSPI PDF Dossier"
+                                className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-blue-50 dark:bg-blue-950/80 text-blue-600 dark:text-blue-400 hover:bg-blue-600 hover:text-white dark:hover:bg-blue-600 dark:hover:text-white text-xs font-bold transition-all shadow-xs hover:shadow-md cursor-pointer"
+                              >
+                                <FaFilePdf size={13} />
+                                <span className="hidden sm:inline">PDF</span>
+                              </button>
+                            )}
 
-                            {item.type === "interview" && (
+                            {item.type === "interview" && item.statusGroup === "completed" && (
                               <button
                                 onClick={(e) => handleDeleteInterview(item.id, e)}
                                 title="Delete Interview Record"
@@ -1204,6 +1599,36 @@ const InterviewHistory = () => {
               </div>
 
               <div className="p-6 overflow-y-auto flex-1 custom-scrollbar space-y-6">
+                {activeModalItem.statusGroup === "pending" && (
+                  <div className="p-4 rounded-2xl bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/50 dark:to-orange-950/50 border border-amber-200 dark:border-amber-800/80 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-xs">
+                    <div className="flex items-center gap-3">
+                      <div className="w-9 h-9 rounded-xl bg-amber-500 text-white flex items-center justify-center shrink-0 shadow-xs">
+                        <FaSpinner className="animate-spin" size={15} />
+                      </div>
+                      <div>
+                        <h4 className="text-xs font-black uppercase tracking-wider text-amber-800 dark:text-amber-300">
+                          Status: Pending Officer Action
+                        </h4>
+                        <p className="text-xs text-slate-600 dark:text-slate-400">
+                          This session or assessment has not been finalized yet. Click below to begin or complete now.
+                        </p>
+                      </div>
+                    </div>
+                    {activeModalItem.actionLink && (
+                      <button
+                        onClick={() => {
+                          const link = activeModalItem.actionLink;
+                          setActiveModalItem(null);
+                          navigate(link);
+                        }}
+                        className="px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white text-xs font-black transition-all shadow-md cursor-pointer flex items-center gap-1.5 whitespace-nowrap"
+                      >
+                        <span>{activeModalItem.actionText || "Start Now"}</span>
+                        <BsArrowRight size={12} />
+                      </button>
+                    )}
+                  </div>
+                )}
                 {activeModalItem.type === "chat" && (
                   <div className="space-y-4">
                     <div className="flex items-center justify-between bg-indigo-50/60 dark:bg-indigo-950/40 border border-indigo-200/60 dark:border-indigo-800/60 rounded-2xl p-4">
@@ -1383,153 +1808,230 @@ const InterviewHistory = () => {
 
                 {activeModalItem.type === "assignment" && (
                   <div className="space-y-6">
-                    <div className="p-5 rounded-2xl bg-amber-50/60 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 flex items-center justify-between">
-                      <div>
-                        <span className="text-[10px] font-extrabold uppercase tracking-widest text-amber-600 dark:text-amber-400">
-                          In-Service Practicum Evaluation
-                        </span>
-                        <h3 className="text-2xl font-black text-slate-900 dark:text-white mt-0.5">
-                          {activeModalItem.raw.aiEvaluation?.overallScore || 0} / 100 Marks
-                        </h3>
-                        <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">
-                          Assigned Grade:{" "}
-                          <span className="font-bold text-amber-600">
-                            {activeModalItem.raw.aiEvaluation?.grade || "A"}
-                          </span>{" "}
-                          • Boosted Competency Index by +{activeModalItem.raw.aiEvaluation?.competencyScoreDelta || 5} pts
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="space-y-3">
-                      <h4 className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-wider">
-                        4-Criterion Rubric Breakdown
-                      </h4>
-
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        {(activeModalItem.raw.aiEvaluation?.rubricScores || []).map((r, idx) => (
-                          <div
-                            key={idx}
-                            className="p-4 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-xs space-y-1.5"
-                          >
-                            <div className="flex items-center justify-between gap-2">
-                              <h5 className="font-bold text-xs text-slate-900 dark:text-white">
-                                {r.criterion}
-                              </h5>
-                              <span className="px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-300 font-extrabold text-[10px]">
-                                {r.score} / {r.maxScore || 25}
-                              </span>
-                            </div>
-                            <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-                              {r.feedback}
+                    {activeModalItem.statusGroup === "completed" && activeModalItem.raw.aiEvaluation ? (
+                      <>
+                        <div className="p-5 rounded-2xl bg-amber-50/60 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 flex items-center justify-between">
+                          <div>
+                            <span className="text-[10px] font-extrabold uppercase tracking-widest text-amber-600 dark:text-amber-400">
+                              In-Service Practicum Evaluation
+                            </span>
+                            <h3 className="text-2xl font-black text-slate-900 dark:text-white mt-0.5">
+                              {activeModalItem.raw.aiEvaluation?.overallScore || 0} / 100 Marks
+                            </h3>
+                            <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">
+                              Assigned Grade:{" "}
+                              <span className="font-bold text-amber-600">
+                                {activeModalItem.raw.aiEvaluation?.grade || "A"}
+                              </span>{" "}
+                              • Boosted Competency Index by +{activeModalItem.raw.aiEvaluation?.competencyScoreDelta || 5} pts
                             </p>
                           </div>
-                        ))}
-                      </div>
-                    </div>
+                        </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
-                      <div className="p-4 rounded-2xl bg-emerald-50/60 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 space-y-2">
-                        <span className="font-extrabold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider block">
-                          Demonstrated Strengths
-                        </span>
-                        <ul className="list-disc list-inside space-y-1 text-slate-700 dark:text-slate-300">
-                          {(activeModalItem.raw.aiEvaluation?.strengths || ["Methodological correctness in sampling formula"]).map((s, idx) => (
-                            <li key={idx}>{s}</li>
-                          ))}
-                        </ul>
-                      </div>
+                        <div className="space-y-3">
+                          <h4 className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-wider">
+                            4-Criterion Rubric Breakdown
+                          </h4>
 
-                      <div className="p-4 rounded-2xl bg-rose-50/60 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 space-y-2">
-                        <span className="font-extrabold text-rose-700 dark:text-rose-400 uppercase tracking-wider block">
-                          Recommended Improvements
-                        </span>
-                        <ul className="list-disc list-inside space-y-1 text-slate-700 dark:text-slate-300">
-                          {(activeModalItem.raw.aiEvaluation?.improvementAreas || ["Include numerical estimation examples"]).map((w, idx) => (
-                            <li key={idx}>{w}</li>
-                          ))}
-                        </ul>
-                      </div>
-                    </div>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            {(activeModalItem.raw.aiEvaluation?.rubricScores || []).map((r, idx) => (
+                              <div
+                                key={idx}
+                                className="p-4 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-xs space-y-1.5"
+                              >
+                                <div className="flex items-center justify-between gap-2">
+                                  <h5 className="font-bold text-xs text-slate-900 dark:text-white">
+                                    {r.criterion}
+                                  </h5>
+                                  <span className="px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-300 font-extrabold text-[10px]">
+                                    {r.score} / {r.maxScore || 25}
+                                  </span>
+                                </div>
+                                <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+                                  {r.feedback}
+                                </p>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
 
-                    {activeModalItem.raw.submissionText && (
-                      <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 text-xs">
-                        <span className="font-bold text-slate-400 uppercase tracking-wider block mb-2">
-                          Submitted Response:
-                        </span>
-                        <p className="text-slate-700 dark:text-slate-300 whitespace-pre-wrap leading-relaxed max-h-48 overflow-y-auto custom-scrollbar">
-                          {activeModalItem.raw.submissionText}
-                        </p>
-                      </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+                          <div className="p-4 rounded-2xl bg-emerald-50/60 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 space-y-2">
+                            <span className="font-extrabold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider block">
+                              Demonstrated Strengths
+                            </span>
+                            <ul className="list-disc list-inside space-y-1 text-slate-700 dark:text-slate-300">
+                              {(activeModalItem.raw.aiEvaluation?.strengths || ["Methodological correctness in sampling formula"]).map((s, idx) => (
+                                <li key={idx}>{s}</li>
+                              ))}
+                            </ul>
+                          </div>
+
+                          <div className="p-4 rounded-2xl bg-rose-50/60 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 space-y-2">
+                            <span className="font-extrabold text-rose-700 dark:text-rose-400 uppercase tracking-wider block">
+                              Recommended Improvements
+                            </span>
+                            <ul className="list-disc list-inside space-y-1 text-slate-700 dark:text-slate-300">
+                              {(activeModalItem.raw.aiEvaluation?.improvementAreas || ["Include numerical estimation examples"]).map((w, idx) => (
+                                <li key={idx}>{w}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        </div>
+
+                        {activeModalItem.raw.submissionText && (
+                          <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 text-xs">
+                            <span className="font-bold text-slate-400 uppercase tracking-wider block mb-2">
+                              Submitted Response:
+                            </span>
+                            <p className="text-slate-700 dark:text-slate-300 whitespace-pre-wrap leading-relaxed max-h-48 overflow-y-auto custom-scrollbar">
+                              {activeModalItem.raw.submissionText}
+                            </p>
+                          </div>
+                        )}
+                      </>
+                    ) : (
+                      <>
+                        <div className="p-5 rounded-2xl bg-amber-50/70 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 space-y-3">
+                          <span className="text-[10px] font-extrabold uppercase tracking-widest text-amber-600 dark:text-amber-400">
+                            Assigned Official Practicum
+                          </span>
+                          <h3 className="text-xl font-black text-slate-900 dark:text-white">
+                            {activeModalItem.title}
+                          </h3>
+                          <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed">
+                            {activeModalItem.raw.scenario || activeModalItem.previewText}
+                          </p>
+                        </div>
+
+                        {activeModalItem.raw.instructions && activeModalItem.raw.instructions.length > 0 && (
+                          <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 text-xs space-y-2">
+                            <h5 className="font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                              Instructions & Tasks:
+                            </h5>
+                            <ul className="list-disc list-inside space-y-1.5 text-slate-600 dark:text-slate-300">
+                              {activeModalItem.raw.instructions.map((inst, i) => (
+                                <li key={i}>{inst}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+
+                        <div className="pt-2 text-center">
+                          <button
+                            onClick={() => {
+                              const link = activeModalItem.actionLink || `/assignments/${activeModalItem.id}`;
+                              setActiveModalItem(null);
+                              navigate(link);
+                            }}
+                            className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white font-bold text-xs transition-all shadow-md cursor-pointer inline-flex items-center gap-2"
+                          >
+                            <span>Open and Complete Practicum</span>
+                            <FaExternalLinkAlt size={11} />
+                          </button>
+                        </div>
+                      </>
                     )}
                   </div>
                 )}
 
                 {activeModalItem.type === "quiz" && (
                   <div className="space-y-6">
-                    <div className="p-5 rounded-2xl bg-teal-50/60 dark:bg-teal-950/40 border border-teal-200 dark:border-teal-800 flex items-center justify-between">
-                      <div>
-                        <span className="text-[10px] font-extrabold uppercase tracking-widest text-teal-600 dark:text-teal-400">
-                          Timed Diagnostic Assessment
-                        </span>
-                        <h3 className="text-2xl font-black text-slate-900 dark:text-white mt-0.5">
-                          {activeModalItem.raw.score}% Score • {activeModalItem.raw.correctCount} / {activeModalItem.raw.totalQuestions} Correct
-                        </h3>
-                        <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">
-                          Topic: <span className="font-bold">{activeModalItem.raw.topic}</span> • Difficulty: {activeModalItem.raw.difficulty}
-                        </p>
-                      </div>
-                      <span
-                        className={`px-3.5 py-1.5 rounded-xl font-extrabold text-xs uppercase tracking-wider ${activeModalItem.raw.passed
-                          ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300"
-                          : "bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300"
-                          }`}
-                      >
-                        {activeModalItem.raw.passed ? "Passed" : "Needs Review"}
-                      </span>
-                    </div>
-
-                    <div className="space-y-3">
-                      <h4 className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-wider">
-                        Question Breakdown & Explanations
-                      </h4>
-
-                      {(activeModalItem.raw.userAnswers || []).map((q, idx) => (
-                        <div
-                          key={idx}
-                          className="p-4 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-xs space-y-2 text-xs"
-                        >
-                          <div className="flex items-start justify-between gap-4">
-                            <span className="font-bold text-slate-900 dark:text-white">
-                              {idx + 1}. {q.questionText}
+                    {activeModalItem.statusGroup === "completed" && activeModalItem.raw.score !== undefined ? (
+                      <>
+                        <div className="p-5 rounded-2xl bg-teal-50/60 dark:bg-teal-950/40 border border-teal-200 dark:border-teal-800 flex items-center justify-between">
+                          <div>
+                            <span className="text-[10px] font-extrabold uppercase tracking-widest text-teal-600 dark:text-teal-400">
+                              Timed Diagnostic Assessment
                             </span>
-                            <span
-                              className={`px-2 py-0.5 rounded-full font-extrabold text-[10px] ${q.isCorrect
-                                ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300"
-                                : "bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300"
-                                }`}
-                            >
-                              {q.isCorrect ? "Correct" : "Incorrect"}
-                            </span>
-                          </div>
-
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px] pt-1">
-                            <p className="p-2 rounded-lg bg-slate-50 dark:bg-slate-900/60 text-slate-600 dark:text-slate-400">
-                              <span className="font-bold">Your Selection:</span> {q.selectedOption || "Not Answered"}
-                            </p>
-                            <p className="p-2 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 font-bold">
-                              <span>Correct Option:</span> {q.correctAnswer}
+                            <h3 className="text-2xl font-black text-slate-900 dark:text-white mt-0.5">
+                              {activeModalItem.raw.score}% Score • {activeModalItem.raw.correctCount || 0} / {activeModalItem.raw.totalQuestions || 5} Correct
+                            </h3>
+                            <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">
+                              Topic: <span className="font-bold">{activeModalItem.raw.topic}</span> • Difficulty: {activeModalItem.raw.difficulty || "Medium"}
                             </p>
                           </div>
-
-                          {q.explanation && (
-                            <p className="text-[11px] text-slate-500 dark:text-slate-400 italic pt-1 border-t border-slate-100 dark:border-slate-700">
-                              {q.explanation}
-                            </p>
-                          )}
+                          <span
+                            className={`px-3.5 py-1.5 rounded-xl font-extrabold text-xs uppercase tracking-wider ${activeModalItem.raw.passed
+                              ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300"
+                              : "bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300"
+                              }`}
+                          >
+                            {activeModalItem.raw.passed ? "Passed" : "Completed"}
+                          </span>
                         </div>
-                      ))}
-                    </div>
+
+                        <div className="space-y-3">
+                          <h4 className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-wider">
+                            Question Breakdown & Explanations
+                          </h4>
+
+                          {(activeModalItem.raw.userAnswers || []).map((q, idx) => (
+                            <div
+                              key={idx}
+                              className="p-4 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-xs space-y-2 text-xs"
+                            >
+                              <div className="flex items-start justify-between gap-4">
+                                <span className="font-bold text-slate-900 dark:text-white">
+                                  {idx + 1}. {q.questionText}
+                                </span>
+                                <span
+                                  className={`px-2 py-0.5 rounded-full font-extrabold text-[10px] ${q.isCorrect
+                                    ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300"
+                                    : "bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300"
+                                    }`}
+                                >
+                                  {q.isCorrect ? "Correct" : "Incorrect"}
+                                </span>
+                              </div>
+
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px] pt-1">
+                                <p className="p-2 rounded-lg bg-slate-50 dark:bg-slate-900/60 text-slate-600 dark:text-slate-400">
+                                  <span className="font-bold">Your Selection:</span> {q.selectedOption || "Not Answered"}
+                                </p>
+                                <p className="p-2 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 font-bold">
+                                  <span>Correct Option:</span> {q.correctAnswer}
+                                </p>
+                              </div>
+
+                              {q.explanation && (
+                                <p className="text-[11px] text-slate-500 dark:text-slate-400 italic pt-1 border-t border-slate-100 dark:border-slate-700">
+                                  {q.explanation}
+                                </p>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <div className="p-5 rounded-2xl bg-teal-50/70 dark:bg-teal-950/40 border border-teal-200 dark:border-teal-800 space-y-3">
+                          <span className="text-[10px] font-extrabold uppercase tracking-widest text-teal-600 dark:text-teal-400">
+                            Available Diagnostic Assessment
+                          </span>
+                          <h3 className="text-xl font-black text-slate-900 dark:text-white">
+                            {activeModalItem.title}
+                          </h3>
+                          <p className="text-xs text-slate-700 dark:text-slate-300">
+                            Topic: <span className="font-bold">{activeModalItem.raw.topic}</span> • Difficulty: {activeModalItem.raw.difficulty || "Medium"} • Time Limit: {activeModalItem.raw.timeLimitMinutes || 10} mins
+                          </p>
+                        </div>
+
+                        <div className="pt-2 text-center">
+                          <button
+                            onClick={() => {
+                              const link = activeModalItem.actionLink || `/quiz/${activeModalItem.id}`;
+                              setActiveModalItem(null);
+                              navigate(link);
+                            }}
+                            className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-teal-500 to-emerald-600 hover:from-teal-600 hover:to-emerald-700 text-white font-bold text-xs transition-all shadow-md cursor-pointer inline-flex items-center gap-2"
+                          >
+                            <span>Attempt Quiz Now</span>
+                            <FaExternalLinkAlt size={11} />
+                          </button>
+                        </div>
+                      </>
+                    )}
                   </div>
                 )}
 

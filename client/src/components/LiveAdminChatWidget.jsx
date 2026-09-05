@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useLocation } from "react-router-dom";
+import { useSelector } from "react-redux";
 import axios from "axios";
 import { ServerUrl } from "../App";
 import toast from "react-hot-toast";
@@ -38,16 +39,16 @@ const OFFICER_PROMPTS = [
   "Technical query regarding microdata imputation",
 ];
 
-const ALLOWED_EXACT_PATHS = new Set(["", "/", "/welcome", "/dashboard", "/history", "/admin"]);
-
 const isAllowedRoute = (pathname) => {
   const clean = pathname.replace(/\/+$/, "") || "/";
-  return ALLOWED_EXACT_PATHS.has(clean) || clean.startsWith("/admin");
+  if (clean === "/auth" || clean === "/privacy" || clean === "/terms" || clean.startsWith("/admin")) return false;
+  return true;
 };
 
 const LiveAdminChatWidget = () => {
   const location = useLocation();
   const isAllowed = isAllowedRoute(location.pathname);
+  const { userData } = useSelector((state) => state.user);
 
   const [isOpen, setIsOpen] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
@@ -67,10 +68,42 @@ const LiveAdminChatWidget = () => {
   const [previewImage, setPreviewImage] = useState(null);
   const [lastMessageCount, setLastMessageCount] = useState(0);
   const messagesContainerRef = useRef(null);
+  const chatWindowRef = useRef(null);
   const dragControls = useDragControls();
   const isDraggingRef = useRef(false);
   const x = useMotionValue(0);
   const y = useMotionValue(0);
+
+  useEffect(() => {
+    const handleOpenHelpdesk = () => {
+      setIsOpen(true);
+      setIsMinimized(false);
+    };
+    window.addEventListener("open-nssta-helpdesk", handleOpenHelpdesk);
+    return () => window.removeEventListener("open-nssta-helpdesk", handleOpenHelpdesk);
+  }, []);
+
+  // Minimize chat box when clicking anywhere outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        isOpen &&
+        !isMinimized &&
+        chatWindowRef.current &&
+        !chatWindowRef.current.contains(event.target) &&
+        !event.target.closest(".preview-image-modal")
+      ) {
+        setIsMinimized(true);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("touchstart", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("touchstart", handleClickOutside);
+    };
+  }, [isOpen, isMinimized]);
 
   const toggleSound = () => {
     const next = !soundEnabled;
@@ -174,27 +207,56 @@ const LiveAdminChatWidget = () => {
           if (lastMessageCount > 0) {
             const newAdminMsgs = msgs
               .slice(lastMessageCount)
-              .filter((m) => m.senderRole === "admin");
+              .filter(
+                (m) =>
+                  m.senderRole === "admin" &&
+                  (!userData?._id || m.senderId?.toString() !== userData._id.toString()),
+              );
             if (newAdminMsgs.length > 0) {
               playChime();
               if (!isOpen) {
                 setUnreadCount((prev) => prev + newAdminMsgs.length);
-                toast("🏛️ NSSTA Faculty Desk replied to your message!", {
-                  style: {
-                    borderRadius: "14px",
-                    background: "#0f172a",
-                    color: "#fff",
-                    border: "1px solid #334155",
-                  },
-                });
+                const firstNew = newAdminMsgs[0];
+                if (firstNew.isBroadcast) {
+                  toast(`📢 ${firstNew.senderName}: ${firstNew.message}`, {
+                    duration: 6000,
+                    style: {
+                      borderRadius: "14px",
+                      background: "#0f172a",
+                      color: "#fbbf24",
+                      border: "1px solid #f59e0b",
+                    },
+                  });
+                } else {
+                  toast("🏛️ NSSTA Faculty Desk replied to your message!", {
+                    style: {
+                      borderRadius: "14px",
+                      background: "#0f172a",
+                      color: "#fff",
+                      border: "1px solid #334155",
+                    },
+                  });
+                }
               }
+            }
+          } else if (lastMessageCount === 0) {
+            const unread = msgs.filter(
+              (m) =>
+                m.senderRole === "admin" &&
+                !m.isRead &&
+                (!userData?._id || m.senderId?.toString() !== userData._id.toString()),
+            );
+            if (unread.length > 0 && !isOpen) {
+              setUnreadCount(unread.length);
             }
           }
           setLastMessageCount(msgs.length);
         }
       }
     } catch (error) {
-      console.log(error);
+      if (!isBackground) {
+        console.log(error);
+      }
     }
   };
 
@@ -335,6 +397,7 @@ const LiveAdminChatWidget = () => {
 
           {isOpen && (
             <div
+              ref={chatWindowRef}
               className={`w-[320px] sm:w-[380px] max-w-[calc(100vw-24px)] bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 flex flex-col overflow-hidden transition-all duration-300 ${isMinimized ? "h-[68px]" : "h-[580px] max-h-[85vh]"
                 }`}
             >
@@ -345,6 +408,9 @@ const LiveAdminChatWidget = () => {
               </div>
 
               <div
+                onClick={() => {
+                  if (isMinimized) setIsMinimized(false);
+                }}
                 onPointerDown={(e) => {
                   if (e.target.closest("button") || e.target.closest("input") || e.target.closest("a")) return;
                   dragControls.start(e);
@@ -462,7 +528,12 @@ const LiveAdminChatWidget = () => {
                       </div>
                     ) : (
                       messages.map((msg, index) => {
-                        const isOfficer = msg.senderRole === "learner";
+                        const isOfficer =
+                          msg.senderRole === "learner" ||
+                          (userData?._id &&
+                            (msg.senderId === userData._id ||
+                              msg.senderId?._id === userData._id ||
+                              msg.senderId?.toString() === userData._id.toString()));
                         const isBroadcast = msg.isBroadcast;
 
                         if (isBroadcast) {
@@ -498,7 +569,7 @@ const LiveAdminChatWidget = () => {
                           >
                             <div className="flex items-center gap-1.5 px-1 mb-1">
                               <span className="text-[10px] font-bold text-slate-400">
-                                {isOfficer ? "You" : msg.senderName}
+                                {isOfficer ? "You" : msg.senderName || "NSSTA Secretariat & Faculty"}
                               </span>
                               <span className="text-[9px] text-slate-400">
                                 {new Date(msg.createdAt).toLocaleTimeString([], {
@@ -648,7 +719,7 @@ const LiveAdminChatWidget = () => {
 
       {previewImage && (
         <div
-          className="fixed inset-0 z-60 bg-black/85 backdrop-blur-xs flex items-center justify-center p-4"
+          className="preview-image-modal fixed inset-0 z-60 bg-black/85 backdrop-blur-xs flex items-center justify-center p-4"
           onClick={() => setPreviewImage(null)}
         >
           <div

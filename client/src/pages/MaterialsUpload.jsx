@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import BackButton from "../components/BackButton";
@@ -11,20 +11,13 @@ import {
   FaFilePdf,
   FaFileAlt,
   FaFileImage,
-  FaTasks,
-  FaCheckCircle,
-  FaClock,
-  FaPlay,
   FaListAlt,
   FaHandSparkles,
-  FaPaperPlane,
   FaBookOpen,
-  FaHourglassHalf,
   FaDownload,
   FaExternalLinkAlt,
   FaEye,
 } from "react-icons/fa";
-import { HiSparkles } from "react-icons/hi";
 import { BsShieldCheck, BsFillSendFill } from "react-icons/bs";
 
 const DOMAINS = [
@@ -47,11 +40,9 @@ const MaterialsUpload = () => {
   const [selectedMaterial, setSelectedMaterial] = useState(null);
   const [generatedMcqs, setGeneratedMcqs] = useState([]);
 
-  // MCQ Gen config
   const [numQuestions, setNumQuestions] = useState(5);
   const [difficulty, setDifficulty] = useState("Medium");
 
-  // Study Material Request Modal
   const [showRequestModal, setShowRequestModal] = useState(false);
   const [requestForm, setRequestForm] = useState({
     topic: "",
@@ -62,10 +53,13 @@ const MaterialsUpload = () => {
   const [requestAttachment, setRequestAttachment] = useState(null);
   const [requestSubmitting, setRequestSubmitting] = useState(false);
 
-  // Preview Modal state
   const [previewFile, setPreviewFile] = useState(null);
 
-  const fetchMaterials = async () => {
+  const prevMaterialsCountRef = useRef(null);
+  const prevFulfilledCountRef = useRef(null);
+  const prevRequestsCountRef = useRef(null);
+
+  const fetchMaterials = async (isBackground = false) => {
     try {
       const [matRes, reqRes] = await Promise.all([
         axios.get(`${ServerUrl}/api/materials/list`, { withCredentials: true }),
@@ -73,18 +67,53 @@ const MaterialsUpload = () => {
       ]);
 
       if (matRes.data.success) {
-        setMaterials(matRes.data.materials || []);
+        const mats = matRes.data.materials || [];
+        setMaterials(mats);
+        if (
+          isBackground &&
+          prevMaterialsCountRef.current !== null &&
+          mats.length > prevMaterialsCountRef.current
+        ) {
+          toast("📚 New study material available in repository!", {
+            icon: "📚",
+            duration: 5000,
+          });
+        }
+        prevMaterialsCountRef.current = mats.length;
       }
       if (reqRes.data.success) {
-        setMyRequests(reqRes.data.requests || []);
+        const reqs = reqRes.data.requests || [];
+        setMyRequests(reqs);
+        const fulfilledCount = reqs.filter(
+          (r) => r.status === "Fulfilled" || r.dispatchedMaterialUrl || r.adminResponseNote
+        ).length;
+
+        if (
+          isBackground &&
+          prevFulfilledCountRef.current !== null &&
+          fulfilledCount > prevFulfilledCountRef.current
+        ) {
+          toast.success(
+            "📦 NSSTA has fulfilled & dispatched your study material! Check your requests below. ✨",
+            { duration: 6000 }
+          );
+        }
+        prevFulfilledCountRef.current = fulfilledCount;
+        prevRequestsCountRef.current = reqs.length;
       }
     } catch (error) {
-      console.error("Fetch materials error:", error);
+      if (!isBackground) {
+        console.error("Fetch materials error:", error);
+      }
     }
   };
 
   useEffect(() => {
-    fetchMaterials();
+    fetchMaterials(false);
+    const interval = setInterval(() => {
+      fetchMaterials(true);
+    }, 3000);
+    return () => clearInterval(interval);
   }, []);
 
   const handleFileChange = (e) => {

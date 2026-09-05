@@ -28,15 +28,13 @@ import {
   FaBookOpen,
   FaPlus,
   FaUserTie,
-  FaDownload,
   FaComments,
   FaPaperclip,
   FaBullhorn,
   FaHeadset,
-  FaCheckDouble,
-  FaFilePdf,
   FaChevronLeft,
   FaChevronRight,
+  FaTrash,
 } from "react-icons/fa";
 import {
   BsShieldCheck,
@@ -148,6 +146,8 @@ const AdminDashboard = () => {
   const [viewingSubmission, setViewingSubmission] = useState(null);
 
   const [conversations, setConversations] = useState([]);
+  const [broadcasts, setBroadcasts] = useState([]);
+  const [commSubTab, setCommSubTab] = useState("direct");
   const [selectedOfficer, setSelectedOfficer] = useState(null);
   const [conversationMessages, setConversationMessages] = useState([]);
   const [adminReplyText, setAdminReplyText] = useState("");
@@ -161,10 +161,12 @@ const AdminDashboard = () => {
   });
   const [broadcastLoading, setBroadcastLoading] = useState(false);
   const chatContainerRef = useRef(null);
+  const prevRequestsCountRef = useRef(null);
+  const prevSubmissionsCountRef = useRef(null);
 
-  const fetchAdminData = async () => {
+  const fetchAdminData = async (isBackground = false) => {
     try {
-      setLoading(true);
+      if (!isBackground) setLoading(true);
       const [
         overviewRes,
         learnersRes,
@@ -172,6 +174,7 @@ const AdminDashboard = () => {
         requestsRes,
         subsRes,
         convsRes,
+        broadcastsRes,
       ] = await Promise.all([
         axios.get(`${ServerUrl}/api/admin/overview`, { withCredentials: true }),
         axios.get(`${ServerUrl}/api/admin/learners`, { withCredentials: true }),
@@ -185,18 +188,58 @@ const AdminDashboard = () => {
         axios.get(`${ServerUrl}/api/support/admin/conversations`, {
           withCredentials: true,
         }),
+        axios.get(`${ServerUrl}/api/support/admin/broadcasts`, {
+          withCredentials: true,
+        }),
       ]);
 
       if (overviewRes.data.success) setMetrics(overviewRes.data.metrics);
       const fetchedLearners = learnersRes.data.learners || [];
       if (learnersRes.data.success) setLearners(fetchedLearners);
       if (heatmapRes.data.success) setHeatmap(heatmapRes.data.heatmap || []);
-      if (requestsRes.data.success)
-        setMaterialRequests(requestsRes.data.requests || []);
-      if (subsRes.data.success) setSubmissions(subsRes.data.submissions || []);
+      if (broadcastsRes.data.success) setBroadcasts(broadcastsRes.data.broadcasts || []);
+
+      if (requestsRes.data.success) {
+        const reqs = requestsRes.data.requests || [];
+        setMaterialRequests(reqs);
+        if (
+          isBackground &&
+          prevRequestsCountRef.current !== null &&
+          reqs.length > prevRequestsCountRef.current
+        ) {
+          toast("📄 New study material request received from an officer!", {
+            icon: "📄",
+            duration: 5000,
+          });
+        }
+        prevRequestsCountRef.current = reqs.length;
+      }
+
+      if (subsRes.data.success) {
+        const subs = subsRes.data.submissions || [];
+        setSubmissions(subs);
+        if (
+          isBackground &&
+          prevSubmissionsCountRef.current !== null &&
+          subs.length > prevSubmissionsCountRef.current
+        ) {
+          toast("📝 New assignment case study submission received!", {
+            icon: "📝",
+            duration: 5000,
+          });
+        }
+        prevSubmissionsCountRef.current = subs.length;
+      }
+
       if (convsRes.data.success) {
         const convs = convsRes.data.conversations || [];
-        setConversations(convs);
+        setConversations(
+          convs.map((c) =>
+            selectedOfficer?.officerId === c.officerId
+              ? { ...c, unreadCount: 0 }
+              : c,
+          ),
+        );
         if (!selectedOfficer) {
           if (convs.length > 0) {
             setSelectedOfficer(convs[0]);
@@ -217,15 +260,21 @@ const AdminDashboard = () => {
         }
       }
     } catch (error) {
-      console.error("Admin dashboard fetch error:", error);
+      if (!isBackground) {
+        console.error("Admin dashboard fetch error:", error);
+      }
     } finally {
-      setLoading(false);
+      if (!isBackground) setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchAdminData();
-  }, []);
+    fetchAdminData(false);
+    const interval = setInterval(() => {
+      fetchAdminData(true);
+    }, 3000);
+    return () => clearInterval(interval);
+  }, [selectedOfficer?.officerId]);
 
   const fetchSelectedConversation = async () => {
     if (!selectedOfficer?.officerId) return;
@@ -236,6 +285,13 @@ const AdminDashboard = () => {
       );
       if (data.success) {
         setConversationMessages(data.messages || []);
+        setConversations((prev) =>
+          prev.map((c) =>
+            c.officerId === selectedOfficer.officerId
+              ? { ...c, unreadCount: 0 }
+              : c,
+          ),
+        );
       }
     } catch (error) {
       console.log(error);
@@ -377,6 +433,7 @@ const AdminDashboard = () => {
       }
     } catch (error) {
       toast.error("Error dispatching material.");
+      console.log(error);
     } finally {
       setDispatchMaterialLoading(false);
     }
@@ -432,6 +489,7 @@ const AdminDashboard = () => {
       }
     } catch (error) {
       toast.error("Error creating assignment.");
+      console.log(error);
     } finally {
       setAssignmentSubmitting(false);
     }
@@ -470,9 +528,11 @@ const AdminDashboard = () => {
 
       if (data.success) {
         fetchSelectedConversation();
+        fetchAdminData(true);
       }
     } catch (error) {
       toast.error("Error delivering reply.");
+      console.log(error);
     } finally {
       setAdminReplyLoading(false);
     }
@@ -494,11 +554,32 @@ const AdminDashboard = () => {
         toast.success("Announcement broadcasted to all officers! 📢");
         setShowBroadcastModal(false);
         setBroadcastForm({ title: "", message: "" });
+        fetchAdminData(true);
       }
     } catch (error) {
       toast.error("Failed to broadcast announcement.");
     } finally {
       setBroadcastLoading(false);
+    }
+  };
+
+  const handleDeleteBroadcast = async (broadcastId) => {
+    if (!window.confirm("Are you sure you want to delete this broadcast announcement?")) return;
+    try {
+      const { data } = await axios.delete(
+        `${ServerUrl}/api/support/admin/broadcast/${broadcastId}`,
+        { withCredentials: true },
+      );
+      if (data.success) {
+        toast.success("Broadcast announcement deleted successfully.");
+        setBroadcasts((prev) => prev.filter((b) => b._id !== broadcastId));
+        fetchAdminData(true);
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error(
+        error.response?.data?.message || "Failed to delete broadcast announcement.",
+      );
     }
   };
 
@@ -589,11 +670,10 @@ const AdminDashboard = () => {
           >
             <button
               onClick={() => setActiveTab("overview")}
-              className={`px-4 py-2.5 rounded-xl transition-all flex items-center gap-2 cursor-pointer whitespace-nowrap ${
-                activeTab === "overview"
+              className={`px-4 py-2.5 rounded-xl transition-all flex items-center gap-2 cursor-pointer whitespace-nowrap ${activeTab === "overview"
                   ? "bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 shadow-sm"
                   : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
-              }`}
+                }`}
             >
               <BsGrid3X3GapFill size={13} />
               <span>1. Cadre Overview & Analytics</span>
@@ -601,11 +681,10 @@ const AdminDashboard = () => {
 
             <button
               onClick={() => setActiveTab("learners")}
-              className={`px-4 py-2.5 rounded-xl transition-all flex items-center gap-2 cursor-pointer whitespace-nowrap ${
-                activeTab === "learners"
+              className={`px-4 py-2.5 rounded-xl transition-all flex items-center gap-2 cursor-pointer whitespace-nowrap ${activeTab === "learners"
                   ? "bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 shadow-sm"
                   : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
-              }`}
+                }`}
             >
               <FaUsers size={13} />
               <span>2. Officer Performance & Experience Monitor</span>
@@ -616,11 +695,10 @@ const AdminDashboard = () => {
 
             <button
               onClick={() => setActiveTab("materials")}
-              className={`px-4 py-2.5 rounded-xl transition-all flex items-center gap-2 cursor-pointer whitespace-nowrap ${
-                activeTab === "materials"
+              className={`px-4 py-2.5 rounded-xl transition-all flex items-center gap-2 cursor-pointer whitespace-nowrap ${activeTab === "materials"
                   ? "bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 shadow-sm"
                   : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
-              }`}
+                }`}
             >
               <FaBookOpen size={13} />
               <span>3. Study Material Requests & Dispatch Hub</span>
@@ -633,11 +711,10 @@ const AdminDashboard = () => {
 
             <button
               onClick={() => setActiveTab("assignments")}
-              className={`px-4 py-2.5 rounded-xl transition-all flex items-center gap-2 cursor-pointer whitespace-nowrap ${
-                activeTab === "assignments"
+              className={`px-4 py-2.5 rounded-xl transition-all flex items-center gap-2 cursor-pointer whitespace-nowrap ${activeTab === "assignments"
                   ? "bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 shadow-sm"
                   : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
-              }`}
+                }`}
             >
               <FaTasks size={13} />
               <span>4. Custom Assignments & Submissions</span>
@@ -648,11 +725,10 @@ const AdminDashboard = () => {
 
             <button
               onClick={() => setActiveTab("communications")}
-              className={`px-4 py-2.5 rounded-xl transition-all flex items-center gap-2 cursor-pointer whitespace-nowrap ${
-                activeTab === "communications"
+              className={`px-4 py-2.5 rounded-xl transition-all flex items-center gap-2 cursor-pointer whitespace-nowrap ${activeTab === "communications"
                   ? "bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 shadow-sm"
                   : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
-              }`}
+                }`}
             >
               <FaComments size={13} />
               <span>5. Live Helpdesk & Real-Time Communications</span>
@@ -749,6 +825,34 @@ const AdminDashboard = () => {
                 </span>
               </div>
             </div>
+
+            {broadcasts.length > 0 && (
+              <div className="p-4 rounded-3xl bg-amber-500/10 border border-amber-500/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
+                <div className="flex items-center gap-3">
+                  <div className="p-2.5 rounded-2xl bg-amber-500 text-white shadow-xs">
+                    <FaBullhorn size={14} className="animate-pulse" />
+                  </div>
+                  <div>
+                    <span className="font-bold text-amber-700 dark:text-amber-400 uppercase text-[10px] tracking-wider block">
+                      Active Broadcast: {broadcasts[0].senderName || "NSSTA Announcement"}
+                    </span>
+                    <p className="text-slate-800 dark:text-slate-200 font-semibold line-clamp-1">
+                      {broadcasts[0].message}
+                    </p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setActiveTab("communications");
+                    setCommSubTab("broadcasts");
+                  }}
+                  className="px-3.5 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs shrink-0 cursor-pointer shadow-xs"
+                >
+                  Manage Broadcasts ({broadcasts.length})
+                </button>
+              </div>
+            )}
 
             <div className="grid lg:grid-cols-2 gap-6">
               <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-xs space-y-4">
@@ -1115,26 +1219,24 @@ const AdminDashboard = () => {
                         </td>
                         <td className="p-4 text-center">
                           <span
-                            className={`px-2 py-0.5 rounded-md font-bold text-[10px] ${
-                              req.urgency === "Critical"
+                            className={`px-2 py-0.5 rounded-md font-bold text-[10px] ${req.urgency === "Critical"
                                 ? "bg-rose-50 dark:bg-rose-950 text-rose-600 border border-rose-200 dark:border-rose-800"
                                 : req.urgency === "High"
                                   ? "bg-amber-50 dark:bg-amber-950 text-amber-600 border border-amber-200 dark:border-amber-800"
                                   : "bg-slate-100 dark:bg-slate-800 text-slate-600"
-                            }`}
+                              }`}
                           >
                             {req.urgency || "Normal"}
                           </span>
                         </td>
                         <td className="p-4 text-center">
                           <span
-                            className={`px-2.5 py-1 rounded-full font-black text-[10px] ${
-                              req.status === "fulfilled"
+                            className={`px-2.5 py-1 rounded-full font-black text-[10px] ${req.status === "fulfilled"
                                 ? "bg-emerald-50 dark:bg-emerald-950 text-emerald-600 border border-emerald-200 dark:border-emerald-800"
                                 : req.status === "rejected"
                                   ? "bg-rose-50 dark:bg-rose-950 text-rose-600"
                                   : "bg-amber-50 dark:bg-amber-950 text-amber-600 border border-amber-200 dark:border-amber-800 animate-pulse"
-                            }`}
+                              }`}
                           >
                             {req.status === "fulfilled"
                               ? "Dispatched"
@@ -1293,380 +1395,482 @@ const AdminDashboard = () => {
                   officers across all ministries, NSSO field divisions, and DES
                   directorates.
                 </p>
-              </div>
+                <div className="flex flex-wrap items-center gap-2.5 mt-4">
+                  <div className="flex items-center gap-1.5 bg-slate-100 dark:bg-slate-800 p-1 rounded-2xl border border-slate-200 dark:border-slate-700">
+                    <button
+                      type="button"
+                      onClick={() => setCommSubTab("direct")}
+                      className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${commSubTab === "direct"
+                          ? "bg-white dark:bg-slate-900 text-blue-600 dark:text-blue-400 shadow-xs"
+                          : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+                        }`}
+                    >
+                      <FaComments size={12} />
+                      <span>Direct Threads</span>
+                      {totalUnreadMessages > 0 && (
+                        <span className="px-1.5 py-0.2 rounded-full bg-rose-500 text-white text-[9px] font-black">
+                          {totalUnreadMessages}
+                        </span>
+                      )}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setCommSubTab("broadcasts")}
+                      className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${commSubTab === "broadcasts"
+                          ? "bg-white dark:bg-slate-900 text-amber-600 dark:text-amber-400 shadow-xs"
+                          : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+                        }`}
+                    >
+                      <FaBullhorn size={12} />
+                      <span>Broadcasts ({broadcasts.length})</span>
+                    </button>
+                  </div>
 
-              <div className="flex items-center gap-3">
-                <button
-                  onClick={() => setShowBroadcastModal(true)}
-                  className="px-4 py-2.5 rounded-2xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs shadow-md transition-all flex items-center gap-2 cursor-pointer"
-                >
-                  <FaBullhorn size={12} />
-                  <span>Broadcast Announcement</span>
-                </button>
+                  <button
+                    onClick={() => setShowBroadcastModal(true)}
+                    className="px-4 py-2.5 rounded-2xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs shadow-md transition-all flex items-center gap-2 cursor-pointer"
+                  >
+                    <FaBullhorn size={12} />
+                    <span>Broadcast Announcement</span>
+                  </button>
+                </div>
               </div>
             </div>
 
-            <div className="grid lg:grid-cols-12 gap-0 border border-slate-200 dark:border-slate-800 rounded-3xl overflow-hidden bg-slate-50/50 dark:bg-slate-950/40 shadow-sm h-[640px]">
-              <div className="lg:col-span-4 border-r border-slate-200 dark:border-slate-800 flex flex-col h-full min-h-0 bg-white dark:bg-slate-900">
-                <div className="p-4 border-b border-slate-100 dark:border-slate-800 space-y-3 shrink-0">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-black uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
-                      <FaComments className="text-blue-600" />
-                      <span>Officer Threads ({filteredConversations.length})</span>
+            {commSubTab === "broadcasts" ? (
+              <div className="space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-900 dark:text-amber-200 text-xs">
+                  <div className="flex items-center gap-2.5">
+                    <FaBullhorn className="text-amber-600 dark:text-amber-400 text-base" />
+                    <span>
+                      Broadcast announcements are delivered instantly across all logged-in officers' top dashboard banners and live notification widgets in real-time.
                     </span>
-                    {totalUnreadMessages > 0 && (
-                      <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-rose-500 text-white shadow-xs animate-pulse">
-                        {totalUnreadMessages} Unread
-                      </span>
-                    )}
                   </div>
-
-                  {learners.length > 0 && (
-                    <select
-                      value={selectedOfficer?.officerId || ""}
-                      onChange={(e) => {
-                        const chosen = learners.find((l) => l._id === e.target.value);
-                        if (chosen) {
-                          setSelectedOfficer({
-                            officerId: chosen._id,
-                            officerName: chosen.name,
-                            officerEmail: chosen.email,
-                            officerCadre: chosen.jobRole || "Statistical Cadre",
-                            officerDepartment: chosen.department || "MoSPI Headquarters",
-                            lastMessage: "",
-                            lastMessageAt: new Date(),
-                            lastSenderRole: "learner",
-                            unreadCount: 0,
-                          });
-                        }
-                      }}
-                      className="w-full p-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs text-slate-800 dark:text-white outline-hidden focus:ring-2 focus:ring-blue-500 font-semibold"
-                    >
-                      <option value="" disabled>-- Select Officer to Message --</option>
-                      {learners.map((l) => (
-                        <option key={l._id} value={l._id}>
-                          👤 {l.name} ({l.jobRole || "Statistical Officer"})
-                        </option>
-                      ))}
-                    </select>
-                  )}
-
-                  <div className="relative">
-                    <FaSearch
-                      className="absolute left-3.5 top-3 text-slate-400"
-                      size={11}
-                    />
-                    <input
-                      type="text"
-                      value={chatSearch}
-                      onChange={(e) => setChatSearch(e.target.value)}
-                      placeholder="Search by name or cadre..."
-                      className="w-full pl-9 pr-3.5 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl text-xs text-slate-900 dark:text-white outline-hidden focus:ring-2 focus:ring-blue-500"
-                    />
-                  </div>
+                  <button
+                    onClick={() => setShowBroadcastModal(true)}
+                    className="px-3.5 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs shadow-xs shrink-0 cursor-pointer"
+                  >
+                    + New Broadcast
+                  </button>
                 </div>
 
-                <div className="flex-1 min-h-0 overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800/80">
-                  {filteredConversations.length === 0 ? (
-                    <div className="p-8 text-center text-slate-400 text-xs space-y-2">
-                      <FaComments
-                        size={28}
-                        className="mx-auto opacity-30 text-blue-500"
-                      />
-                      <p className="font-bold text-slate-600 dark:text-slate-300">
-                        No active conversation threads.
-                      </p>
-                      <p className="text-[11px] text-slate-400">
-                        Select an officer from the dropdown above to start messaging.
-                      </p>
-                    </div>
-                  ) : (
-                    filteredConversations.map((conv) => {
-                      const isSelected =
-                        selectedOfficer?.officerId === conv.officerId;
-                      return (
-                        <button
-                          key={conv.officerId}
-                          onClick={() => setSelectedOfficer(conv)}
-                          className={`w-full p-4 text-left transition flex items-start justify-between gap-3 cursor-pointer ${
-                            isSelected
-                              ? "bg-blue-50/90 dark:bg-blue-950/50 border-l-4 border-blue-600 shadow-inner"
-                              : "hover:bg-slate-50 dark:hover:bg-slate-800/40"
-                          }`}
-                        >
-                          <div className="flex items-start gap-3 min-w-0">
-                            <div className="relative">
-                              <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-blue-700 to-indigo-700 text-white flex items-center justify-center font-black text-xs shrink-0 shadow-xs">
-                                {conv.officerName
-                                  ? conv.officerName.charAt(0).toUpperCase()
-                                  : "O"}
-                              </div>
-                              <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-500 border-2 border-white dark:border-slate-900 rounded-full" />
-                            </div>
-
-                            <div className="min-w-0">
-                              <span className="font-black text-slate-900 dark:text-white text-xs block truncate">
-                                {conv.officerName}
-                              </span>
-                              <span className="text-[10px] text-blue-600 dark:text-blue-400 font-bold block truncate">
-                                {conv.officerCadre}
-                              </span>
-                              <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate mt-1">
-                                {conv.lastSenderRole === "admin" ? "You: " : ""}
-                                {conv.lastMessage}
-                              </p>
-                            </div>
-                          </div>
-
-                          <div className="text-right shrink-0">
-                            <span className="text-[9px] font-semibold text-slate-400 block">
-                              {new Date(conv.lastMessageAt).toLocaleTimeString(
-                                [],
-                                { hour: "2-digit", minute: "2-digit" },
-                              )}
-                            </span>
-                            {conv.unreadCount > 0 && (
-                              <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-rose-500 text-white inline-block mt-1.5 shadow-xs animate-bounce">
-                                {conv.unreadCount}
-                              </span>
-                            )}
-                          </div>
-                        </button>
-                      );
-                    })
-                  )}
-                </div>
-              </div>
-
-              <div className="lg:col-span-8 flex flex-col h-full min-h-0 bg-slate-50/40 dark:bg-slate-950/40 relative overflow-hidden">
-                {selectedOfficer ? (
-                  <>
-                    <div className="p-4 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 flex flex-wrap items-center justify-between gap-3 shrink-0">
-                      <div className="flex items-center gap-3">
-                        <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-blue-700 to-indigo-700 text-white flex items-center justify-center font-black text-sm shadow-md">
-                          {selectedOfficer.officerName ? selectedOfficer.officerName.charAt(0).toUpperCase() : "O"}
-                        </div>
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <h3 className="font-black text-sm text-slate-900 dark:text-white">
-                              {selectedOfficer.officerName}
-                            </h3>
-                            <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-blue-50 dark:bg-blue-950 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800">
-                              {selectedOfficer.officerCadre}
-                            </span>
-                          </div>
-                          <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
-                            {selectedOfficer.officerDepartment} • {selectedOfficer.officerEmail}
-                          </p>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center gap-2">
-                        <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/70 border border-emerald-200 dark:border-emerald-800 px-2.5 py-1 rounded-full flex items-center gap-1.5 shadow-2xs">
-                          <BsCircleFill
-                            size={6}
-                            className="text-emerald-500 animate-ping"
-                          />
-                          <span>Connected in Real-Time</span>
-                        </span>
-                      </div>
-                    </div>
-
-                    <div ref={chatContainerRef} className="flex-1 min-h-0 overflow-y-auto p-4 sm:p-5 space-y-4 text-xs bg-slate-50/50 dark:bg-slate-950/50">
-                      {conversationMessages.length === 0 ? (
-                        <div className="h-full flex flex-col items-center justify-center text-slate-400 text-center p-8 space-y-2">
-                          <FaComments
-                            size={36}
-                            className="opacity-30 text-blue-500"
-                          />
-                          <p className="text-xs font-bold text-slate-600 dark:text-slate-300">
-                            No messages in this thread yet.
-                          </p>
-                          <p className="text-[11px] text-slate-400 max-w-xs">
-                            Type a response below to initiate direct real-time
-                            assistance with {selectedOfficer.officerName}.
-                          </p>
-                        </div>
-                      ) : (
-                        conversationMessages.map((msg, index) => {
-                          const isAdmin = msg.senderRole === "admin";
-                          return (
-                            <div
-                              key={msg._id || index}
-                              className={`flex flex-col ${isAdmin ? "items-end" : "items-start"}`}
-                            >
-                              <div className="flex items-center gap-1.5 px-1 mb-1">
-                                <span className="text-[10px] font-bold text-slate-400">
-                                  {isAdmin
-                                    ? "NSSTA Secretariat & Faculty"
-                                    : msg.senderName}
-                                </span>
-                                <span className="text-[9px] text-slate-400">
-                                  {new Date(msg.createdAt).toLocaleTimeString(
-                                    [],
-                                    {
-                                      hour: "2-digit",
-                                      minute: "2-digit",
-                                    },
-                                  )}
-                                </span>
-                              </div>
-
-                              <div
-                                className={`max-w-[75%] p-4 rounded-3xl text-xs leading-relaxed space-y-2 shadow-xs ${
-                                  isAdmin
-                                    ? "bg-gradient-to-tr from-blue-700 to-indigo-700 text-white rounded-br-xs"
-                                    : "bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 rounded-bl-xs border border-slate-200 dark:border-slate-700"
-                                }`}
-                              >
-                                <p className="whitespace-pre-wrap">
-                                  {msg.message}
-                                </p>
-
-                                {msg.attachmentData && (
-                                  <div className="pt-1">
-                                    {msg.attachmentData.startsWith(
-                                      "data:image/",
-                                    ) ? (
-                                      <img
-                                        src={msg.attachmentData}
-                                        alt="Attachment"
-                                        className="max-h-48 rounded-2xl border border-white/20 object-cover w-full cursor-pointer hover:opacity-95 transition"
-                                      />
-                                    ) : (
-                                      <a
-                                        href={msg.attachmentData}
-                                        download={
-                                          msg.attachmentName || "attachment"
-                                        }
-                                        className={`p-2.5 rounded-2xl text-[11px] font-bold flex items-center justify-between gap-2 transition ${
-                                          isAdmin
-                                            ? "bg-blue-800 text-white hover:bg-blue-900"
-                                            : "bg-slate-100 dark:bg-slate-700 text-slate-800 dark:text-slate-200"
-                                        }`}
-                                      >
-                                        <div className="flex items-center gap-2 truncate">
-                                          <FaFilePdf
-                                            className="text-rose-400 shrink-0"
-                                            size={14}
-                                          />
-                                          <span className="truncate">
-                                            {msg.attachmentName ||
-                                              "Attached File"}
-                                          </span>
-                                        </div>
-                                        <FaDownload
-                                          size={11}
-                                          className="shrink-0"
-                                        />
-                                      </a>
-                                    )}
-                                  </div>
-                                )}
-
-                                {isAdmin && (
-                                  <div className="flex items-center justify-end text-[10px] text-blue-200 gap-1 pt-0.5">
-                                    <FaCheckDouble
-                                      size={10}
-                                      className="text-blue-300"
-                                    />
-                                    <span>Sent to Officer</span>
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-                          );
-                        })
-                      )}
-                    </div>
-
-                    {adminReplyFile && (
-                      <div className="px-4 py-2 bg-blue-50 dark:bg-blue-950/60 border-t border-blue-200 dark:border-blue-800 flex items-center justify-between text-xs text-blue-900 dark:text-blue-200 shrink-0">
-                        <span className="truncate font-semibold text-[11px]">
-                          📎 {adminReplyFile.name} ({Math.round(adminReplyFile.size / 1024)} KB)
-                        </span>
-                        <button
-                          onClick={() => setAdminReplyFile(null)}
-                          className="text-slate-400 hover:text-rose-500 font-bold ml-2 cursor-pointer"
-                        >
-                          ✕
-                        </button>
-                      </div>
-                    )}
-
-                    <div className="px-4 py-2 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 flex gap-2 overflow-x-auto shrink-0">
-                      <span className="text-[10px] font-black uppercase text-slate-400 shrink-0 flex items-center pr-1">
-                        ⚡ Quick Replies:
-                      </span>
-                      {QUICK_REPLIES.map((qr, idx) => (
-                        <button
-                          key={idx}
-                          onClick={() => setAdminReplyText(qr)}
-                          className="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-blue-50 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 hover:text-blue-600 text-[10px] font-bold transition shrink-0 cursor-pointer border border-transparent hover:border-blue-300"
-                        >
-                          {qr}
-                        </button>
-                      ))}
-                    </div>
-
-                    <form
-                      onSubmit={handleAdminReplySubmit}
-                      className="p-3.5 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 flex items-center gap-2 shrink-0 z-10"
-                    >
-                      <label
-                        htmlFor="admin-chat-file"
-                        className="p-2.5 rounded-2xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400 cursor-pointer transition flex items-center justify-center shrink-0"
-                        title="Attach File/Image"
-                      >
-                        <FaPaperclip size={13} />
-                        <input
-                          id="admin-chat-file"
-                          type="file"
-                          accept=".pdf,.png,.jpg,.jpeg,.docx,.txt"
-                          onChange={(e) =>
-                            setAdminReplyFile(e.target.files[0] || null)
-                          }
-                          className="hidden"
-                        />
-                      </label>
-
-                      <input
-                        type="text"
-                        value={adminReplyText}
-                        onChange={(e) => setAdminReplyText(e.target.value)}
-                        placeholder={`Reply directly to ${selectedOfficer.officerName}...`}
-                        className="flex-1 py-2.5 px-4 bg-slate-100 dark:bg-slate-800 border-0 rounded-2xl text-xs text-slate-900 dark:text-white outline-hidden focus:ring-2 focus:ring-blue-500"
-                      />
-
-                      <button
-                        type="submit"
-                        disabled={
-                          adminReplyLoading ||
-                          (!adminReplyText.trim() && !adminReplyFile)
-                        }
-                        className="p-2.5 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white transition cursor-pointer disabled:opacity-40 shadow-md shrink-0 flex items-center justify-center"
-                      >
-                        {adminReplyLoading ? (
-                          <span className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                        ) : (
-                          <BsFillSendFill size={13} />
-                        )}
-                      </button>
-                    </form>
-                  </>
-                ) : (
-                  <div className="h-full flex flex-col items-center justify-center text-slate-400 text-xs space-y-3 p-8">
-                    <FaComments
-                      size={36}
-                      className="opacity-30 text-blue-500"
-                    />
-                    <p className="font-bold text-slate-700 dark:text-slate-300">
-                      Select an officer thread or choose from directory above to start messaging.
+                {broadcasts.length === 0 ? (
+                  <div className="p-12 text-center text-slate-400 text-xs rounded-3xl border border-dashed border-slate-200 dark:border-slate-800 space-y-3">
+                    <FaBullhorn size={36} className="mx-auto text-amber-500/40" />
+                    <p className="font-bold text-slate-700 dark:text-slate-300 text-sm">
+                      No broadcast announcements published yet.
                     </p>
+                    <p className="text-slate-500 max-w-sm mx-auto">
+                      Send urgent syllabus updates, mock interview schedules, or circulars to all cadre officers in one click.
+                    </p>
+                    <button
+                      onClick={() => setShowBroadcastModal(true)}
+                      className="px-5 py-2 rounded-2xl bg-amber-600 text-white font-bold text-xs shadow-md cursor-pointer hover:bg-amber-700"
+                    >
+                      Broadcast Your First Announcement
+                    </button>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {broadcasts.map((b, idx) => (
+                      <div
+                        key={b._id || idx}
+                        className="p-5 rounded-3xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 space-y-3 shadow-xs"
+                      >
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="space-y-0.5">
+                            <span className="px-2 py-0.5 rounded-md bg-amber-500/20 text-amber-700 dark:text-amber-400 font-black text-[10px] uppercase tracking-wider border border-amber-500/30 inline-block">
+                              Official Broadcast
+                            </span>
+                            <h4 className="font-black text-sm text-slate-900 dark:text-white pt-1">
+                              {b.senderName || "NSSTA Secretariat"}
+                            </h4>
+                          </div>
+                          <div className="flex items-center gap-2 shrink-0">
+                            <span className="text-[10px] font-bold text-slate-400">
+                              {new Date(b.createdAt).toLocaleString("en-IN", {
+                                dateStyle: "medium",
+                                timeStyle: "short",
+                              })}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteBroadcast(b._id)}
+                              className="p-1.5 rounded-xl bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 hover:bg-rose-600 hover:text-white transition-all cursor-pointer border border-rose-200 dark:border-rose-900/60 shadow-2xs"
+                              title="Delete Broadcast Announcement"
+                            >
+                              <FaTrash size={11} />
+                            </button>
+                          </div>
+                        </div>
+
+                        <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed whitespace-pre-wrap">
+                          {b.message}
+                        </p>
+
+                        <div className="pt-2 border-t border-slate-200/60 dark:border-slate-700/60 flex items-center justify-between text-[10px] text-slate-500">
+                          <span className="font-semibold flex items-center gap-1 text-emerald-600 dark:text-emerald-400">
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                            Target: All Registered Cadres
+                          </span>
+                          <span>Delivered Real-Time</span>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 )}
               </div>
-            </div>
+            ) : (
+              <div className="grid lg:grid-cols-12 gap-0 border border-slate-200 dark:border-slate-800 rounded-3xl overflow-hidden bg-slate-50/50 dark:bg-slate-950/40 shadow-sm h-[640px]">
+                <div className="lg:col-span-4 border-r border-slate-200 dark:border-slate-800 flex flex-col h-full min-h-0 bg-white dark:bg-slate-900">
+                  <div className="p-4 border-b border-slate-100 dark:border-slate-800 space-y-3 shrink-0">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-black uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
+                        <FaComments className="text-blue-600" />
+                        <span>Officer Threads ({filteredConversations.length})</span>
+                      </span>
+                      {totalUnreadMessages > 0 && (
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-rose-500 text-white shadow-xs animate-pulse">
+                          {totalUnreadMessages} Unread
+                        </span>
+                      )}
+                    </div>
+
+                    {learners.length > 0 && (
+                      <select
+                        value={selectedOfficer?.officerId || ""}
+                        onChange={(e) => {
+                          const chosen = learners.find((l) => l._id === e.target.value);
+                          if (chosen) {
+                            setSelectedOfficer({
+                              officerId: chosen._id,
+                              officerName: chosen.name,
+                              officerEmail: chosen.email,
+                              officerCadre: chosen.jobRole || "Statistical Cadre",
+                              officerDepartment: chosen.department || "MoSPI Headquarters",
+                              lastMessage: "",
+                              lastMessageAt: new Date(),
+                              lastSenderRole: "learner",
+                              unreadCount: 0,
+                            });
+                            setConversations((prev) =>
+                              prev.map((c) =>
+                                c.officerId === chosen._id
+                                  ? { ...c, unreadCount: 0 }
+                                  : c,
+                              ),
+                            );
+                          }
+                        }}
+                        className="w-full p-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs text-slate-800 dark:text-white outline-hidden focus:ring-2 focus:ring-blue-500 font-semibold"
+                      >
+                        <option value="" disabled>-- Select Officer to Message --</option>
+                        {learners.map((l) => (
+                          <option key={l._id} value={l._id}>
+                            👤 {l.name} ({l.jobRole || "Statistical Officer"})
+                          </option>
+                        ))}
+                      </select>
+                    )}
+
+                    <div className="relative">
+                      <FaSearch
+                        className="absolute left-3.5 top-3 text-slate-400"
+                        size={11}
+                      />
+                      <input
+                        type="text"
+                        value={chatSearch}
+                        onChange={(e) => setChatSearch(e.target.value)}
+                        placeholder="Search by name or cadre..."
+                        className="w-full pl-9 pr-3.5 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl text-xs text-slate-900 dark:text-white outline-hidden focus:ring-2 focus:ring-blue-500"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex-1 min-h-0 overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800/80">
+                    {filteredConversations.length === 0 ? (
+                      <div className="p-8 text-center text-slate-400 text-xs space-y-2">
+                        <FaComments
+                          size={28}
+                          className="mx-auto opacity-30 text-blue-500"
+                        />
+                        <p className="font-bold text-slate-600 dark:text-slate-300">
+                          No active conversation threads.
+                        </p>
+                        <p className="text-[11px] text-slate-400">
+                          Select an officer from the dropdown above to start messaging.
+                        </p>
+                      </div>
+                    ) : (
+                      filteredConversations.map((conv) => {
+                        const isSelected =
+                          selectedOfficer?.officerId === conv.officerId;
+                        return (
+                          <button
+                            key={conv.officerId}
+                            onClick={() => {
+                              setSelectedOfficer({ ...conv, unreadCount: 0 });
+                              setConversations((prev) =>
+                                prev.map((c) =>
+                                  c.officerId === conv.officerId
+                                    ? { ...c, unreadCount: 0 }
+                                    : c,
+                                ),
+                              );
+                            }}
+                            className={`w-full p-4 text-left transition flex items-start justify-between gap-3 cursor-pointer ${isSelected
+                                ? "bg-blue-50/90 dark:bg-blue-950/50 border-l-4 border-blue-600 shadow-inner"
+                                : "hover:bg-slate-50 dark:hover:bg-slate-800/40"
+                              }`}
+                          >
+                            <div className="flex items-start gap-3 min-w-0">
+                              <div className="relative">
+                                <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-blue-700 to-indigo-700 text-white flex items-center justify-center font-black text-xs shrink-0 shadow-xs">
+                                  {conv.officerName
+                                    ? conv.officerName.charAt(0).toUpperCase()
+                                    : "O"}
+                                </div>
+                                <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-500 border-2 border-white dark:border-slate-900 rounded-full" />
+                              </div>
+
+                              <div className="min-w-0">
+                                <span className="font-black text-slate-900 dark:text-white text-xs block truncate">
+                                  {conv.officerName}
+                                </span>
+                                <span className="text-[10px] text-blue-600 dark:text-blue-400 font-bold block truncate">
+                                  {conv.officerCadre}
+                                </span>
+                                <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate mt-1">
+                                  {conv.lastSenderRole === "admin" ? "You: " : ""}
+                                  {conv.lastMessage}
+                                </p>
+                              </div>
+                            </div>
+
+                            <div className="text-right shrink-0">
+                              <span className="text-[9px] font-semibold text-slate-400 block">
+                                {new Date(conv.lastMessageAt).toLocaleTimeString(
+                                  [],
+                                  { hour: "2-digit", minute: "2-digit" },
+                                )}
+                              </span>
+                              {conv.unreadCount > 0 && (
+                                <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-rose-500 text-white inline-block mt-1.5 shadow-xs animate-bounce">
+                                  {conv.unreadCount}
+                                </span>
+                              )}
+                            </div>
+                          </button>
+                        );
+                      })
+                    )}
+                  </div>
+                </div>
+
+                <div className="lg:col-span-8 flex flex-col h-full min-h-0 bg-slate-50/40 dark:bg-slate-950/40 relative overflow-hidden">
+                  {selectedOfficer ? (
+                    <>
+                      <div className="p-4 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 flex flex-wrap items-center justify-between gap-3 shrink-0">
+                        <div className="flex items-center gap-3">
+                          <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-blue-700 to-indigo-700 text-white flex items-center justify-center font-black text-sm shadow-md">
+                            {selectedOfficer.officerName ? selectedOfficer.officerName.charAt(0).toUpperCase() : "O"}
+                          </div>
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <h3 className="font-black text-sm text-slate-900 dark:text-white">
+                                {selectedOfficer.officerName}
+                              </h3>
+                              <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-blue-50 dark:bg-blue-950 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800">
+                                {selectedOfficer.officerCadre}
+                              </span>
+                            </div>
+                            <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+                              {selectedOfficer.officerDepartment} • {selectedOfficer.officerEmail}
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                          <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/70 border border-emerald-200 dark:border-emerald-800 px-2.5 py-1 rounded-full flex items-center gap-1.5 shadow-2xs">
+                            <BsCircleFill
+                              size={6}
+                              className="text-emerald-500 animate-ping"
+                            />
+                            <span>Connected in Real-Time</span>
+                          </span>
+                        </div>
+                      </div>
+
+                      <div ref={chatContainerRef} className="flex-1 min-h-0 overflow-y-auto p-4 sm:p-5 space-y-4 text-xs bg-slate-50/50 dark:bg-slate-950/50">
+                        {conversationMessages.length === 0 ? (
+                          <div className="h-full flex flex-col items-center justify-center text-slate-400 text-center p-8 space-y-2">
+                            <FaComments
+                              size={36}
+                              className="opacity-30 text-blue-500"
+                            />
+                            <p className="text-xs font-bold text-slate-600 dark:text-slate-300">
+                              No messages in this thread yet.
+                            </p>
+                            <p className="text-[11px] text-slate-400 max-w-xs">
+                              Type a response below to initiate direct real-time
+                              assistance with {selectedOfficer.officerName}.
+                            </p>
+                          </div>
+                        ) : (
+                          conversationMessages.map((msg, index) => {
+                            const isAdmin = msg.senderRole === "admin";
+                            return (
+                              <div
+                                key={msg._id || index}
+                                className={`flex flex-col ${isAdmin ? "items-end" : "items-start"}`}
+                              >
+                                <div className="flex items-center gap-1.5 px-1 mb-1">
+                                  <span className="text-[10px] font-bold text-slate-400">
+                                    {isAdmin
+                                      ? "NSSTA Secretariat & Faculty"
+                                      : msg.senderName}
+                                  </span>
+                                  <span className="text-[9px] text-slate-400">
+                                    {new Date(msg.createdAt).toLocaleTimeString(
+                                      [],
+                                      {
+                                        hour: "2-digit",
+                                        minute: "2-digit",
+                                      },
+                                    )}
+                                  </span>
+                                </div>
+
+                                <div
+                                  className={`max-w-[75%] p-4 rounded-3xl text-xs leading-relaxed space-y-2 shadow-xs ${isAdmin
+                                      ? "bg-gradient-to-tr from-blue-700 to-indigo-700 text-white rounded-br-xs"
+                                      : "bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 rounded-bl-xs border border-slate-200 dark:border-slate-700"
+                                    }`}
+                                >
+                                  <p className="whitespace-pre-wrap">
+                                    {msg.message}
+                                  </p>
+
+                                  {msg.attachmentData && (
+                                    <div className="pt-1">
+                                      {msg.attachmentData.startsWith(
+                                        "data:image/",
+                                      ) ? (
+                                        <img
+                                          src={msg.attachmentData}
+                                          alt={msg.attachmentName || "Attachment"}
+                                          className="max-h-48 rounded-xl object-contain border border-slate-200 dark:border-slate-700"
+                                        />
+                                      ) : (
+                                        <a
+                                          href={msg.attachmentData}
+                                          download={msg.attachmentName || "Attachment"}
+                                          className="flex items-center gap-2 p-2 rounded-xl bg-slate-100 dark:bg-slate-700 text-blue-600 dark:text-blue-400 font-semibold text-[11px]"
+                                        >
+                                          <FaPaperclip size={12} />
+                                          <span className="truncate max-w-[200px]">
+                                            {msg.attachmentName || "Download Attachment"}
+                                          </span>
+                                        </a>
+                                      )}
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            );
+                          })
+                        )}
+                      </div>
+
+                      {adminReplyFile && (
+                        <div className="px-4 py-2 bg-blue-50 dark:bg-blue-950/60 border-t border-blue-200 dark:border-blue-800 flex items-center justify-between text-xs text-blue-900 dark:text-blue-200 shrink-0">
+                          <span className="truncate font-semibold text-[11px]">
+                            📎 {adminReplyFile.name} ({Math.round(adminReplyFile.size / 1024)} KB)
+                          </span>
+                          <button
+                            onClick={() => setAdminReplyFile(null)}
+                            className="text-slate-400 hover:text-rose-500 font-bold ml-2 cursor-pointer"
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      )}
+
+                      <div className="px-4 py-2 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 flex gap-2 overflow-x-auto shrink-0">
+                        <span className="text-[10px] font-black uppercase text-slate-400 shrink-0 flex items-center pr-1">
+                          ⚡ Quick Replies:
+                        </span>
+                        {QUICK_REPLIES.map((qr, idx) => (
+                          <button
+                            key={idx}
+                            onClick={() => setAdminReplyText(qr)}
+                            className="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-blue-50 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 hover:text-blue-600 text-[10px] font-bold transition shrink-0 cursor-pointer border border-transparent hover:border-blue-300"
+                          >
+                            {qr}
+                          </button>
+                        ))}
+                      </div>
+
+                      <form
+                        onSubmit={handleAdminReplySubmit}
+                        className="p-3.5 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 flex items-center gap-2 shrink-0 z-10"
+                      >
+                        <label
+                          htmlFor="admin-chat-file"
+                          className="p-2.5 rounded-2xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400 cursor-pointer transition flex items-center justify-center shrink-0"
+                          title="Attach File/Image"
+                        >
+                          <FaPaperclip size={13} />
+                          <input
+                            id="admin-chat-file"
+                            type="file"
+                            accept=".pdf,.png,.jpg,.jpeg,.docx,.txt"
+                            onChange={(e) =>
+                              setAdminReplyFile(e.target.files[0] || null)
+                            }
+                            className="hidden"
+                          />
+                        </label>
+
+                        <input
+                          type="text"
+                          value={adminReplyText}
+                          onChange={(e) => setAdminReplyText(e.target.value)}
+                          placeholder={`Reply directly to ${selectedOfficer.officerName}...`}
+                          className="flex-1 py-2.5 px-4 bg-slate-100 dark:bg-slate-800 border-0 rounded-2xl text-xs text-slate-900 dark:text-white outline-hidden focus:ring-2 focus:ring-blue-500"
+                        />
+
+                        <button
+                          type="submit"
+                          disabled={
+                            adminReplyLoading ||
+                            (!adminReplyText.trim() && !adminReplyFile)
+                          }
+                          className="p-2.5 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white transition cursor-pointer disabled:opacity-40 shadow-md shrink-0 flex items-center justify-center"
+                        >
+                          {adminReplyLoading ? (
+                            <span className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                          ) : (
+                            <BsFillSendFill size={13} />
+                          )}
+                        </button>
+                      </form>
+                    </>
+                  ) : (
+                    <div className="h-full flex flex-col items-center justify-center text-slate-400 text-xs space-y-3 p-8">
+                      <FaComments
+                        size={36}
+                        className="opacity-30 text-blue-500"
+                      />
+                      <p className="font-bold text-slate-700 dark:text-slate-300">
+                        Select an officer thread or choose from directory above to start messaging.
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
         )}
       </main>
@@ -1750,44 +1954,40 @@ const AdminDashboard = () => {
                 <div className="flex gap-2 border-b border-slate-200 dark:border-slate-800 pb-2">
                   <button
                     onClick={() => setInspectTab("interviews")}
-                    className={`px-3 py-1.5 rounded-xl font-bold transition cursor-pointer ${
-                      inspectTab === "interviews"
+                    className={`px-3 py-1.5 rounded-xl font-bold transition cursor-pointer ${inspectTab === "interviews"
                         ? "bg-blue-600 text-white shadow-xs"
                         : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400"
-                    }`}
+                      }`}
                   >
                     AI Viva Mock Interviews (
                     {userDetailedData?.interviews?.length || 0})
                   </button>
                   <button
                     onClick={() => setInspectTab("quizzes")}
-                    className={`px-3 py-1.5 rounded-xl font-bold transition cursor-pointer ${
-                      inspectTab === "quizzes"
+                    className={`px-3 py-1.5 rounded-xl font-bold transition cursor-pointer ${inspectTab === "quizzes"
                         ? "bg-blue-600 text-white shadow-xs"
                         : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400"
-                    }`}
+                      }`}
                   >
                     Quiz Evaluations (
                     {userDetailedData?.quizAttempts?.length || 0})
                   </button>
                   <button
                     onClick={() => setInspectTab("assignments")}
-                    className={`px-3 py-1.5 rounded-xl font-bold transition cursor-pointer ${
-                      inspectTab === "assignments"
+                    className={`px-3 py-1.5 rounded-xl font-bold transition cursor-pointer ${inspectTab === "assignments"
                         ? "bg-blue-600 text-white shadow-xs"
                         : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400"
-                    }`}
+                      }`}
                   >
                     Case Study Submissions (
                     {userDetailedData?.submissions?.length || 0})
                   </button>
                   <button
                     onClick={() => setInspectTab("requests")}
-                    className={`px-3 py-1.5 rounded-xl font-bold transition cursor-pointer ${
-                      inspectTab === "requests"
+                    className={`px-3 py-1.5 rounded-xl font-bold transition cursor-pointer ${inspectTab === "requests"
                         ? "bg-blue-600 text-white shadow-xs"
                         : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400"
-                    }`}
+                      }`}
                   >
                     Material Requests (
                     {userDetailedData?.materialRequests?.length || 0})
@@ -1946,11 +2146,10 @@ const AdminDashboard = () => {
                             </span>
                           </div>
                           <span
-                            className={`px-2.5 py-1 rounded-full font-bold text-[10px] ${
-                              mr.status === "fulfilled"
+                            className={`px-2.5 py-1 rounded-full font-bold text-[10px] ${mr.status === "fulfilled"
                                 ? "bg-emerald-50 dark:bg-emerald-950 text-emerald-600"
                                 : "bg-amber-50 dark:bg-amber-950 text-amber-600"
-                            }`}
+                              }`}
                           >
                             {mr.status}
                           </span>
