@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
-import BackButton from "../components/BackButton";
 
 import {
   motion,
@@ -118,11 +117,11 @@ const InterviewHistory = () => {
   const averageScore =
     completedInterviews.length > 0
       ? (
-          completedInterviews.reduce(
-            (acc, curr) => acc + (curr.finalScore || 0),
-            0,
-          ) / completedInterviews.length
-        ).toFixed(1)
+        completedInterviews.reduce(
+          (acc, curr) => acc + (curr.finalScore || 0),
+          0,
+        ) / completedInterviews.length
+      ).toFixed(1)
       : 0;
 
   const bestScore =
@@ -175,10 +174,7 @@ const InterviewHistory = () => {
           className="sticky top-4 z-50 backdrop-blur-2xl bg-white/80 dark:bg-slate-900/85 border border-slate-200/80 dark:border-slate-800 rounded-3xl p-6 shadow-xl mb-10"
         >
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-
             <div className="flex items-center gap-4 sm:gap-5">
-              <BackButton fallbackUrl="/dashboard" label="Back to Dashboard" />
-
               <div>
                 <h1 className="text-3xl sm:text-4xl font-black tracking-tight text-slate-900 dark:text-white">
                   Interview <span className="text-emerald-600 dark:text-emerald-400">History</span>
@@ -336,11 +332,10 @@ const InterviewHistory = () => {
                     },
                   }}
                   onClick={() => navigate(`/report/${item._id}`)}
-                  className={`group relative cursor-pointer rounded-[32px] p-[1px] overflow-hidden ${
-                    scrollDirection === "down"
+                  className={`group relative cursor-pointer rounded-[32px] p-[1px] overflow-hidden ${scrollDirection === "down"
                       ? "translate-y-[2px]"
                       : "-translate-y-[2px]"
-                  }`}
+                    }`}
                 >
                   <motion.div
                     animate={{
@@ -371,11 +366,10 @@ const InterviewHistory = () => {
                       <div className="flex-1">
                         <div className="flex flex-wrap items-center gap-3 mb-4">
                           <span
-                            className={`px-3.5 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-widest ${
-                              item.status === "completed"
+                            className={`px-3.5 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-widest ${item.status === "completed"
                                 ? "bg-emerald-50 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800"
                                 : "bg-amber-50 dark:bg-amber-950/80 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800"
-                            }`}
+                              }`}
                           >
                             {item.status || "Completed"}
                           </span>
@@ -436,7 +430,7 @@ const InterviewHistory = () => {
                       </div>
 
                       <div className="flex items-center justify-between lg:justify-end gap-6 border-t lg:border-t-0 border-slate-100 dark:border-slate-800 pt-5 lg:pt-0">
-                     
+
                         <div className="relative w-24 h-24">
                           <svg className="w-24 h-24 rotate-[-90deg]">
                             <circle
@@ -485,13 +479,12 @@ const InterviewHistory = () => {
 
                           <div className="absolute inset-0 flex flex-col items-center justify-center">
                             <span
-                              className={`text-2xl font-black ${
-                                item.finalScore >= 8
+                              className={`text-2xl font-black ${item.finalScore >= 8
                                   ? "text-emerald-500 dark:text-emerald-400"
                                   : item.finalScore >= 5
                                     ? "text-amber-500 dark:text-amber-400"
                                     : "text-rose-500 dark:text-rose-400"
-                              }`}
+                                }`}
                             >
                               {item.finalScore || 0}
                             </span>

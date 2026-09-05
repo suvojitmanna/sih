@@ -31,7 +31,7 @@ const AI_MODELS_DATA = [
   {
     id: "interview",
     title: "AI Cadre Mock Interview Bot & Viva Voce",
-    shortName: "Mock Viva Voce",
+    shortName: "Viva Voce",
     subtitle:
       "Realistic video avatar interview board with real-time speech-to-text voice recognition",
     icon: BsFillCameraVideoFill,
@@ -77,7 +77,7 @@ const AI_MODELS_DATA = [
   {
     id: "assignments",
     title: "AI Generated Case Study Assignments",
-    shortName: "Case Study Rubrics",
+    shortName: "Case Studies",
     subtitle:
       "Real-world MoSPI operational scenarios with instant rubric-based AI grading",
     icon: FaFileAlt,
@@ -122,7 +122,7 @@ const AI_MODELS_DATA = [
   {
     id: "copilot",
     title: "SankhyaCopilot AI Domain Assistant",
-    shortName: "Statistical Copilot",
+    shortName: "Copilot",
     subtitle:
       "24/7 official statistical methodology tutor and circular guidance copilot",
     icon: BsRobot,
@@ -167,7 +167,7 @@ const AI_MODELS_DATA = [
   {
     id: "mcq",
     title: "AI MCQ Question Authoring Studio",
-    shortName: "MCQ Authoring",
+    shortName: "MCQ Studio",
     subtitle:
       "Automated text extraction from survey manuals and circulars into 4-option MCQs",
     icon: FaFileUpload,
@@ -212,7 +212,7 @@ const AI_MODELS_DATA = [
   {
     id: "quizzes",
     title: "AI Diagnostic Quizzes & Test Engine",
-    shortName: "Diagnostic Quizzes",
+    shortName: "Diagnostics",
     subtitle:
       "On-demand timed diagnostic tests with question palettes and topic mastery diagnostics",
     icon: FaTasks,
@@ -258,7 +258,7 @@ const AI_MODELS_DATA = [
   {
     id: "competencies",
     title: "AI Multi-Domain Competency Engine",
-    shortName: "Competency Radar",
+    shortName: "Competency",
     subtitle:
       "Automated skill-gap assessment against ISS, SSS, and FOD Cadre standards",
     icon: FaBrain,
@@ -303,7 +303,7 @@ const AI_MODELS_DATA = [
   {
     id: "learning-path",
     title: "AI Learning Pathway Synthesizer",
-    shortName: "iGOT Synthesizer",
+    shortName: "iGOT Pathway",
     subtitle:
       "Personalized capacity roadmaps combining iGOT digital courses & NSSTA residential programmes",
     icon: FaCertificate,
@@ -380,34 +380,24 @@ const AiModelsHub = () => {
       <PageTransition>
         <main className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 pt-24 pb-16 space-y-6">
 
-          <div className="flex items-center justify-between">
-            <BackButton fallbackUrl="/dashboard" label="Back to Dashboard" />
-            <span className="text-xs font-bold text-slate-500 dark:text-slate-400">
-              SankhyaIQ™ AI Neural Models
-            </span>
-          </div>
-
+          {/* Hero Banner */}
           <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4 }}
-            className="bg-gradient-to-r from-slate-950 via-blue-950 to-indigo-950 text-white p-6 sm:p-7 rounded-3xl shadow-2xl relative overflow-hidden flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border border-blue-500/20"
+            className="bg-gradient-to-r from-slate-950 via-blue-950 to-indigo-950 text-white p-5 sm:p-7 md:p-8 rounded-3xl shadow-2xl relative overflow-hidden flex flex-col md:flex-row items-start md:items-center justify-between gap-5 border border-blue-500/20"
           >
             <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#FF9933] via-white to-[#138808]" />
-
             <div className="absolute right-0 top-0 w-96 h-96 bg-blue-500/10 blur-3xl rounded-full pointer-events-none" />
 
-            <div className="space-y-2 max-w-2xl relative z-10">
+            <div className="space-y-2.5 max-w-2xl relative z-10">
               <div className="flex flex-wrap items-center gap-2">
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/20 text-blue-300 text-xs font-bold uppercase tracking-wider border border-blue-400/20">
-                  <HiSparkles
-                    className="text-amber-400 animate-spin"
-                    size={13}
-                  />
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/20 text-blue-300 text-[11px] sm:text-xs font-bold uppercase tracking-wider border border-blue-400/20">
+                  <HiSparkles className="text-amber-400 animate-pulse" size={13} />
                   <span>SankhyaIQ™ AI Neural Architecture</span>
                 </div>
 
-                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/20 border border-emerald-400/30 text-emerald-300 text-xs font-mono font-bold">
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/20 border border-emerald-400/30 text-emerald-300 text-[11px] sm:text-xs font-mono font-bold">
                   <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
                   <span>
                     IST:{" "}
@@ -421,7 +411,7 @@ const AiModelsHub = () => {
                 </div>
               </div>
 
-              <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-white flex items-center gap-2.5">
+              <h1 className="text-xl sm:text-2xl md:text-3xl font-black tracking-tight text-white flex items-center gap-2.5">
                 <span>AI Models & Intelligent Workflow Hub</span>
               </h1>
               <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
@@ -432,29 +422,57 @@ const AiModelsHub = () => {
               </p>
             </div>
 
-            <div className="bg-white/10 backdrop-blur-md border border-white/15 p-4 rounded-2xl text-center shrink-0 min-w-[150px] relative z-10 shadow-lg">
-              <span className="text-[10px] font-extrabold text-blue-200 uppercase tracking-wider block">
-                Neural Engines
-              </span>
-              <span className="text-2xl font-black text-emerald-400">
-                {AI_MODELS_DATA.length} Models
-              </span>
-              <span className="text-[10px] text-slate-300 block mt-0.5 flex items-center justify-center gap-1 font-semibold">
+            <div className="bg-white/10 backdrop-blur-md border border-white/15 p-3.5 sm:p-4 rounded-2xl flex sm:flex-col items-center justify-between sm:justify-center shrink-0 w-full md:w-auto min-w-[150px] relative z-10 shadow-lg gap-2">
+              <div className="text-left sm:text-center">
+                <span className="text-[10px] font-extrabold text-blue-200 uppercase tracking-wider block">
+                  Neural Engines
+                </span>
+                <span className="text-xl sm:text-2xl font-black text-emerald-400">
+                  {AI_MODELS_DATA.length} Models
+                </span>
+              </div>
+              <span className="text-[10px] text-slate-300 flex items-center justify-center gap-1.5 font-semibold bg-white/5 sm:bg-transparent px-2.5 py-1 sm:p-0 rounded-xl">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
                 <span>100% Operational</span>
               </span>
             </div>
           </motion.div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch lg:h-[780px]">
+          {/* Mobile/Tablet Horizontal Model Selector Strip */}
+          <div className="lg:hidden flex overflow-x-auto gap-2.5 pb-1 no-scrollbar -mx-1 px-1">
+            {AI_MODELS_DATA.map((model) => {
+              const Icon = model.icon;
+              const isSelected = model.id === selectedModelId;
+              return (
+                <button
+                  key={model.id}
+                  type="button"
+                  onClick={() => setSelectedModelId(model.id)}
+                  className={`shrink-0 flex items-center gap-2.5 px-3.5 py-2.5 rounded-2xl transition-all cursor-pointer select-none text-xs font-bold border ${
+                    isSelected
+                      ? `bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 border-blue-500 shadow-md ring-2 ring-blue-500/20`
+                      : "bg-white/80 dark:bg-slate-900/80 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800"
+                  }`}
+                >
+                  <div className={`p-1.5 rounded-xl text-white bg-gradient-to-tr ${model.gradient} shadow-xs`}>
+                    <Icon size={14} />
+                  </div>
+                  <span className="whitespace-nowrap">{model.shortName}</span>
+                  {isSelected && (
+                    <span className="w-1.5 h-1.5 rounded-full bg-blue-600 dark:bg-blue-400 animate-pulse" />
+                  )}
+                </button>
+              );
+            })}
+          </div>
 
-            <div className="lg:col-span-4 flex flex-col bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl border border-slate-200/80 dark:border-slate-800/80 rounded-3xl p-4 shadow-xl overflow-hidden">
+          {/* Main Grid: Desktop Sidebar + Active Model Details */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+            {/* Desktop Sidebar (hidden on mobile/tablet) */}
+            <div className="hidden lg:flex lg:col-span-4 flex-col bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl border border-slate-200/80 dark:border-slate-800/80 rounded-3xl p-4 shadow-xl sticky top-24">
               <div className="px-2 py-2 border-b border-slate-100 dark:border-slate-800/80 flex items-center justify-between shrink-0 mb-2">
                 <div className="flex items-center gap-2">
-                  <BsSliders
-                    className="text-blue-600 dark:text-blue-400"
-                    size={14}
-                  />
+                  <BsSliders className="text-blue-600 dark:text-blue-400" size={14} />
                   <span className="text-xs font-black uppercase tracking-wider text-slate-800 dark:text-slate-200">
                     Select AI Model
                   </span>
@@ -464,7 +482,7 @@ const AiModelsHub = () => {
                 </span>
               </div>
 
-              <div className="flex-1 overflow-y-auto pr-1 space-y-2 custom-scrollbar">
+              <div className="space-y-2">
                 {AI_MODELS_DATA.map((model) => {
                   const Icon = model.icon;
                   const isSelected = model.id === selectedModelId;
@@ -521,9 +539,7 @@ const AiModelsHub = () => {
                       <div className="shrink-0 pt-2 text-slate-400">
                         <FaArrowRight
                           size={11}
-                          className={
-                            isSelected ? model.textColor : "opacity-40"
-                          }
+                          className={isSelected ? model.textColor : "opacity-40"}
                         />
                       </div>
                     </motion.button>
@@ -536,10 +552,12 @@ const AiModelsHub = () => {
                   <BsShieldCheck className="text-emerald-500" size={13} />
                   <span>SankhyaIQ AI</span>
                 </span>
-                <span className="font-bold text-blue-600">v2.4 Active</span>
+                <span className="font-bold text-blue-600 dark:text-blue-400">v2.4 Active</span>
               </div>
             </div>
-            <div className="lg:col-span-8 flex flex-col bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl border border-slate-200/80 dark:border-slate-800/80 rounded-3xl p-6 sm:p-7 shadow-xl overflow-hidden">
+
+            {/* Details Panel */}
+            <div className="col-span-12 lg:col-span-8 flex flex-col bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl border border-slate-200/80 dark:border-slate-800/80 rounded-3xl p-5 sm:p-7 shadow-xl overflow-hidden">
               <AnimatePresence mode="wait">
                 <motion.div
                   key={activeModel.id}
@@ -547,71 +565,74 @@ const AiModelsHub = () => {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -15 }}
                   transition={{ duration: 0.3, ease: "easeOut" }}
-                  className="flex-1 flex flex-col overflow-y-auto pr-1 space-y-6 custom-scrollbar"
+                  className="flex-1 flex flex-col space-y-5 sm:space-y-6 min-w-0"
                 >
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 dark:border-slate-800 pb-5 shrink-0">
-                    <div className="flex items-start gap-4">
+                  {/* Top Bar with Icon, Title, & Launch Action */}
+                  <div className="flex flex-col md:flex-row md:items-start xl:items-center justify-between gap-4 border-b border-slate-100 dark:border-slate-800 pb-5">
+                    <div className="flex items-start gap-3.5 sm:gap-4 min-w-0 flex-1">
                       <div
-                        className={`p-4 rounded-2xl text-white bg-gradient-to-tr ${activeModel.gradient} shadow-lg shrink-0`}
+                        className={`p-3 sm:p-3.5 rounded-2xl text-white bg-gradient-to-tr ${activeModel.gradient} shadow-lg shrink-0`}
                       >
-                        <ActiveIcon size={30} />
+                        <ActiveIcon size={24} className="sm:w-7 sm:h-7" />
                       </div>
-                      <div>
+                      <div className="min-w-0 flex-1">
                         <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950 text-blue-700 dark:text-blue-300 text-[10px] font-extrabold uppercase tracking-wider mb-1 border border-blue-200/60 dark:border-blue-800">
                           <FaLayerGroup size={10} />
                           <span>{activeModel.category}</span>
                         </div>
-                        <h2 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white leading-snug">
+                        <h2 className="text-lg sm:text-xl md:text-2xl font-black text-slate-900 dark:text-white leading-tight break-words">
                           {activeModel.title}
                         </h2>
-                        <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
+                        <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1 leading-relaxed break-words">
                           {activeModel.subtitle}
                         </p>
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-2">
+                    <div className="shrink-0 w-full md:w-auto">
                       <motion.button
-                        whileHover={{ scale: 1.03 }}
-                        whileTap={{ scale: 0.97 }}
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
                         onClick={() => handleLaunch(activeModel.route)}
-                        className={`px-6 py-3.5 rounded-2xl bg-gradient-to-r ${activeModel.gradient} text-white font-black text-xs sm:text-sm shadow-xl shadow-blue-500/25 transition-all flex items-center gap-2.5 cursor-pointer shrink-0 active:scale-95`}
+                        className={`w-full md:w-auto px-5 py-3 rounded-2xl bg-gradient-to-r ${activeModel.gradient} text-white font-black text-xs sm:text-sm shadow-xl shadow-blue-500/25 transition-all flex items-center justify-center gap-2.5 cursor-pointer whitespace-nowrap active:scale-95`}
                       >
                         <FaPlay size={11} />
-                        <span>Launch {activeModel.badge}</span>
+                        <span>Launch {activeModel.shortName}</span>
                         <FaArrowRight size={11} />
                       </motion.button>
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-3 gap-3">
-                    <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/70 dark:border-slate-700/70 text-center">
-                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+                  {/* Metrics Row */}
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3.5">
+                    <div className="p-3 sm:p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/70 dark:border-slate-700/70 text-center flex flex-col justify-center min-w-0 overflow-hidden">
+                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block truncate">
                         Inference Speed
                       </span>
-                      <span className="text-sm sm:text-base font-black text-emerald-600 dark:text-emerald-400">
+                      <span className="text-sm sm:text-base font-black text-emerald-600 dark:text-emerald-400 block mt-0.5 truncate">
                         {activeModel.metrics.latency}
                       </span>
                     </div>
-                    <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/70 dark:border-slate-700/70 text-center">
-                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+                    <div className="p-3 sm:p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/70 dark:border-slate-700/70 text-center flex flex-col justify-center min-w-0 overflow-hidden">
+                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block truncate">
                         Benchmark Match
                       </span>
-                      <span className="text-sm sm:text-base font-black text-blue-600 dark:text-blue-400">
+                      <span className="text-sm sm:text-base font-black text-blue-600 dark:text-blue-400 block mt-0.5 truncate">
                         {activeModel.metrics.accuracy}
                       </span>
                     </div>
-                    <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/70 dark:border-slate-700/70 text-center">
-                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+                    <div className="p-3 sm:p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/70 dark:border-slate-700/70 text-center flex flex-col justify-center min-w-0 overflow-hidden">
+                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block truncate">
                         Neural Engine
                       </span>
-                      <span className="text-xs sm:text-sm font-black text-slate-800 dark:text-slate-200 truncate block mt-0.5">
+                      <span className="text-xs sm:text-sm font-black text-slate-800 dark:text-slate-200 block mt-0.5 break-words leading-tight">
                         {activeModel.metrics.framework}
                       </span>
                     </div>
                   </div>
 
-                  <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-slate-50 to-blue-50/30 dark:from-slate-800/70 dark:to-blue-950/30 border border-slate-200/80 dark:border-slate-700/80 text-xs sm:text-sm text-slate-700 dark:text-slate-300 leading-relaxed space-y-1">
+                  {/* Summary / Mandate */}
+                  <div className="p-3.5 sm:p-4 md:p-5 rounded-2xl bg-gradient-to-r from-slate-50 to-blue-50/30 dark:from-slate-800/70 dark:to-blue-950/30 border border-slate-200/80 dark:border-slate-700/80 text-xs sm:text-sm text-slate-700 dark:text-slate-300 leading-relaxed space-y-1 overflow-hidden break-words">
                     <span className="font-black text-slate-900 dark:text-white flex items-center gap-1.5 text-xs uppercase tracking-wider">
                       <HiSparkles className="text-amber-400" />
                       <span>Domain & Capacity Mandate:</span>
@@ -619,20 +640,21 @@ const AiModelsHub = () => {
                     <p>{activeModel.summary}</p>
                   </div>
 
+                  {/* Workflow Grid */}
                   <div className="space-y-3">
                     <h3 className="text-xs sm:text-sm font-black uppercase tracking-wider text-slate-900 dark:text-white flex items-center gap-2">
                       <BsLightningChargeFill className="text-amber-500" />
                       <span>Multi-Phase Execution Workflow</span>
                     </h3>
 
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-3.5">
                       {activeModel.workflow.map((w, idx) => (
                         <motion.div
                           key={w.step}
                           initial={{ opacity: 0, y: 10 }}
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ delay: idx * 0.1, duration: 0.3 }}
-                          className="p-4 rounded-2xl bg-gradient-to-b from-slate-50 to-white dark:from-slate-800/80 dark:to-slate-900 border border-slate-200/80 dark:border-slate-700/80 space-y-2 relative shadow-xs hover:border-blue-400 transition-colors"
+                          className="p-3.5 sm:p-4 rounded-2xl bg-gradient-to-b from-slate-50 to-white dark:from-slate-800/80 dark:to-slate-900 border border-slate-200/80 dark:border-slate-700/80 space-y-2 relative shadow-xs hover:border-blue-400 transition-colors"
                         >
                           <div className="flex items-center justify-between">
                             <span
@@ -655,6 +677,7 @@ const AiModelsHub = () => {
                     </div>
                   </div>
 
+                  {/* Architectural Capabilities */}
                   <div className="space-y-3">
                     <h3 className="text-xs sm:text-sm font-black uppercase tracking-wider text-slate-900 dark:text-white flex items-center gap-2">
                       <BsShieldCheck className="text-emerald-500" />
@@ -677,14 +700,16 @@ const AiModelsHub = () => {
                     </div>
                   </div>
 
+                  {/* Bottom Launch Action */}
                   <div className="pt-4 border-t border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-3 shrink-0">
-                    <span className="text-xs text-slate-500 dark:text-slate-400">
+                    <span className="text-xs text-slate-500 dark:text-slate-400 text-center sm:text-left">
                       Ready to run this model? Click launch to open the live
                       interactive view.
                     </span>
 
                     <div className="flex items-center gap-2 w-full sm:w-auto">
                       <button
+                        type="button"
                         onClick={() => handleLaunch(activeModel.route)}
                         className={`w-full sm:w-auto px-6 py-2.5 rounded-xl bg-gradient-to-r ${activeModel.gradient} hover:opacity-95 text-white font-bold text-xs transition-all flex items-center justify-center gap-2 cursor-pointer shadow-md`}
                       >
