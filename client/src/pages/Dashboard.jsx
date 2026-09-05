@@ -216,7 +216,7 @@ const Dashboard = () => {
     return baseList.map((comp) => {
       const lowerName = comp.competencyName.toLowerCase();
       let matchedQuizScores = [];
-      quizAttempts.forEach((attempt) => {
+      (quizAttempts || []).forEach((attempt) => {
         const title = (attempt.quizId?.title || attempt.title || "").toLowerCase();
         if (
           (lowerName.includes("sampling") && title.includes("sampling")) ||
@@ -234,7 +234,7 @@ const Dashboard = () => {
       });
 
       let matchedAssignmentScores = [];
-      assignmentSubmissions.forEach((sub) => {
+      (assignmentSubmissions || []).forEach((sub) => {
         const title = (sub.assignmentId?.title || sub.title || "").toLowerCase();
         if (
           (lowerName.includes("sampling") && title.includes("sampling")) ||
@@ -393,10 +393,10 @@ const Dashboard = () => {
   const knowledgeTimelineData = useMemo(() => {
     let events = [];
 
-    quizAttempts.forEach((q, idx) => {
+    (quizAttempts || []).forEach((q, idx) => {
       const sc = q.percentage || (q.score && q.totalQuestions ? Math.round((q.score / q.totalQuestions) * 100) : 70);
       events.push({
-        date: q.createdAt ? new Date(q.createdAt) : new Date(Date.now() - (quizAttempts.length - idx) * 86400000 * 2),
+        date: q.createdAt ? new Date(q.createdAt) : new Date(Date.now() - ((quizAttempts?.length || 1) - idx) * 86400000 * 2),
         score: sc,
         type: "Quiz Test",
         title: q.quizId?.title || q.title || `Quiz Evaluation #${idx + 1}`,
@@ -404,10 +404,10 @@ const Dashboard = () => {
       });
     });
 
-    interviews.forEach((i, idx) => {
+    (interviews || []).forEach((i, idx) => {
       const sc = i.score || (i.feedback?.rating ? i.feedback.rating * 10 : 75);
       events.push({
-        date: i.createdAt ? new Date(i.createdAt) : new Date(Date.now() - (interviews.length - idx) * 86400000 * 3),
+        date: i.createdAt ? new Date(i.createdAt) : new Date(Date.now() - ((interviews?.length || 1) - idx) * 86400000 * 3),
         score: sc,
         type: "Viva Voce",
         title: i.title || i.jobRole || `Cadre Board Viva #${idx + 1}`,
@@ -415,11 +415,11 @@ const Dashboard = () => {
       });
     });
 
-    assignmentSubmissions.forEach((a, idx) => {
+    (assignmentSubmissions || []).forEach((a, idx) => {
       if (a.score !== null && a.score !== undefined) {
         const sc = a.scoreMax === 10 ? a.score * 10 : a.score;
         events.push({
-          date: a.createdAt ? new Date(a.createdAt) : new Date(Date.now() - (assignmentSubmissions.length - idx) * 86400000 * 2.5),
+          date: a.createdAt ? new Date(a.createdAt) : new Date(Date.now() - ((assignmentSubmissions?.length || 1) - idx) * 86400000 * 2.5),
           score: sc,
           type: "Practicum",
           title: a.assignmentId?.title || a.title || `Practicum Case #${idx + 1}`,
@@ -511,7 +511,6 @@ const Dashboard = () => {
             </span>
           </div>
 
-          {/* Broadcast Announcement Bar */}
           {broadcasts.length > 0 && (
             <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-amber-500/15 via-orange-500/10 to-amber-500/15 border-2 border-amber-500/40 p-4 sm:p-5 shadow-lg flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 animate-fadeIn">
               <div className="flex items-start gap-3.5">
@@ -549,7 +548,6 @@ const Dashboard = () => {
             </div>
           )}
 
-          {/* Hero Welcome Banner */}
           <div className="relative rounded-3xl overflow-hidden bg-gradient-to-r from-slate-950 via-blue-950 to-indigo-950 text-white p-6 sm:p-8 shadow-2xl border border-slate-800">
             <div className="absolute right-0 top-0 w-96 h-full bg-blue-600/15 rounded-full blur-3xl pointer-events-none" />
 
@@ -595,7 +593,6 @@ const Dashboard = () => {
             </div>
           </div>
 
-          {/* AI Mock Interview Callout Banner */}
           <ScrollReveal direction="up" delay={0.05}>
             <div className="relative rounded-3xl overflow-hidden bg-gradient-to-r from-slate-900 via-indigo-950 to-blue-950 text-white p-6 sm:p-8 shadow-xl border border-blue-500/20">
               <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
@@ -651,7 +648,6 @@ const Dashboard = () => {
             </div>
           </ScrollReveal>
 
-          {/* 6 Top KPI Metrics (100% User Knowledge Basis) */}
           <ScrollReveal direction="up" delay={0.08}>
             <div className="grid grid-cols-2 lg:grid-cols-6 gap-4">
               <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-xs">
@@ -747,7 +743,6 @@ const Dashboard = () => {
             </div>
           </ScrollReveal>
 
-          {/* Performance Diagnostics Column Bar Chart (User Knowledge Basis + Domain Filters) */}
           <ScrollReveal direction="up" delay={0.1}>
             <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-8 shadow-xs space-y-6">
               <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-slate-100 dark:border-slate-800 pb-4">
@@ -964,7 +959,6 @@ const Dashboard = () => {
             </div>
           </ScrollReveal>
 
-          {/* Knowledge Progression & Evaluation Score Timeline */}
           <ScrollReveal direction="up" delay={0.1}>
             <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-8 shadow-xs space-y-6">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-800 pb-4">

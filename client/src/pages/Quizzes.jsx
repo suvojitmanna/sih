@@ -103,7 +103,7 @@ const Quizzes = () => {
       <Navbar />
 
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 pt-19 pb-16 space-y-3">
-        {/* Back Navigation Bar */}
+
         <div className="flex items-center justify-between">
           <BackButton fallbackUrl="/ai-models" label="Back to AI Models" />
           <span className="text-xs font-bold text-slate-500 dark:text-slate-400">
@@ -166,7 +166,7 @@ const Quizzes = () => {
               <CardGridSkeleton count={6} />
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-                {quizzes.map((quiz) => (
+                {(quizzes || []).map((quiz) => (
                   <div
                     key={quiz._id}
                     className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-5 shadow-xs hover:border-blue-400 transition-all flex flex-col justify-between"
@@ -235,7 +235,7 @@ const Quizzes = () => {
               <span>Assessment History & Performance Records</span>
             </h3>
 
-            {myAttempts.length === 0 ? (
+            {(!myAttempts || myAttempts.length === 0) ? (
               <div className="text-center py-12 text-slate-400">
                 <FaTasks size={32} className="mx-auto mb-2 opacity-50" />
                 <p className="text-xs">
@@ -256,7 +256,7 @@ const Quizzes = () => {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                    {myAttempts.map((att, idx) => (
+                    {(myAttempts || []).map((att, idx) => (
                       <tr
                         key={idx}
                         className="hover:bg-slate-50/50 dark:hover:bg-slate-800/40"

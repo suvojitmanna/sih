@@ -8,12 +8,10 @@ dotenv.config();
 const geminiApiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
 const aiClient = geminiApiKey ? new GoogleGenAI({ apiKey: geminiApiKey }) : null;
 
-// JSON cleaner & safe parser helper
 export const cleanAndParseJson = (rawText, defaultFallback = {}) => {
     if (!rawText) return defaultFallback;
     try {
         let cleaned = rawText.trim();
-        // Remove markdown code fences if present
         if (cleaned.startsWith("```json")) {
             cleaned = cleaned.replace(/^```json\s*/, "").replace(/\s*```$/, "");
         } else if (cleaned.startsWith("```")) {
@@ -34,7 +32,6 @@ export const cleanAndParseJson = (rawText, defaultFallback = {}) => {
     }
 };
 
-// Map Numerical Score to Official MoSPI Level
 export const scoreToLevel = (score) => {
     if (score >= 85) return "Expert";
     if (score >= 70) return "Advanced";
@@ -42,7 +39,6 @@ export const scoreToLevel = (score) => {
     return "Beginner";
 };
 
-// Core helper to call SankhyaIQ AI Neural Engine with OpenRouter fallback
 export const callGeminiOrFallback = async (prompt, systemInstruction = "") => {
     // 1. Try Primary AI Neural Engine
     if (aiClient) {
@@ -148,7 +144,6 @@ Return STRICTLY a JSON object with this exact schema:
         console.error("[AI ASSESSMENT ERROR]", err.message);
     }
 
-    // Default robust fallback calculation based on role & self ratings
     const calculatedCompetencies = [];
     COMPETENCY_DOMAINS.forEach((domain) => {
         domain.competencies.forEach((comp) => {
@@ -229,11 +224,11 @@ Return STRICTLY a JSON object with this exact schema:
         console.error("[SKILL GAP ANALYSIS ERROR]", err.message);
     }
 
-    // Algorithmic Fallback
     const gaps = [];
     const requiredLevels = benchmark.requiredLevels;
 
-    currentCompetencies.forEach((comp) => {
+    (currentCompetencies || []).forEach((comp) => {
+        if (!comp || !comp.competencyName) return;
         const required = requiredLevels[comp.competencyName] || "Intermediate";
         const levelRanks = { Beginner: 1, Intermediate: 2, Advanced: 3, Expert: 4 };
         const currentRank = levelRanks[comp.level] || 1;
@@ -299,14 +294,34 @@ Return STRICTLY a JSON object with this exact schema:
         const raw = await callGeminiOrFallback(prompt, "You are an official curriculum designer. Always output strict JSON.");
         const parsed = cleanAndParseJson(raw, null);
         if (parsed && Array.isArray(parsed.learningPath) && parsed.learningPath.length) {
-            return parsed;
+            const normalized = parsed.learningPath.map((step, idx) => ({
+                step: Number(step.step) || idx + 1,
+                title: step.title || `Module ${idx + 1}`,
+                provider: step.provider || "iGOT Karmayogi",
+                skillAddressed: step.skillAddressed || "Statistical Competencies",
+                duration: step.duration || "12 Hours",
+                currentLevel: step.currentLevel || "Beginner",
+                targetLevel: step.targetLevel || "Intermediate",
+                priority: ["High", "Medium", "Low"].includes(step.priority) ? step.priority : (idx < 2 ? "High" : "Medium"),
+                rationale: step.rationale || "Core competency capacity building module.",
+                status: ["in-progress", "completed", "not-started", "pending"].includes(step.status)
+                    ? step.status
+                    : (idx === 0 ? "in-progress" : "not-started"),
+                externalUrl: step.externalUrl || "",
+            }));
+
+            return {
+                pathwayTitle: parsed.pathwayTitle || `${jobRole} Capacity Building Pathway`,
+                estimatedTotalHours: Number(parsed.estimatedTotalHours) || 48,
+                learningPath: normalized,
+            };
         }
     } catch (err) {
         console.error("[LEARNING PATHWAY ERROR]", err.message);
     }
 
     // Default Fallback Pathway
-    const path = availableCourses.slice(0, 5).map((course, idx) => ({
+    const path = (availableCourses || []).slice(0, 5).map((course, idx) => ({
         step: idx + 1,
         title: course.title,
         provider: course.provider || "iGOT Karmayogi",
@@ -316,7 +331,7 @@ Return STRICTLY a JSON object with this exact schema:
         targetLevel: "Advanced",
         priority: idx < 2 ? "High" : "Medium",
         rationale: `Targeted to bridge core competencies in ${course.skillAddressed}.`,
-        status: idx === 0 ? "in-progress" : "pending",
+        status: idx === 0 ? "in-progress" : "not-started",
     }));
 
     return {
@@ -330,7 +345,7 @@ Return STRICTLY a JSON object with this exact schema:
 // 4. MCQ GENERATION FROM UPLOADED MATERIAL
 
 export const generateMCQsFromText = async ({ textContent = "", documentTitle = "Survey Manual", domain = "Statistical Competencies", numQuestions = 5, difficulty = "Medium" }) => {
-    const trimmed = textContent.slice(0, 8000); // Token safety
+    const trimmed = textContent.slice(0, 8000);
     const prompt = `
 You are the SankhyaIQ AI Examination Wing for the National Statistical Systems Training Academy (NSSTA).
 Read the following extract from the official training manual/circular: "${documentTitle}"
@@ -377,7 +392,6 @@ Return STRICTLY a JSON array of objects with schema:
         console.error("[MCQ GENERATION ERROR]", err.message);
     }
 
-    // Default Fallback Questions
     return [
         {
             question: `In official statistics based on ${documentTitle}, what constitutes the fundamental unit for sampling frame verification?`,
@@ -465,20 +479,26 @@ Return STRICTLY a JSON object with schema:
         ],
     };
 };
-export const evaluateQuizSubmission = async ({ quiz = {}, userAnswers = [], timeTakenSeconds = 60 }) => {
+export const evaluateQuizSubmission = async ({ quiz = {}, questions = [], userAnswers = [], timeTakenSeconds = 60 }) => {
     let correctCount = 0;
     const evaluatedQuestions = [];
     const topicBreakdown = {};
 
-    quiz.questions.forEach((q, idx) => {
+    const qList = Array.isArray(questions) && questions.length
+        ? questions
+        : Array.isArray(quiz?.questions)
+        ? quiz.questions
+        : [];
+
+    qList.forEach((q, idx) => {
         const userAns = userAnswers[idx] || "";
-        const correctLetter = q.correctAnswer.trim().charAt(0).toUpperCase();
-        const userLetter = userAns.trim().charAt(0).toUpperCase();
-        const isCorrect = userLetter === correctLetter || userAns.toLowerCase().includes(q.correctAnswer.toLowerCase());
+        const correctLetter = (q.correctAnswer || "A").trim().charAt(0).toUpperCase();
+        const userLetter = String(userAns || "").trim().charAt(0).toUpperCase();
+        const isCorrect = userLetter === correctLetter || (q.correctAnswer && String(userAns).toLowerCase().includes(String(q.correctAnswer).toLowerCase()));
 
         if (isCorrect) correctCount++;
 
-        const topic = q.topic || quiz.topic || "General";
+        const topic = q.topic || quiz?.topic || "General";
         if (!topicBreakdown[topic]) {
             topicBreakdown[topic] = { total: 0, correct: 0 };
         }
@@ -488,14 +508,14 @@ export const evaluateQuizSubmission = async ({ quiz = {}, userAnswers = [], time
         evaluatedQuestions.push({
             questionText: q.question,
             selectedOption: userAns || "Not Answered",
-            correctAnswer: q.options.find((o) => o.startsWith(q.correctAnswer)) || q.correctAnswer,
+            correctAnswer: Array.isArray(q.options) ? (q.options.find((o) => o.startsWith(q.correctAnswer)) || q.correctAnswer) : q.correctAnswer,
             isCorrect,
             explanation: q.explanation || "Official statistical rationale.",
             topic,
         });
     });
 
-    const total = quiz.questions.length || 1;
+    const total = qList.length || 1;
     const score = Math.round((correctCount / total) * 100);
     const accuracy = Math.round((correctCount / total) * 100);
 
@@ -597,8 +617,6 @@ Return STRICTLY a JSON array of 2 recommended modules with schema:
 };
 
 
-// 9. ASSIGNMENT EVALUATION ENGINE (GEMINI AI)
-
 export const evaluateAssignmentSubmission = async ({ assignment = {}, submissionText = "", learnerProfile = {} }) => {
     const prompt = `
 You are the Chief Academic Evaluator for the National Statistical Systems Training Academy (NSSTA), Ministry of Statistics & Programme Implementation (MoSPI).
@@ -682,7 +700,6 @@ Return STRICTLY a JSON object with this schema:
         console.error("[ASSIGNMENT EVALUATION ERROR]", err.message);
     }
 
-    // Fallback Evaluation
     const wordCount = submissionText.trim().split(/\s+/).length;
     const baseScore = Math.min(92, Math.max(55, Math.round(wordCount > 100 ? 78 + (wordCount % 12) : 62)));
 

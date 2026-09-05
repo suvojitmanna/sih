@@ -306,38 +306,36 @@ export const finishInterview = async (req, res) => {
         if (!interview) {
             return res.status(400).json({ message: "failed to find interview" })
         }
-        const totalQuestions = interview.question.length
+        const qList = Array.isArray(interview.question) ? interview.question : (Array.isArray(interview.questions) ? interview.questions : []);
+        const totalQuestions = qList.length;
 
         let totalScore = 0;
-        let totalConfidence = 0
-        let totalCommunication = 0
-        let totalCorrectness = 0
+        let totalConfidence = 0;
+        let totalCommunication = 0;
+        let totalCorrectness = 0;
 
-        interview.question.forEach((q) => {
-            totalScore += q.score || 0
-            totalConfidence += q.confidence || 0
-            totalCommunication += q.communication || 0
-            totalCorrectness += q.correctness || 0
-        })
+        qList.forEach((q) => {
+            totalScore += q.score || 0;
+            totalConfidence += q.confidence || 0;
+            totalCommunication += q.communication || 0;
+            totalCorrectness += q.correctness || 0;
+        });
 
-        const finalScore = totalQuestions ? totalScore / totalQuestions : 0
+        const finalScore = totalQuestions ? totalScore / totalQuestions : 0;
+        const avgConfidence = totalQuestions ? totalConfidence / totalQuestions : 0;
+        const avgCommunication = totalQuestions ? totalCommunication / totalQuestions : 0;
+        const avgCorrectness = totalQuestions ? totalCorrectness / totalQuestions : 0;
 
-        const avgConfidence = totalQuestions ? totalConfidence / totalQuestions : 0
-
-        const avgCommunication = totalQuestions ? totalCommunication / totalQuestions : 0
-
-        const avgCorrectness = totalQuestions ? totalCorrectness / totalQuestions : 0
-
-        interview.status = "completed"
-        interview.finalScore = finalScore
-        await interview.save()
+        interview.status = "completed";
+        interview.finalScore = finalScore;
+        await interview.save();
 
         return res.status(200).json({
             finalScore: Number(finalScore.toFixed((1))),
             confidence: Number(avgConfidence.toFixed((1))),
             communication: Number(avgCommunication.toFixed((1))),
             correctness: Number(avgCorrectness.toFixed((1))),
-            questionWiseScore: interview.question.map((q) => ({
+            questionWiseScore: qList.map((q) => ({
                 question: q.question,
                 score: q.score || 0,
                 feedback: q.feedback || "",
@@ -345,7 +343,7 @@ export const finishInterview = async (req, res) => {
                 communication: q.communication || 0,
                 correctness: q.correctness || 0,
             }))
-        })
+        });
 
     } catch (error) {
         return res.status(500).json({ message: `failed to finish interview ${error.message}` })
@@ -370,23 +368,22 @@ export const getInterviewReport = async (req, res) => {
         if (!interview) {
             return res.status(404).json({ message: "Interview not found" })
         }
-        const totalQuestions = interview.question ? interview.question.length : 0
+        const qList = Array.isArray(interview.question) ? interview.question : (Array.isArray(interview.questions) ? interview.questions : []);
+        const totalQuestions = qList.length;
 
-        let totalConfidence = 0
-        let totalCommunication = 0
-        let totalCorrectness = 0
+        let totalConfidence = 0;
+        let totalCommunication = 0;
+        let totalCorrectness = 0;
 
-        if (interview.question) {
-            interview.question.forEach((q) => {
-                totalConfidence += q.confidence || 0
-                totalCommunication += q.communication || 0
-                totalCorrectness += q.correctness || 0
-            })
-        }
+        qList.forEach((q) => {
+            totalConfidence += q.confidence || 0;
+            totalCommunication += q.communication || 0;
+            totalCorrectness += q.correctness || 0;
+        });
 
-        const avgConfidence = totalQuestions ? totalConfidence / totalQuestions : 0
-        const avgCommunication = totalQuestions ? totalCommunication / totalQuestions : 0
-        const avgCorrectness = totalQuestions ? totalCorrectness / totalQuestions : 0
+        const avgConfidence = totalQuestions ? totalConfidence / totalQuestions : 0;
+        const avgCommunication = totalQuestions ? totalCommunication / totalQuestions : 0;
+        const avgCorrectness = totalQuestions ? totalCorrectness / totalQuestions : 0;
 
         return res.status(200).json({
             _id: interview._id,
@@ -398,10 +395,10 @@ export const getInterviewReport = async (req, res) => {
             confidence: Number(avgConfidence.toFixed(1)),
             communication: Number(avgCommunication.toFixed(1)),
             correctness: Number(avgCorrectness.toFixed(1)),
-            question: interview.question,
-            questions: interview.question,
-            questionWiseScore: interview.question
-        })
+            question: qList,
+            questions: qList,
+            questionWiseScore: qList
+        });
 
     } catch (error) {
         return res.status(500).json({ message: `failed to find currentUser Interview report ${error}` })

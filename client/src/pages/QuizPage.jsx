@@ -12,13 +12,10 @@ import {
   FaTimesCircle,
   FaArrowRight,
   FaArrowLeft,
-  FaAward,
   FaRedo,
   FaBookOpen,
   FaHandSparkles,
 } from "react-icons/fa";
-import { HiSparkles } from "react-icons/hi";
-import { BsShieldCheck } from "react-icons/bs";
 
 const QuizPage = () => {
   const { id } = useParams();
@@ -27,7 +24,7 @@ const QuizPage = () => {
   const [quiz, setQuiz] = useState(null);
   const [currentIdx, setCurrentIdx] = useState(0);
   const [userAnswers, setUserAnswers] = useState([]);
-  const [timeLeft, setTimeLeft] = useState(600); // 10 minutes default
+  const [timeLeft, setTimeLeft] = useState(600);
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [result, setResult] = useState(null);
@@ -161,12 +158,9 @@ const QuizPage = () => {
             Assessment Session
           </span>
         </div>
-        {/* ========================================================== */}
-        {/* STATE A: ACTIVE QUIZ TAKING VIEW */}
-        {/* ========================================================== */}
+
         {!submitted ? (
           <div className="space-y-6">
-            {/* Top Bar with Timer */}
             <div className="flex items-center justify-between bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-5 shadow-xs">
               <div>
                 <span className="text-[10px] font-extrabold text-blue-700 bg-blue-50 dark:bg-blue-950 px-2.5 py-0.5 rounded-full uppercase">
@@ -199,7 +193,6 @@ const QuizPage = () => {
               </div>
             </div>
 
-            {/* Question Progress Bar */}
             <div className="h-1.5 w-full bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
               <div
                 className="h-full bg-blue-600 transition-all duration-300 rounded-full"
@@ -209,9 +202,8 @@ const QuizPage = () => {
               />
             </div>
 
-            {/* Question Navigation Palette */}
             <div className="flex items-center gap-2 overflow-x-auto p-2 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs">
-              {quiz.questions.map((_, i) => (
+              {(quiz?.questions || []).map((_, i) => (
                 <button
                   key={i}
                   onClick={() => setCurrentIdx(i)}
@@ -228,12 +220,11 @@ const QuizPage = () => {
               ))}
             </div>
 
-            {/* Question Card */}
             <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-8 shadow-xs space-y-6">
               <div className="flex items-center justify-between text-xs text-slate-500 pb-3 border-b border-slate-100 dark:border-slate-800">
                 <span>
                   Question <strong>{currentIdx + 1}</strong> of{" "}
-                  {quiz.questions.length}
+                  {(quiz?.questions || []).length}
                 </span>
                 <span className="font-semibold text-blue-600">
                   Topic: {currentQ?.topic}
@@ -244,9 +235,8 @@ const QuizPage = () => {
                 {currentQ?.question}
               </h3>
 
-              {/* 4 Options */}
               <div className="space-y-3">
-                {currentQ?.options.map((option, optIdx) => {
+                {(currentQ?.options || []).map((option, optIdx) => {
                   const isSelected = userAnswers[currentIdx] === option;
                   return (
                     <div
@@ -277,7 +267,6 @@ const QuizPage = () => {
                 })}
               </div>
 
-              {/* Action Buttons */}
               <div className="flex items-center justify-between pt-4 border-t border-slate-100 dark:border-slate-800">
                 <button
                   type="button"
@@ -313,11 +302,7 @@ const QuizPage = () => {
             </div>
           </div>
         ) : (
-          /* ========================================================== */
-          /* STATE B: DIAGNOSTIC SCORE & QUESTION REVIEW REPORT */
-          /* ========================================================== */
           <div className="space-y-6">
-            {/* Top Score Banner */}
             <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-8 shadow-xs text-center space-y-4">
               <div
                 className={`w-16 h-16 rounded-3xl mx-auto flex items-center justify-center font-black text-2xl shadow-lg ${
@@ -352,7 +337,6 @@ const QuizPage = () => {
                 </p>
               </div>
 
-              {/* Stats Grid */}
               <div className="grid grid-cols-3 gap-3 max-w-md mx-auto pt-2">
                 <div className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800">
                   <span className="text-[10px] font-bold text-slate-400 block uppercase">
@@ -404,7 +388,6 @@ const QuizPage = () => {
               </div>
             </div>
 
-            {/* Topic Diagnostics */}
             {result?.attempt?.topicAnalysis &&
               result.attempt.topicAnalysis.length > 0 && (
                 <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-xs space-y-3">
@@ -414,7 +397,7 @@ const QuizPage = () => {
                   </h3>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    {result.attempt.topicAnalysis.map((t, idx) => (
+                    {(result?.attempt?.topicAnalysis || []).map((t, idx) => (
                       <div
                         key={idx}
                         className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/70 dark:border-slate-700 flex items-center justify-between"
@@ -439,7 +422,6 @@ const QuizPage = () => {
                 </div>
               )}
 
-            {/* Question by Question Review */}
             <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-xs space-y-4">
               <h3 className="text-base font-bold text-slate-900 dark:text-white">
                 Detailed Solutions & Pedagogical Explanations

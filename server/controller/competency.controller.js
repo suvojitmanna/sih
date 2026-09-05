@@ -103,7 +103,6 @@ export const runAiAssessment = async (req, res) => {
             quizHistory: [],
         });
 
-        // Update User Competencies
         user.competencies = assessmentResult.competencies;
         user.overallCompetencyScore = assessmentResult.overallScore;
         user.overallLevel = assessmentResult.overallLevel;
@@ -132,7 +131,23 @@ export const runAiAssessment = async (req, res) => {
             availableCourses: allAvailable,
         });
 
-        user.learningPath = pathResult.learningPath;
+        const sanitizedPath = (pathResult.learningPath || []).map((step, idx) => ({
+            step: Number(step.step) || idx + 1,
+            title: step.title || `Module ${idx + 1}`,
+            provider: step.provider || "iGOT Karmayogi",
+            skillAddressed: step.skillAddressed || "Statistical Competencies",
+            duration: step.duration || "12 Hours",
+            currentLevel: step.currentLevel || "Beginner",
+            targetLevel: step.targetLevel || "Intermediate",
+            priority: ["High", "Medium", "Low"].includes(step.priority) ? step.priority : "Medium",
+            rationale: step.rationale || "Official competency capacity building module.",
+            status: ["in-progress", "completed", "not-started", "pending"].includes(step.status)
+                ? step.status
+                : (idx === 0 ? "in-progress" : "not-started"),
+            externalUrl: step.externalUrl || "",
+        }));
+
+        user.learningPath = sanitizedPath;
         await user.save();
 
         return res.status(200).json({
@@ -188,7 +203,23 @@ export const generatePathway = async (req, res) => {
             availableCourses: allAvailable,
         });
 
-        user.learningPath = pathResult.learningPath;
+        const sanitizedPath = (pathResult.learningPath || []).map((step, idx) => ({
+            step: Number(step.step) || idx + 1,
+            title: step.title || `Module ${idx + 1}`,
+            provider: step.provider || "iGOT Karmayogi",
+            skillAddressed: step.skillAddressed || "Statistical Competencies",
+            duration: step.duration || "12 Hours",
+            currentLevel: step.currentLevel || "Beginner",
+            targetLevel: step.targetLevel || "Intermediate",
+            priority: ["High", "Medium", "Low"].includes(step.priority) ? step.priority : "Medium",
+            rationale: step.rationale || "Official competency capacity building module.",
+            status: ["in-progress", "completed", "not-started", "pending"].includes(step.status)
+                ? step.status
+                : (idx === 0 ? "in-progress" : "not-started"),
+            externalUrl: step.externalUrl || "",
+        }));
+
+        user.learningPath = sanitizedPath;
         await user.save();
 
         return res.status(200).json({
@@ -210,9 +241,11 @@ export const updatePathwayProgress = async (req, res) => {
         const user = await User.findById(req.userId || req.user?._id);
         if (!user) return res.status(404).json({ success: false, message: "User not found" });
 
+        const targetStatus = ["completed", "in-progress", "not-started", "pending"].includes(status) ? status : "in-progress";
+
         if (user.learningPath && user.learningPath[stepIndex]) {
-            user.learningPath[stepIndex].status = status;
-            if (status === "completed") {
+            user.learningPath[stepIndex].status = targetStatus;
+            if (targetStatus === "completed") {
                 user.learningPath[stepIndex].completedAt = new Date();
                 user.learningHours = (user.learningHours || 0) + 4;
                 user.credits = (user.credits || 100) + 10;

@@ -4,7 +4,6 @@ import MaterialRequest from "../models/materialRequestModel.js";
 import Quiz from "../models/quizModel.js";
 import { generateMCQsFromText } from "../services/aiService.js";
 
-// Helper: Extract text from PDF buffer
 const extractPdfText = async (buffer) => {
     try {
         const uint8Array = new Uint8Array(buffer);
@@ -36,7 +35,6 @@ export const uploadMaterial = async (req, res) => {
         const mimeType = req.file.mimetype || "application/octet-stream";
         let extractedText = "";
 
-        // Convert buffer to base64 Data URI for rendering/downloading
         const fileBase64 = `data:${mimeType};base64,${req.file.buffer.toString("base64")}`;
 
         if (fileExt === "pdf") {
@@ -57,7 +55,7 @@ export const uploadMaterial = async (req, res) => {
             fileData: fileBase64,
             domain,
             topic,
-            extractedText: extractedText.substring(0, 60000), // Store up to 60k chars
+            extractedText: extractedText.substring(0, 60000),
             summary: `Learning material covering ${topic} (${domain}).`,
             uploadedBy: req.userId || req.user?._id,
         });
@@ -95,6 +93,7 @@ export const generateMcqsFromMaterial = async (req, res) => {
             topic: material.topic,
         });
 
+        const userId = req.userId || req.user?._id || material.uploadedBy || null;
         const quiz = await Quiz.create({
             title: `${material.title} - Diagnostic Assessment`,
             domain: material.domain,
@@ -109,7 +108,10 @@ export const generateMcqsFromMaterial = async (req, res) => {
             })),
             isOfficial: false,
             sourceMaterialId: material._id,
-            estimatedTimeMinutes: mcqs.length * 2,
+            createdBy: userId,
+            timeLimitMinutes: Math.max(5, mcqs.length * 2),
+            isGeneratedByAI: true,
+            isPublished: true,
         });
 
         material.generatedMCQsCount = (material.generatedMCQsCount || 0) + mcqs.length;

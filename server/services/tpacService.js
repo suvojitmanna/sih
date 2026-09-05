@@ -2,7 +2,6 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-// Official NSSTA TPAC (Training Programme Advisory Committee) Training Calendar
 export const TPAC_PROGRAMMES = [
     {
         id: "tpac-2026-01",
@@ -96,7 +95,6 @@ export const TPAC_PROGRAMMES = [
     },
 ];
 
-// Fetch TPAC Programmes with filtering
 export const getTpacProgrammes = (cadre = "", competency = "") => {
     let list = [...TPAC_PROGRAMMES];
     if (cadre) {
@@ -108,12 +106,11 @@ export const getTpacProgrammes = (cadre = "", competency = "") => {
     return list;
 };
 
-// Map Learner Gaps to NSSTA TPAC Training Programmes
 export const getTpacRecommendationsForLearner = (learnerCadre = "", skillGaps = []) => {
     const recommended = [];
 
-    // Match by specific skill gap first
-    skillGaps.forEach((gap) => {
+    (skillGaps || []).forEach((gap) => {
+        if (!gap || !gap.competencyName) return;
         const found = TPAC_PROGRAMMES.find(
             (p) =>
                 p.competencyAddressed.toLowerCase().includes(gap.competencyName.toLowerCase()) ||
@@ -122,13 +119,12 @@ export const getTpacRecommendationsForLearner = (learnerCadre = "", skillGaps = 
         if (found && !recommended.some((r) => r.id === found.id)) {
             recommended.push({
                 ...found,
-                recommendationReason: `NSSTA TPAC Programme specifically addressing ${gap.priority} Priority Gap in ${gap.competencyName}`,
-                priority: gap.priority,
+                recommendationReason: `NSSTA TPAC Programme specifically addressing ${gap.priority || "Medium"} Priority Gap in ${gap.competencyName}`,
+                priority: gap.priority || "Medium",
             });
         }
     });
 
-    // Match by learner cadre
     if (learnerCadre) {
         TPAC_PROGRAMMES.forEach((p) => {
             if (

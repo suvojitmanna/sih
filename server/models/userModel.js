@@ -43,7 +43,6 @@ const userSchema = new mongoose.Schema(
             default: false,
         },
 
-        // Secure Email OTP authentication
         otpHash: {
             type: String,
             default: null,
@@ -61,7 +60,6 @@ const userSchema = new mongoose.Schema(
             default: null,
         },
 
-        // Learner Profile (Official Statistical System)
         designation: {
             type: String,
             default: "Statistical Officer",
@@ -91,7 +89,6 @@ const userSchema = new mongoose.Schema(
             default: ["NSSTA Induction Course on Official Statistics"],
         },
 
-        // Competencies (assessed across 4 official domains)
         competencies: [
             {
                 domain: { type: String },
@@ -104,7 +101,6 @@ const userSchema = new mongoose.Schema(
             },
         ],
 
-        // AI-Analyzed Skill Gaps
         skillGaps: [
             {
                 competencyName: { type: String },
@@ -118,7 +114,6 @@ const userSchema = new mongoose.Schema(
             },
         ],
 
-        // Personalized Learning Pathway (iGOT & NSSTA TPAC)
         learningPath: [
             {
                 step: { type: Number },
@@ -130,13 +125,12 @@ const userSchema = new mongoose.Schema(
                 targetLevel: { type: String },
                 priority: { type: String, default: "Medium" },
                 rationale: { type: String },
-                status: { type: String, enum: ["not-started", "in-progress", "completed"], default: "not-started" },
+                status: { type: String, enum: ["not-started", "in-progress", "completed", "pending"], default: "not-started" },
                 externalUrl: { type: String },
                 completedAt: { type: Date },
             },
         ],
 
-        // Metrics & Stats
         overallCompetencyScore: {
             type: Number,
             default: 65,
@@ -165,7 +159,6 @@ const userSchema = new mongoose.Schema(
     { timestamps: true }
 );
 
-// Hash password before saving if present and modified
 userSchema.pre("save", async function () {
     if (this.image && !this.picture) {
         this.picture = this.image;
@@ -179,13 +172,11 @@ userSchema.pre("save", async function () {
     this.password = await bcrypt.hash(this.password, salt);
 });
 
-// Method to compare password
 userSchema.methods.matchPassword = async function (enteredPassword) {
     if (!this.password) return false;
     return await bcrypt.compare(enteredPassword, this.password);
 };
 
-// Method to compare OTP
 userSchema.methods.matchOtp = async function (enteredOtp) {
     if (!this.otpHash) return false;
     return await bcrypt.compare(enteredOtp.toString(), this.otpHash);

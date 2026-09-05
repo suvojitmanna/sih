@@ -194,8 +194,8 @@ const ChatMessage = ({ message, onPublishToggle }) => {
               {message.content}
             </p>
 
-            <span className="text-[10px] text-indigo-200/70 self-end mt-1">
-              {message.timestamp && moment(message.timestamp).fromNow()}
+            <span className="text-[10px] text-indigo-200/80 self-end mt-1 font-medium">
+              {message.timestamp && `${moment(message.timestamp).format("hh:mm A, DD MMM")} • ${moment(message.timestamp).fromNow()}`}
             </span>
           </div>
 
@@ -306,7 +306,9 @@ const ChatMessage = ({ message, onPublishToggle }) => {
 
             <div className="flex items-center justify-between mt-1 pt-1 border-t border-slate-100 dark:border-slate-800 text-[10px] text-slate-400">
               <span>{message.isImage ? "🎨 AI Studio Image" : "✨ AI Assistant"}</span>
-              <span>{message.timestamp && moment(message.timestamp).fromNow()}</span>
+              <span className="font-medium">
+                {message.timestamp && `${moment(message.timestamp).format("hh:mm A, DD MMM")} • ${moment(message.timestamp).fromNow()}`}
+              </span>
             </div>
           </div>
         </div>

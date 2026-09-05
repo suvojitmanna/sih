@@ -5,7 +5,6 @@ import MaterialRequest from "../models/materialRequestModel.js";
 import Interview from "../models/interviewModel.js";
 import { Assignment, AssignmentSubmission } from "../models/assignmentModel.js";
 
-// 1. Executive Ministry & Academy Overview Metrics
 export const getAdminOverviewMetrics = async (req, res) => {
     try {
         const totalLearners = await User.countDocuments();
@@ -18,14 +17,13 @@ export const getAdminOverviewMetrics = async (req, res) => {
 
         const users = await User.find({}, "department jobRole overallCompetencyScore overallLevel learningHours quizzesCompleted skillGaps competencies");
 
-        // Calculate average competency score & total hours
         let sumScore = 0;
         let sumHours = 0;
         const departmentMap = {};
         const cadreMap = {};
         const gapCounts = {};
 
-        users.forEach((u) => {
+        (users || []).forEach((u) => {
             sumScore += u.overallCompetencyScore || 65;
             sumHours += u.learningHours || 0;
 
@@ -37,26 +35,25 @@ export const getAdminOverviewMetrics = async (req, res) => {
 
             if (u.skillGaps && Array.isArray(u.skillGaps)) {
                 u.skillGaps.forEach((g) => {
-                    gapCounts[g.competencyName] = (gapCounts[g.competencyName] || 0) + 1;
+                    if (g && g.competencyName) {
+                        gapCounts[g.competencyName] = (gapCounts[g.competencyName] || 0) + 1;
+                    }
                 });
             }
         });
 
-        const avgCompetency = users.length ? Math.round(sumScore / users.length) : 70;
+        const avgCompetency = (users && users.length) ? Math.round(sumScore / users.length) : 70;
 
-        // Top System-wide Skill Deficits
         const topDeficits = Object.keys(gapCounts)
             .map((k) => ({ competencyName: k, count: gapCounts[k] }))
             .sort((a, b) => b.count - a.count)
             .slice(0, 6);
 
-        // Department breakdown
         const departmentDistribution = Object.keys(departmentMap).map((d) => ({
             name: d,
             learners: departmentMap[d],
         }));
 
-        // Cadre breakdown
         const cadreDistribution = Object.keys(cadreMap).map((c) => ({
             cadre: c,
             officers: cadreMap[c],
@@ -85,7 +82,6 @@ export const getAdminOverviewMetrics = async (req, res) => {
     }
 };
 
-// 2. Learners Directory with Aggregated Performance Metrics
 export const getLearnersDirectory = async (req, res) => {
     try {
         const { search = "", department = "", cadre = "" } = req.query;
@@ -112,8 +108,7 @@ export const getLearnersDirectory = async (req, res) => {
         return res.status(500).json({ success: false, message: error.message });
     }
 };
-
-// 3. User Detailed Performance & Experience Drilldown
+    
 export const getLearnerDetail = async (req, res) => {
     try {
         const { id } = req.params;
@@ -122,7 +117,6 @@ export const getLearnerDetail = async (req, res) => {
             return res.status(404).json({ success: false, message: "Officer not found." });
         }
 
-        // Fetch comprehensive performance history
         const [interviews, quizAttempts, submissions, materialRequests] = await Promise.all([
             Interview.find({ userId: id }).sort({ createdAt: -1 }).limit(20),
             QuizAttempt.find({ userId: id }).sort({ createdAt: -1 }).limit(30),
@@ -144,7 +138,6 @@ export const getLearnerDetail = async (req, res) => {
     }
 };
 
-// 4. List All Study Material Requests from Officers
 export const getAllMaterialRequests = async (req, res) => {
     try {
         const { status = "" } = req.query;
@@ -165,7 +158,6 @@ export const getAllMaterialRequests = async (req, res) => {
     }
 };
 
-// 5. Fulfill a Study Material Request
 export const fulfillMaterialRequest = async (req, res) => {
     try {
         const { id } = req.params;
@@ -203,7 +195,10 @@ export const fulfillMaterialRequest = async (req, res) => {
             request.dispatchedFileName = fileName;
             request.dispatchedFileType = fileType;
         }
-        request.fulfilledAt = new Date();
+        const now = new Date();
+        request.fulfilledAt = now;
+        request.completedAt = now;
+        request.resolvedAt = now;
 
         await request.save();
 
@@ -217,7 +212,6 @@ export const fulfillMaterialRequest = async (req, res) => {
     }
 };
 
-// 6. Dispatch / Broadcast Study Material Directly
 export const dispatchMaterial = async (req, res) => {
     try {
         const {
@@ -246,7 +240,6 @@ export const dispatchMaterial = async (req, res) => {
             fileType = req.file.originalname.split(".").pop().toLowerCase();
         }
 
-        // If targeted to a specific user, create/record a dispatched request
         if (targetUserId) {
             const targetUser = await User.findById(targetUserId);
             if (targetUser) {
@@ -268,11 +261,12 @@ export const dispatchMaterial = async (req, res) => {
                     dispatchedFileName: fileName,
                     dispatchedFileType: fileType,
                     fulfilledAt: new Date(),
+                    completedAt: new Date(),
+                    resolvedAt: new Date(),
                 });
             }
         }
 
-        // Create in global Material collection for academy records
         const material = await Material.create({
             title,
             originalName: fileName || title,
@@ -297,7 +291,6 @@ export const dispatchMaterial = async (req, res) => {
     }
 };
 
-// 7. Dispatch / Assign Custom Assignment to User or Cadre
 export const dispatchAssignment = async (req, res) => {
     try {
         const {
@@ -368,7 +361,6 @@ export const dispatchAssignment = async (req, res) => {
     }
 };
 
-// 8. List All Assignment Submissions Across Platform
 export const getAllAssignmentSubmissions = async (req, res) => {
     try {
         const submissions = await AssignmentSubmission.find()
@@ -385,7 +377,6 @@ export const getAllAssignmentSubmissions = async (req, res) => {
     }
 };
 
-// 9. Departmental Competency Heatmap
 export const getDepartmentHeatmap = async (req, res) => {
     try {
         const heatmap = [

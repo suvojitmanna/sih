@@ -39,6 +39,19 @@ const OFFICER_PROMPTS = [
   "Technical query regarding microdata imputation",
 ];
 
+const formatDateTime = (dateStr) => {
+  if (!dateStr) return "";
+  const d = new Date(dateStr);
+  if (isNaN(d.getTime())) return "";
+  return d.toLocaleString("en-IN", {
+    day: "2-digit",
+    month: "short",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: true,
+  });
+};
+
 const isAllowedRoute = (pathname) => {
   const clean = pathname.replace(/\/+$/, "") || "/";
   if (clean === "/auth" || clean === "/privacy" || clean === "/terms" || clean.startsWith("/admin")) return false;
@@ -527,7 +540,7 @@ const LiveAdminChatWidget = () => {
                         </div>
                       </div>
                     ) : (
-                      messages.map((msg, index) => {
+                      (messages || []).map((msg, index) => {
                         const isOfficer =
                           msg.senderRole === "learner" ||
                           (userData?._id &&
@@ -552,11 +565,8 @@ const LiveAdminChatWidget = () => {
                               <p className="leading-relaxed text-xs">
                                 {msg.message}
                               </p>
-                              <span className="text-[9px] font-bold text-slate-400 block pt-1">
-                                {new Date(msg.createdAt).toLocaleTimeString([], {
-                                  hour: "2-digit",
-                                  minute: "2-digit",
-                                })}
+                              <span className="text-[10px] font-bold text-amber-700/80 dark:text-amber-400/80 block pt-1">
+                                {formatDateTime(msg.createdAt)}
                               </span>
                             </div>
                           );
@@ -571,11 +581,8 @@ const LiveAdminChatWidget = () => {
                               <span className="text-[10px] font-bold text-slate-400">
                                 {isOfficer ? "You" : msg.senderName || "NSSTA Secretariat & Faculty"}
                               </span>
-                              <span className="text-[9px] text-slate-400">
-                                {new Date(msg.createdAt).toLocaleTimeString([], {
-                                  hour: "2-digit",
-                                  minute: "2-digit",
-                                })}
+                              <span className="text-[10px] text-slate-400 font-medium">
+                                {formatDateTime(msg.createdAt)}
                               </span>
                             </div>
 

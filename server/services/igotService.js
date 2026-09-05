@@ -6,7 +6,6 @@ dotenv.config();
 const geminiApiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
 const aiClient = geminiApiKey ? new GoogleGenAI({ apiKey: geminiApiKey }) : null;
 
-// Official iGOT Karmayogi Official Statistics & Civil Services Course Catalogue
 export const IGOT_COURSE_CATALOG = [
     {
         id: "igot-stat-01",
@@ -127,7 +126,6 @@ export const IGOT_COURSE_CATALOG = [
     },
 ];
 
-// Fetch Course Catalogue — 100% Powered by SankhyaIQ AI Engine
 export const getIgotCourses = async (query = "", domain = "") => {
     let courses = [...IGOT_COURSE_CATALOG];
 
@@ -145,14 +143,14 @@ export const getIgotCourses = async (query = "", domain = "") => {
     return courses;
 };
 
-// Map Identified Skill Gaps to iGOT Recommended Courses using SankhyaIQ AI Engine
 export const getIgotRecommendationsForGaps = (skillGaps = []) => {
     if (!skillGaps || !skillGaps.length) {
         return IGOT_COURSE_CATALOG.slice(0, 4);
     }
 
     const matchedCourses = [];
-    skillGaps.forEach((gap) => {
+    (skillGaps || []).forEach((gap) => {
+        if (!gap || !gap.competencyName) return;
         const found = IGOT_COURSE_CATALOG.find(
             (c) =>
                 c.skillAddressed.toLowerCase().includes(gap.competencyName.toLowerCase()) ||
@@ -161,13 +159,12 @@ export const getIgotRecommendationsForGaps = (skillGaps = []) => {
         if (found && !matchedCourses.some((m) => m.id === found.id)) {
             matchedCourses.push({
                 ...found,
-                recommendationReason: `SankhyaIQ AI: Specifically targets ${gap.priority} Priority Gap in ${gap.competencyName} (Current: ${gap.currentLevel} → Target: ${gap.requiredLevel})`,
-                gapPriority: gap.priority,
+                recommendationReason: `SankhyaIQ AI: Specifically targets ${gap.priority || "Medium"} Priority Gap in ${gap.competencyName} (Current: ${gap.currentLevel || "Beginner"} → Target: ${gap.requiredLevel || "Intermediate"})`,
+                gapPriority: gap.priority || "Medium",
             });
         }
     });
 
-    // Fill up with foundational courses if few matched
     if (matchedCourses.length < 3) {
         IGOT_COURSE_CATALOG.forEach((c) => {
             if (!matchedCourses.some((m) => m.id === c.id)) {

@@ -17,8 +17,25 @@ import {
   FaDownload,
   FaExternalLinkAlt,
   FaEye,
+  FaClock,
+  FaCheckCircle,
+  FaCalendarAlt,
 } from "react-icons/fa";
 import { BsShieldCheck, BsFillSendFill } from "react-icons/bs";
+
+const formatDateTime = (dateStr) => {
+  if (!dateStr) return "";
+  const d = new Date(dateStr);
+  if (isNaN(d.getTime())) return "";
+  return d.toLocaleString("en-IN", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: true,
+  });
+};
 
 const DOMAINS = [
   "Statistical Competencies",
@@ -280,98 +297,137 @@ const MaterialsUpload = () => {
             </h2>
 
             <div className="grid md:grid-cols-2 gap-4">
-              {myRequests.map((req) => (
-                <div
-                  key={req._id}
-                  className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/80 space-y-3"
-                >
-                  <div className="flex items-center justify-between">
-                    <span className="font-bold text-xs text-slate-900 dark:text-white">
-                      {req.topic}
-                    </span>
-                    <span
-                      className={`px-2.5 py-0.5 rounded-full text-[10px] font-black ${
-                        req.status === "fulfilled"
-                          ? "bg-emerald-50 dark:bg-emerald-950 text-emerald-600 border border-emerald-200 dark:border-emerald-800"
-                          : "bg-amber-50 dark:bg-amber-950 text-amber-600 border border-amber-200 dark:border-amber-800"
-                      }`}
-                    >
-                      {req.status === "fulfilled" ? "Dispatched by NSSTA" : "Pending Secretariat"}
-                    </span>
-                  </div>
+              {(myRequests || []).map((req) => {
+                const isFulfilled = req.status === "fulfilled" || !!req.fulfilledAt || !!req.completedAt;
+                const isRejected = req.status === "rejected";
+                const completedTime = req.completedAt || req.fulfilledAt || (isFulfilled ? req.updatedAt : null);
 
-                  <p className="text-slate-600 dark:text-slate-300 text-xs leading-relaxed">
-                    {req.description}
-                  </p>
-
-                  {req.attachmentData && (
-                    <div className="flex items-center gap-2 text-[11px] text-blue-600 dark:text-blue-400">
-                      <span>Attached: {req.attachmentName || "Reference Document"}</span>
-                      <button
-                        onClick={() => setPreviewFile({ url: req.attachmentData, title: req.attachmentName })}
-                        className="underline font-bold cursor-pointer"
-                      >
-                        (Preview)
-                      </button>
-                    </div>
-                  )}
-
-                  {req.dispatchedMaterialTitle && (
-                    <div className="p-3.5 rounded-xl bg-emerald-50/80 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 space-y-2 text-xs">
-                      <div className="flex items-center justify-between">
-                        <span className="font-bold text-emerald-900 dark:text-emerald-300">
-                          📄 {req.dispatchedMaterialTitle}
+                return (
+                  <div
+                    key={req._id}
+                    className="p-5 rounded-3xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/80 space-y-3 shadow-xs hover:border-blue-400/60 transition-all"
+                  >
+                    <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200/60 dark:border-slate-700/60 pb-2.5">
+                      <div>
+                        <span className="font-black text-xs text-slate-900 dark:text-white block">
+                          {req.topic}
                         </span>
-                        {req.dispatchedMaterialUrl && (
-                          <a
-                            href={req.dispatchedMaterialUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-blue-600 dark:text-blue-400 font-bold hover:underline inline-flex items-center gap-1"
-                          >
-                            <span>Link</span>
-                            <FaExternalLinkAlt size={10} />
-                          </a>
-                        )}
+                        <span className="text-[10px] font-bold text-blue-600 dark:text-blue-400">
+                          {req.domain}
+                        </span>
+                      </div>
+                      <span
+                        className={`px-2.5 py-0.5 rounded-full text-[10px] font-black ${
+                          isFulfilled
+                            ? "bg-emerald-50 dark:bg-emerald-950 text-emerald-600 border border-emerald-200 dark:border-emerald-800"
+                            : isRejected
+                            ? "bg-rose-50 dark:bg-rose-950 text-rose-600 border border-rose-200 dark:border-rose-800"
+                            : "bg-amber-50 dark:bg-amber-950 text-amber-600 border border-amber-200 dark:border-amber-800"
+                        }`}
+                      >
+                        {isFulfilled
+                          ? "Dispatched by NSSTA"
+                          : isRejected
+                          ? "Closed / Rejected"
+                          : "Pending Secretariat"}
+                      </span>
+                    </div>
+
+                    <p className="text-slate-600 dark:text-slate-300 text-xs leading-relaxed">
+                      {req.description}
+                    </p>
+
+                    {/* Request Timestamps (Requested Date & Completed Date) */}
+                    <div className="flex flex-wrap items-center gap-3 pt-1 text-[11px]">
+                      <div className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400 bg-white/70 dark:bg-slate-900/60 px-2.5 py-1 rounded-xl border border-slate-200/60 dark:border-slate-700/60">
+                        <FaCalendarAlt size={10} className="text-blue-500" />
+                        <span><strong>Requested:</strong> {formatDateTime(req.createdAt) || "Recorded"}</span>
                       </div>
 
-                      {req.dispatchedFileData && (
-                        <div className="pt-1 flex items-center gap-2">
-                          <a
-                            href={req.dispatchedFileData}
-                            download={req.dispatchedFileName || "official-study-material"}
-                            className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[11px] inline-flex items-center gap-1.5 shadow-xs transition"
-                          >
-                            <FaDownload size={10} />
-                            <span>Download {req.dispatchedFileName || "Dispatched File"}</span>
-                          </a>
-
-                          {req.dispatchedFileData.startsWith("data:image/") && (
-                            <button
-                              onClick={() => setPreviewFile({ url: req.dispatchedFileData, title: req.dispatchedFileName || req.dispatchedMaterialTitle })}
-                              className="px-3 py-1.5 rounded-lg bg-slate-200 dark:bg-slate-800 text-slate-800 dark:text-slate-200 font-bold text-[11px] inline-flex items-center gap-1.5 cursor-pointer"
-                            >
-                              <FaEye size={10} />
-                              <span>View Image</span>
-                            </button>
-                          )}
+                      {completedTime && (
+                        <div className="flex items-center gap-1.5 text-emerald-700 dark:text-emerald-300 bg-emerald-50/80 dark:bg-emerald-950/60 px-2.5 py-1 rounded-xl border border-emerald-200/80 dark:border-emerald-800/80 font-semibold">
+                          <FaCheckCircle size={11} className="text-emerald-500" />
+                          <span><strong>Completed & Dispatched:</strong> {formatDateTime(completedTime)}</span>
                         </div>
                       )}
 
-                      {req.dispatchedMaterialText && (
-                        <p className="text-slate-700 dark:text-slate-300 text-[11px] whitespace-pre-wrap leading-relaxed">
-                          {req.dispatchedMaterialText}
-                        </p>
-                      )}
-                      {req.adminResponseNote && (
-                        <p className="text-[10px] text-emerald-700 dark:text-emerald-400 font-medium">
-                          <strong>Secretariat Note:</strong> {req.adminResponseNote}
-                        </p>
+                      {isRejected && req.resolvedAt && (
+                        <div className="flex items-center gap-1.5 text-rose-700 dark:text-rose-300 bg-rose-50/80 dark:bg-rose-950/60 px-2.5 py-1 rounded-xl border border-rose-200/80 dark:border-rose-800/80 font-semibold">
+                          <FaClock size={10} className="text-rose-500" />
+                          <span><strong>Closed on:</strong> {formatDateTime(req.resolvedAt || req.updatedAt)}</span>
+                        </div>
                       )}
                     </div>
-                  )}
-                </div>
-              ))}
+
+                    {req.attachmentData && (
+                      <div className="flex items-center gap-2 text-[11px] text-blue-600 dark:text-blue-400">
+                        <span>Attached: {req.attachmentName || "Reference Document"}</span>
+                        <button
+                          onClick={() => setPreviewFile({ url: req.attachmentData, title: req.attachmentName })}
+                          className="underline font-bold cursor-pointer"
+                        >
+                          (Preview)
+                        </button>
+                      </div>
+                    )}
+
+                    {req.dispatchedMaterialTitle && (
+                      <div className="p-3.5 rounded-2xl bg-emerald-50/90 dark:bg-emerald-950/50 border border-emerald-200 dark:border-emerald-800 space-y-2 text-xs">
+                        <div className="flex items-center justify-between">
+                          <span className="font-bold text-emerald-900 dark:text-emerald-300">
+                            📄 {req.dispatchedMaterialTitle}
+                          </span>
+                          {req.dispatchedMaterialUrl && (
+                            <a
+                              href={req.dispatchedMaterialUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-blue-600 dark:text-blue-400 font-bold hover:underline inline-flex items-center gap-1"
+                            >
+                              <span>Link</span>
+                              <FaExternalLinkAlt size={10} />
+                            </a>
+                          )}
+                        </div>
+
+                        {req.dispatchedFileData && (
+                          <div className="pt-1 flex items-center gap-2">
+                            <a
+                              href={req.dispatchedFileData}
+                              download={req.dispatchedFileName || "official-study-material"}
+                              className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[11px] inline-flex items-center gap-1.5 shadow-xs transition"
+                            >
+                              <FaDownload size={10} />
+                              <span>Download {req.dispatchedFileName || "Dispatched File"}</span>
+                            </a>
+
+                            {req.dispatchedFileData.startsWith("data:image/") && (
+                              <button
+                                onClick={() => setPreviewFile({ url: req.dispatchedFileData, title: req.dispatchedFileName || req.dispatchedMaterialTitle })}
+                                className="px-3 py-1.5 rounded-lg bg-slate-200 dark:bg-slate-800 text-slate-800 dark:text-slate-200 font-bold text-[11px] inline-flex items-center gap-1.5 cursor-pointer"
+                              >
+                                <FaEye size={10} />
+                                <span>View Image</span>
+                              </button>
+                            )}
+                          </div>
+                        )}
+
+                        {req.dispatchedMaterialText && (
+                          <p className="text-slate-700 dark:text-slate-300 text-[11px] whitespace-pre-wrap leading-relaxed">
+                            {req.dispatchedMaterialText}
+                          </p>
+                        )}
+                        {req.adminResponseNote && (
+                          <p className="text-[10px] text-emerald-700 dark:text-emerald-400 font-medium">
+                            <strong>Secretariat Note:</strong> {req.adminResponseNote}
+                          </p>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           </div>
         )}
@@ -494,7 +550,7 @@ const MaterialsUpload = () => {
                 </div>
 
                 <div className="space-y-4 text-xs">
-                  {generatedMcqs.map((q, idx) => (
+                  {(generatedMcqs || []).map((q, idx) => (
                     <div
                       key={idx}
                       className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-700/60 space-y-2"
@@ -504,7 +560,7 @@ const MaterialsUpload = () => {
                       </p>
 
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 text-slate-600 dark:text-slate-300 pl-2">
-                        {q.options.map((opt, oIdx) => (
+                        {(q.options || []).map((opt, oIdx) => (
                           <div
                             key={oIdx}
                             className={`p-2 rounded-lg ${
@@ -533,14 +589,14 @@ const MaterialsUpload = () => {
                 <span>Uploaded Learning Materials Repository</span>
               </h2>
 
-              {materials.length === 0 ? (
+              {(!materials || materials.length === 0) ? (
                 <div className="text-center py-12 text-slate-400">
                   <FaFileAlt size={32} className="mx-auto mb-2 opacity-50" />
                   <p className="text-xs">No learning materials uploaded yet.</p>
                 </div>
               ) : (
                 <div className="space-y-3">
-                  {materials.map((mat) => (
+                  {(materials || []).map((mat) => (
                     <div
                       key={mat._id}
                       className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/40 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:border-blue-400 transition-all"

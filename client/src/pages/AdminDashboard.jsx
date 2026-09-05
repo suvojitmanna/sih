@@ -35,6 +35,9 @@ import {
   FaChevronLeft,
   FaChevronRight,
   FaTrash,
+  FaCalendarAlt,
+  FaClock,
+  FaCheckCircle,
 } from "react-icons/fa";
 import {
   BsShieldCheck,
@@ -42,6 +45,20 @@ import {
   BsFillSendFill,
   BsCircleFill,
 } from "react-icons/bs";
+
+const formatDateTime = (dateStr) => {
+  if (!dateStr) return "-";
+  const d = new Date(dateStr);
+  if (isNaN(d.getTime())) return "-";
+  return d.toLocaleString("en-IN", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: true,
+  });
+};
 
 const COLORS = [
   "#1e40af",
@@ -1168,6 +1185,7 @@ const AdminDashboard = () => {
                     <th className="p-4">Requester</th>
                     <th className="p-4">Requested Topic & Domain</th>
                     <th className="p-4">Detailed Requirement</th>
+                    <th className="p-4">Timeline & Dates</th>
                     <th className="p-4 text-center">Urgency</th>
                     <th className="p-4 text-center">Status</th>
                     <th className="p-4 text-right">Action</th>
@@ -1177,7 +1195,7 @@ const AdminDashboard = () => {
                   {materialRequests.length === 0 ? (
                     <tr>
                       <td
-                        colSpan={6}
+                        colSpan={7}
                         className="p-8 text-center text-slate-400"
                       >
                         No pending study material requests found.
@@ -1217,6 +1235,24 @@ const AdminDashboard = () => {
                             </div>
                           )}
                         </td>
+                        <td className="p-4 space-y-1 text-[11px] whitespace-nowrap">
+                          <div className="flex items-center gap-1.5 text-slate-600 dark:text-slate-300">
+                            <FaCalendarAlt size={10} className="text-blue-500 shrink-0" />
+                            <span><strong>Req:</strong> {formatDateTime(req.createdAt)}</span>
+                          </div>
+                          {(req.completedAt || req.fulfilledAt || req.status === "fulfilled") && (
+                            <div className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 font-semibold">
+                              <FaCheckCircle size={10} className="shrink-0" />
+                              <span><strong>Done:</strong> {formatDateTime(req.completedAt || req.fulfilledAt || req.updatedAt)}</span>
+                            </div>
+                          )}
+                          {req.status === "rejected" && (
+                            <div className="flex items-center gap-1.5 text-rose-600 dark:text-rose-400 font-semibold">
+                              <FaClock size={10} className="shrink-0" />
+                              <span><strong>Closed:</strong> {formatDateTime(req.resolvedAt || req.updatedAt)}</span>
+                            </div>
+                          )}
+                        </td>
                         <td className="p-4 text-center">
                           <span
                             className={`px-2 py-0.5 rounded-md font-bold text-[10px] ${req.urgency === "Critical"
@@ -1253,7 +1289,7 @@ const AdminDashboard = () => {
                                 adminResponseNote: req.adminResponseNote || "",
                                 dispatchedMaterialTitle: req.topic,
                                 dispatchedMaterialUrl:
-                                  req.dispatchedMaterialUrl || "",
+                                   req.dispatchedMaterialUrl || "",
                                 dispatchedMaterialText:
                                   req.dispatchedMaterialText || "",
                                 file: null,
@@ -1649,11 +1685,8 @@ const AdminDashboard = () => {
                             </div>
 
                             <div className="text-right shrink-0">
-                              <span className="text-[9px] font-semibold text-slate-400 block">
-                                {new Date(conv.lastMessageAt).toLocaleTimeString(
-                                  [],
-                                  { hour: "2-digit", minute: "2-digit" },
-                                )}
+                              <span className="text-[10px] font-semibold text-slate-400 block">
+                                {formatDateTime(conv.lastMessageAt)}
                               </span>
                               {conv.unreadCount > 0 && (
                                 <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-rose-500 text-white inline-block mt-1.5 shadow-xs animate-bounce">
@@ -1731,14 +1764,8 @@ const AdminDashboard = () => {
                                       ? "NSSTA Secretariat & Faculty"
                                       : msg.senderName}
                                   </span>
-                                  <span className="text-[9px] text-slate-400">
-                                    {new Date(msg.createdAt).toLocaleTimeString(
-                                      [],
-                                      {
-                                        hour: "2-digit",
-                                        minute: "2-digit",
-                                      },
-                                    )}
+                                  <span className="text-[10px] text-slate-400 font-medium">
+                                    {formatDateTime(msg.createdAt)}
                                   </span>
                                 </div>
 

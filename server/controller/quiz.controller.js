@@ -7,7 +7,7 @@ import { generateQuiz, evaluateQuizSubmission, generateAdaptiveRecommendations }
 export const generateAiQuiz = async (req, res) => {
     try {
         const { topic = "Sampling Techniques", domain = "Statistical Competencies", difficulty = "Medium", numQuestions = 5 } = req.body;
-        const userId = req.userId || req.user?._id;
+        const userId = req.userId || req.user?._id || null;
 
         const generatedData = await generateQuiz({
             topic,
@@ -90,13 +90,11 @@ export const submitQuizAttempt = async (req, res) => {
             return res.status(404).json({ success: false, message: "Quiz not found" });
         }
 
-        // Evaluate answers via AI service
         const evaluation = await evaluateQuizSubmission({
             questions: quiz.questions,
             userAnswers,
         });
 
-        // Create Quiz Attempt Record
         const attempt = await QuizAttempt.create({
             quizId: quiz._id,
             userId,
@@ -117,14 +115,12 @@ export const submitQuizAttempt = async (req, res) => {
                 : `Review recommended in ${quiz.topic}. Focus on foundational formulas and NSSTA methodology standards.`,
         });
 
-        // Update User stats
         const user = await User.findById(userId);
         let adaptiveRecommendations = [];
         if (user) {
             user.quizzesCompleted = (user.quizzesCompleted || 0) + 1;
             user.learningHours = (user.learningHours || 0) + Math.max(0.25, Math.round((timeTakenSeconds / 3600) * 10) / 10);
 
-            // Update matching competency score if exists
             if (user.competencies) {
                 const comp = user.competencies.find(
                     (c) =>
@@ -138,7 +134,6 @@ export const submitQuizAttempt = async (req, res) => {
                 }
             }
 
-            // Adaptive Recommendation for weak areas
             const weakTopics = evaluation.topicAnalysis.filter((t) => t.status === "Needs Review").map((t) => t.topic);
             if (weakTopics.length) {
                 adaptiveRecommendations = await generateAdaptiveRecommendations({

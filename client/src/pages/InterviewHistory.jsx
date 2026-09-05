@@ -354,23 +354,35 @@ const InterviewHistory = () => {
           axios.get(`${ServerUrl}/api/quizzes/list`, { withCredentials: true }),
         ]);
 
-        if (chatRes.status === "fulfilled" && chatRes.value?.data?.chats) {
+        if (chatRes.status === "fulfilled" && Array.isArray(chatRes.value?.data?.chats)) {
           setChats(chatRes.value.data.chats);
+        } else {
+          setChats([]);
         }
         if (interviewRes.status === "fulfilled" && Array.isArray(interviewRes.value?.data)) {
           setInterviews(interviewRes.value.data);
+        } else {
+          setInterviews([]);
         }
-        if (assignmentSubmissionsRes.status === "fulfilled" && assignmentSubmissionsRes.value?.data?.submissions) {
+        if (assignmentSubmissionsRes.status === "fulfilled" && Array.isArray(assignmentSubmissionsRes.value?.data?.submissions)) {
           setAssignmentSubmissions(assignmentSubmissionsRes.value.data.submissions);
+        } else {
+          setAssignmentSubmissions([]);
         }
-        if (allAssignmentsRes.status === "fulfilled" && allAssignmentsRes.value?.data?.assignments) {
+        if (allAssignmentsRes.status === "fulfilled" && Array.isArray(allAssignmentsRes.value?.data?.assignments)) {
           setAllAssignments(allAssignmentsRes.value.data.assignments);
+        } else {
+          setAllAssignments([]);
         }
-        if (quizAttemptsRes.status === "fulfilled" && quizAttemptsRes.value?.data?.attempts) {
+        if (quizAttemptsRes.status === "fulfilled" && Array.isArray(quizAttemptsRes.value?.data?.attempts)) {
           setQuizAttempts(quizAttemptsRes.value.data.attempts);
+        } else {
+          setQuizAttempts([]);
         }
-        if (allQuizzesRes.status === "fulfilled" && allQuizzesRes.value?.data?.quizzes) {
+        if (allQuizzesRes.status === "fulfilled" && Array.isArray(allQuizzesRes.value?.data?.quizzes)) {
           setAllQuizzes(allQuizzesRes.value.data.quizzes);
+        } else {
+          setAllQuizzes([]);
         }
       } catch (err) {
         console.error("Error loading multi-model histories:", err);
@@ -387,7 +399,7 @@ const InterviewHistory = () => {
     if (!window.confirm("Are you sure you want to delete this Viva Voce interview record?")) return;
     try {
       await axios.delete(`${ServerUrl}/api/interview/delete-interview/${id}`, { withCredentials: true });
-      setInterviews((prev) => prev.filter((item) => item._id !== id));
+      setInterviews((prev) => (prev || []).filter((item) => item._id !== id));
       toast.success("Interview record deleted successfully.");
       if (activeModalItem?.id === id) setActiveModalItem(null);
     } catch (err) {
@@ -401,7 +413,7 @@ const InterviewHistory = () => {
     if (!window.confirm("Are you sure you want to delete this Copilot chat session?")) return;
     try {
       await axios.delete(`${ServerUrl}/api/chat/${id}`, { withCredentials: true });
-      setChats((prev) => prev.filter((item) => item._id !== id));
+      setChats((prev) => (prev || []).filter((item) => item._id !== id));
       toast.success("Chat session deleted successfully.");
       if (activeModalItem?.id === id) setActiveModalItem(null);
     } catch (err) {
@@ -429,7 +441,7 @@ const InterviewHistory = () => {
     const list = [];
 
     // 1. SankhyaCopilot Chat Sessions
-    chats.forEach((c) => {
+    (chats || []).forEach((c) => {
       const msgCount = c.messages?.length || 0;
       const lastMsg = msgCount > 0 ? c.messages[msgCount - 1]?.content : "No messages yet";
       const isComplete = msgCount > 0;
@@ -457,7 +469,7 @@ const InterviewHistory = () => {
     });
 
     // 2. Mock Viva Voce Oral Interviews
-    interviews.forEach((i) => {
+    (interviews || []).forEach((i) => {
       const sc = i.finalScore || 0;
       const qList = i.question || i.questions || [];
       const isDone = i.status === "completed" || sc > 0;
@@ -494,7 +506,7 @@ const InterviewHistory = () => {
 
     // 3. Case Study Practicums & Assignments
     const submittedAsgnIds = new Set();
-    assignmentSubmissions.forEach((a) => {
+    (assignmentSubmissions || []).forEach((a) => {
       const asgnId = a.assignmentId?.toString() || a._id;
       submittedAsgnIds.add(asgnId);
       if (a.assignmentTitle) submittedAsgnIds.add(a.assignmentTitle);
@@ -525,7 +537,7 @@ const InterviewHistory = () => {
       });
     });
 
-    allAssignments.forEach((a) => {
+    (allAssignments || []).forEach((a) => {
       const asgnId = a._id?.toString() || a.id;
       if (submittedAsgnIds.has(asgnId) || submittedAsgnIds.has(a.title) || a.hasSubmitted) {
         return;
@@ -557,7 +569,7 @@ const InterviewHistory = () => {
 
     // 4. Timed Diagnostic Quizzes
     const attemptedQuizIds = new Set();
-    quizAttempts.forEach((q) => {
+    (quizAttempts || []).forEach((q) => {
       const qId = q.quizId?.toString() || q._id;
       attemptedQuizIds.add(qId);
       if (q.quizTitle) attemptedQuizIds.add(q.quizTitle);
@@ -589,7 +601,7 @@ const InterviewHistory = () => {
       });
     });
 
-    allQuizzes.forEach((q) => {
+    (allQuizzes || []).forEach((q) => {
       const qId = q._id?.toString() || q.id;
       if (attemptedQuizIds.has(qId) || attemptedQuizIds.has(q.title)) {
         return;
@@ -1904,7 +1916,7 @@ const InterviewHistory = () => {
                           </p>
                         </div>
 
-                        {activeModalItem.raw.instructions && activeModalItem.raw.instructions.length > 0 && (
+                        {Array.isArray(activeModalItem.raw?.instructions) && activeModalItem.raw.instructions.length > 0 && (
                           <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 text-xs space-y-2">
                             <h5 className="font-bold text-slate-900 dark:text-white uppercase tracking-wider">
                               Instructions & Tasks:
