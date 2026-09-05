@@ -56,7 +56,14 @@ const LiveAdminChatWidget = () => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [loading, setLoading] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
-  const [soundEnabled, setSoundEnabled] = useState(true);
+  const [soundEnabled, setSoundEnabled] = useState(() => {
+    try {
+      const saved = localStorage.getItem("nssta_chat_sound");
+      return saved !== null ? saved === "true" : true;
+    } catch {
+      return true;
+    }
+  });
   const [previewImage, setPreviewImage] = useState(null);
   const [lastMessageCount, setLastMessageCount] = useState(0);
   const messagesContainerRef = useRef(null);
@@ -64,6 +71,16 @@ const LiveAdminChatWidget = () => {
   const isDraggingRef = useRef(false);
   const x = useMotionValue(0);
   const y = useMotionValue(0);
+
+  const toggleSound = () => {
+    const next = !soundEnabled;
+    setSoundEnabled(next);
+    try {
+      localStorage.setItem("nssta_chat_sound", String(next));
+    } catch (e) {
+      console.log(e);
+    }
+  };
 
   const [dragConstraints, setDragConstraints] = useState({
     top: -500,
@@ -80,10 +97,10 @@ const LiveAdminChatWidget = () => {
         ? 68
         : Math.min(580, vh * 0.85)
       : 60;
-    const widgetWidth = isOpen ? Math.min(420, vw - 32) : 260;
+    const widgetWidth = isOpen ? Math.min(420, vw - 24) : 260;
 
-    const maxUp = Math.max(0, vh - widgetHeight - 24);
-    const maxLeft = Math.max(0, vw - widgetWidth - 24);
+    const maxUp = Math.max(0, vh - widgetHeight - 20);
+    const maxLeft = Math.max(0, vw - widgetWidth - 20);
 
     setDragConstraints({
       top: -maxUp,
@@ -318,8 +335,9 @@ const LiveAdminChatWidget = () => {
 
           {isOpen && (
             <div
-              className={`w-[360px] sm:w-[420px] bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 flex flex-col overflow-hidden transition-all duration-300 ${isMinimized ? "h-[68px]" : "h-[580px] max-h-[85vh]"
-                }`}
+              className={`w-[320px] sm:w-[380px] max-w-[calc(100vw-24px)] bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 flex flex-col overflow-hidden transition-all duration-300 ${
+                isMinimized ? "h-[68px]" : "h-[580px] max-h-[85vh]"
+              }`}
             >
               <div className="h-1.5 w-full grid grid-cols-3">
                 <div className="bg-[#FF9933]" />
@@ -378,7 +396,7 @@ const LiveAdminChatWidget = () => {
                     <MdRestartAlt size={14} />
                   </button>
                   <button
-                    onClick={() => setSoundEnabled(!soundEnabled)}
+                    onClick={toggleSound}
                     className="p-1.5 hover:text-white rounded-lg hover:bg-slate-800 transition cursor-pointer"
                     title={soundEnabled ? "Mute Chime" : "Enable Chime"}
                   >

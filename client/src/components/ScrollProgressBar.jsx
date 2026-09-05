@@ -124,7 +124,7 @@ const ScrollProgressBar = () => {
 
       <div
         ref={boundaryRef}
-        className="fixed inset-3 sm:inset-5 pointer-events-none z-40"
+        className="fixed inset-1 pointer-events-none z-40"
       >
         <AnimatePresence>
           {isScrollable && (
@@ -157,7 +157,6 @@ const ScrollProgressBar = () => {
                 hasHelpdesk ? "bottom-20" : "bottom-2"
               } right-2 flex items-center gap-1.5 sm:gap-2 py-2 px-2.5 sm:py-2.5 sm:px-3 rounded-2xl bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-slate-200/90 dark:border-slate-800 shadow-xl dark:shadow-2xl text-slate-700 dark:text-slate-200 hover:border-blue-500 hover:text-blue-600 dark:hover:text-blue-400 transition-colors cursor-grab active:cursor-grabbing group select-none`}
             >
-              {/* Drag Handle Grip Icon */}
               <div
                 className="text-slate-400 dark:text-slate-500 group-hover:text-blue-500 transition-colors"
                 title="Drag to move anywhere"
@@ -165,7 +164,6 @@ const ScrollProgressBar = () => {
                 <MdDragIndicator size={16} />
               </div>
 
-              {/* Circular Percentage Ring */}
               <div className="relative w-6 h-6 flex items-center justify-center shrink-0">
                 <svg className="w-full h-full -rotate-90" viewBox="0 0 36 36">
                   <path
