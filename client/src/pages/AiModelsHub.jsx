@@ -354,7 +354,6 @@ const AiModelsHub = () => {
   const { userData } = useSelector((state) => state.user);
   const navigate = useNavigate();
 
-  // Live real-time ticking clock
   React.useEffect(() => {
     const timer = setInterval(() => {
       setCurrentTime(new Date());
@@ -380,7 +379,7 @@ const AiModelsHub = () => {
 
       <PageTransition>
         <main className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 pt-24 pb-16 space-y-6">
-          {/* Back Navigation Bar */}
+
           <div className="flex items-center justify-between">
             <BackButton fallbackUrl="/dashboard" label="Back to Dashboard" />
             <span className="text-xs font-bold text-slate-500 dark:text-slate-400">
@@ -388,17 +387,14 @@ const AiModelsHub = () => {
             </span>
           </div>
 
-          {/* Top Header Banner with Tricolor & Glassmorphism */}
           <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4 }}
             className="bg-gradient-to-r from-slate-950 via-blue-950 to-indigo-950 text-white p-6 sm:p-7 rounded-3xl shadow-2xl relative overflow-hidden flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border border-blue-500/20"
           >
-            {/* Top Indian Tricolor Strip */}
             <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#FF9933] via-white to-[#138808]" />
 
-            {/* Ambient Glow */}
             <div className="absolute right-0 top-0 w-96 h-96 bg-blue-500/10 blur-3xl rounded-full pointer-events-none" />
 
             <div className="space-y-2 max-w-2xl relative z-10">
@@ -411,7 +407,6 @@ const AiModelsHub = () => {
                   <span>SankhyaIQ™ AI Neural Architecture</span>
                 </div>
 
-                {/* Live IST Clock */}
                 <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/20 border border-emerald-400/30 text-emerald-300 text-xs font-mono font-bold">
                   <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
                   <span>
@@ -451,14 +446,9 @@ const AiModelsHub = () => {
             </div>
           </motion.div>
 
-          {/* EQUAL HEIGHT 2-COLUMN APP CONTAINER */}
-          {/* On desktop, both columns stretch equally to fill the viewport height */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch lg:h-[780px]">
-            {/* ======================================================== */}
-            {/* LEFT SIDEBAR: LIST OF ALL AI MODELS (EQUAL HEIGHT)       */}
-            {/* ======================================================== */}
+
             <div className="lg:col-span-4 flex flex-col bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl border border-slate-200/80 dark:border-slate-800/80 rounded-3xl p-4 shadow-xl overflow-hidden">
-              {/* Sidebar Header */}
               <div className="px-2 py-2 border-b border-slate-100 dark:border-slate-800/80 flex items-center justify-between shrink-0 mb-2">
                 <div className="flex items-center gap-2">
                   <BsSliders
@@ -474,7 +464,6 @@ const AiModelsHub = () => {
                 </span>
               </div>
 
-              {/* Scrollable Model List */}
               <div className="flex-1 overflow-y-auto pr-1 space-y-2 custom-scrollbar">
                 {AI_MODELS_DATA.map((model) => {
                   const Icon = model.icon;
@@ -491,7 +480,6 @@ const AiModelsHub = () => {
                           : "hover:bg-slate-50 dark:hover:bg-slate-800/50 border border-transparent"
                       }`}
                     >
-                      {/* Glowing active indicator bar on the left edge */}
                       {isSelected && (
                         <motion.div
                           layoutId="activeModelIndicator"
@@ -543,7 +531,6 @@ const AiModelsHub = () => {
                 })}
               </div>
 
-              {/* Sidebar Bottom Status */}
               <div className="mt-3 pt-3 border-t border-slate-100 dark:border-slate-800 shrink-0 flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400 px-2">
                 <span className="flex items-center gap-1.5">
                   <BsShieldCheck className="text-emerald-500" size={13} />
@@ -562,7 +549,6 @@ const AiModelsHub = () => {
                   transition={{ duration: 0.3, ease: "easeOut" }}
                   className="flex-1 flex flex-col overflow-y-auto pr-1 space-y-6 custom-scrollbar"
                 >
-                  {/* 1. Header Card with Category, Title & Launch CTA */}
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 dark:border-slate-800 pb-5 shrink-0">
                     <div className="flex items-start gap-4">
                       <div
@@ -585,7 +571,6 @@ const AiModelsHub = () => {
                     </div>
 
                     <div className="flex items-center gap-2">
-                      <BackButton fallbackUrl="/dashboard" label="Back" variant="pill" />
                       <motion.button
                         whileHover={{ scale: 1.03 }}
                         whileTap={{ scale: 0.97 }}
@@ -599,7 +584,6 @@ const AiModelsHub = () => {
                     </div>
                   </div>
 
-                  {/* 2. Model Performance Metric Strip */}
                   <div className="grid grid-cols-3 gap-3">
                     <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/70 dark:border-slate-700/70 text-center">
                       <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
@@ -627,7 +611,6 @@ const AiModelsHub = () => {
                     </div>
                   </div>
 
-                  {/* 3. Model Summary Description Box */}
                   <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-slate-50 to-blue-50/30 dark:from-slate-800/70 dark:to-blue-950/30 border border-slate-200/80 dark:border-slate-700/80 text-xs sm:text-sm text-slate-700 dark:text-slate-300 leading-relaxed space-y-1">
                     <span className="font-black text-slate-900 dark:text-white flex items-center gap-1.5 text-xs uppercase tracking-wider">
                       <HiSparkles className="text-amber-400" />
@@ -636,7 +619,6 @@ const AiModelsHub = () => {
                     <p>{activeModel.summary}</p>
                   </div>
 
-                  {/* 4. Interactive 3-Phase Workflow Execution Steps */}
                   <div className="space-y-3">
                     <h3 className="text-xs sm:text-sm font-black uppercase tracking-wider text-slate-900 dark:text-white flex items-center gap-2">
                       <BsLightningChargeFill className="text-amber-500" />
@@ -673,7 +655,6 @@ const AiModelsHub = () => {
                     </div>
                   </div>
 
-                  {/* 5. Key Capabilities Checklist */}
                   <div className="space-y-3">
                     <h3 className="text-xs sm:text-sm font-black uppercase tracking-wider text-slate-900 dark:text-white flex items-center gap-2">
                       <BsShieldCheck className="text-emerald-500" />
@@ -696,7 +677,6 @@ const AiModelsHub = () => {
                     </div>
                   </div>
 
-                  {/* 6. Action Footer */}
                   <div className="pt-4 border-t border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-3 shrink-0">
                     <span className="text-xs text-slate-500 dark:text-slate-400">
                       Ready to run this model? Click launch to open the live
@@ -704,7 +684,6 @@ const AiModelsHub = () => {
                     </span>
 
                     <div className="flex items-center gap-2 w-full sm:w-auto">
-                      <BackButton fallbackUrl="/dashboard" label="Back" variant="pill" />
                       <button
                         onClick={() => handleLaunch(activeModel.route)}
                         className={`w-full sm:w-auto px-6 py-2.5 rounded-xl bg-gradient-to-r ${activeModel.gradient} hover:opacity-95 text-white font-bold text-xs transition-all flex items-center justify-center gap-2 cursor-pointer shadow-md`}
@@ -723,7 +702,6 @@ const AiModelsHub = () => {
 
       <Footer />
 
-      {/* Auth Modal Trigger */}
       {showAuth && <AuthModel onClose={() => setShowAuth(false)} />}
     </div>
   );

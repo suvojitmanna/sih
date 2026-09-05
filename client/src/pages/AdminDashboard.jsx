@@ -35,6 +35,8 @@ import {
   FaHeadset,
   FaCheckDouble,
   FaFilePdf,
+  FaChevronLeft,
+  FaChevronRight,
 } from "react-icons/fa";
 import {
   BsShieldCheck,
@@ -87,13 +89,20 @@ const AdminDashboard = () => {
   const [selectedCadreFilter, setSelectedCadreFilter] = useState("All");
   const [loading, setLoading] = useState(true);
 
-  // Inspector Modal state
+  const tabContainerRef = useRef(null);
+
+  const handleTabScroll = (direction) => {
+    if (tabContainerRef.current) {
+      const scrollAmount = direction === "left" ? -280 : 280;
+      tabContainerRef.current.scrollBy({ left: scrollAmount, behavior: "smooth" });
+    }
+  };
+
   const [inspectingUser, setInspectingUser] = useState(null);
   const [userDetailedData, setUserDetailedData] = useState(null);
   const [inspectLoading, setInspectLoading] = useState(false);
   const [inspectTab, setInspectTab] = useState("interviews");
 
-  // Material Fulfill Modal state
   const [fulfillingRequest, setFulfillingRequest] = useState(null);
   const [fulfillForm, setFulfillForm] = useState({
     adminResponseNote: "",
@@ -104,7 +113,6 @@ const AdminDashboard = () => {
   });
   const [fulfillSubmitting, setFulfillSubmitting] = useState(false);
 
-  // Direct Material Dispatch Modal state
   const [showDispatchMaterialModal, setShowDispatchMaterialModal] =
     useState(false);
   const [dispatchMaterialForm, setDispatchMaterialForm] = useState({
@@ -119,7 +127,6 @@ const AdminDashboard = () => {
   });
   const [dispatchMaterialLoading, setDispatchMaterialLoading] = useState(false);
 
-  // Assignment Dispatch Modal state
   const [showDispatchAssignmentModal, setShowDispatchAssignmentModal] =
     useState(false);
   const [assignmentForm, setAssignmentForm] = useState({
@@ -138,10 +145,8 @@ const AdminDashboard = () => {
   });
   const [assignmentSubmitting, setAssignmentSubmitting] = useState(false);
 
-  // View Submission Detail Modal state
   const [viewingSubmission, setViewingSubmission] = useState(null);
 
-  // Real-Time Communications State
   const [conversations, setConversations] = useState([]);
   const [selectedOfficer, setSelectedOfficer] = useState(null);
   const [conversationMessages, setConversationMessages] = useState([]);
@@ -222,7 +227,6 @@ const AdminDashboard = () => {
     fetchAdminData();
   }, []);
 
-  // Poll conversation messages when an officer is selected
   const fetchSelectedConversation = async () => {
     if (!selectedOfficer?.officerId) return;
     try {
@@ -234,7 +238,7 @@ const AdminDashboard = () => {
         setConversationMessages(data.messages || []);
       }
     } catch (error) {
-      // Ignore background poll errors
+      console.log(error);
     }
   };
 
@@ -244,14 +248,12 @@ const AdminDashboard = () => {
     return () => clearInterval(interval);
   }, [selectedOfficer?.officerId]);
 
-  // Auto-scroll ONLY the inner chat box container without scrolling the browser window
   useEffect(() => {
     if (activeTab === "communications" && chatContainerRef.current) {
       chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
     }
   }, [conversationMessages, activeTab]);
 
-  // Inspect User Performance History
   const handleInspectUser = async (user) => {
     setInspectingUser(user);
     setInspectLoading(true);
@@ -272,7 +274,6 @@ const AdminDashboard = () => {
     }
   };
 
-  // Submit Material Fulfillment
   const handleFulfillRequestSubmit = async (e) => {
     e.preventDefault();
     if (!fulfillingRequest) return;
@@ -327,7 +328,6 @@ const AdminDashboard = () => {
     }
   };
 
-  // Submit Direct Material Dispatch
   const handleDirectMaterialDispatch = async (e) => {
     e.preventDefault();
     if (!dispatchMaterialForm.title || !dispatchMaterialForm.description) {
@@ -382,7 +382,6 @@ const AdminDashboard = () => {
     }
   };
 
-  // Submit Custom Assignment Dispatch
   const handleDispatchAssignmentSubmit = async (e) => {
     e.preventDefault();
     if (
@@ -438,7 +437,6 @@ const AdminDashboard = () => {
     }
   };
 
-  // Admin sends reply to selected officer
   const handleAdminReplySubmit = async (e) => {
     e.preventDefault();
     if (
@@ -480,7 +478,6 @@ const AdminDashboard = () => {
     }
   };
 
-  // Admin broadcasts announcement
   const handleBroadcastSubmit = async (e) => {
     e.preventDefault();
     if (!broadcastForm.message.trim()) return;
@@ -532,14 +529,6 @@ const AdminDashboard = () => {
       <Navbar />
 
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-16 space-y-6">
-        {/* Back Navigation Bar */}
-        <div className="flex items-center justify-between">
-          <span className="text-xs font-bold text-slate-500 dark:text-slate-400">
-            NSSTA Academy Secretariat
-          </span>
-        </div>
-
-        {/* Top Header */}
         <div className="bg-gradient-to-r from-slate-900 via-blue-950 to-slate-900 text-white rounded-3xl p-6 sm:p-8 shadow-xl border border-slate-800 flex flex-col md:flex-row md:items-center md:justify-between gap-6">
           <div>
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/20 text-blue-300 border border-blue-400/30 text-xs font-bold uppercase tracking-wider mb-2">
@@ -583,91 +572,110 @@ const AdminDashboard = () => {
           </div>
         </div>
 
-        {/* Tab Navigation */}
-        <div className="flex overflow-x-auto gap-2 p-1.5 bg-slate-200/80 dark:bg-slate-900 border border-slate-300/60 dark:border-slate-800 rounded-2xl text-xs font-bold">
+        <div className="relative flex items-center gap-2">
           <button
-            onClick={() => setActiveTab("overview")}
-            className={`px-4 py-2.5 rounded-xl transition-all flex items-center gap-2 cursor-pointer whitespace-nowrap ${
-              activeTab === "overview"
-                ? "bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 shadow-sm"
-                : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
-            }`}
+            type="button"
+            onClick={() => handleTabScroll("left")}
+            className="p-3 rounded-2xl bg-slate-200/90 hover:bg-slate-300 dark:bg-slate-900 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-300/60 dark:border-slate-800 transition-all shrink-0 cursor-pointer shadow-xs active:scale-95 flex items-center justify-center hover:text-blue-600 dark:hover:text-blue-400"
+            title="Scroll tabs left"
+            aria-label="Scroll left"
           >
-            <BsGrid3X3GapFill size={13} />
-            <span>1. Cadre Overview & Analytics</span>
+            <FaChevronLeft size={12} />
           </button>
 
-          <button
-            onClick={() => setActiveTab("learners")}
-            className={`px-4 py-2.5 rounded-xl transition-all flex items-center gap-2 cursor-pointer whitespace-nowrap ${
-              activeTab === "learners"
-                ? "bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 shadow-sm"
-                : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
-            }`}
+          <div
+            ref={tabContainerRef}
+            className="flex-1 flex overflow-x-auto gap-2 p-1.5 bg-slate-200/80 dark:bg-slate-900 border border-slate-300/60 dark:border-slate-800 rounded-2xl text-xs font-bold no-scrollbar [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden scroll-smooth"
           >
-            <FaUsers size={13} />
-            <span>2. Officer Performance & Experience Monitor</span>
-            <span className="px-2 py-0.5 rounded-full text-[10px] bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300">
-              {learners.length}
-            </span>
-          </button>
+            <button
+              onClick={() => setActiveTab("overview")}
+              className={`px-4 py-2.5 rounded-xl transition-all flex items-center gap-2 cursor-pointer whitespace-nowrap ${
+                activeTab === "overview"
+                  ? "bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 shadow-sm"
+                  : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+              }`}
+            >
+              <BsGrid3X3GapFill size={13} />
+              <span>1. Cadre Overview & Analytics</span>
+            </button>
 
-          <button
-            onClick={() => setActiveTab("materials")}
-            className={`px-4 py-2.5 rounded-xl transition-all flex items-center gap-2 cursor-pointer whitespace-nowrap ${
-              activeTab === "materials"
-                ? "bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 shadow-sm"
-                : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
-            }`}
-          >
-            <FaBookOpen size={13} />
-            <span>3. Study Material Requests & Dispatch Hub</span>
-            {metrics?.pendingMaterialRequests > 0 && (
-              <span className="px-2 py-0.5 rounded-full text-[10px] bg-amber-500 text-white animate-pulse">
-                {metrics.pendingMaterialRequests} Pending
+            <button
+              onClick={() => setActiveTab("learners")}
+              className={`px-4 py-2.5 rounded-xl transition-all flex items-center gap-2 cursor-pointer whitespace-nowrap ${
+                activeTab === "learners"
+                  ? "bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 shadow-sm"
+                  : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+              }`}
+            >
+              <FaUsers size={13} />
+              <span>2. Officer Performance & Experience Monitor</span>
+              <span className="px-2 py-0.5 rounded-full text-[10px] bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300">
+                {learners.length}
               </span>
-            )}
-          </button>
+            </button>
 
-          <button
-            onClick={() => setActiveTab("assignments")}
-            className={`px-4 py-2.5 rounded-xl transition-all flex items-center gap-2 cursor-pointer whitespace-nowrap ${
-              activeTab === "assignments"
-                ? "bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 shadow-sm"
-                : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
-            }`}
-          >
-            <FaTasks size={13} />
-            <span>4. Custom Assignments & Submissions</span>
-            <span className="px-2 py-0.5 rounded-full text-[10px] bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300">
-              {submissions.length}
-            </span>
-          </button>
+            <button
+              onClick={() => setActiveTab("materials")}
+              className={`px-4 py-2.5 rounded-xl transition-all flex items-center gap-2 cursor-pointer whitespace-nowrap ${
+                activeTab === "materials"
+                  ? "bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 shadow-sm"
+                  : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+              }`}
+            >
+              <FaBookOpen size={13} />
+              <span>3. Study Material Requests & Dispatch Hub</span>
+              {metrics?.pendingMaterialRequests > 0 && (
+                <span className="px-2 py-0.5 rounded-full text-[10px] bg-amber-500 text-white animate-pulse">
+                  {metrics.pendingMaterialRequests} Pending
+                </span>
+              )}
+            </button>
 
-          <button
-            onClick={() => setActiveTab("communications")}
-            className={`px-4 py-2.5 rounded-xl transition-all flex items-center gap-2 cursor-pointer whitespace-nowrap ${
-              activeTab === "communications"
-                ? "bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 shadow-sm"
-                : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
-            }`}
-          >
-            <FaComments size={13} />
-            <span>5. Live Helpdesk & Real-Time Communications</span>
-            {totalUnreadMessages > 0 && (
-              <span className="px-2 py-0.5 rounded-full text-[10px] bg-rose-500 text-white animate-bounce">
-                {totalUnreadMessages} New
+            <button
+              onClick={() => setActiveTab("assignments")}
+              className={`px-4 py-2.5 rounded-xl transition-all flex items-center gap-2 cursor-pointer whitespace-nowrap ${
+                activeTab === "assignments"
+                  ? "bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 shadow-sm"
+                  : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+              }`}
+            >
+              <FaTasks size={13} />
+              <span>4. Custom Assignments & Submissions</span>
+              <span className="px-2 py-0.5 rounded-full text-[10px] bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300">
+                {submissions.length}
               </span>
-            )}
+            </button>
+
+            <button
+              onClick={() => setActiveTab("communications")}
+              className={`px-4 py-2.5 rounded-xl transition-all flex items-center gap-2 cursor-pointer whitespace-nowrap ${
+                activeTab === "communications"
+                  ? "bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 shadow-sm"
+                  : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+              }`}
+            >
+              <FaComments size={13} />
+              <span>5. Live Helpdesk & Real-Time Communications</span>
+              {totalUnreadMessages > 0 && (
+                <span className="px-2 py-0.5 rounded-full text-[10px] bg-rose-500 text-white animate-bounce">
+                  {totalUnreadMessages} New
+                </span>
+              )}
+            </button>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => handleTabScroll("right")}
+            className="p-3 rounded-2xl bg-slate-200/90 hover:bg-slate-300 dark:bg-slate-900 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-300/60 dark:border-slate-800 transition-all shrink-0 cursor-pointer shadow-xs active:scale-95 flex items-center justify-center hover:text-blue-600 dark:hover:text-blue-400"
+            title="Scroll tabs right"
+            aria-label="Scroll right"
+          >
+            <FaChevronRight size={12} />
           </button>
         </div>
-
-        {/* ========================================================== */}
-        {/* TAB 1: OVERVIEW & CADRE ANALYTICS */}
-        {/* ========================================================== */}
         {activeTab === "overview" && (
           <div className="space-y-8">
-            {/* KPI Cards Grid */}
             <div className="grid grid-cols-2 lg:grid-cols-6 gap-4">
               <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-xs">
                 <span className="text-[11px] font-semibold text-slate-500 block">
@@ -742,9 +750,7 @@ const AdminDashboard = () => {
               </div>
             </div>
 
-            {/* Charts Row */}
             <div className="grid lg:grid-cols-2 gap-6">
-              {/* Cadre Distribution Bar Chart */}
               <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-xs space-y-4">
                 <h3 className="font-black text-sm text-slate-900 dark:text-white flex items-center gap-2">
                   <FaUserTie className="text-blue-600" />
@@ -788,7 +794,6 @@ const AdminDashboard = () => {
                 </div>
               </div>
 
-              {/* Department Distribution Pie Chart */}
               <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-xs space-y-4">
                 <h3 className="font-black text-sm text-slate-900 dark:text-white flex items-center gap-2">
                   <FaBuilding className="text-emerald-600" />
@@ -833,9 +838,7 @@ const AdminDashboard = () => {
               </div>
             </div>
 
-            {/* Top Deficits & Heatmap */}
             <div className="grid lg:grid-cols-2 gap-6">
-              {/* System Skill Deficits */}
               <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-xs space-y-4">
                 <div className="flex items-center justify-between">
                   <h3 className="font-black text-sm text-slate-900 dark:text-white flex items-center gap-2">
@@ -868,7 +871,6 @@ const AdminDashboard = () => {
                 </div>
               </div>
 
-              {/* Department Competency Heatmap */}
               <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-xs space-y-4">
                 <h3 className="font-black text-sm text-slate-900 dark:text-white flex items-center gap-2">
                   <FaBuilding className="text-blue-600" />
@@ -918,9 +920,6 @@ const AdminDashboard = () => {
           </div>
         )}
 
-        {/* ========================================================== */}
-        {/* TAB 2: OFFICER PERFORMANCE & EXPERIENCE MONITOR */}
-        {/* ========================================================== */}
         {activeTab === "learners" && (
           <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-8 shadow-xs space-y-6">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -935,7 +934,6 @@ const AdminDashboard = () => {
                 </p>
               </div>
 
-              {/* Filters */}
               <div className="flex flex-wrap items-center gap-3">
                 <div className="relative">
                   <FaSearch
@@ -965,7 +963,6 @@ const AdminDashboard = () => {
               </div>
             </div>
 
-            {/* Officers Table */}
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs border-collapse">
                 <thead>
@@ -1035,9 +1032,6 @@ const AdminDashboard = () => {
           </div>
         )}
 
-        {/* ========================================================== */}
-        {/* TAB 3: STUDY MATERIAL REQUESTS & DISPATCH HUB */}
-        {/* ========================================================== */}
         {activeTab === "materials" && (
           <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-8 shadow-xs space-y-6">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -1063,7 +1057,6 @@ const AdminDashboard = () => {
               </button>
             </div>
 
-            {/* Requests Table */}
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs border-collapse">
                 <thead>
@@ -1183,9 +1176,6 @@ const AdminDashboard = () => {
           </div>
         )}
 
-        {/* ========================================================== */}
-        {/* TAB 4: CUSTOM ASSIGNMENTS & SUBMISSIONS REVIEW */}
-        {/* ========================================================== */}
         {activeTab === "assignments" && (
           <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-8 shadow-xs space-y-6">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -1209,7 +1199,6 @@ const AdminDashboard = () => {
               </button>
             </div>
 
-            {/* Submissions Table */}
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs border-collapse">
                 <thead>
@@ -1288,10 +1277,6 @@ const AdminDashboard = () => {
             </div>
           </div>
         )}
-
-        {/* ========================================================== */}
-        {/* TAB 5: REAL-TIME HELPDESK & COMMUNICATIONS CENTER */}
-        {/* ========================================================== */}
         {activeTab === "communications" && (
           <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-8 shadow-xs space-y-6">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -1321,9 +1306,7 @@ const AdminDashboard = () => {
               </div>
             </div>
 
-            {/* 2-Column Live Helpdesk Interface */}
             <div className="grid lg:grid-cols-12 gap-0 border border-slate-200 dark:border-slate-800 rounded-3xl overflow-hidden bg-slate-50/50 dark:bg-slate-950/40 shadow-sm h-[640px]">
-              {/* Left Column: Officer Conversations List */}
               <div className="lg:col-span-4 border-r border-slate-200 dark:border-slate-800 flex flex-col h-full min-h-0 bg-white dark:bg-slate-900">
                 <div className="p-4 border-b border-slate-100 dark:border-slate-800 space-y-3 shrink-0">
                   <div className="flex items-center justify-between">
@@ -1338,7 +1321,6 @@ const AdminDashboard = () => {
                     )}
                   </div>
 
-                  {/* Officer Directory Quick Selector */}
                   {learners.length > 0 && (
                     <select
                       value={selectedOfficer?.officerId || ""}
@@ -1456,11 +1438,9 @@ const AdminDashboard = () => {
                 </div>
               </div>
 
-              {/* Right Column: Live Chat Room */}
               <div className="lg:col-span-8 flex flex-col h-full min-h-0 bg-slate-50/40 dark:bg-slate-950/40 relative overflow-hidden">
                 {selectedOfficer ? (
                   <>
-                    {/* Chat Header with Officer Profile Bar */}
                     <div className="p-4 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 flex flex-wrap items-center justify-between gap-3 shrink-0">
                       <div className="flex items-center gap-3">
                         <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-blue-700 to-indigo-700 text-white flex items-center justify-center font-black text-sm shadow-md">
@@ -1492,7 +1472,6 @@ const AdminDashboard = () => {
                       </div>
                     </div>
 
-                    {/* Messages Area */}
                     <div ref={chatContainerRef} className="flex-1 min-h-0 overflow-y-auto p-4 sm:p-5 space-y-4 text-xs bg-slate-50/50 dark:bg-slate-950/50">
                       {conversationMessages.length === 0 ? (
                         <div className="h-full flex flex-col items-center justify-center text-slate-400 text-center p-8 space-y-2">
@@ -1601,7 +1580,6 @@ const AdminDashboard = () => {
                       )}
                     </div>
 
-                    {/* Selected File Preview Banner */}
                     {adminReplyFile && (
                       <div className="px-4 py-2 bg-blue-50 dark:bg-blue-950/60 border-t border-blue-200 dark:border-blue-800 flex items-center justify-between text-xs text-blue-900 dark:text-blue-200 shrink-0">
                         <span className="truncate font-semibold text-[11px]">
@@ -1616,7 +1594,6 @@ const AdminDashboard = () => {
                       </div>
                     )}
 
-                    {/* Quick Canned Replies Chips */}
                     <div className="px-4 py-2 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 flex gap-2 overflow-x-auto shrink-0">
                       <span className="text-[10px] font-black uppercase text-slate-400 shrink-0 flex items-center pr-1">
                         ⚡ Quick Replies:
@@ -1632,7 +1609,6 @@ const AdminDashboard = () => {
                       ))}
                     </div>
 
-                    {/* Admin Reply Input - ALWAYS VISIBLE */}
                     <form
                       onSubmit={handleAdminReplySubmit}
                       className="p-3.5 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 flex items-center gap-2 shrink-0 z-10"
@@ -1695,9 +1671,6 @@ const AdminDashboard = () => {
         )}
       </main>
 
-      {/* ========================================================== */}
-      {/* MODAL 1: INSPECT OFFICER PERFORMANCE & EXPERIENCE */}
-      {/* ========================================================== */}
       {inspectingUser && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
           <div className="bg-white dark:bg-slate-900 rounded-3xl max-w-4xl w-full max-h-[90vh] flex flex-col overflow-hidden shadow-2xl border border-slate-200 dark:border-slate-800">
@@ -1729,7 +1702,6 @@ const AdminDashboard = () => {
               </button>
             </div>
 
-            {/* Inspector Body */}
             {inspectLoading ? (
               <div className="p-16 flex flex-col items-center justify-center gap-3">
                 <div className="w-8 h-8 border-3 border-blue-600 border-t-transparent rounded-full animate-spin" />
@@ -1739,7 +1711,6 @@ const AdminDashboard = () => {
               </div>
             ) : (
               <div className="p-6 overflow-y-auto space-y-6 flex-1 text-xs">
-                {/* 4-Domain Radar Summary */}
                 <div className="grid sm:grid-cols-4 gap-3">
                   <div className="p-3.5 rounded-2xl bg-blue-50/70 dark:bg-blue-950/40 border border-blue-200/60 dark:border-blue-800/60">
                     <span className="text-[10px] font-bold text-blue-600 block">
@@ -1776,8 +1747,6 @@ const AdminDashboard = () => {
                     </span>
                   </div>
                 </div>
-
-                {/* Subtabs for Inspector */}
                 <div className="flex gap-2 border-b border-slate-200 dark:border-slate-800 pb-2">
                   <button
                     onClick={() => setInspectTab("interviews")}
@@ -1825,7 +1794,6 @@ const AdminDashboard = () => {
                   </button>
                 </div>
 
-                {/* Tab: Mock Interviews */}
                 {inspectTab === "interviews" && (
                   <div className="space-y-4">
                     {userDetailedData?.interviews?.length === 0 ? (
@@ -1852,7 +1820,6 @@ const AdminDashboard = () => {
                             </span>
                           </div>
 
-                          {/* Questions Breakdown */}
                           <div className="space-y-2 pt-2 border-t border-slate-200/60 dark:border-slate-700/60">
                             {iv.question?.map((q, qIdx) => (
                               <div
@@ -1998,9 +1965,6 @@ const AdminDashboard = () => {
         </div>
       )}
 
-      {/* ========================================================== */}
-      {/* MODAL 2: FULFILL STUDY MATERIAL REQUEST */}
-      {/* ========================================================== */}
       {fulfillingRequest && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="bg-white dark:bg-slate-900 rounded-3xl max-w-xl w-full p-6 sm:p-8 shadow-2xl border border-slate-200 dark:border-slate-800 space-y-6">
@@ -2151,9 +2115,6 @@ const AdminDashboard = () => {
         </div>
       )}
 
-      {/* ========================================================== */}
-      {/* MODAL 3: DIRECT STUDY MATERIAL DISPATCH MODAL */}
-      {/* ========================================================== */}
       {showDispatchMaterialModal && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="bg-white dark:bg-slate-900 rounded-3xl max-w-xl w-full p-6 sm:p-8 shadow-2xl border border-slate-200 dark:border-slate-800 space-y-6">
@@ -2324,9 +2285,6 @@ const AdminDashboard = () => {
         </div>
       )}
 
-      {/* ========================================================== */}
-      {/* MODAL 4: DISPATCH CUSTOM ASSIGNMENT / CASE STUDY */}
-      {/* ========================================================== */}
       {showDispatchAssignmentModal && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
           <div className="bg-white dark:bg-slate-900 rounded-3xl max-w-2xl w-full p-6 sm:p-8 shadow-2xl border border-slate-200 dark:border-slate-800 space-y-6 max-h-[90vh] overflow-y-auto">
@@ -2539,9 +2497,6 @@ const AdminDashboard = () => {
         </div>
       )}
 
-      {/* ========================================================== */}
-      {/* MODAL 5: VIEW SUBMISSION & AI EVALUATION */}
-      {/* ========================================================== */}
       {viewingSubmission && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
           <div className="bg-white dark:bg-slate-900 rounded-3xl max-w-2xl w-full p-6 sm:p-8 shadow-2xl border border-slate-200 dark:border-slate-800 space-y-6 max-h-[90vh] overflow-y-auto">

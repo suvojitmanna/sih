@@ -2,6 +2,7 @@ import React from "react";
 import { FaArrowLeft } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
+import BackButton from "./BackButton";
 import { buildStyles, CircularProgressbar } from "react-circular-progressbar";
 import {
   Area,
@@ -359,24 +360,10 @@ const Step3 = ({ report }) => {
 
       {/* Header */}
       <div className="relative z-10 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 mb-10">
-        <div className="flex items-center gap-5">
-          <button
-            onClick={() => {
-              if (window.history.state && window.history.state.idx > 0) {
-                navigate(-1);
-              } else if (window.history.length > 1) {
-                navigate(-1);
-              } else {
-                navigate("/history");
-              }
-            }}
-            title="Go Back"
-            className="group bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-2 sm:p-4 rounded-2xl hover:bg-emerald-50 dark:hover:bg-emerald-950/60 transition-all duration-300 shadow-md ml-[5px] -mt-[90px] sm:-mt-[30px] cursor-pointer"
-          >
-            <FaArrowLeft className="text-slate-700 dark:text-slate-300 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 group-hover:-translate-x-1 transition-all duration-300" />
-          </button>
+        <div className="flex items-center gap-4 sm:gap-5">
+          <BackButton fallbackUrl="/history" label="Back" />
 
-          <div className="-ml-[10px]">
+          <div>
             <h1 className="text-3xl sm:text-5xl font-black tracking-tight text-slate-900 dark:text-white whitespace-nowrap">
               Interview{" "}
               <span className="bg-gradient-to-r from-emerald-500 to-green-400 bg-clip-text text-transparent">

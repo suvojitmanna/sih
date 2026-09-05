@@ -10,14 +10,15 @@ const InterviewPage = () => {
   const [interViewData, setInterViewData] = useState(null);
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col">
+    <div className={`min-h-screen ${step === 1 ? "h-screen overflow-hidden" : ""} bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col`}>
       <Navbar />
-      <div className="flex-1 pt-22 pb-12">
-        {step === 1 && (
-          <div className="max-w-6xl mx-auto px-4 sm:px-6 mb-3">
-            <BackButton fallbackUrl="/ai-models" label="Back to AI Models" />
-          </div>
-        )}
+      <main className="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 pt-22 pb-2 flex flex-col justify-center overflow-hidden">
+        <div className="mb-1.5 flex items-center justify-between shrink-0">
+          <BackButton fallbackUrl="/ai-models" label="Back to AI Models" />
+          <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400">
+            Step 1 of 3: Mock Interview Setup
+          </span>
+        </div>
         {step === 1 && (
           <Step1
             onStart={(data) => {
@@ -36,7 +37,7 @@ const InterviewPage = () => {
           />
         )}
         {step === 3 && <Step3 report={interViewData} />}
-      </div>
+      </main>
     </div>
   );
 };

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
+import BackButton from "../components/BackButton";
 import { ServerUrl } from "../App";
 import axios from "axios";
 import toast from "react-hot-toast";
@@ -38,6 +39,7 @@ const Community = () => {
 
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-16">
         <div className="mb-6 flex items-center justify-between">
+          <BackButton fallbackUrl="/dashboard" label="Back to Dashboard" />
           <span className="text-xs font-bold text-slate-500 dark:text-slate-400">
             Statistical Infographics
           </span>

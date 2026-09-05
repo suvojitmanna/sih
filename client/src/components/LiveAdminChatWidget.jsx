@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { useLocation } from "react-router-dom";
 import axios from "axios";
 import { ServerUrl } from "../App";
 import toast from "react-hot-toast";
@@ -30,7 +31,17 @@ const OFFICER_PROMPTS = [
   "Technical query regarding microdata imputation",
 ];
 
+const ALLOWED_EXACT_PATHS = new Set(["", "/", "/welcome", "/dashboard", "/history", "/admin"]);
+
+const isAllowedRoute = (pathname) => {
+  const clean = pathname.replace(/\/+$/, "") || "/";
+  return ALLOWED_EXACT_PATHS.has(clean) || clean.startsWith("/admin");
+};
+
 const LiveAdminChatWidget = () => {
+  const location = useLocation();
+  const isAllowed = isAllowedRoute(location.pathname);
+
   const [isOpen, setIsOpen] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
   const [messages, setMessages] = useState([]);
@@ -43,7 +54,6 @@ const LiveAdminChatWidget = () => {
   const [lastMessageCount, setLastMessageCount] = useState(0);
   const messagesContainerRef = useRef(null);
 
-  // Play subtle notification chime
   const playChime = () => {
     if (!soundEnabled) return;
     try {
@@ -63,11 +73,10 @@ const LiveAdminChatWidget = () => {
       osc.start();
       osc.stop(audioCtx.currentTime + 0.3);
     } catch (e) {
-      // Audio context might be restricted before gesture
+      console.log(e);
     }
   };
 
-  // Poll messages every 2.5 seconds for real-time synchronization
   const fetchMessages = async (isBackground = false) => {
     try {
       const { data } = await axios.get(
@@ -81,7 +90,6 @@ const LiveAdminChatWidget = () => {
         const msgs = data.messages || [];
         setMessages(msgs);
 
-        // Check for new incoming admin messages
         if (msgs.length > lastMessageCount) {
           if (lastMessageCount > 0) {
             const newAdminMsgs = msgs
@@ -106,15 +114,16 @@ const LiveAdminChatWidget = () => {
         }
       }
     } catch (error) {
-      // Ignore background poll errors if unauthenticated
+      console.log(e);
     }
   };
 
   useEffect(() => {
+    if (!isAllowed) return;
     fetchMessages();
     const interval = setInterval(() => fetchMessages(true), 2500);
     return () => clearInterval(interval);
-  }, [lastMessageCount, isOpen]);
+  }, [lastMessageCount, isOpen, isAllowed]);
 
   useEffect(() => {
     if (isOpen) {
@@ -174,10 +183,13 @@ const LiveAdminChatWidget = () => {
     setInputText(prompt);
   };
 
+  if (!isAllowed) {
+    return null;
+  }
+
   return (
     <>
       <div className="fixed bottom-6 right-6 z-50 select-none">
-        {/* Floating Trigger Button with Pulsing Badge */}
         {!isOpen && (
           <button
             onClick={() => {
@@ -218,21 +230,18 @@ const LiveAdminChatWidget = () => {
           </button>
         )}
 
-        {/* Real-Time Chat Window */}
         {isOpen && (
           <div
             className={`w-[360px] sm:w-[420px] bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 flex flex-col overflow-hidden transition-all duration-300 ${
               isMinimized ? "h-[68px]" : "h-[580px] max-h-[85vh]"
             }`}
           >
-            {/* National Tricolor Top Accent Ribbon */}
             <div className="h-1.5 w-full grid grid-cols-3">
               <div className="bg-[#FF9933]" />
               <div className="bg-[#FFFFFF]" />
               <div className="bg-[#138808]" />
             </div>
 
-            {/* Header */}
             <div className="p-4 bg-gradient-to-r from-slate-900 via-blue-950 to-slate-900 text-white flex items-center justify-between border-b border-slate-800 shrink-0">
               <div className="flex items-center gap-3">
                 <div className="relative w-10 h-10 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-600 border border-blue-400/40 flex items-center justify-center text-white shadow-inner">
@@ -287,10 +296,8 @@ const LiveAdminChatWidget = () => {
               </div>
             </div>
 
-            {/* Chat Body (Hidden when minimized) */}
             {!isMinimized && (
               <>
-                {/* Messages Stream */}
                 <div ref={messagesContainerRef} className="flex-1 p-4 overflow-y-auto space-y-3.5 text-xs bg-slate-50/70 dark:bg-slate-950/50">
                   {messages.length === 0 ? (
                     <div className="h-full flex flex-col items-center justify-center text-center p-6 space-y-3">
@@ -308,7 +315,6 @@ const LiveAdminChatWidget = () => {
                         </p>
                       </div>
 
-                      {/* Prompt Suggestions */}
                       <div className="w-full space-y-1.5 pt-2">
                         <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 block text-left">
                           Suggested Inquiries
@@ -385,7 +391,6 @@ const LiveAdminChatWidget = () => {
                           >
                             <p className="whitespace-pre-wrap">{msg.message}</p>
 
-                            {/* Attachment rendering */}
                             {msg.attachmentData && (
                               <div className="pt-1">
                                 {msg.attachmentData.startsWith(
@@ -438,7 +443,6 @@ const LiveAdminChatWidget = () => {
                               </div>
                             )}
 
-                            {/* Delivery checkmarks for officer */}
                             {isOfficer && (
                               <div className="flex items-center justify-end text-[10px] text-blue-200 gap-1 pt-0.5">
                                 <FaCheckDouble
@@ -455,7 +459,6 @@ const LiveAdminChatWidget = () => {
                   )}
                 </div>
 
-                {/* Selected File Preview Banner */}
                 {selectedFile && (
                   <div className="px-4 py-2 bg-blue-50 dark:bg-blue-950/60 border-t border-blue-200 dark:border-blue-800 flex items-center justify-between text-xs text-blue-900 dark:text-blue-200 shrink-0">
                     <span className="truncate font-semibold text-[11px]">
@@ -519,7 +522,6 @@ const LiveAdminChatWidget = () => {
         )}
       </div>
 
-      {/* Image Preview Modal */}
       {previewImage && (
         <div
           className="fixed inset-0 z-60 bg-black/85 backdrop-blur-xs flex items-center justify-center p-4"

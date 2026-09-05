@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
+import BackButton from "../components/BackButton";
 
 import {
   motion,
@@ -15,7 +16,6 @@ import {
 import { ServerUrl } from "../App";
 
 import {
-  FaArrowLeft,
   FaCalendarAlt,
   FaBriefcase,
   FaChartLine,
@@ -79,7 +79,6 @@ const InterviewHistory = () => {
     getMyInterview();
   }, []);
 
-  // Rating Helper: Logic to render stars based on 0-10 score
   const renderStars = (score) => {
     const starValue = score / 2;
     const stars = [];
@@ -139,7 +138,6 @@ const InterviewHistory = () => {
       className="relative min-h-screen overflow-hidden bg-gradient-to-br from-slate-50 via-white to-emerald-50 dark:from-slate-950 dark:via-slate-900 dark:to-blue-950 pt-24 pb-12 px-4 transition-colors duration-300"
     >
       <Navbar />
-      {/* Scroll Progress */}
       <motion.div
         className="fixed top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-emerald-500 to-cyan-500 origin-left z-[100]"
         style={{ scaleX }}
@@ -161,7 +159,6 @@ const InterviewHistory = () => {
       <div className="absolute inset-0 opacity-[0.02] dark:opacity-[0.04] bg-[radial-gradient(circle_at_center,black_1px,transparent_1px)] dark:bg-[radial-gradient(circle_at_center,white_1px,transparent_1px)] [background-size:24px_24px]" />
 
       <div className="relative max-w-6xl mx-auto">
-        {/* Header */}
         <motion.div
           animate={{
             y: scrollDirection === "down" ? -8 : 0,
@@ -178,23 +175,9 @@ const InterviewHistory = () => {
           className="sticky top-4 z-50 backdrop-blur-2xl bg-white/80 dark:bg-slate-900/85 border border-slate-200/80 dark:border-slate-800 rounded-3xl p-6 shadow-xl mb-10"
         >
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-            {/* Left */}
-            <div className="flex items-center sm:gap-5">
-              <button
-                onClick={() => {
-                  if (window.history.state && window.history.state.idx > 0) {
-                    navigate(-1);
-                  } else if (window.history.length > 1) {
-                    navigate(-1);
-                  } else {
-                    navigate("/dashboard");
-                  }
-                }}
-                title="Go Back"
-                className="group p-2 sm:p-4 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-emerald-50 dark:hover:bg-emerald-950/60 hover:text-emerald-600 dark:hover:text-emerald-400 hover:border-emerald-200 dark:hover:border-emerald-700 transition-all duration-300 shadow-sm cursor-pointer"
-              >
-                <FaArrowLeft className="group-hover:-translate-x-1 transition-transform duration-300" />
-              </button>
+
+            <div className="flex items-center gap-4 sm:gap-5">
+              <BackButton fallbackUrl="/dashboard" label="Back to Dashboard" />
 
               <div>
                 <h1 className="text-3xl sm:text-4xl font-black tracking-tight text-slate-900 dark:text-white">
@@ -206,8 +189,6 @@ const InterviewHistory = () => {
                 </p>
               </div>
             </div>
-
-            {/* Stats */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 w-full lg:w-auto">
               <motion.div
                 whileHover={{ y: -4 }}
@@ -269,7 +250,6 @@ const InterviewHistory = () => {
           </div>
         </motion.div>
 
-        {/* Loading */}
         {loading ? (
           <div className="grid gap-5">
             {[1, 2, 3].map((n) => (
@@ -362,7 +342,6 @@ const InterviewHistory = () => {
                       : "-translate-y-[2px]"
                   }`}
                 >
-                  {/* Animated Border */}
                   <motion.div
                     animate={{
                       backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"],
@@ -375,7 +354,6 @@ const InterviewHistory = () => {
                     className="absolute inset-0 rounded-[32px] opacity-100 bg-[linear-gradient(120deg,#10B981,#06B6D4,#8B5CF6,#10B981)] bg-[length:300%_300%]"
                   />
 
-                  {/* Glow */}
                   <motion.div
                     animate={{
                       opacity: [0.3, 0.6, 0.3],
@@ -388,10 +366,8 @@ const InterviewHistory = () => {
                     className="absolute -top-20 -right-20 w-56 h-56 bg-emerald-400/20 dark:bg-emerald-500/10 blur-3xl rounded-full"
                   />
 
-                  {/* Card */}
                   <div className="relative h-full rounded-[30px] bg-white/95 dark:bg-slate-900/95 backdrop-blur-2xl border border-white/60 dark:border-slate-800 p-6 sm:p-8 overflow-hidden transition-all duration-500">
                     <div className="relative flex flex-col lg:flex-row lg:items-center justify-between gap-8">
-                      {/* Left Side */}
                       <div className="flex-1">
                         <div className="flex flex-wrap items-center gap-3 mb-4">
                           <span
@@ -435,12 +411,10 @@ const InterviewHistory = () => {
                           Delete
                         </button>
 
-                        {/* Role */}
                         <h2 className="text-xl sm:text-2xl font-black tracking-tight text-slate-900 dark:text-white group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-all duration-300">
                           {item.role}
                         </h2>
 
-                        {/* Rating Component */}
                         <div className="flex items-center gap-1 mt-2 mb-4">
                           {renderStars(item.finalScore || 0)}
                           <span className="text-xs font-bold text-slate-400 ml-2">
@@ -448,7 +422,6 @@ const InterviewHistory = () => {
                           </span>
                         </div>
 
-                        {/* Tags */}
                         <div className="flex flex-wrap items-center gap-2.5 mt-4">
                           <span className="px-3.5 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-bold">
                             {item.experience}
@@ -462,9 +435,8 @@ const InterviewHistory = () => {
                         </div>
                       </div>
 
-                      {/* Right Side */}
                       <div className="flex items-center justify-between lg:justify-end gap-6 border-t lg:border-t-0 border-slate-100 dark:border-slate-800 pt-5 lg:pt-0">
-                        {/* Score Circle */}
+                     
                         <div className="relative w-24 h-24">
                           <svg className="w-24 h-24 rotate-[-90deg]">
                             <circle
@@ -530,14 +502,11 @@ const InterviewHistory = () => {
                           </div>
                         </div>
 
-                        {/* Arrow Button */}
                         <div className="p-4 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 group-hover:bg-emerald-600 group-hover:text-white transition-all duration-300 shadow-md">
                           <HiOutlineArrowNarrowRight size={22} />
                         </div>
                       </div>
                     </div>
-
-                    {/* Bottom Animated Line */}
                     <motion.div
                       initial={{ width: 0 }}
                       whileHover={{ width: "100%" }}
@@ -554,7 +523,6 @@ const InterviewHistory = () => {
         )}
       </div>
 
-      {/* Bottom Fade */}
       <div className="fixed bottom-0 left-0 w-full h-24 bg-gradient-to-t from-slate-50/80 dark:from-slate-950/80 to-transparent pointer-events-none z-10" />
       <div className="relative z-20 mt-12 -mx-4 -mb-12">
         <Footer />

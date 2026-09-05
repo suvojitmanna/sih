@@ -10,6 +10,7 @@ import {
 } from "react-icons/hi2";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
+import BackButton from "../components/BackButton";
 
 const TermsOfService = () => {
   const navigate = useNavigate();
@@ -45,13 +46,9 @@ const TermsOfService = () => {
         <div className="flex flex-col lg:flex-row gap-12 lg:gap-16">
           {/* Left Sidebar - Navigation */}
           <aside className="lg:w-1/4 lg:sticky lg:top-24 h-fit">
-            <button
-              onClick={() => navigate(-1)}
-              className="flex items-center gap-2 text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-all mb-8 group font-bold text-xs cursor-pointer"
-            >
-              <HiArrowLeft className="group-hover:-translate-x-1 transition-transform" />
-              <span>Back to Previous Screen</span>
-            </button>
+            <div className="mb-8">
+              <BackButton fallbackUrl="/" label="Back to Previous Screen" variant="subtle" />
+            </div>
 
             <nav className="hidden lg:block space-y-2 bg-white dark:bg-slate-900 p-4 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xs">
               <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-3 px-2">
