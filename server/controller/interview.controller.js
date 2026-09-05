@@ -354,7 +354,9 @@ export const finishInterview = async (req, res) => {
 
 export const getMyInterview = async (req, res) => {
     try {
-        const interviews = await Interview.find({ userId: req.userId }).select("role experience mode finalScore status createdAt")
+        const interviews = await Interview.find({ userId: req.userId })
+            .select("role experience mode finalScore status createdAt question resumeText")
+            .sort({ createdAt: -1 });
 
         return res.status(200).json(interviews)
     } catch (error) {
@@ -368,29 +370,36 @@ export const getInterviewReport = async (req, res) => {
         if (!interview) {
             return res.status(404).json({ message: "Interview not found" })
         }
-        const totalQuestions = interview.question.length
+        const totalQuestions = interview.question ? interview.question.length : 0
 
         let totalConfidence = 0
         let totalCommunication = 0
         let totalCorrectness = 0
 
-        interview.question.forEach((q) => {
-            totalConfidence += q.confidence || 0
-            totalCommunication += q.communication || 0
-            totalCorrectness += q.correctness || 0
-        })
+        if (interview.question) {
+            interview.question.forEach((q) => {
+                totalConfidence += q.confidence || 0
+                totalCommunication += q.communication || 0
+                totalCorrectness += q.correctness || 0
+            })
+        }
 
         const avgConfidence = totalQuestions ? totalConfidence / totalQuestions : 0
-
         const avgCommunication = totalQuestions ? totalCommunication / totalQuestions : 0
-
         const avgCorrectness = totalQuestions ? totalCorrectness / totalQuestions : 0
 
         return res.status(200).json({
+            _id: interview._id,
+            role: interview.role,
+            experience: interview.experience,
+            mode: interview.mode,
+            createdAt: interview.createdAt,
             finalScore: interview.finalScore,
-            confidence: Number(avgConfidence.toFixed((1))),
-            communication: Number(avgCommunication.toFixed((1))),
-            correctness: Number(avgCorrectness.toFixed((1))),
+            confidence: Number(avgConfidence.toFixed(1)),
+            communication: Number(avgCommunication.toFixed(1)),
+            correctness: Number(avgCorrectness.toFixed(1)),
+            question: interview.question,
+            questions: interview.question,
             questionWiseScore: interview.question
         })
 

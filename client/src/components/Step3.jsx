@@ -13,8 +13,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import jsPDF from "jspdf";
-import autoTable from "jspdf-autotable";
+import { generateInterviewPDF } from "../utils/pdfGenerator";
 import { useSelector } from "react-redux";
 
 const Step3 = ({ report }) => {
@@ -75,281 +74,19 @@ const Step3 = ({ report }) => {
   const percentage = (score / 10) * 100;
 
   const downloadPDF = () => {
-    const doc = new jsPDF("p", "mm", "a4");
-
-    const pageWidth = doc.internal.pageSize.getWidth();
-    const pageHeight = doc.internal.pageSize.getHeight();
-
-    const margin = 18;
-    const contentWidth = pageWidth - margin * 2;
-
-    let currentY = 25;
-
-    // =========== LIGHT PREMIUM BACKGROUND ===========
-    doc.setFillColor(248, 250, 252);
-    doc.rect(0, 0, pageWidth, pageHeight, "F");
-
-    // =========== PREMIUM TOP HEADER ===========
-    doc.setFillColor(30, 58, 138); // Deep MoSPI Navy #1E3A8A
-    doc.rect(0, 0, pageWidth, 55, "F");
-
-    // Tricolor Ribbon
-    doc.setFillColor(255, 153, 51);
-    doc.rect(0, 55, pageWidth / 3, 2, "F");
-    doc.setFillColor(255, 255, 255);
-    doc.rect(pageWidth / 3, 55, pageWidth / 3, 2, "F");
-    doc.setFillColor(19, 136, 8);
-    doc.rect((pageWidth / 3) * 2, 55, pageWidth / 3, 2, "F");
-
-    // =========== TITLE ===========
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(20);
-    doc.setTextColor(255, 255, 255);
-    doc.text("MoSPI • NSSTA — AI Interview Scorecard", margin, 20);
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(10);
-    doc.setTextColor(219, 234, 254);
-    doc.text("Official Cadre Mock Viva Voce & Technical Performance Analytics", margin, 28);
-
-    // ========== USER DETAILS ===========
-    const today = new Date().toLocaleDateString("en-IN");
-    doc.setFontSize(9);
-    doc.setTextColor(191, 219, 254);
-    doc.text(`Candidate / Officer: ${userData?.name || "Statistical Officer"} (${userData?.jobRole || "Cadre Officer"})`, margin, 38);
-    doc.text(`Evaluation Date: ${today} | Verified by SankhyaIQ™ AI Neural Engine`, margin, 46);
-    currentY = 68;
-
-    // ========== OVERALL SCORE CARD ===========
-
-    doc.setFillColor(255, 255, 255);
-    doc.roundedRect(margin, currentY, contentWidth, 44, 8, 8, "F");
-    doc.setDrawColor(230);
-    doc.roundedRect(margin, currentY, contentWidth, 44, 8, 8);
-
-    // Left Title
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(15);
-    doc.setTextColor(55);
-    doc.text("Overall Interview Score", margin + 12, currentY + 15);
-
-    // Score
-    doc.setFontSize(34);
-    if (finalScore >= 8) {
-      doc.setTextColor(16, 185, 129);
-    } else if (finalScore >= 5) {
-      doc.setTextColor(245, 158, 11);
-    } else {
-      doc.setTextColor(239, 68, 68);
-    }
-    doc.text(`${finalScore}/10`, pageWidth - margin - 12, currentY + 26, {
-      align: "right",
+    generateInterviewPDF({
+      interview: {
+        ...report,
+        role: report.role || userData?.jobRole || "Indian Statistical Service (ISS) Officer",
+        question: report.questionWiseScore || report.question || [],
+        questions: report.questionWiseScore || report.question || [],
+        finalScore: report.finalScore,
+        confidence: report.confidence,
+        communication: report.communication,
+        correctness: report.correctness,
+      },
+      user: userData,
     });
-
-    // Tag
-    let performanceTag = "";
-    if (finalScore >= 8) {
-      performanceTag = "Excellent Performance";
-    } else if (finalScore >= 5) {
-      performanceTag = "Good Potential";
-    } else {
-      performanceTag = "Needs Improvement";
-    }
-    doc.setFontSize(11);
-    doc.setTextColor(120);
-    doc.text(performanceTag, pageWidth - margin - 12, currentY + 36, {
-      align: "right",
-    });
-    currentY += 58;
-
-    // ============ SKILL CARDS ===========
-    const cardWidth = 52;
-    const gap = 8;
-    const skillData = [
-      {
-        label: "Confidence",
-        value: confidence,
-        color: [59, 130, 246],
-      },
-      {
-        label: "Communication",
-        value: communication,
-        color: [16, 185, 129],
-      },
-      {
-        label: "Correctness",
-        value: correctness,
-        color: [245, 158, 11],
-      },
-    ];
-    skillData.forEach((skill, index) => {
-      const x = margin + index * (cardWidth + gap);
-
-      // Card
-      doc.setFillColor(255, 255, 255);
-      doc.roundedRect(x, currentY, cardWidth, 44, 8, 8, "F");
-      doc.setDrawColor(235);
-      doc.roundedRect(x, currentY, cardWidth, 44, 8, 8);
-
-      // Top Bar
-      doc.setFillColor(...skill.color);
-      doc.roundedRect(x, currentY, cardWidth, 5, 8, 8, "F");
-
-      // Label
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(11);
-      doc.setTextColor(70);
-      doc.text(skill.label, x + 6, currentY + 18);
-
-      // Value
-      doc.setFontSize(24);
-      doc.setTextColor(...skill.color);
-      doc.text(`${skill.value}`, x + 6, currentY + 34);
-    });
-
-    currentY += 65;
-
-    // ============ PROFESSIONAL FEEDBACK ===========
-
-    let advice = "";
-    if (finalScore >= 8) {
-      advice =
-        "Excellent performance. Strong communication, structured thinking, and technical clarity were demonstrated consistently throughout the interview.";
-    } else if (finalScore >= 5) {
-      advice =
-        "Good foundation shown. Improve confidence, answer structure, and communication clarity to reach the next level.";
-    } else {
-      advice =
-        "More practice is required. Focus on mock interviews, concise communication, and improving technical confidence.";
-    }
-
-    // Title
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(19);
-    doc.setTextColor(15, 23, 42);
-    doc.text("Professional Feedback", margin, currentY);
-    currentY += 12;
-
-    // Advice Box
-    doc.setFillColor(255, 255, 255);
-    doc.roundedRect(margin, currentY, contentWidth, 50, 8, 8, "F");
-    doc.setDrawColor(235);
-    doc.roundedRect(margin, currentY, contentWidth, 50, 8, 8);
-
-    // Advice Text
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(11);
-    doc.setTextColor(80);
-    const splitAdvice = doc.splitTextToSize(advice, contentWidth - 20);
-    doc.text(splitAdvice, margin + 10, currentY + 15);
-
-    // ============= NEXT PAGE ===========
-
-    doc.addPage();
-
-    // Light Background
-    doc.setFillColor(248, 250, 252);
-    doc.rect(0, 0, pageWidth, pageHeight, "F");
-
-    // Top Banner
-    doc.setFillColor(16, 185, 129);
-    doc.rect(0, 0, pageWidth, 42, "F");
-
-    // Decorative Circle
-    doc.setFillColor(52, 211, 153);
-    doc.circle(pageWidth - 18, 10, 16, "F");
-
-    // Heading
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(24);
-    doc.setTextColor(255, 255, 255);
-    doc.text("Question Breakdown", margin, 24);
-
-    // Subtitle
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(10);
-    doc.text("Detailed AI evaluation for every interview answer", margin, 32);
-
-    currentY = 55;
-
-    // White Table Container
-    doc.setFillColor(255, 255, 255);
-    doc.roundedRect(margin, currentY - 10, contentWidth, 210, 8, 8, "F");
-    doc.setDrawColor(235);
-    doc.roundedRect(margin, currentY - 10, contentWidth, 210, 8, 8);
-
-    // ================== PREMIUM TABLE ===========
-
-    autoTable(doc, {
-      startY: currentY,
-      margin: {
-        left: margin + 4,
-        right: margin + 4,
-      },
-      head: [["#", "Question", "Score", "AI Feedback"]],
-      body: questionWiseScore.map((q, i) => [
-        `${i + 1}`,
-        q.question || "No Question",
-        `${q.score || 0}/10`,
-        q.feedback || "No feedback available",
-      ]),
-      theme: "grid",
-      styles: {
-        fontSize: 9,
-        cellPadding: 5,
-        valign: "middle",
-        lineColor: [235, 235, 235],
-        lineWidth: 0.5,
-      },
-      headStyles: {
-        fillColor: [16, 185, 129],
-        textColor: 255,
-        fontStyle: "bold",
-        halign: "center",
-        fontSize: 10,
-      },
-      bodyStyles: {
-        textColor: 60,
-        fillColor: [255, 255, 255],
-      },
-      alternateRowStyles: {
-        fillColor: [248, 250, 252],
-      },
-      columnStyles: {
-        0: {
-          cellWidth: 12,
-          halign: "center",
-        },
-        1: {
-          cellWidth: 60,
-        },
-        2: {
-          cellWidth: 22,
-          halign: "center",
-        },
-        3: {
-          cellWidth: "auto",
-        },
-      },
-    });
-    // =============== FOOTER ===========
-
-    const finalY = doc.lastAutoTable.finalY;
-    doc.setDrawColor(220);
-    doc.line(margin, finalY + 15, pageWidth - margin, finalY + 15);
-    doc.setFontSize(10);
-    doc.setTextColor(120);
-    doc.text(
-      "Generated by Premium AI Interview Analytics Platform",
-      pageWidth / 2,
-      finalY + 24,
-      {
-        align: "center",
-      },
-    );
-
-    // ============SAVE ===========
-
-    doc.save(`${userData?.name || "Candidate"}_Interview_Report.pdf`);
   };
 
   return (
@@ -554,6 +291,15 @@ const Step3 = ({ report }) => {
                       {q.score ?? 0}/10
                     </div>
                   </div>
+
+                  {(q.answer || q.userAnswer) && (
+                    <div className="p-3.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/70 dark:border-slate-700/70 mb-3 text-xs">
+                      <span className="text-[10px] uppercase font-bold text-slate-400 block mb-1">
+                        Candidate Spoken Response:
+                      </span>
+                      <p className="text-slate-700 dark:text-slate-300 italic">{q.answer || q.userAnswer}</p>
+                    </div>
+                  )}
 
                   {/* Feedback */}
                   <div className="bg-emerald-50/60 dark:bg-emerald-950/40 border border-emerald-100 dark:border-emerald-900/60 rounded-xl p-4">

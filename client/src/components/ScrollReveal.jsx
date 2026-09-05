@@ -3,11 +3,11 @@ import { motion } from "framer-motion";
 
 export const ScrollReveal = ({
   children,
-  direction = "up", // "up" | "down" | "left" | "right" | "fade" | "scale"
+  direction = "up",
   delay = 0,
   duration = 0.55,
   className = "",
-  amount = 0.12, // triggers when 12% of the element is scrolled into view
+  amount = 0.12,
   once = true,
 }) => {
   const getInitial = () => {
@@ -52,7 +52,7 @@ export const ScrollReveal = ({
       transition={{
         duration,
         delay,
-        ease: [0.22, 1, 0.36, 1], // Smooth natural spring-like ease
+        ease: [0.22, 1, 0.36, 1], 
       }}
       className={className}
     >

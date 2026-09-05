@@ -68,7 +68,7 @@ const Footer = () => {
                     Competency Matrix
                   </p>
                   <p onClick={() => navigate("/interview")} className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors cursor-pointer">
-                    Cadre Mock Viva Voce
+                    Cadre Mock Viva Voice
                   </p>
                   <p onClick={() => navigate("/quizzes")} className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors cursor-pointer">
                     AI Question Bank
@@ -76,7 +76,6 @@ const Footer = () => {
                 </div>
               </div>
 
-              {/* Workflows & AI */}
               <div className="space-y-3">
                 <h3 className="font-extrabold text-slate-900 dark:text-white uppercase tracking-wider">
                   AI & Integrations
