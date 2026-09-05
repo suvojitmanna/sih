@@ -19,6 +19,7 @@ const ChatBox = ({
   onCreditUpdate,
   axiosInstance,
   onOpenSidebar,
+  onNewChat,
 }) => {
   const containerRef = useRef(null);
   const controllerRef = useRef(null);
@@ -231,79 +232,106 @@ const ChatBox = ({
   };
 
   return (
-    <div className="flex-1 flex flex-col h-full w-full justify-between overflow-hidden relative">
-
-      <div className="flex items-center justify-between p-3 border-b border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md shrink-0">
-        <div className="flex items-center gap-2">
+    <div className="flex-1 flex flex-col h-full w-full min-h-0 justify-between overflow-hidden relative">
+      {/* Top Header Bar */}
+      <div className="flex items-center justify-between px-3.5 sm:px-5 py-2.5 sm:py-3 border-b border-slate-200/80 dark:border-slate-800 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md shrink-0 z-10">
+        <div className="flex items-center gap-2.5 min-w-0">
           <button
             onClick={onOpenSidebar}
-            className="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 md:hidden cursor-pointer"
+            className="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 md:hidden hover:bg-slate-200 dark:hover:bg-slate-700 transition cursor-pointer shrink-0"
+            title="Open Conversations"
           >
             <FaBars size={14} />
           </button>
+
+          <div className="p-2 rounded-xl bg-gradient-to-tr from-indigo-600 via-indigo-700 to-violet-600 text-white shadow-xs shrink-0">
+            <BsRobot size={16} />
+          </div>
+
+          <div className="min-w-0">
+            <div className="flex items-center gap-2">
+              <h3 className="font-extrabold text-xs sm:text-sm text-slate-900 dark:text-white truncate">
+                SankhyaCopilot AI
+              </h3>
+              <span className="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                <span>MoSPI Neural Engine</span>
+              </span>
+            </div>
+            <p className="text-[10px] text-slate-400 truncate hidden xs:block">
+              24/7 Official Statistical Methodology & Survey Guidance Assistant
+            </p>
+          </div>
         </div>
-        <span className="font-bold text-xs sm:text-sm text-slate-800 dark:text-white flex items-center gap-1.5">
-          <BsRobot className="text-indigo-600 dark:text-indigo-400" />
-          <span>SankhyaCopilot AI</span>
-        </span>
-        <div className="w-8" />
+
+        <div className="flex items-center gap-2 shrink-0">
+          <button
+            type="button"
+            onClick={onNewChat || (() => setSelectedChat(null))}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold transition cursor-pointer"
+          >
+            <BsStars className="text-amber-500" />
+            <span>New Chat</span>
+          </button>
+        </div>
       </div>
 
+      {/* Messages Scroll Area */}
       <div
         ref={containerRef}
-        className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-2 custom-scrollbar"
+        className="flex-1 min-h-0 overflow-y-auto p-3.5 sm:p-5 md:p-6 space-y-2.5 custom-scrollbar"
       >
         {messages.length === 0 && (
-          <div className="flex flex-col items-center justify-center min-h-[60vh] text-center px-4">
-            <div className="w-20 h-20 rounded-3xl bg-gradient-to-tr from-indigo-600 via-violet-600 to-fuchsia-600 text-white flex items-center justify-center shadow-xl mb-6">
-              <BsRobot size={36} />
+          <div className="flex flex-col items-center justify-center my-auto py-4 sm:py-6 text-center px-2 sm:px-4 max-w-2xl mx-auto w-full">
+            <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl sm:rounded-3xl bg-gradient-to-tr from-indigo-600 via-violet-600 to-fuchsia-600 text-white flex items-center justify-center shadow-lg shadow-indigo-500/25 mb-3 sm:mb-4">
+              <BsRobot size={28} className="sm:text-3xl" />
             </div>
 
-            <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight">
-              How can I assist you today?
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-black text-slate-900 dark:text-white tracking-tight">
+              SankhyaCopilot AI
             </h2>
 
-            <p className="mt-3 text-slate-500 dark:text-slate-400 text-sm sm:text-base max-w-md">
-              Ask coding questions, generate realistic interview scenarios, or create high-quality AI images.
+            <p className="mt-1.5 text-slate-500 dark:text-slate-400 text-xs sm:text-sm max-w-md">
+              Ask statistical methodology questions, national accounts compilation sequences, sampling design rules, or generate visual concepts.
             </p>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-8 max-w-xl w-full">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-2.5 mt-5 max-w-xl w-full">
               {[
                 {
-                  icon: <BsStars className="text-amber-500" />,
-                  title: "Technical Mock Interview Prep",
-                  desc: "Explain the difference between SQL and NoSQL databases",
+                  icon: <BsStars className="text-amber-500 shrink-0" />,
+                  title: "CPI & Price Statistics",
+                  desc: "Explain the formula difference between Laspeyres and Fisher price indices in CPI.",
                 },
                 {
-                  icon: <FaImage className="text-fuchsia-500" />,
-                  title: "AI Image Generation",
-                  desc: "Futuristic software engineer coding in a cybernetic glass workspace",
+                  icon: <FaCommentDots className="text-indigo-500 shrink-0" />,
+                  title: "National Accounts (SNA 2008)",
+                  desc: "How is Gross Value Added (GVA) at basic prices compiled from output?",
                 },
                 {
-                  icon: <FaCommentDots className="text-indigo-500" />,
-                  title: "Resume Refinement",
-                  desc: "How can I improve bullet points for full-stack developer projects?",
+                  icon: <BsStars className="text-emerald-500 shrink-0" />,
+                  title: "NSS Survey Sampling Design",
+                  desc: "What are the stratification rules for Multi-Stage Stratified Sampling in NSS rounds?",
                 },
                 {
-                  icon: <BsStars className="text-emerald-500" />,
-                  title: "System Design Concepts",
-                  desc: "Design a high-availability URL shortener with rate limiting",
+                  icon: <FaImage className="text-fuchsia-500 shrink-0" />,
+                  title: "AI Statistical Infographic",
+                  desc: "Infographic diagram of Data Collection to National Accounts dissemination",
                 },
               ].map((item, idx) => (
                 <div
                   key={idx}
                   onClick={() => {
                     setPrompt(item.desc);
-                    if (item.title.includes("Image")) setMode("image");
+                    if (item.title.includes("Infographic")) setMode("image");
                     else setMode("text");
                   }}
-                  className="p-3.5 rounded-2xl bg-white/80 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/60 shadow-xs hover:shadow-md hover:scale-[1.02] transition-all cursor-pointer text-left group"
+                  className="p-3 rounded-2xl bg-white/90 dark:bg-slate-800/90 border border-slate-200/80 dark:border-slate-700/60 shadow-xs hover:shadow-md hover:border-indigo-400 dark:hover:border-indigo-500 transition-all cursor-pointer text-left group"
                 >
-                  <div className="flex items-center gap-2 font-semibold text-xs text-slate-800 dark:text-slate-200">
+                  <div className="flex items-center gap-1.5 font-bold text-xs text-slate-800 dark:text-slate-200 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
                     {item.icon}
-                    <span>{item.title}</span>
+                    <span className="truncate">{item.title}</span>
                   </div>
-                  <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 line-clamp-2">
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 line-clamp-2 leading-relaxed">
                     {item.desc}
                   </p>
                 </div>
@@ -321,18 +349,18 @@ const ChatBox = ({
         ))}
 
         {loading && (
-          <div className="flex items-center gap-2 px-6 py-4">
-            <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-indigo-600 to-violet-500 text-white flex items-center justify-center shadow-md">
-              <BsRobot size={15} />
+          <div className="flex items-center gap-2.5 px-3 sm:px-4 py-2">
+            <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-indigo-600 to-violet-500 text-white flex items-center justify-center shadow-xs shrink-0">
+              <BsRobot size={13} />
             </div>
-            <div className="flex items-center gap-1.5 p-3 rounded-2xl bg-white/90 dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 shadow-sm">
-              <span className="w-2 h-2 rounded-full bg-indigo-500 animate-bounce" />
+            <div className="flex items-center gap-1.5 px-3.5 py-2.5 rounded-2xl bg-white/90 dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 shadow-xs">
+              <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-bounce" />
               <span
-                className="w-2 h-2 rounded-full bg-indigo-500 animate-bounce"
+                className="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-bounce"
                 style={{ animationDelay: "0.2s" }}
               />
               <span
-                className="w-2 h-2 rounded-full bg-indigo-500 animate-bounce"
+                className="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-bounce"
                 style={{ animationDelay: "0.4s" }}
               />
             </div>
@@ -340,15 +368,16 @@ const ChatBox = ({
         )}
       </div>
 
-      <div className="p-3 sm:p-5 w-full bg-white/60 dark:bg-slate-950/60 backdrop-blur-xl border-t border-slate-200/60 dark:border-slate-800">
+      {/* Fixed Bottom Input Bar */}
+      <div className="p-2.5 sm:p-3.5 w-full bg-white/80 dark:bg-slate-950/80 backdrop-blur-xl border-t border-slate-200/80 dark:border-slate-800 shrink-0 z-10">
         <form
           onSubmit={onSubmit}
-          className="max-w-4xl mx-auto flex items-center gap-2 p-2 sm:p-2.5 pl-4 rounded-3xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 shadow-lg focus-within:ring-2 focus-within:ring-indigo-500/40 transition-all"
+          className="max-w-4xl mx-auto flex items-center gap-2 p-1.5 sm:p-2 pl-3.5 rounded-2xl sm:rounded-3xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 shadow-md focus-within:ring-2 focus-within:ring-indigo-500/40 focus-within:border-indigo-500 transition-all"
         >
           <select
             value={mode}
             onChange={(e) => setMode(e.target.value)}
-            className="text-xs sm:text-sm font-semibold bg-transparent text-slate-700 dark:text-slate-300 outline-none cursor-pointer pr-1"
+            className="text-xs sm:text-sm font-bold bg-transparent text-slate-700 dark:text-slate-300 outline-none cursor-pointer pr-1 shrink-0"
           >
             <option value="text" className="bg-white dark:bg-slate-800 text-slate-800 dark:text-white">
               💬 Text
@@ -358,7 +387,7 @@ const ChatBox = ({
             </option>
           </select>
 
-          <div className="h-5 w-px bg-slate-300 dark:bg-slate-700 shrink-0" />
+          <div className="h-4 w-px bg-slate-200 dark:bg-slate-700 shrink-0" />
 
           <input
             type="text"
@@ -366,46 +395,51 @@ const ChatBox = ({
             onChange={(e) => setPrompt(e.target.value)}
             placeholder={
               mode === "image"
-                ? "Describe the image you want to generate..."
-                : "Type your message or question..."
+                ? "Describe the visual or diagram you want to synthesize..."
+                : "Ask methodology formulas, circular queries, or survey rules..."
             }
-            className="flex-1 text-sm bg-transparent text-slate-800 dark:text-slate-100 placeholder:text-slate-400 outline-none min-w-0 px-2"
+            className="flex-1 text-xs sm:text-sm bg-transparent text-slate-800 dark:text-slate-100 placeholder:text-slate-400 outline-none min-w-0 px-2"
           />
 
-          <div className="flex items-center gap-1.5 shrink-0 pr-1">
+          <div className="flex items-center gap-1.5 shrink-0 pr-0.5">
             <button
               type="button"
               onClick={handleVoiceInput}
-              className={`p-2.5 rounded-full transition-all cursor-pointer ${isListening
+              className={`p-2 sm:p-2.5 rounded-full transition-all cursor-pointer ${
+                isListening
                   ? "bg-red-500 text-white animate-pulse"
                   : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
-                }`}
+              }`}
               title={isListening ? "Listening..." : "Speak message"}
             >
-              <FaMicrophone size={13} />
+              <FaMicrophone size={12} />
             </button>
 
             {loading ? (
               <button
                 type="button"
                 onClick={handleStop}
-                className="p-2.5 rounded-full bg-red-500 text-white hover:bg-red-600 transition-all cursor-pointer"
+                className="p-2 sm:p-2.5 rounded-full bg-red-500 text-white hover:bg-red-600 transition-all cursor-pointer"
                 title="Stop generation"
               >
-                <FaStop size={13} />
+                <FaStop size={12} />
               </button>
             ) : (
               <button
                 type="submit"
                 disabled={!prompt.trim()}
-                className="p-2.5 rounded-full bg-gradient-to-r from-indigo-600 to-violet-600 text-white hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 transition-all shadow-md cursor-pointer"
+                className="p-2 sm:p-2.5 rounded-full bg-gradient-to-r from-indigo-600 to-violet-600 text-white hover:scale-105 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100 transition-all shadow-md cursor-pointer"
                 title="Send message"
               >
-                <FaPaperPlane size={13} />
+                <FaPaperPlane size={12} />
               </button>
             )}
           </div>
         </form>
+
+        <p className="text-[10px] text-slate-400 text-center mt-1.5 hidden sm:block">
+          SankhyaCopilot is grounded in MoSPI statistical standards. Verify official circulars for legislative compliance.
+        </p>
       </div>
     </div>
   );

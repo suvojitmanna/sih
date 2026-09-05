@@ -18,30 +18,17 @@ const ChatPage = () => {
   const [selectedChat, setSelectedChat] = useState(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-  // Create axios instance with baseURL
   const axiosInstance = axios.create({
     baseURL: ServerUrl,
     withCredentials: true,
   });
 
-  // Fetch Chats
   const fetchUserChats = async () => {
     try {
       const { data } = await axiosInstance.get("/api/chat/get");
       if (data.success) {
         setChats(data.chats || []);
-
-        const savedChatId = sessionStorage.getItem("activeChatId");
-        if (savedChatId && data.chats?.length) {
-          const found = data.chats.find((c) => c._id === savedChatId);
-          if (found) {
-            setSelectedChat(found);
-            return;
-          }
-        }
-        if (data.chats?.length) {
-          setSelectedChat(data.chats[0]);
-        }
+        setSelectedChat(null);
       }
     } catch (error) {
       console.error("Fetch chats error:", error);
@@ -54,29 +41,11 @@ const ChatPage = () => {
     }
   }, [userData]);
 
-  // Save active chat ID to sessionStorage
-  useEffect(() => {
-    if (selectedChat?._id) {
-      sessionStorage.setItem("activeChatId", selectedChat._id);
-    }
-  }, [selectedChat]);
-
-  // Create New Chat
-  const handleCreateNewChat = async () => {
-    try {
-      const { data } = await axiosInstance.post("/api/chat/create", {});
-      if (data.success) {
-        setChats((prev) => [data.chat, ...prev]);
-        setSelectedChat(data.chat);
-        setIsMenuOpen(false);
-        toast.success("New conversation started! ✨");
-      }
-    } catch (error) {
-      toast.error(error.response?.data?.message || "Failed to create new chat");
-    }
+  const handleCreateNewChat = () => {
+    setSelectedChat(null);
+    setIsMenuOpen(false);
   };
 
-  // Delete Chat
   const handleDeleteChat = async (e, chatId) => {
     e.stopPropagation();
     if (!window.confirm("Are you sure you want to delete this chat?")) return;
@@ -95,7 +64,6 @@ const ChatPage = () => {
     }
   };
 
-  // Update credits locally in Redux
   const handleCreditUpdate = (newCredits) => {
     if (userData) {
       dispatch(
@@ -108,10 +76,10 @@ const ChatPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col transition-colors duration-300">
+    <div className="h-screen w-full overflow-hidden bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col transition-colors duration-300">
       <Navbar />
 
-      <div className="flex-1 max-w-7xl w-full mx-auto pt-24 pb-4 px-2 sm:px-4 flex gap-4 h-[calc(100vh-1rem)] overflow-hidden">
+      <div className="flex-1 max-w-7xl w-full mx-auto pt-18 sm:pt-20 pb-2 sm:pb-3 px-2 sm:px-4 flex gap-3 sm:gap-4 overflow-hidden min-h-0">
         {/* Chat Sidebar */}
         <ChatSidebar
           isMenuOpen={isMenuOpen}
@@ -127,7 +95,7 @@ const ChatPage = () => {
         />
 
         {/* Chat Box Area */}
-        <main className="flex-1 flex flex-col bg-white/80 dark:bg-slate-900/80 backdrop-blur-2xl border border-slate-200/80 dark:border-slate-800 rounded-2xl md:rounded-3xl shadow-xl overflow-hidden">
+        <main className="flex-1 h-full min-h-0 min-w-0 flex flex-col bg-white/80 dark:bg-slate-900/80 backdrop-blur-2xl border border-slate-200/80 dark:border-slate-800 rounded-2xl md:rounded-3xl shadow-xl overflow-hidden">
           <ChatBox
             selectedChat={selectedChat}
             setSelectedChat={setSelectedChat}
@@ -136,6 +104,7 @@ const ChatPage = () => {
             onCreditUpdate={handleCreditUpdate}
             axiosInstance={axiosInstance}
             onOpenSidebar={() => setIsMenuOpen(true)}
+            onNewChat={handleCreateNewChat}
           />
         </main>
       </div>

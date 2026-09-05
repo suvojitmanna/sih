@@ -56,8 +56,10 @@ const ChatSidebar = ({
       )}
 
       <aside
-        className={`flex flex-col h-[calc(100vh-5rem)] w-80 max-w-[85vw] p-4 bg-white/95 dark:bg-slate-900/95 border-r border-slate-200 dark:border-slate-800 shadow-xl transition-all duration-300 z-50 md:static fixed left-0 top-20 rounded-2xl md:rounded-3xl my-2 ml-2 md:my-0 md:ml-0 overflow-hidden ${
-          isMenuOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
+        className={`flex flex-col h-full w-72 lg:w-80 max-w-[85vw] p-3.5 sm:p-4 bg-white/95 dark:bg-slate-900/95 border border-slate-200/80 dark:border-slate-800 shadow-xl transition-all duration-300 z-50 overflow-hidden rounded-2xl md:rounded-3xl ${
+          isMenuOpen
+            ? "fixed inset-y-0 left-0 top-0 bottom-0 z-50 shadow-2xl rounded-none md:rounded-3xl translate-x-0"
+            : "fixed md:static -translate-x-full md:translate-x-0 inset-y-0 left-0 top-0 bottom-0"
         }`}
       >
         <div className="flex items-center justify-between pb-2.5 border-b border-slate-100 dark:border-slate-800 shrink-0">

@@ -24,7 +24,6 @@ const ChatMessage = ({ message, onPublishToggle }) => {
   const bottomRef = useRef(null);
   const wordRefs = useRef([]);
 
-  /* Typing Animation */
   useEffect(() => {
     const content = String(message?.content || "");
 
@@ -282,7 +281,7 @@ const ChatMessage = ({ message, onPublishToggle }) => {
                 </a>
               </div>
             ) : (
-              <div className="prose prose-slate dark:prose-invert max-w-none text-sm sm:text-[15px] leading-relaxed break-words pt-1">
+              <div className="prose prose-slate dark:prose-invert max-w-none text-sm sm:text-[15px] leading-relaxed break-words pt-1 overflow-x-auto custom-scrollbar min-w-0">
                 {speaking ? (
                   <div className="flex flex-wrap gap-1">
                     {displayedText.split(" ").map((word, i) => (
