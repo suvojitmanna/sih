@@ -2,7 +2,6 @@ import React, { useEffect } from "react";
 import { motion, useScroll, useSpring } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import {
-  HiArrowLeft,
   HiOutlineScale,
   HiOutlineBookOpen,
   HiOutlineCpuChip,
@@ -21,10 +20,6 @@ const TermsOfService = () => {
     restDelta: 0.001,
   });
 
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, []);
-
   const sections = [
     { id: "acceptance", title: "1. Acceptance of Terms", icon: <HiOutlineScale /> },
     { id: "cadre-standards", title: "2. Official Cadre Standards", icon: <HiOutlineBookOpen /> },
@@ -36,7 +31,6 @@ const TermsOfService = () => {
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 selection:bg-blue-100 dark:selection:bg-blue-900 transition-colors duration-300">
       <Navbar />
 
-      {/* Progress Bar */}
       <motion.div
         className="fixed top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-600 to-indigo-600 origin-left z-50"
         style={{ scaleX }}
@@ -44,7 +38,6 @@ const TermsOfService = () => {
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-12 md:py-24 pt-28">
         <div className="flex flex-col lg:flex-row gap-12 lg:gap-16">
-          {/* Left Sidebar - Navigation */}
           <aside className="lg:w-1/4 lg:sticky lg:top-24 h-fit">
             <div className="mb-8">
               <BackButton fallbackUrl="/" label="Back to Previous Screen" variant="subtle" />
@@ -110,7 +103,6 @@ const TermsOfService = () => {
                   </p>
                 </section>
 
-                {/* 3. AI Methodology */}
                 <section id="ai-methodology" className="scroll-mt-24 space-y-4">
                   <h2 className="text-xl font-black text-slate-900 dark:text-white flex items-center gap-3">
                     <span className="w-7 h-7 rounded-xl bg-blue-600 text-white flex items-center justify-center text-xs font-bold">3</span>
@@ -121,7 +113,6 @@ const TermsOfService = () => {
                   </p>
                 </section>
 
-                {/* 4. User Conduct */}
                 <section id="code-of-conduct" className="scroll-mt-24 space-y-4">
                   <h2 className="text-xl font-black text-slate-900 dark:text-white flex items-center gap-3">
                     <span className="w-7 h-7 rounded-xl bg-blue-600 text-white flex items-center justify-center text-xs font-bold">4</span>

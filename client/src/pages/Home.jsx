@@ -158,7 +158,7 @@ const Home = () => {
 
             <button
               onClick={() => handleProtectedAction("/ai-models")}
-              className="px-6 py-3.5 rounded-2xl bg-white dark:bg-slate-900 hover:bg-slate-50 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-800 font-bold text-xs sm:text-sm shadow-md transition-all flex items-center gap-2 cursor-pointer"
+              className="px-6 py-3.5 rounded-2xl bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-black dark:hover:text-white text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-800 font-bold text-xs sm:text-sm shadow-md transition-all flex items-center gap-2 cursor-pointer"
             >
               <HiSparkles size={15} className="text-amber-500" />
               <span>Explore AI Models Hub</span>
@@ -204,9 +204,6 @@ const Home = () => {
           </div>
         </section>
 
-        {/* ======================================================== */}
-        {/* 2. STATISTICAL METRICS STRIP                            */}
-        {/* ======================================================== */}
         <ScrollReveal direction="up" delay={0.05}>
           <section className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-5 text-center shadow-xs">
@@ -247,9 +244,6 @@ const Home = () => {
           </section>
         </ScrollReveal>
 
-        {/* ======================================================== */}
-        {/* 3. WHOLE WEBSITE OVERVIEW & 6-PHASE SYSTEM ARCHITECTURE  */}
-        {/* ======================================================== */}
         <ScrollReveal direction="up" delay={0.1}>
           <section className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-10 shadow-xs space-y-8">
           <div className="space-y-2">
@@ -342,9 +336,6 @@ const Home = () => {
         </section>
         </ScrollReveal>
 
-        {/* ======================================================== */}
-        {/* 4. DETAILED 4-DOMAIN COMPETENCY FRAMEWORK               */}
-        {/* ======================================================== */}
         <ScrollReveal direction="up" delay={0.1}>
           <section className="space-y-6">
             <div className="text-center max-w-3xl mx-auto space-y-2">
@@ -556,9 +547,6 @@ const Home = () => {
         </section>
         </ScrollReveal>
 
-        {/* ======================================================== */}
-        {/* 5. THE 5 CORE AI ASSESSMENT & LEARNING PILLARS          */}
-        {/* ======================================================== */}
         <ScrollReveal direction="up" delay={0.1}>
           <section className="space-y-6">
             <div className="text-center max-w-3xl mx-auto space-y-2">
@@ -600,7 +588,6 @@ const Home = () => {
               </span>
             </div>
 
-            {/* Pillar 2: Assignments */}
             <div
               onClick={() => handleProtectedAction("/assignments")}
               className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-xs hover:shadow-xl hover:border-amber-400 transition-all space-y-4 cursor-pointer group flex flex-col justify-between"
@@ -625,7 +612,6 @@ const Home = () => {
               </span>
             </div>
 
-            {/* Pillar 3: MCQ Question Studio */}
             <div
               onClick={() => handleProtectedAction("/materials")}
               className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-xs hover:shadow-xl hover:border-purple-400 transition-all space-y-4 cursor-pointer group flex flex-col justify-between"
@@ -650,7 +636,6 @@ const Home = () => {
               </span>
             </div>
 
-            {/* Pillar 4: AI Mock Interview Bot & Report */}
             <div
               onClick={() => handleProtectedAction("/interview")}
               className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-xs hover:shadow-xl hover:border-blue-400 transition-all space-y-4 cursor-pointer group flex flex-col justify-between"
@@ -675,7 +660,6 @@ const Home = () => {
               </span>
             </div>
 
-            {/* Pillar 5: SankhyaCopilot AI Chatbot */}
             <div
               onClick={() => handleProtectedAction("/chat")}
               className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-xs hover:shadow-xl hover:border-indigo-400 transition-all space-y-4 cursor-pointer group flex flex-col justify-between"
@@ -700,7 +684,6 @@ const Home = () => {
               </span>
             </div>
 
-            {/* Pillar 6: AI Models Hub */}
             <div
               onClick={() => handleProtectedAction("/ai-models")}
               className="bg-gradient-to-br from-blue-900 via-indigo-900 to-slate-900 text-white rounded-3xl p-6 shadow-lg hover:shadow-2xl transition-all space-y-4 cursor-pointer group flex flex-col justify-between"
@@ -728,9 +711,6 @@ const Home = () => {
         </section>
         </ScrollReveal>
 
-        {/* ======================================================== */}
-        {/* 6. OFFICIAL PDF DOSSIER EXPORT SHOWCASE                  */}
-        {/* ======================================================== */}
         <ScrollReveal direction="up" delay={0.1}>
           <section className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-slate-900 dark:to-blue-950/40 border border-blue-200/80 dark:border-blue-900/60 rounded-3xl p-6 sm:p-10 shadow-xs flex flex-col lg:flex-row items-center justify-between gap-8">
             <div className="space-y-4 max-w-2xl">
@@ -787,9 +767,6 @@ const Home = () => {
           </section>
         </ScrollReveal>
 
-        {/* ======================================================== */}
-        {/* 7. FREQUENTLY ASKED QUESTIONS (FAQ)                      */}
-        {/* ======================================================== */}
         <ScrollReveal direction="up" delay={0.1}>
           <section className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-10 shadow-xs space-y-6">
             <div className="space-y-2">
@@ -842,9 +819,6 @@ const Home = () => {
           </section>
         </ScrollReveal>
 
-        {/* ======================================================== */}
-        {/* 8. CALL TO ACTION BANNER                                */}
-        {/* ======================================================== */}
         <ScrollReveal direction="scale" delay={0.1}>
           <section className="bg-gradient-to-r from-blue-900 via-indigo-900 to-slate-900 text-white rounded-3xl p-8 sm:p-12 shadow-2xl relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="space-y-3 max-w-2xl">
@@ -886,7 +860,6 @@ const Home = () => {
 
       <Footer />
 
-      {/* Auth Modal Trigger */}
       {showAuth && <AuthModel onClose={() => setShowAuth(false)} />}
     </div>
   );

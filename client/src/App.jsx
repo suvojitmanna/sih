@@ -24,6 +24,7 @@ import axios from "axios";
 import { useDispatch, useSelector } from "react-redux";
 import { setUserData } from "./redux/userSlice";
 import { Toaster } from "react-hot-toast";
+import ScrollToTop from "./components/ScrollToTop";
 import ScrollProgressBar from "./components/ScrollProgressBar";
 import LiveAdminChatWidget from "./components/LiveAdminChatWidget";
 
@@ -80,6 +81,7 @@ const App = () => {
 
   return (
     <>
+      <ScrollToTop />
       <Toaster position="top-center" reverseOrder={false} />
       <ScrollProgressBar />
       <Routes>

@@ -15,10 +15,6 @@ const PrivacyPolicy = () => {
     restDelta: 0.001
   });
 
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, []);
-
   const sections = [
     { id: "collection", title: "1. Official Information Collection", icon: <HiOutlineDatabase /> },
     { id: "usage", title: "2. Cadre Evaluation & Data Usage", icon: <HiOutlineShieldCheck /> },
