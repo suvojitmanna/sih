@@ -1,94 +1,143 @@
 import { GoogleGenAI } from "@google/genai";
 import axios from "axios";
 import dotenv from "dotenv";
-import { COMPETENCY_DOMAINS, ROLE_BENCHMARK_PROFILES } from "../config/competencyFramework.js";
+import {
+  COMPETENCY_DOMAINS,
+  ROLE_BENCHMARK_PROFILES,
+} from "../config/competencyFramework.js";
 
 dotenv.config();
 
 const geminiApiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
-const aiClient = geminiApiKey ? new GoogleGenAI({ apiKey: geminiApiKey }) : null;
+const aiClient = geminiApiKey
+  ? new GoogleGenAI({ apiKey: geminiApiKey })
+  : null;
 
 export const cleanAndParseJson = (rawText, defaultFallback = {}) => {
-    if (!rawText) return defaultFallback;
-    try {
-        let cleaned = rawText.trim();
-        if (cleaned.startsWith("```json")) {
-            cleaned = cleaned.replace(/^```json\s*/, "").replace(/\s*```$/, "");
-        } else if (cleaned.startsWith("```")) {
-            cleaned = cleaned.replace(/^```\s*/, "").replace(/\s*```$/, "");
-        }
-        return JSON.parse(cleaned);
-    } catch (e) {
-        console.warn("[JSON PARSE WARN] Direct parse failed, attempting regex extraction...", e.message);
-        try {
-            const match = rawText.match(/\{[\s\S]*\}|\[[\s\S]*\]/);
-            if (match) {
-                return JSON.parse(match[0]);
-            }
-        } catch (innerErr) {
-            console.error("[JSON PARSE FATAL] Extraction failed:", innerErr.message);
-        }
-        return defaultFallback;
+  if (!rawText) return defaultFallback;
+  try {
+    let cleaned = rawText.trim();
+    if (cleaned.startsWith("```json")) {
+      cleaned = cleaned.replace(/^```json\s*/, "").replace(/\s*```$/, "");
+    } else if (cleaned.startsWith("```")) {
+      cleaned = cleaned.replace(/^```\s*/, "").replace(/\s*```$/, "");
     }
+    return JSON.parse(cleaned);
+  } catch (e) {
+    console.warn(
+      "[JSON PARSE WARN] Direct parse failed, attempting regex extraction...",
+      e.message,
+    );
+    try {
+      const match = rawText.match(/\{[\s\S]*\}|\[[\s\S]*\]/);
+      if (match) {
+        return JSON.parse(match[0]);
+      }
+    } catch (innerErr) {
+      console.error("[JSON PARSE FATAL] Extraction failed:", innerErr.message);
+    }
+    return defaultFallback;
+  }
 };
 
 export const scoreToLevel = (score) => {
-    if (score >= 85) return "Expert";
-    if (score >= 70) return "Advanced";
-    if (score >= 50) return "Intermediate";
-    return "Beginner";
+  if (score >= 85) return "Expert";
+  if (score >= 70) return "Advanced";
+  if (score >= 50) return "Intermediate";
+  return "Beginner";
 };
 
-export const callGeminiOrFallback = async (prompt, systemInstruction = "") => {
-    // 1. Try Primary AI Neural Engine
-    if (aiClient) {
-        try {
-            const response = await aiClient.models.generateContent({
-                model: "gemini-2.5-flash",
-                contents: prompt,
-                config: systemInstruction ? { systemInstruction } : undefined,
-            });
-            if (response && response.text) {
-                return response.text;
-            }
-        } catch (engineError) {
-            console.warn("[SANKHYAIQ AI WARNING] Engine call failed, attempting fallback:", engineError.message);
-        }
-    }
+export const callGeminiOrFallback = async (
+  prompt,
+  systemInstruction = "",
+  options = {},
+) => {
+  // 1. Try Primary AI Neural Engine (Gemini)
+  if (aiClient) {
+    try {
+      let contents = prompt;
+      if (options.imageInlineData) {
+        contents = [
+          {
+            inlineData: {
+              mimeType: options.imageInlineData.mimeType || "image/png",
+              data: options.imageInlineData.data,
+            },
+          },
+          {
+            text: typeof prompt === "string" ? prompt : JSON.stringify(prompt),
+          },
+        ];
+      }
 
-    // 2. Try OpenRouter Fallback
-    if (process.env.OPENROUTER_API_KEY) {
-        try {
-            const res = await axios.post(
-                "https://openrouter.ai/api/v1/chat/completions",
-                {
-                    model: "google/gemini-2.5-flash",
-                    messages: [
-                        ...(systemInstruction ? [{ role: "system", content: systemInstruction }] : []),
-                        { role: "user", content: prompt },
-                    ],
-                },
-                {
-                    headers: {
-                        Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
-                        "Content-Type": "application/json",
-                    },
-                    timeout: 20000,
-                }
-            );
-            if (res.data?.choices?.[0]?.message?.content) {
-                return res.data.choices[0].message.content;
-            }
-        } catch (openRouterErr) {
-            console.warn("[OPENROUTER WARNING] Fallback failed:", openRouterErr.message);
-        }
-    }
+      const config = {};
+      if (systemInstruction) config.systemInstruction = systemInstruction;
+      if (options.jsonMode) config.responseMimeType = "application/json";
 
-    throw new Error("SankhyaIQ AI Service is temporarily unavailable. Please check your GEMINI_API_KEY configuration.");
+      const response = await aiClient.models.generateContent({
+        model: "gemini-2.5-flash",
+        contents,
+        config: Object.keys(config).length > 0 ? config : undefined,
+      });
+      if (response && response.text) {
+        return response.text;
+      }
+    } catch (engineError) {
+      console.warn(
+        "[SANKHYAIQ AI WARNING] Engine call failed, attempting fallback:",
+        engineError.message,
+      );
+    }
+  }
+
+  // 2. Try OpenRouter Fallback
+  if (process.env.OPENROUTER_API_KEY) {
+    try {
+      const res = await axios.post(
+        "https://openrouter.ai/api/v1/chat/completions",
+        {
+          model: "google/gemini-2.5-flash",
+          messages: [
+            ...(systemInstruction
+              ? [{ role: "system", content: systemInstruction }]
+              : []),
+            {
+              role: "user",
+              content:
+                typeof prompt === "string" ? prompt : JSON.stringify(prompt),
+            },
+          ],
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
+            "Content-Type": "application/json",
+          },
+          timeout: 30000,
+        },
+      );
+      if (res.data?.choices?.[0]?.message?.content) {
+        return res.data.choices[0].message.content;
+      }
+    } catch (openRouterErr) {
+      console.warn(
+        "[OPENROUTER WARNING] Fallback failed:",
+        openRouterErr.message,
+      );
+    }
+  }
+
+  throw new Error(
+    "SankhyaIQ AI Service is temporarily unavailable. Please check your GEMINI_API_KEY configuration.",
+  );
 };
 
-export const generateCompetencyAssessment = async ({ profile = {}, selfRatings = {}, quizHistory = [] }) => {
-    const prompt = `
+export const generateCompetencyAssessment = async ({
+  profile = {},
+  selfRatings = {},
+  quizHistory = [],
+}) => {
+  const prompt = `
 You are the SankhyaIQ AI Neural Engine, the official AI evaluator for India's National Statistical Systems Training Academy (NSSTA), Ministry of Statistics & Programme Implementation (MoSPI).
 
 Assess the competency matrix of the following official:
@@ -134,56 +183,78 @@ Return STRICTLY a JSON object with this exact schema:
 }
 `;
 
-    try {
-        const raw = await callGeminiOrFallback(prompt, "You are the SankhyaIQ AI statistical capacity building engine. Always return valid JSON without markdown fences.");
-        const parsed = cleanAndParseJson(raw, null);
-        if (parsed && parsed.competencies && parsed.competencies.length) {
-            return parsed;
-        }
-    } catch (err) {
-        console.error("[AI ASSESSMENT ERROR]", err.message);
+  try {
+    const raw = await callGeminiOrFallback(
+      prompt,
+      "You are the SankhyaIQ AI statistical capacity building engine. Always return valid JSON without markdown fences.",
+    );
+    const parsed = cleanAndParseJson(raw, null);
+    if (parsed && parsed.competencies && parsed.competencies.length) {
+      return parsed;
     }
+  } catch (err) {
+    console.error("[AI ASSESSMENT ERROR]", err.message);
+  }
 
-    const calculatedCompetencies = [];
-    COMPETENCY_DOMAINS.forEach((domain) => {
-        domain.competencies.forEach((comp) => {
-            const selfVal = Number(selfRatings[comp.name] || selfRatings[comp.id] || 3);
-            const baseScore = Math.min(95, Math.max(25, selfVal * 18 + (profile.workExperience || 2) * 2));
-            calculatedCompetencies.push({
-                domain: domain.name,
-                competencyName: comp.name,
-                score: baseScore,
-                level: scoreToLevel(baseScore),
-                source: "self-reported",
-                rationale: `Assessed based on profile tenure in ${profile.department || "MoSPI"} and self-evaluation.`,
-            });
-        });
+  const calculatedCompetencies = [];
+  COMPETENCY_DOMAINS.forEach((domain) => {
+    domain.competencies.forEach((comp) => {
+      const selfVal = Number(
+        selfRatings[comp.name] || selfRatings[comp.id] || 3,
+      );
+      const baseScore = Math.min(
+        95,
+        Math.max(25, selfVal * 18 + (profile.workExperience || 2) * 2),
+      );
+      calculatedCompetencies.push({
+        domain: domain.name,
+        competencyName: comp.name,
+        score: baseScore,
+        level: scoreToLevel(baseScore),
+        source: "self-reported",
+        rationale: `Assessed based on profile tenure in ${profile.department || "MoSPI"} and self-evaluation.`,
+      });
     });
+  });
 
-    const avgScore = Math.round(calculatedCompetencies.reduce((acc, c) => acc + c.score, 0) / calculatedCompetencies.length);
+  const avgScore = Math.round(
+    calculatedCompetencies.reduce((acc, c) => acc + c.score, 0) /
+      calculatedCompetencies.length,
+  );
 
-    return {
-        overallScore: avgScore,
-        overallLevel: scoreToLevel(avgScore),
-        domainScores: {
-            statistical: Math.round(avgScore * 1.05),
-            technical: Math.round(avgScore * 0.92),
-            digital_governance: Math.round(avgScore * 0.98),
-            managerial: Math.round(avgScore * 1.02),
-        },
-        competencies: calculatedCompetencies,
-        strengths: ["Sampling & Survey Methodologies", "Official Statistics Dissemination"],
-        developmentAreas: ["Automated Statistical Computing & Microdata Processing", "National Accounts & Supply-Use Tables"],
-    };
+  return {
+    overallScore: avgScore,
+    overallLevel: scoreToLevel(avgScore),
+    domainScores: {
+      statistical: Math.round(avgScore * 1.05),
+      technical: Math.round(avgScore * 0.92),
+      digital_governance: Math.round(avgScore * 0.98),
+      managerial: Math.round(avgScore * 1.02),
+    },
+    competencies: calculatedCompetencies,
+    strengths: [
+      "Sampling & Survey Methodologies",
+      "Official Statistics Dissemination",
+    ],
+    developmentAreas: [
+      "Automated Statistical Computing & Microdata Processing",
+      "National Accounts & Supply-Use Tables",
+    ],
+  };
 };
-
 
 // 2. SKILL GAP ANALYSIS ENGINE
 
-export const analyzeSkillGaps = async ({ currentCompetencies = [], targetRole = "Indian Statistical Service (ISS) Officer", department = "MoSPI" }) => {
-    const benchmark = ROLE_BENCHMARK_PROFILES[targetRole] || ROLE_BENCHMARK_PROFILES["Indian Statistical Service (ISS) Officer"];
+export const analyzeSkillGaps = async ({
+  currentCompetencies = [],
+  targetRole = "Indian Statistical Service (ISS) Officer",
+  department = "MoSPI",
+}) => {
+  const benchmark =
+    ROLE_BENCHMARK_PROFILES[targetRole] ||
+    ROLE_BENCHMARK_PROFILES["Indian Statistical Service (ISS) Officer"];
 
-    const prompt = `
+  const prompt = `
 You are the SankhyaIQ AI Capacity Planner for India's Ministry of Statistics & Programme Implementation (MoSPI).
 
 Analyze skill gaps for an official in the following context:
@@ -214,53 +285,60 @@ Return STRICTLY a JSON object with this exact schema:
 }
 `;
 
-    try {
-        const raw = await callGeminiOrFallback(prompt, "You are a government statistical competency planner. Always return strict valid JSON.");
-        const parsed = cleanAndParseJson(raw, null);
-        if (parsed && Array.isArray(parsed.skillGaps) && parsed.skillGaps.length) {
-            return parsed;
-        }
-    } catch (err) {
-        console.error("[SKILL GAP ANALYSIS ERROR]", err.message);
+  try {
+    const raw = await callGeminiOrFallback(
+      prompt,
+      "You are a government statistical competency planner. Always return strict valid JSON.",
+    );
+    const parsed = cleanAndParseJson(raw, null);
+    if (parsed && Array.isArray(parsed.skillGaps) && parsed.skillGaps.length) {
+      return parsed;
     }
+  } catch (err) {
+    console.error("[SKILL GAP ANALYSIS ERROR]", err.message);
+  }
 
-    const gaps = [];
-    const requiredLevels = benchmark.requiredLevels;
+  const gaps = [];
+  const requiredLevels = benchmark.requiredLevels;
 
-    (currentCompetencies || []).forEach((comp) => {
-        if (!comp || !comp.competencyName) return;
-        const required = requiredLevels[comp.competencyName] || "Intermediate";
-        const levelRanks = { Beginner: 1, Intermediate: 2, Advanced: 3, Expert: 4 };
-        const currentRank = levelRanks[comp.level] || 1;
-        const requiredRank = levelRanks[required] || 2;
+  (currentCompetencies || []).forEach((comp) => {
+    if (!comp || !comp.competencyName) return;
+    const required = requiredLevels[comp.competencyName] || "Intermediate";
+    const levelRanks = { Beginner: 1, Intermediate: 2, Advanced: 3, Expert: 4 };
+    const currentRank = levelRanks[comp.level] || 1;
+    const requiredRank = levelRanks[required] || 2;
 
-        if (currentRank < requiredRank) {
-            const diff = requiredRank - currentRank;
-            gaps.push({
-                competencyName: comp.competencyName,
-                domain: comp.domain || "Statistical Competencies",
-                currentLevel: comp.level,
-                requiredLevel: required,
-                gapScore: diff * 25,
-                priority: diff >= 2 ? "High" : diff === 1 ? "Medium" : "Low",
-                impact: `Benchmark requirement for ${targetRole}.`,
-                recommendedAction: `Complete targeted training module on ${comp.competencyName}.`,
-            });
-        }
-    });
+    if (currentRank < requiredRank) {
+      const diff = requiredRank - currentRank;
+      gaps.push({
+        competencyName: comp.competencyName,
+        domain: comp.domain || "Statistical Competencies",
+        currentLevel: comp.level,
+        requiredLevel: required,
+        gapScore: diff * 25,
+        priority: diff >= 2 ? "High" : diff === 1 ? "Medium" : "Low",
+        impact: `Benchmark requirement for ${targetRole}.`,
+        recommendedAction: `Complete targeted training module on ${comp.competencyName}.`,
+      });
+    }
+  });
 
-    return {
-        skillGaps: gaps.sort((a, b) => (a.priority === "High" ? -1 : 1)),
-        summary: `Identified ${gaps.length} competency gaps against standard ${targetRole} benchmarks.`,
-        readinessPercentage: Math.max(45, 100 - gaps.length * 8),
-    };
+  return {
+    skillGaps: gaps.sort((a, b) => (a.priority === "High" ? -1 : 1)),
+    summary: `Identified ${gaps.length} competency gaps against standard ${targetRole} benchmarks.`,
+    readinessPercentage: Math.max(45, 100 - gaps.length * 8),
+  };
 };
-
 
 // 3. PERSONALIZED LEARNING PATHWAY
 
-export const generateLearningPath = async ({ competencyGaps = [], jobRole = "Statistical Officer", department = "MoSPI", availableCourses = [] }) => {
-    const prompt = `
+export const generateLearningPath = async ({
+  competencyGaps = [],
+  jobRole = "Statistical Officer",
+  department = "MoSPI",
+  availableCourses = [],
+}) => {
+  const prompt = `
 You are the SankhyaIQ AI Curriculum Director at NSSTA, designing a personalized capacity building pathway for:
 - Role: ${jobRole}
 - Department: ${department}
@@ -290,130 +368,392 @@ Return STRICTLY a JSON object with this exact schema:
 }
 `;
 
-    try {
-        const raw = await callGeminiOrFallback(prompt, "You are an official curriculum designer. Always output strict JSON.");
-        const parsed = cleanAndParseJson(raw, null);
-        if (parsed && Array.isArray(parsed.learningPath) && parsed.learningPath.length) {
-            const normalized = parsed.learningPath.map((step, idx) => ({
-                step: Number(step.step) || idx + 1,
-                title: step.title || `Module ${idx + 1}`,
-                provider: step.provider || "iGOT Karmayogi",
-                skillAddressed: step.skillAddressed || "Statistical Competencies",
-                duration: step.duration || "12 Hours",
-                currentLevel: step.currentLevel || "Beginner",
-                targetLevel: step.targetLevel || "Intermediate",
-                priority: ["High", "Medium", "Low"].includes(step.priority) ? step.priority : (idx < 2 ? "High" : "Medium"),
-                rationale: step.rationale || "Core competency capacity building module.",
-                status: ["in-progress", "completed", "not-started", "pending"].includes(step.status)
-                    ? step.status
-                    : (idx === 0 ? "in-progress" : "not-started"),
-                externalUrl: step.externalUrl || "",
-            }));
+  try {
+    const raw = await callGeminiOrFallback(
+      prompt,
+      "You are an official curriculum designer. Always output strict JSON.",
+    );
+    const parsed = cleanAndParseJson(raw, null);
+    if (
+      parsed &&
+      Array.isArray(parsed.learningPath) &&
+      parsed.learningPath.length
+    ) {
+      const normalized = parsed.learningPath.map((step, idx) => ({
+        step: Number(step.step) || idx + 1,
+        title: step.title || `Module ${idx + 1}`,
+        provider: step.provider || "iGOT Karmayogi",
+        skillAddressed: step.skillAddressed || "Statistical Competencies",
+        duration: step.duration || "12 Hours",
+        currentLevel: step.currentLevel || "Beginner",
+        targetLevel: step.targetLevel || "Intermediate",
+        priority: ["High", "Medium", "Low"].includes(step.priority)
+          ? step.priority
+          : idx < 2
+            ? "High"
+            : "Medium",
+        rationale:
+          step.rationale || "Core competency capacity building module.",
+        status: ["in-progress", "completed", "not-started", "pending"].includes(
+          step.status,
+        )
+          ? step.status
+          : idx === 0
+            ? "in-progress"
+            : "not-started",
+        externalUrl: step.externalUrl || "",
+      }));
 
-            return {
-                pathwayTitle: parsed.pathwayTitle || `${jobRole} Capacity Building Pathway`,
-                estimatedTotalHours: Number(parsed.estimatedTotalHours) || 48,
-                learningPath: normalized,
-            };
-        }
-    } catch (err) {
-        console.error("[LEARNING PATHWAY ERROR]", err.message);
+      return {
+        pathwayTitle:
+          parsed.pathwayTitle || `${jobRole} Capacity Building Pathway`,
+        estimatedTotalHours: Number(parsed.estimatedTotalHours) || 48,
+        learningPath: normalized,
+      };
     }
+  } catch (err) {
+    console.error("[LEARNING PATHWAY ERROR]", err.message);
+  }
+  
+  const path = (availableCourses || []).slice(0, 5).map((course, idx) => ({
+    step: idx + 1,
+    title: course.title,
+    provider: course.provider || "iGOT Karmayogi",
+    skillAddressed: course.skillAddressed || "Statistical Competency",
+    duration: course.duration || "12 Hours",
+    currentLevel: "Intermediate",
+    targetLevel: "Advanced",
+    priority: idx < 2 ? "High" : "Medium",
+    rationale: `Targeted to bridge core competencies in ${course.skillAddressed}.`,
+    status: idx === 0 ? "in-progress" : "not-started",
+  }));
 
-    // Default Fallback Pathway
-    const path = (availableCourses || []).slice(0, 5).map((course, idx) => ({
-        step: idx + 1,
-        title: course.title,
-        provider: course.provider || "iGOT Karmayogi",
-        skillAddressed: course.skillAddressed || "Statistical Competency",
-        duration: course.duration || "12 Hours",
-        currentLevel: "Intermediate",
-        targetLevel: "Advanced",
-        priority: idx < 2 ? "High" : "Medium",
-        rationale: `Targeted to bridge core competencies in ${course.skillAddressed}.`,
-        status: idx === 0 ? "in-progress" : "not-started",
-    }));
-
-    return {
-        pathwayTitle: `${jobRole} Capacity Building Pathway`,
-        estimatedTotalHours: 54,
-        learningPath: path,
-    };
+  return {
+    pathwayTitle: `${jobRole} Capacity Building Pathway`,
+    estimatedTotalHours: 54,
+    learningPath: path,
+  };
 };
 
+// 4. COMPREHENSIVE MCQ GENERATION FROM UPLOADED MATERIAL (PDF, PPT, DOCX, TXT, IMAGES)
 
-// 4. MCQ GENERATION FROM UPLOADED MATERIAL
+const buildMcqPrompt = ({
+  textChunk,
+  documentTitle,
+  domain,
+  topic,
+  numQuestions,
+  difficulty,
+  isAllMode = false,
+}) => {
+  return `
+You are the Chief Examination & Pedagogical Wing of the National Statistical Systems Training Academy (NSSTA).
+Thoroughly analyze the following complete content extracted from the official training manual/presentation/document: "${documentTitle}"
+Domain: ${domain} | Primary Topic: ${topic}
 
-export const generateMCQsFromText = async ({ textContent = "", documentTitle = "Survey Manual", domain = "Statistical Competencies", numQuestions = 5, difficulty = "Medium" }) => {
-    const trimmed = textContent.slice(0, 8000);
-    const prompt = `
-You are the SankhyaIQ AI Examination Wing for the National Statistical Systems Training Academy (NSSTA).
-Read the following extract from the official training manual/circular: "${documentTitle}"
+--- DOCUMENT CONTENT START ---
+${textChunk}
+--- DOCUMENT CONTENT END ---
 
---- EXTRACT START ---
-${trimmed}
---- EXTRACT END ---
+${
+  isAllMode
+    ? `TASK: EXHAUSTIVE MCQ GENERATION.
+Generate ALL POSSIBLE high-quality multiple-choice questions (MCQs) that can be formulated from this content.
+Do NOT omit any section, slide, key definition, formula, classification, rule, procedure, or conceptual distinction.
+Formulate as many thorough, non-redundant questions as needed to achieve 100% conceptual mastery of this document.`
+    : `TASK: Generate ${numQuestions} high-quality multiple-choice questions (MCQs) of difficulty level: ${difficulty}.
+Questions must rigorously test conceptual, procedural, and analytical understanding of the document.`
+}
 
-Task: Generate ${numQuestions} multiple-choice questions (MCQs) of difficulty level: ${difficulty}.
-The questions must strictly test conceptual and methodological understanding of the document content.
+CRITICAL PEDAGOGICAL REQUIREMENTS:
+1. **Coverage**: Formulate questions covering every slide/page/section in the text (definitions, formulas, classifications, survey rules, workflows, practical interpretation).
+2. **Options**: Exactly 4 plausible, unambiguous options labeled:
+   "A) [Option text]",
+   "B) [Option text]",
+   "C) [Option text]",
+   "D) [Option text]"
+3. **Correct Answer**: Exactly one valid letter ("A", "B", "C", or "D").
+4. **Pedagogical Rationale / Explanation**: A comprehensive official explanation explaining WHY the correct option is right and WHY the distractors are incorrect or inapplicable.
+5. **Source Reference**: Identify the specific slide, page, or section (e.g. "Slide 3: Sampling Frames" or "Page 2 - Section 1.4").
+6. **Difficulty**: Assign "Easy", "Medium", or "Hard" based on cognitive depth.
 
-Requirements for each question:
-1. Clear question text.
-2. 4 distinct, plausible options labeled A), B), C), D).
-3. The correct answer letter (e.g. "A").
-4. A thorough official pedagogical explanation explaining why the correct answer is right and why others are incorrect.
-5. The specific concept or section tested.
-
-Return STRICTLY a JSON array of objects with schema:
+Return STRICTLY a valid JSON array of question objects matching this schema:
 [
   {
-    "question": "What is the primary objective of second-stage stratification in NSS multi-stage sampling?",
+    "question": "What is the primary purpose of second-stage stratification in multi-stage survey sampling?",
     "options": [
-      "A) To decrease sample size arbitrarily",
-      "B) To improve precision by grouping homogeneous households by affluence/activity",
-      "C) To eliminate rural clusters",
-      "D) To replace field listing"
+      "A) To decrease total sample size arbitrarily",
+      "B) To improve precision by grouping homogeneous households by socio-economic affluence",
+      "C) To eliminate rural clusters entirely",
+      "D) To bypass primary field listing"
     ],
     "correctAnswer": "B",
-    "explanation": "Second-stage stratification groups households into homogeneous socio-economic strata to minimize within-stratum variance and boost estimation precision.",
-    "topic": "Sampling & Survey Design",
+    "explanation": "Second-stage stratification groups ultimate sampling units into homogeneous strata to minimize within-stratum variance, significantly enhancing estimation precision.",
+    "topic": "${topic}",
+    "sourceReference": "Slide 2 / Section 3: Stratification Guidelines",
     "difficulty": "${difficulty}"
   }
 ]
 `;
-
-    try {
-        const raw = await callGeminiOrFallback(prompt, "You are the SankhyaIQ AI statistical assessment developer. Always output valid JSON array only.");
-        const parsed = cleanAndParseJson(raw, []);
-        if (Array.isArray(parsed) && parsed.length) {
-            return parsed;
-        }
-    } catch (err) {
-        console.error("[MCQ GENERATION ERROR]", err.message);
-    }
-
-    return [
-        {
-            question: `In official statistics based on ${documentTitle}, what constitutes the fundamental unit for sampling frame verification?`,
-            options: [
-                "A) Census Enumeration Block (CEB) / Urban Frame Survey (UFS) Block",
-                "B) Administrative District Headquarters only",
-                "C) Individual respondent PAN number",
-                "D) Postal delivery zone"
-            ],
-            correctAnswer: "A",
-            explanation: "CEB in rural areas and UFS Blocks in urban areas form the primary sampling frame for NSS rounds.",
-            topic: "Survey Methodology",
-            difficulty,
-        },
-    ];
 };
 
+const normalizeMcq = (rawQ, defaultTopic, defaultDifficulty, defaultTitle) => {
+  if (!rawQ || !rawQ.question) return null;
+
+  let rawOptions = Array.isArray(rawQ.options) ? rawQ.options : [];
+  let formattedOptions = [];
+
+  if (rawOptions.length >= 4) {
+    formattedOptions = rawOptions.slice(0, 4).map((opt, idx) => {
+      const label = ["A", "B", "C", "D"][idx];
+      const cleanText = String(opt)
+        .replace(/^[A-D][\)\.\:\-\s]+/i, "")
+        .trim();
+      return `${label}) ${cleanText}`;
+    });
+  } else {
+    formattedOptions = [
+      `A) Direct principle stated in ${defaultTitle}`,
+      `B) Secondary administrative convention`,
+      `C) Non-standard unverified assumption`,
+      `D) Excluded operational category`,
+    ];
+  }
+
+  let correctLetter = "A";
+  if (typeof rawQ.correctAnswer === "string") {
+    const match = rawQ.correctAnswer.trim().toUpperCase().match(/[A-D]/);
+    if (match) correctLetter = match[0];
+  }
+
+  return {
+    question: String(rawQ.question).trim(),
+    options: formattedOptions,
+    correctAnswer: correctLetter,
+    explanation: String(
+      rawQ.explanation ||
+        rawQ.rationale ||
+        `Official guideline concept from ${defaultTitle}.`,
+    ).trim(),
+    topic: String(rawQ.topic || defaultTopic).trim(),
+    sourceReference: String(
+      rawQ.sourceReference || rawQ.slide || rawQ.page || defaultTitle,
+    ).trim(),
+    difficulty: ["Easy", "Medium", "Hard"].includes(rawQ.difficulty)
+      ? rawQ.difficulty
+      : defaultDifficulty,
+  };
+};
+
+export const generateMCQsFromText = async (
+  textOrOptions = {},
+  maybeOptions = {},
+) => {
+  // 1. Resolve arguments (support both (optionsObject) and (textContent, optionsObject))
+  let textContent = "";
+  let documentTitle = "Official Training Manual";
+  let domain = "Statistical Competencies";
+  let topic = "Survey Methodologies";
+  let numQuestions = "all";
+  let difficulty = "Medium";
+  let mode = "all"; // "all" for exhaustive, or "fixed"
+  let fileData = "";
+  let fileType = "";
+
+  if (typeof textOrOptions === "string") {
+    textContent = textOrOptions;
+    if (typeof maybeOptions === "object" && maybeOptions !== null) {
+      documentTitle = maybeOptions.documentTitle || documentTitle;
+      domain = maybeOptions.domain || domain;
+      topic = maybeOptions.topic || topic;
+      numQuestions = maybeOptions.numQuestions ?? numQuestions;
+      difficulty = maybeOptions.difficulty || difficulty;
+      mode = maybeOptions.mode || (numQuestions === "all" ? "all" : "fixed");
+      fileData = maybeOptions.fileData || "";
+      fileType = maybeOptions.fileType || "";
+    }
+  } else if (typeof textOrOptions === "object" && textOrOptions !== null) {
+    textContent = textOrOptions.textContent || "";
+    documentTitle = textOrOptions.documentTitle || documentTitle;
+    domain = textOrOptions.domain || domain;
+    topic = textOrOptions.topic || topic;
+    numQuestions = textOrOptions.numQuestions ?? numQuestions;
+    difficulty = textOrOptions.difficulty || difficulty;
+    mode = textOrOptions.mode || (numQuestions === "all" ? "all" : "fixed");
+    fileData = textOrOptions.fileData || "";
+    fileType = textOrOptions.fileType || "";
+  }
+
+  const isAllMode =
+    mode === "all" || numQuestions === "all" || Number(numQuestions) >= 15;
+  const cleanText = (textContent || "").trim();
+
+  // Check for image multimodal processing if text is minimal but image data exists
+  let imageInlineData = null;
+  if (fileData && fileData.startsWith("data:image/")) {
+    const match = fileData.match(/^data:(image\/[a-zA-Z0-9+.-]+);base64,(.+)$/);
+    if (match) {
+      imageInlineData = {
+        mimeType: match[1],
+        data: match[2],
+      };
+    }
+  }
+
+  // 2. Multi-chunking logic for very large documents / presentations
+  const chunks = [];
+  const MAX_CHUNK_SIZE = 25000;
+
+  if (
+    cleanText.length > MAX_CHUNK_SIZE &&
+    (cleanText.includes("--- Slide") || cleanText.includes("--- Page"))
+  ) {
+    const delimiter = cleanText.includes("--- Slide")
+      ? /(?=--- Slide \d+)/g
+      : /(?=--- Page \d+)/g;
+    const sections = cleanText.split(delimiter).filter(Boolean);
+
+    let currentChunk = "";
+    for (const section of sections) {
+      if (
+        (currentChunk + section).length > MAX_CHUNK_SIZE &&
+        currentChunk.length > 500
+      ) {
+        chunks.push(currentChunk.trim());
+        currentChunk = section;
+      } else {
+        currentChunk += `\n\n${section}`;
+      }
+    }
+    if (currentChunk.trim()) {
+      chunks.push(currentChunk.trim());
+    }
+  } else {
+    chunks.push(cleanText.slice(0, 100000));
+  }
+
+  const allGeneratedQuestions = [];
+
+  try {
+    for (let i = 0; i < chunks.length; i++) {
+      const chunk = chunks[i];
+      const targetForChunk = isAllMode
+        ? "all"
+        : Math.max(3, Math.ceil(Number(numQuestions) / chunks.length));
+
+      const prompt = buildMcqPrompt({
+        textChunk:
+          chunk ||
+          `Official NSSTA study material: ${documentTitle}. Focus on ${topic} (${domain}).`,
+        documentTitle:
+          chunks.length > 1
+            ? `${documentTitle} (Part ${i + 1} of ${chunks.length})`
+            : documentTitle,
+        domain,
+        topic,
+        numQuestions: targetForChunk,
+        difficulty,
+        isAllMode,
+      });
+
+      const raw = await callGeminiOrFallback(
+        prompt,
+        "You are the senior NSSTA Examination Director. Return strictly a JSON array of valid multiple choice questions with thorough explanations.",
+        { imageInlineData, jsonMode: true },
+      );
+
+      const parsed = cleanAndParseJson(raw, []);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        parsed.forEach((rawQ) => {
+          const normalized = normalizeMcq(
+            rawQ,
+            topic,
+            difficulty,
+            documentTitle,
+          );
+          if (normalized) {
+            const isDuplicate = allGeneratedQuestions.some(
+              (existing) =>
+                existing.question.toLowerCase().trim() ===
+                normalized.question.toLowerCase().trim(),
+            );
+            if (!isDuplicate) {
+              allGeneratedQuestions.push(normalized);
+            }
+          }
+        });
+      }
+    }
+
+    if (allGeneratedQuestions.length > 0) {
+      if (!isAllMode && Number(numQuestions) > 0) {
+        return allGeneratedQuestions.slice(0, Number(numQuestions));
+      }
+      return allGeneratedQuestions;
+    }
+  } catch (err) {
+    console.error("[MCQ GENERATION ERROR]", err.message);
+  }
+
+  // High quality pedagogical fallback if model fails
+  return [
+    {
+      question: `In official statistical methodology based on ${documentTitle}, what constitutes the fundamental unit for primary sampling verification?`,
+      options: [
+        "A) Census Enumeration Block (CEB) / Urban Frame Survey (UFS) Block",
+        "B) Administrative District Headquarters registry only",
+        "C) Individual respondent PAN/Aadhaar identification number",
+        "D) Commercial postal logistics delivery zone",
+      ],
+      correctAnswer: "A",
+      explanation:
+        "CEB in rural regions and UFS Blocks in urban centers form the standard primary sampling frame for official NSS rounds and national statistical estimations.",
+      topic: topic || "Survey Methodology",
+      sourceReference: `${documentTitle} - Core Framework`,
+      difficulty,
+    },
+    {
+      question: `According to ${documentTitle}, what is the primary objective of data stratification prior to field sampling?`,
+      options: [
+        "A) To arbitrarily restrict the sample size to save administrative costs",
+        "B) To group heterogeneous populations into homogeneous strata for higher estimation precision",
+        "C) To eliminate all secondary stage sampling requirements",
+        "D) To bypass the necessity of listing operations",
+      ],
+      correctAnswer: "B",
+      explanation:
+        "Stratification ensures that sub-populations with distinct characteristics are adequately represented, minimizing intra-stratum variance and maximizing estimator efficiency.",
+      topic: topic || "Sampling & Estimation",
+      sourceReference: `${documentTitle} - Stratification Rules`,
+      difficulty,
+    },
+    {
+      question: `Which statistical principle governs the minimization of non-sampling errors during official surveys as outlined in ${documentTitle}?`,
+      options: [
+        "A) Increasing sample size infinitely without standardized field protocols",
+        "B) Comprehensive enumerator training, rigorous manual verification, and computerized validation checks",
+        "C) Solely relying on voluntary post-survey postal responses",
+        "D) Omitting non-responding households from the baseline denominator",
+      ],
+      correctAnswer: "B",
+      explanation:
+        "Non-sampling errors (e.g. measurement, response, and processing errors) are controlled through standardized field procedures, training manuals, and structured logic checks.",
+      topic: topic || "Survey Quality Assurance",
+      sourceReference: `${documentTitle} - Quality Assurance`,
+      difficulty,
+    },
+  ];
+};
 
 // 5. ON-DEMAND STATISTICAL QUIZ GENERATOR
 
-export const generateQuiz = async ({ topic = "Sampling Techniques & Estimation", domain = "Statistical Competencies", difficulty = "Medium", numQuestions = 5 }) => {
-    const prompt = `
+export const generateQuiz = async ({
+  topic = "Sampling Techniques & Estimation",
+  domain = "Statistical Competencies",
+  difficulty = "Medium",
+  numQuestions = 5,
+}) => {
+  const prompt = `
 You are the SankhyaIQ AI Statistical Assessment Wing at NSSTA.
 Generate an official statistical diagnostic test on:
 - Topic: ${topic}
@@ -447,109 +787,144 @@ Return STRICTLY a JSON object with schema:
 }
 `;
 
-    try {
-        const raw = await callGeminiOrFallback(prompt, "You are the SankhyaIQ AI statistical examination authority. Output strict valid JSON object only.");
-        const parsed = cleanAndParseJson(raw, null);
-        if (parsed && Array.isArray(parsed.questions) && parsed.questions.length) {
-            return parsed;
-        }
-    } catch (err) {
-        console.error("[QUIZ GENERATION ERROR]", err.message);
+  try {
+    const raw = await callGeminiOrFallback(
+      prompt,
+      "You are the SankhyaIQ AI statistical examination authority. Output strict valid JSON object only.",
+    );
+    const parsed = cleanAndParseJson(raw, null);
+    if (parsed && Array.isArray(parsed.questions) && parsed.questions.length) {
+      return parsed;
     }
+  } catch (err) {
+    console.error("[QUIZ GENERATION ERROR]", err.message);
+  }
 
-    return {
-        title: `${topic} Diagnostic Test`,
-        domain,
-        topic,
-        difficulty,
-        timeLimitMinutes: numQuestions * 2,
-        questions: [
-            {
-                question: "In the System of National Accounts (SNA 2008), how is Gross Value Added (GVA) at basic prices related to Gross Domestic Product (GDP)?",
-                options: [
-                    "A) GDP = GVA at basic prices + Product Taxes - Product Subsidies",
-                    "B) GDP = GVA at factor cost only",
-                    "C) GDP = GVA - Net Indirect Taxes",
-                    "D) GDP = Net National Income (NNI)"
-                ],
-                correctAnswer: "A",
-                explanation: "Under SNA 2008, GDP at market prices is derived from GVA at basic prices by adding taxes on products and subtracting subsidies on products.",
-                topic,
-            }
+  return {
+    title: `${topic} Diagnostic Test`,
+    domain,
+    topic,
+    difficulty,
+    timeLimitMinutes: numQuestions * 2,
+    questions: [
+      {
+        question:
+          "In the System of National Accounts (SNA 2008), how is Gross Value Added (GVA) at basic prices related to Gross Domestic Product (GDP)?",
+        options: [
+          "A) GDP = GVA at basic prices + Product Taxes - Product Subsidies",
+          "B) GDP = GVA at factor cost only",
+          "C) GDP = GVA - Net Indirect Taxes",
+          "D) GDP = Net National Income (NNI)",
         ],
-    };
+        correctAnswer: "A",
+        explanation:
+          "Under SNA 2008, GDP at market prices is derived from GVA at basic prices by adding taxes on products and subtracting subsidies on products.",
+        topic,
+      },
+    ],
+  };
 };
-export const evaluateQuizSubmission = async ({ quiz = {}, questions = [], userAnswers = [], timeTakenSeconds = 60 }) => {
-    let correctCount = 0;
-    const evaluatedQuestions = [];
-    const topicBreakdown = {};
+export const evaluateQuizSubmission = async ({
+  quiz = {},
+  questions = [],
+  userAnswers = [],
+  timeTakenSeconds = 60,
+}) => {
+  let correctCount = 0;
+  const evaluatedQuestions = [];
+  const topicBreakdown = {};
 
-    const qList = Array.isArray(questions) && questions.length
-        ? questions
-        : Array.isArray(quiz?.questions)
+  const qList =
+    Array.isArray(questions) && questions.length
+      ? questions
+      : Array.isArray(quiz?.questions)
         ? quiz.questions
         : [];
 
-    qList.forEach((q, idx) => {
-        const userAns = userAnswers[idx] || "";
-        const correctLetter = (q.correctAnswer || "A").trim().charAt(0).toUpperCase();
-        const userLetter = String(userAns || "").trim().charAt(0).toUpperCase();
-        const isCorrect = userLetter === correctLetter || (q.correctAnswer && String(userAns).toLowerCase().includes(String(q.correctAnswer).toLowerCase()));
+  qList.forEach((q, idx) => {
+    const userAns = userAnswers[idx] || "";
+    const correctLetter = (q.correctAnswer || "A")
+      .trim()
+      .charAt(0)
+      .toUpperCase();
+    const userLetter = String(userAns || "")
+      .trim()
+      .charAt(0)
+      .toUpperCase();
+    const isCorrect =
+      userLetter === correctLetter ||
+      (q.correctAnswer &&
+        String(userAns)
+          .toLowerCase()
+          .includes(String(q.correctAnswer).toLowerCase()));
 
-        if (isCorrect) correctCount++;
+    if (isCorrect) correctCount++;
 
-        const topic = q.topic || quiz?.topic || "General";
-        if (!topicBreakdown[topic]) {
-            topicBreakdown[topic] = { total: 0, correct: 0 };
-        }
-        topicBreakdown[topic].total += 1;
-        if (isCorrect) topicBreakdown[topic].correct += 1;
+    const topic = q.topic || quiz?.topic || "General";
+    if (!topicBreakdown[topic]) {
+      topicBreakdown[topic] = { total: 0, correct: 0 };
+    }
+    topicBreakdown[topic].total += 1;
+    if (isCorrect) topicBreakdown[topic].correct += 1;
 
-        evaluatedQuestions.push({
-            questionText: q.question,
-            selectedOption: userAns || "Not Answered",
-            correctAnswer: Array.isArray(q.options) ? (q.options.find((o) => o.startsWith(q.correctAnswer)) || q.correctAnswer) : q.correctAnswer,
-            isCorrect,
-            explanation: q.explanation || "Official statistical rationale.",
-            topic,
-        });
+    evaluatedQuestions.push({
+      questionText: q.question,
+      selectedOption: userAns || "Not Answered",
+      correctAnswer: Array.isArray(q.options)
+        ? q.options.find((o) => o.startsWith(q.correctAnswer)) ||
+          q.correctAnswer
+        : q.correctAnswer,
+      isCorrect,
+      explanation: q.explanation || "Official statistical rationale.",
+      topic,
     });
+  });
 
-    const total = qList.length || 1;
-    const score = Math.round((correctCount / total) * 100);
-    const accuracy = Math.round((correctCount / total) * 100);
+  const total = qList.length || 1;
+  const score = Math.round((correctCount / total) * 100);
+  const accuracy = Math.round((correctCount / total) * 100);
 
-    const topicAnalysis = Object.keys(topicBreakdown).map((top) => {
-        const data = topicBreakdown[top];
-        const topicScore = Math.round((data.correct / data.total) * 100);
-        return {
-            topic: top,
-            score: topicScore,
-            status: topicScore >= 75 ? "Mastered" : topicScore >= 50 ? "Developing" : "Needs Review",
-        };
-    });
+  const topicAnalysis = Object.keys(topicBreakdown).map((top) => {
+    const data = topicBreakdown[top];
+    const topicScore = Math.round((data.correct / data.total) * 100);
+    return {
+      topic: top,
+      score: topicScore,
+      status:
+        topicScore >= 75
+          ? "Mastered"
+          : topicScore >= 50
+            ? "Developing"
+            : "Needs Review",
+    };
+  });
 
-    const aiFeedback = score >= 80
-        ? "Outstanding conceptual mastery! You demonstrated thorough understanding of official guidelines and statistical methodologies."
-        : score >= 60
+  const aiFeedback =
+    score >= 80
+      ? "Outstanding conceptual mastery! You demonstrated thorough understanding of official guidelines and statistical methodologies."
+      : score >= 60
         ? "Good performance! You have a solid grasp of foundational concepts, with a few specific areas recommended for targeted review."
         : "Further capacity building recommended. We suggest reviewing the recommended iGOT training modules to strengthen your core concepts.";
 
-    return {
-        score,
-        accuracy,
-        correctCount,
-        totalQuestions: total,
-        timeTakenSeconds,
-        aiFeedback,
-        evaluatedQuestions,
-        topicAnalysis,
-        passed: score >= 60,
-    };
+  return {
+    score,
+    accuracy,
+    correctCount,
+    totalQuestions: total,
+    timeTakenSeconds,
+    aiFeedback,
+    evaluatedQuestions,
+    topicAnalysis,
+    passed: score >= 60,
+  };
 };
 
-export const generateAIAssistantResponse = async ({ conversationHistory = [], userMessage = "", learnerContext = {} }) => {
-    const systemPrompt = `
+export const generateAIAssistantResponse = async ({
+  conversationHistory = [],
+  userMessage = "",
+  learnerContext = {},
+}) => {
+  const systemPrompt = `
 You are "SankhyaCopilot", the dedicated AI Learning and Statistical Intelligence Copilot powered by the SankhyaIQ AI Neural Engine for the National Statistical Systems Training Academy (NSSTA), Ministry of Statistics & Programme Implementation (MoSPI), Government of India.
 
 Your core mission:
@@ -566,26 +941,35 @@ Learner Profile Context:
 - Level: ${learnerContext.overallLevel || "Intermediate"}
 `;
 
-    const recentHistory = conversationHistory.slice(-6).map((m) => `${m.role === "user" ? "Learner" : "SankhyaCopilot"}: ${m.content}`).join("\n");
-    const fullPrompt = `${recentHistory}\nLearner: ${userMessage}\nSankhyaCopilot:`;
+  const recentHistory = conversationHistory
+    .slice(-6)
+    .map(
+      (m) =>
+        `${m.role === "user" ? "Learner" : "SankhyaCopilot"}: ${m.content}`,
+    )
+    .join("\n");
+  const fullPrompt = `${recentHistory}\nLearner: ${userMessage}\nSankhyaCopilot:`;
 
-    try {
-        const responseText = await callGeminiOrFallback(fullPrompt, systemPrompt);
-        if (responseText) return responseText;
-    } catch (err) {
-        console.error("[AI COPILOT ERROR]", err.message);
-    }
+  try {
+    const responseText = await callGeminiOrFallback(fullPrompt, systemPrompt);
+    if (responseText) return responseText;
+  } catch (err) {
+    console.error("[AI COPILOT ERROR]", err.message);
+  }
 
-    return "Namaste. In official statistics, ensure you verify the sampling frame and apply the appropriate design weights. For further guidance, explore our NSSTA modules or specify your inquiry on survey methodology, GDP estimation, or statistical computing.";
+  return "Namaste. In official statistics, ensure you verify the sampling frame and apply the appropriate design weights. For further guidance, explore our NSSTA modules or specify your inquiry on survey methodology, GDP estimation, or statistical computing.";
 };
-
 
 // 8. ADAPTIVE RECOMMENDATIONS
 
-export const generateAdaptiveRecommendations = async ({ weakTopics = [], recentScores = [], currentPath = [] }) => {
-    if (!weakTopics.length) return currentPath;
+export const generateAdaptiveRecommendations = async ({
+  weakTopics = [],
+  recentScores = [],
+  currentPath = [],
+}) => {
+  if (!weakTopics.length) return currentPath;
 
-    const prompt = `
+  const prompt = `
 As the SankhyaIQ Adaptive Learning AI, recommend 2 immediate remediation micro-courses for an official who struggled with the following topics in recent assessments:
 Weak Topics: ${JSON.stringify(weakTopics)}
 Recent Scores: ${JSON.stringify(recentScores)}
@@ -603,22 +987,28 @@ Return STRICTLY a JSON array of 2 recommended modules with schema:
 ]
 `;
 
-    try {
-        const raw = await callGeminiOrFallback(prompt, "Return strict valid JSON array.");
-        const parsed = cleanAndParseJson(raw, []);
-        if (Array.isArray(parsed) && parsed.length) {
-            return [...parsed, ...currentPath];
-        }
-    } catch (err) {
-        console.error("[ADAPTIVE RECOMMENDATIONS ERROR]", err.message);
+  try {
+    const raw = await callGeminiOrFallback(
+      prompt,
+      "Return strict valid JSON array.",
+    );
+    const parsed = cleanAndParseJson(raw, []);
+    if (Array.isArray(parsed) && parsed.length) {
+      return [...parsed, ...currentPath];
     }
+  } catch (err) {
+    console.error("[ADAPTIVE RECOMMENDATIONS ERROR]", err.message);
+  }
 
-    return currentPath;
+  return currentPath;
 };
 
-
-export const evaluateAssignmentSubmission = async ({ assignment = {}, submissionText = "", learnerProfile = {} }) => {
-    const prompt = `
+export const evaluateAssignmentSubmission = async ({
+  assignment = {},
+  submissionText = "",
+  learnerProfile = {},
+}) => {
+  const prompt = `
 You are the Chief Academic Evaluator for the National Statistical Systems Training Academy (NSSTA), Ministry of Statistics & Programme Implementation (MoSPI).
 
 Evaluate the following official statistical case-study / assignment submission:
@@ -690,65 +1080,90 @@ Return STRICTLY a JSON object with this schema:
 }
 `;
 
-    try {
-        const raw = await callGeminiOrFallback(prompt, "You are a senior statistical examiner. Output strict valid JSON object only.");
-        const parsed = cleanAndParseJson(raw, null);
-        if (parsed && parsed.overallScore !== undefined) {
-            return parsed;
-        }
-    } catch (err) {
-        console.error("[ASSIGNMENT EVALUATION ERROR]", err.message);
+  try {
+    const raw = await callGeminiOrFallback(
+      prompt,
+      "You are a senior statistical examiner. Output strict valid JSON object only.",
+    );
+    const parsed = cleanAndParseJson(raw, null);
+    if (parsed && parsed.overallScore !== undefined) {
+      return parsed;
     }
+  } catch (err) {
+    console.error("[ASSIGNMENT EVALUATION ERROR]", err.message);
+  }
 
-    const wordCount = submissionText.trim().split(/\s+/).length;
-    const baseScore = Math.min(92, Math.max(55, Math.round(wordCount > 100 ? 78 + (wordCount % 12) : 62)));
+  const wordCount = submissionText.trim().split(/\s+/).length;
+  const baseScore = Math.min(
+    92,
+    Math.max(55, Math.round(wordCount > 100 ? 78 + (wordCount % 12) : 62)),
+  );
 
-    return {
-        overallScore: baseScore,
-        grade: baseScore >= 85 ? "A+" : baseScore >= 75 ? "A" : baseScore >= 60 ? "B" : "C",
-        rubricScores: [
-            {
-                criterion: "Methodological Rigor & Application",
-                score: Math.round((baseScore / 100) * 25),
-                maxScore: 25,
-                feedback: "Applied core official statistical concepts and guidelines appropriately.",
-            },
-            {
-                criterion: "Accuracy & Formula Implementation",
-                score: Math.round((baseScore / 100) * 25),
-                maxScore: 25,
-                feedback: "Formulations and step-by-step logic are consistent with MoSPI standards.",
-            },
-            {
-                criterion: "Regulatory & Quality Compliance (NQAF)",
-                score: Math.round((baseScore / 100) * 25),
-                maxScore: 25,
-                feedback: "Good adherence to official metadata standards.",
-            },
-            {
-                criterion: "Actionable Insights & Policy Formulation",
-                score: Math.round((baseScore / 100) * 25),
-                maxScore: 25,
-                feedback: "Clear practical recommendations provided for the operational unit.",
-            },
-        ],
-        strengths: ["Comprehensive coverage of scenario requirements", "Structured official response layout"],
-        improvementAreas: ["Consider adding more empirical boundary cases", "Deepen standard error estimation logic"],
-        detailedFeedback: `Your submission has been evaluated against NSSTA benchmark rubrics. Overall score of ${baseScore}/100 awarded.`,
-        suggestedNextSteps: ["Explore the relevant iGOT Karmayogi remediation modules", "Review official MoSPI case studies"],
-        competencyScoreDelta: Math.max(3, Math.round(baseScore / 18)),
-    };
+  return {
+    overallScore: baseScore,
+    grade:
+      baseScore >= 85
+        ? "A+"
+        : baseScore >= 75
+          ? "A"
+          : baseScore >= 60
+            ? "B"
+            : "C",
+    rubricScores: [
+      {
+        criterion: "Methodological Rigor & Application",
+        score: Math.round((baseScore / 100) * 25),
+        maxScore: 25,
+        feedback:
+          "Applied core official statistical concepts and guidelines appropriately.",
+      },
+      {
+        criterion: "Accuracy & Formula Implementation",
+        score: Math.round((baseScore / 100) * 25),
+        maxScore: 25,
+        feedback:
+          "Formulations and step-by-step logic are consistent with MoSPI standards.",
+      },
+      {
+        criterion: "Regulatory & Quality Compliance (NQAF)",
+        score: Math.round((baseScore / 100) * 25),
+        maxScore: 25,
+        feedback: "Good adherence to official metadata standards.",
+      },
+      {
+        criterion: "Actionable Insights & Policy Formulation",
+        score: Math.round((baseScore / 100) * 25),
+        maxScore: 25,
+        feedback:
+          "Clear practical recommendations provided for the operational unit.",
+      },
+    ],
+    strengths: [
+      "Comprehensive coverage of scenario requirements",
+      "Structured official response layout",
+    ],
+    improvementAreas: [
+      "Consider adding more empirical boundary cases",
+      "Deepen standard error estimation logic",
+    ],
+    detailedFeedback: `Your submission has been evaluated against NSSTA benchmark rubrics. Overall score of ${baseScore}/100 awarded.`,
+    suggestedNextSteps: [
+      "Explore the relevant iGOT Karmayogi remediation modules",
+      "Review official MoSPI case studies",
+    ],
+    competencyScoreDelta: Math.max(3, Math.round(baseScore / 18)),
+  };
 };
 
 export default {
-    scoreToLevel,
-    generateCompetencyAssessment,
-    analyzeSkillGaps,
-    generateLearningPath,
-    generateMCQsFromText,
-    generateQuiz,
-    evaluateQuizSubmission,
-    generateAIAssistantResponse,
-    generateAdaptiveRecommendations,
-    evaluateAssignmentSubmission,
+  scoreToLevel,
+  generateCompetencyAssessment,
+  analyzeSkillGaps,
+  generateLearningPath,
+  generateMCQsFromText,
+  generateQuiz,
+  evaluateQuizSubmission,
+  generateAIAssistantResponse,
+  generateAdaptiveRecommendations,
+  evaluateAssignmentSubmission,
 };
