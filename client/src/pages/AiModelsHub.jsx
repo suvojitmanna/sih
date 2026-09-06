@@ -29,7 +29,7 @@ import PageTransition from "../components/PageTransition";
 const AI_MODELS_DATA = [
   {
     id: "interview",
-    title: "AI Cadre Mock Interview Bot & Viva Voce",
+    title: "AI Mock Interview",
     shortName: "Viva Voce",
     subtitle:
       "Realistic video avatar interview board with real-time speech-to-text voice recognition",
@@ -75,7 +75,7 @@ const AI_MODELS_DATA = [
   },
   {
     id: "assignments",
-    title: "AI Generated Case Study Assignments",
+    title: "AI Graded Case Study Assignments",
     shortName: "Case Studies",
     subtitle:
       "Real-world MoSPI operational scenarios with instant rubric-based AI grading",
@@ -120,7 +120,7 @@ const AI_MODELS_DATA = [
   },
   {
     id: "copilot",
-    title: "SankhyaCopilot AI Domain Assistant",
+    title: "SankhyaIQ AI Chatbot",
     shortName: "Copilot",
     subtitle:
       "24/7 official statistical methodology tutor and circular guidance copilot",
@@ -165,7 +165,7 @@ const AI_MODELS_DATA = [
   },
   {
     id: "mcq",
-    title: "AI MCQ Question Authoring Studio",
+    title: "AI Generated MCQ",
     shortName: "MCQ Studio",
     subtitle:
       "Automated text extraction from survey manuals and circulars into 4-option MCQs",
@@ -210,7 +210,7 @@ const AI_MODELS_DATA = [
   },
   {
     id: "quizzes",
-    title: "AI Diagnostic Quizzes & Test Engine",
+    title: "AI Quiz & Test",
     shortName: "Diagnostics",
     subtitle:
       "On-demand timed diagnostic tests with question palettes and topic mastery diagnostics",
@@ -256,7 +256,7 @@ const AI_MODELS_DATA = [
   },
   {
     id: "competencies",
-    title: "AI Multi-Domain Competency Engine",
+    title: "AI Multi-Domain Competency Knowledge",
     shortName: "Competency",
     subtitle:
       "Automated skill-gap assessment against ISS, SSS, and FOD Cadre standards",
@@ -301,7 +301,7 @@ const AI_MODELS_DATA = [
   },
   {
     id: "learning-path",
-    title: "AI Learning Pathway Synthesizer",
+    title: "AI Learning Pathway",
     shortName: "iGOT Pathway",
     subtitle:
       "Personalized capacity roadmaps combining iGOT digital courses & NSSTA residential programmes",
@@ -448,8 +448,8 @@ const AiModelsHub = () => {
                   type="button"
                   onClick={() => setSelectedModelId(model.id)}
                   className={`shrink-0 flex items-center gap-2.5 px-3.5 py-2.5 rounded-2xl transition-all cursor-pointer select-none text-xs font-bold border ${isSelected
-                      ? `bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 border-blue-500 shadow-md ring-2 ring-blue-500/20`
-                      : "bg-white/80 dark:bg-slate-900/80 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800"
+                    ? `bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 border-blue-500 shadow-md ring-2 ring-blue-500/20`
+                    : "bg-white/80 dark:bg-slate-900/80 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800"
                     }`}
                 >
                   <div className={`p-1.5 rounded-xl text-white bg-gradient-to-tr ${model.gradient} shadow-xs`}>
@@ -491,8 +491,8 @@ const AiModelsHub = () => {
                       whileHover={{ scale: 1.015 }}
                       whileTap={{ scale: 0.985 }}
                       className={`w-full text-left p-3.5 rounded-2xl transition-all relative flex items-start gap-3.5 cursor-pointer select-none ${isSelected
-                          ? `bg-gradient-to-r from-blue-50 to-indigo-50/80 dark:from-slate-800/90 dark:to-blue-950/60 border-2 ${model.glowColor} shadow-md`
-                          : "hover:bg-slate-50 dark:hover:bg-slate-800/50 border border-transparent"
+                        ? `bg-gradient-to-r from-blue-50 to-indigo-50/80 dark:from-slate-800/90 dark:to-blue-950/60 border-2 ${model.glowColor} shadow-md`
+                        : "hover:bg-slate-50 dark:hover:bg-slate-800/50 border border-transparent"
                         }`}
                     >
                       {isSelected && (

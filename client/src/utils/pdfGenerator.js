@@ -166,7 +166,7 @@ export const generateChatPDF = ({ chat, user }) => {
   doc.text(`Date & Time: ${dateStr}`, margin + 70, currentY + 13);
   doc.text(`Exchanges: ${totalMsgs} Messages`, margin + 135, currentY + 13);
   doc.text(
-    "AI Model: SankhyaCopilot Domain AI (MoSPI Grounded)",
+    "AI Model: SankhyaIQ AI Chatbot (SankhyaCopilot Neural)",
     margin + 5,
     currentY + 20,
   );
@@ -246,12 +246,12 @@ export const generateChatPDF = ({ chat, user }) => {
 
   applyOfficialDecorations(
     doc,
-    "SankhyaCopilot AI Consultation Transcript",
+    "SankhyaIQ AI Chatbot Consultation Record",
     "Conversational Statistical Methodology & MoSPI Circular Guidance Record",
     docId,
   );
 
-  const filename = `MoSPI_SankhyaCopilot_Chat_${(chat?.name || "Transcript").replace(/[^a-zA-Z0-9]/g, "_")}.pdf`;
+  const filename = `MoSPI_SankhyaIQ_AI_Chatbot_${(chat?.name || "Transcript").replace(/[^a-zA-Z0-9]/g, "_")}.pdf`;
   doc.save(filename);
 };
 
@@ -350,12 +350,12 @@ export const generateInterviewPDF = ({ interview, user }) => {
     currentY + 19.5,
   );
   doc.text(
-    `Status: ${(interview?.status || "Completed").toUpperCase()}`,
+    `AI Model: AI Mock Interview (SankhyaIQ Oral Engine)`,
     margin + 5,
     currentY + 25.5,
   );
   doc.text(
-    `Total Questions: ${rawQuestions.length || 5} Questions`,
+    `Mode: ${(interview?.mode || "Technical").toUpperCase()} Viva Voce`,
     margin + 72,
     currentY + 25.5,
   );
@@ -552,12 +552,12 @@ export const generateInterviewPDF = ({ interview, user }) => {
 
   applyOfficialDecorations(
     doc,
-    "Cadre Mock Interview & Viva Voce Scorecard",
+    "AI Mock Interview Scorecard",
     "Video Avatar Oral Examination & Cadre Suitability Assessment Record",
     docId,
   );
 
-  const filename = `MoSPI_Viva_Voce_Report_${(interview?.role || "Cadre").replace(/[^a-zA-Z0-9]/g, "_")}.pdf`;
+  const filename = `MoSPI_AI_Mock_Interview_${(interview?.role || "Cadre").replace(/[^a-zA-Z0-9]/g, "_")}.pdf`;
   doc.save(filename);
 };
 
@@ -617,7 +617,7 @@ export const generateAssignmentPDF = ({ submission, user }) => {
     currentY + 19.5,
   );
   doc.text(
-    "Evaluation Standard: MoSPI 4-Criterion Operational Rubric",
+    "AI Model: AI Graded Case Study Assignments (SankhyaRubric Evaluator)",
     margin + 5,
     currentY + 25.5,
   );
@@ -796,12 +796,12 @@ export const generateAssignmentPDF = ({ submission, user }) => {
 
   applyOfficialDecorations(
     doc,
-    "Case Study Practicum Evaluation Dossier",
+    "AI Graded Case Study Assignments Evaluation Dossier",
     "Operational Statistical Problem Solving & Rubric Assessment Record",
     docId,
   );
 
-  const filename = `MoSPI_CaseStudy_Evaluation_${(submission?.assignmentTitle || "CaseStudy").replace(/[^a-zA-Z0-9]/g, "_")}.pdf`;
+  const filename = `MoSPI_AI_Graded_Case_Study_Assignments_${(submission?.assignmentTitle || "CaseStudy").replace(/[^a-zA-Z0-9]/g, "_")}.pdf`;
   doc.save(filename);
 };
 
@@ -865,12 +865,12 @@ export const generateQuizPDF = ({ attempt, user }) => {
     currentY + 19.5,
   );
   doc.text(
-    `Score: ${correctCount} / ${totalQuestions} Correct (${accuracy}% Accuracy)`,
+    `AI Model: AI Quiz & Test (Adaptive Diagnostic)`,
     margin + 5,
     currentY + 25.5,
   );
   doc.text(
-    `Duration: ${Math.round((attempt?.timeTakenSeconds || 60) / 60)} Minutes`,
+    `Score: ${correctCount} / ${totalQuestions} Correct (${accuracy}% Accuracy)`,
     margin + 72,
     currentY + 25.5,
   );
@@ -1035,12 +1035,12 @@ export const generateQuizPDF = ({ attempt, user }) => {
 
   applyOfficialDecorations(
     doc,
-    "Diagnostic Examination & Topic Mastery Dossier",
+    "AI Quiz & Test Diagnostic Examination Dossier",
     "Timed Knowledge Assessment & Objective Competency Validation Record",
     docId,
   );
 
-  const filename = `MoSPI_Diagnostic_Quiz_Result_${(attempt?.quizTitle || attempt?.topic || "Quiz").replace(/[^a-zA-Z0-9]/g, "_")}.pdf`;
+  const filename = `MoSPI_AI_Quiz_and_Test_${(attempt?.quizTitle || attempt?.topic || "Quiz").replace(/[^a-zA-Z0-9]/g, "_")}.pdf`;
   doc.save(filename);
 };
 
@@ -1110,15 +1110,16 @@ export const generateCompetencyPDF = ({
     currentY + 19.5,
   );
   doc.text(
-    `Active Skill Gaps: ${skillGaps.length} Priority Gaps`,
-    margin + 5,
-    currentY + 25.5,
-  );
-  doc.text(
-    `Pathway Modules: ${learningPath.length} Assigned`,
-    margin + 72,
-    currentY + 25.5,
-  );
+  `AI Analysis: Multi-Domain Competency Assessment`,
+  margin + 5,
+  currentY + 25.5,
+);
+
+doc.text(
+  `Recommended Pathway: ${learningPath.length} Learning models`,
+  margin + 72,
+  currentY + 25.5,
+);
 
   const badgeX = pageWidth - margin - 34;
   const badgeW = 30;
@@ -1426,12 +1427,12 @@ export const generateCompetencyPDF = ({
 
   applyOfficialDecorations(
     doc,
-    "Official Competency Assessment & Skill Gap Dossier",
+    "AI Multi-Domain Competency Knowledge & Skill Gap Dossier",
     "National Statistical Systems Training Academy (NSSTA) • SkillIQ Intelligence Matrix",
     docId,
   );
 
-  const filename = `MoSPI_Competency_Dossier_${(profile?.name || user?.name || "Officer").replace(/[^a-zA-Z0-9]/g, "_")}.pdf`;
+  const filename = `MoSPI_AI_Multi_Domain_Competency_Knowledge_${(profile?.name || user?.name || "Officer").replace(/[^a-zA-Z0-9]/g, "_")}.pdf`;
   doc.save(filename);
 };
 
