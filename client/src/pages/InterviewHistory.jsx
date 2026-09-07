@@ -359,8 +359,15 @@ const InterviewHistory = () => {
         } else {
           setChats([]);
         }
-        if (interviewRes.status === "fulfilled" && Array.isArray(interviewRes.value?.data)) {
-          setInterviews(interviewRes.value.data);
+        if (interviewRes.status === "fulfilled") {
+          const idata = interviewRes.value?.data;
+          if (Array.isArray(idata)) {
+            setInterviews(idata);
+          } else if (Array.isArray(idata?.interviews)) {
+            setInterviews(idata.interviews);
+          } else {
+            setInterviews([]);
+          }
         } else {
           setInterviews([]);
         }

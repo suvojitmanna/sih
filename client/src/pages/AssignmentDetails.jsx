@@ -54,6 +54,8 @@ const AssignmentDetails = () => {
     seconds: 0,
   });
 
+  const draftKey = `sankhyaiq_case_study_draft_${id}`;
+
   useEffect(() => {
     fetchAssignmentDetails();
   }, [id]);
@@ -107,6 +109,30 @@ const AssignmentDetails = () => {
     return () => clearInterval(timerInterval);
   }, [assignment?.dueDate]);
 
+  useEffect(() => {
+    if (!id || loading) return;
+    if (submissionText && submissionText.trim()) {
+      try {
+        localStorage.setItem(draftKey, submissionText);
+      } catch (err) {
+        console.error("Failed to save draft:", err);
+      }
+    }
+  }, [submissionText, id, loading, draftKey]);
+
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      if (submissionText && submissionText.trim()) {
+        try {
+          localStorage.setItem(draftKey, submissionText);
+        } catch (err) {}
+      }
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [submissionText, draftKey]);
+
   const fetchAssignmentDetails = async () => {
     try {
       setLoading(true);
@@ -115,9 +141,21 @@ const AssignmentDetails = () => {
       });
       if (res.data?.success) {
         setAssignment(res.data.assignment);
+        const savedDraft = localStorage.getItem(draftKey);
+
         if (res.data.submission) {
           setSubmission(res.data.submission);
-          setSubmissionText(res.data.submission.submissionText || "");
+          // If user had unsubmitted work in progress that differs from submitted text, restore it
+          if (savedDraft && savedDraft.trim() && savedDraft !== res.data.submission.submissionText) {
+            setSubmissionText(savedDraft);
+          } else {
+            setSubmissionText(res.data.submission.submissionText || "");
+          }
+        } else {
+          // If not submitted yet, restore draft from localStorage if available
+          if (savedDraft && savedDraft.trim()) {
+            setSubmissionText(savedDraft);
+          }
         }
       }
     } catch (err) {
@@ -156,6 +194,11 @@ const AssignmentDetails = () => {
         }
         window.dispatchEvent(new CustomEvent("assessmentCompleted", { detail: res.data }));
         localStorage.setItem("lastAssessmentUpdate", Date.now().toString());
+
+        // Clear local draft upon successful submission
+        try {
+          localStorage.removeItem(draftKey);
+        } catch (err) {}
       }
     } catch (err) {
       console.error("Error submitting assignment:", err);

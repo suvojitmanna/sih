@@ -375,6 +375,11 @@ const Step2 = ({ interviewData, onFinish }) => {
         { interviewId },
         { withCredentials: true }
       );
+
+      // Notify dashboard and sync metrics in real-time
+      window.dispatchEvent(new CustomEvent("assessmentCompleted", { detail: result.data }));
+      localStorage.setItem("lastAssessmentUpdate", Date.now().toString());
+
       onFinish(result.data);
     } catch (error) {
       console.error(error);

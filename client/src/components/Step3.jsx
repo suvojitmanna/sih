@@ -1,5 +1,5 @@
 import React from "react";
-import { FaArrowLeft } from "react-icons/fa";
+import { FaArrowLeft, FaTachometerAlt, FaRedo } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import BackButton from "./BackButton";
@@ -121,12 +121,22 @@ const Step3 = ({ report }) => {
           </div>
         </div>
 
-        <button
-          onClick={downloadPDF}
-          className="bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 hover:scale-105 active:scale-95 transition-all duration-300 shadow-lg px-6 py-3.5 rounded-2xl font-bold text-xs text-white cursor-pointer"
-        >
-          Download Report (PDF)
-        </button>
+        <div className="flex flex-wrap items-center gap-3">
+          <button
+            type="button"
+            onClick={() => navigate("/dashboard")}
+            className="bg-blue-600 hover:bg-blue-700 hover:scale-105 active:scale-95 transition-all duration-300 shadow-lg px-5 py-3.5 rounded-2xl font-bold text-xs text-white flex items-center gap-2 cursor-pointer"
+          >
+            <FaTachometerAlt size={13} />
+            <span>Go to Dashboard</span>
+          </button>
+          <button
+            onClick={downloadPDF}
+            className="bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 hover:scale-105 active:scale-95 transition-all duration-300 shadow-lg px-6 py-3.5 rounded-2xl font-bold text-xs text-white cursor-pointer"
+          >
+            Download Report (PDF)
+          </button>
+        </div>
       </div>
 
       {/* Grid */}
@@ -334,6 +344,38 @@ const Step3 = ({ report }) => {
               ))}
             </div>
           </motion.div>
+
+          {/* Action Navigation Banner */}
+          <div className="p-6 rounded-3xl bg-gradient-to-r from-slate-900 via-blue-950 to-indigo-950 border border-blue-500/30 text-white shadow-xl flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="space-y-1 text-center sm:text-left">
+              <h4 className="text-sm font-bold text-white flex items-center justify-center sm:justify-start gap-2">
+                <span>🎯 Evaluation Recorded on Cadre Dossier</span>
+              </h4>
+              <p className="text-xs text-slate-300">
+                Your Viva Voce score and competency analytics are synchronized with your User Dashboard.
+              </p>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-3 shrink-0">
+              <button
+                type="button"
+                onClick={() => navigate("/dashboard")}
+                className="px-5 py-3 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-md transition-all flex items-center gap-2 cursor-pointer hover:scale-105 active:scale-95"
+              >
+                <FaTachometerAlt size={13} />
+                <span>Return to Dashboard</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => window.location.reload()}
+                className="px-4 py-3 rounded-2xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs border border-white/20 transition-all flex items-center gap-2 cursor-pointer"
+              >
+                <FaRedo size={11} />
+                <span>Practice Again</span>
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>

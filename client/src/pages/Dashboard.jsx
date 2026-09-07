@@ -177,8 +177,15 @@ const Dashboard = () => {
         setQuizAttempts(quizAttemptsRes.value.data.attempts || []);
       }
 
-      if (interviewRes.status === "fulfilled" && interviewRes.value.data?.success) {
-        setInterviews(interviewRes.value.data.interviews || []);
+      if (interviewRes.status === "fulfilled") {
+        const val = interviewRes.value.data;
+        if (Array.isArray(val)) {
+          setInterviews(val);
+        } else if (Array.isArray(val?.interviews)) {
+          setInterviews(val.interviews);
+        } else {
+          setInterviews([]);
+        }
       }
 
       if (assignmentSubmissionsRes.status === "fulfilled" && assignmentSubmissionsRes.value.data?.success) {
@@ -327,7 +334,11 @@ const Dashboard = () => {
     const completedInterviews = interviews.length;
     const avgInterviewScore = completedInterviews > 0
       ? Math.round(
-        interviews.reduce((acc, i) => acc + (i.score || (i.feedback?.rating ? i.feedback.rating * 10 : 75)), 0) / completedInterviews
+        interviews.reduce((acc, i) => {
+          const raw = Number(i.finalScore) || Number(i.score) || (i.feedback?.rating ? i.feedback.rating * 10 : null);
+          const scaled = raw !== null ? (raw <= 10 ? raw * 10 : raw) : 75;
+          return acc + scaled;
+        }, 0) / completedInterviews
       )
       : 0;
 
@@ -446,12 +457,13 @@ const Dashboard = () => {
     });
 
     (interviews || []).forEach((i, idx) => {
-      const sc = i.score || (i.feedback?.rating ? i.feedback.rating * 10 : 75);
+      const raw = Number(i.finalScore) || Number(i.score) || (i.feedback?.rating ? i.feedback.rating * 10 : null);
+      const sc = raw !== null ? (raw <= 10 ? raw * 10 : raw) : 75;
       events.push({
         date: i.createdAt ? new Date(i.createdAt) : new Date(Date.now() - ((interviews?.length || 1) - idx) * 86400000 * 3),
         score: sc,
         type: "Viva Voce",
-        title: i.title || i.jobRole || `Cadre Board Viva #${idx + 1}`,
+        title: i.role || i.jobRole || i.title || `Cadre Board Viva #${idx + 1}`,
         domain: "Oral Board",
       });
     });
