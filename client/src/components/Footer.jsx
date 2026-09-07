@@ -64,7 +64,7 @@ const Footer = () => {
                   <p onClick={() => navigate("/dashboard")} className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors cursor-pointer">
                     Performance Dashboard
                   </p>
-                  <p onClick={() => navigate("/assessment")} className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors cursor-pointer">
+                  <p onClick={() => navigate("/competencies")} className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors cursor-pointer">
                     Competency Matrix
                   </p>
                   <p onClick={() => navigate("/interview")} className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors cursor-pointer">
@@ -88,7 +88,7 @@ const Footer = () => {
                   <p onClick={() => navigate("/learning-path")} className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors cursor-pointer">
                     iGOT Karmayogi Sync
                   </p>
-                  <p onClick={() => navigate("/materials-upload")} className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors cursor-pointer">
+                  <p onClick={() => navigate("/materials")} className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors cursor-pointer">
                     Survey Manual MCQ Gen
                   </p>
                   <p onClick={() => navigate("/history")} className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors cursor-pointer">

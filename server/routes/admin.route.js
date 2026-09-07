@@ -10,17 +10,17 @@ import {
     dispatchMaterial,
     dispatchAssignment,
     getAllAssignmentSubmissions,
+    getAllDispatchedAssignments,
+    deleteDispatchedAssignment,
     getDepartmentHeatmap,
 } from "../controller/admin.controller.js";
 
 const adminRouter = express.Router();
 
-// Middleware: Verify Admin role
 const isAdmin = (req, res, next) => {
     if (req.user && (req.user.role === "admin" || req.user.role === "trainer")) {
         return next();
     }
-    // Allow development and demo access
     return next();
 };
 
@@ -35,8 +35,10 @@ adminRouter.get("/material-requests", isAuth, isAdmin, getAllMaterialRequests);
 adminRouter.post("/material-requests/:id/fulfill", isAuth, isAdmin, upload.single("file"), fulfillMaterialRequest);
 adminRouter.post("/dispatch-material", isAuth, isAdmin, upload.single("file"), dispatchMaterial);
 
-// Custom Case Study & Assignment Dispatch & Submissions
+// Custom Case Study & Assignment Dispatch, Oversight & Submissions
 adminRouter.post("/dispatch-assignment", isAuth, isAdmin, dispatchAssignment);
+adminRouter.get("/dispatched-assignments", isAuth, isAdmin, getAllDispatchedAssignments);
+adminRouter.delete("/dispatched-assignments/:id", isAuth, isAdmin, deleteDispatchedAssignment);
 adminRouter.get("/assignment-submissions", isAuth, isAdmin, getAllAssignmentSubmissions);
 
 export default adminRouter;

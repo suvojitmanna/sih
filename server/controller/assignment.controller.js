@@ -135,9 +135,11 @@ export const getAssignments = async (req, res) => {
         const enriched = combined.map((asgn) => {
             const asgnId = asgn._id?.toString() || asgn.id;
             const submission = userSubmissions.find((s) => s.assignmentId === asgnId || s.assignmentTitle === asgn.title);
+            const isExpired = asgn.dueDate ? new Date() > new Date(asgn.dueDate) : false;
             return {
                 ...asgn,
                 _id: asgnId,
+                isExpired,
                 hasSubmitted: !!submission,
                 submission: submission || null,
             };
@@ -172,6 +174,8 @@ export const getAssignmentById = async (req, res) => {
             return res.status(404).json({ success: false, message: "Assignment not found" });
         }
 
+        const isExpired = assignment.dueDate ? new Date() > new Date(assignment.dueDate) : false;
+
         let submission = null;
         if (req.user?._id) {
             submission = await AssignmentSubmission.findOne({
@@ -182,7 +186,10 @@ export const getAssignmentById = async (req, res) => {
 
         res.json({
             success: true,
-            assignment,
+            assignment: {
+                ...assignment,
+                isExpired,
+            },
             submission,
         });
     } catch (err) {
@@ -205,14 +212,29 @@ export const submitAssignment = async (req, res) => {
             });
         }
 
-        const assignment = OFFICIAL_ASSIGNMENTS.find((a) => a._id === id) || {
-            title: "Statistical Capacity Assignment",
-            domain: "Statistical Competencies",
-            targetCompetency: "Official Statistics Methodology",
-            scenario: "Statistical analysis and policy brief submission.",
-            instructions: [],
-            rubric: [],
-        };
+        let assignment = OFFICIAL_ASSIGNMENTS.find((a) => a._id === id);
+        if (!assignment) {
+            try {
+                assignment = await Assignment.findById(id).lean();
+            } catch (err) {}
+        }
+
+        if (!assignment) {
+            return res.status(404).json({
+                success: false,
+                message: "Assignment not found.",
+            });
+        }
+
+        // Enforce timer limit / submission deadline
+        if (assignment.dueDate && new Date() > new Date(assignment.dueDate)) {
+            return res.status(400).json({
+                success: false,
+                message: "Submission deadline has expired. This case study is no longer accepting submissions.",
+                isExpired: true,
+                dueDate: assignment.dueDate,
+            });
+        }
 
         const user = await User.findById(userId);
 
@@ -234,20 +256,25 @@ export const submitAssignment = async (req, res) => {
             aiEvaluation: evaluation,
         });
 
-        // Dynamically update user's competency score
-        if (user && evaluation.competencyScoreDelta) {
+        // Dynamically update user's competency score & training hours
+        if (user) {
             const currentScore = user.overallCompetencyScore || 65;
-            user.overallCompetencyScore = Math.min(98, currentScore + evaluation.competencyScoreDelta);
+            const delta = evaluation.competencyScoreDelta || 5;
+            user.overallCompetencyScore = Math.min(98, currentScore + delta);
+            user.learningHours = (user.learningHours || 0) + (assignment.estimatedHours || 3);
 
             // Update matching competency in user's profile if exists
             if (user.competencies && user.competencies.length) {
                 const targetComp = user.competencies.find(
                     (c) =>
-                        c.competencyName.toLowerCase().includes(assignment.targetCompetency.toLowerCase()) ||
-                        assignment.targetCompetency.toLowerCase().includes(c.competencyName.toLowerCase())
+                        c?.competencyName &&
+                        (c.competencyName.toLowerCase().includes(assignment.targetCompetency.toLowerCase()) ||
+                        assignment.targetCompetency.toLowerCase().includes(c.competencyName.toLowerCase()))
                 );
                 if (targetComp) {
-                    targetComp.score = Math.min(100, targetComp.score + evaluation.competencyScoreDelta * 2);
+                    targetComp.score = Math.min(100, (targetComp.score || 60) + delta * 2);
+                    targetComp.source = "assessment-derived";
+                    targetComp.lastAssessedAt = new Date();
                 }
             }
             await user.save();
@@ -258,6 +285,23 @@ export const submitAssignment = async (req, res) => {
             message: "Assignment evaluated successfully by SankhyaIQ AI Engine!",
             submission,
             evaluation,
+            user: user ? {
+                _id: user._id,
+                name: user.name,
+                email: user.email,
+                role: user.role,
+                designation: user.designation,
+                department: user.department,
+                jobRole: user.jobRole,
+                competencies: user.competencies,
+                skillGaps: user.skillGaps,
+                learningPath: user.learningPath,
+                overallCompetencyScore: user.overallCompetencyScore,
+                overallLevel: user.overallLevel,
+                learningStreak: user.learningStreak,
+                learningHours: user.learningHours,
+                quizzesCompleted: user.quizzesCompleted,
+            } : null,
         });
     } catch (err) {
         console.error("[SUBMIT ASSIGNMENT ERROR]", err);

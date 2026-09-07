@@ -75,7 +75,7 @@ export const callGeminiOrFallback = async (
       if (options.jsonMode) config.responseMimeType = "application/json";
 
       const response = await aiClient.models.generateContent({
-        model: "gemini-2.5-flash",
+        model: "gemini-3.6-flash",
         contents,
         config: Object.keys(config).length > 0 ? config : undefined,
       });
@@ -96,7 +96,7 @@ export const callGeminiOrFallback = async (
       const res = await axios.post(
         "https://openrouter.ai/api/v1/chat/completions",
         {
-          model: "google/gemini-2.5-flash",
+          model: "openai/gpt-4o-mini",
           messages: [
             ...(systemInstruction
               ? [{ role: "system", content: systemInstruction }]
@@ -414,7 +414,7 @@ Return STRICTLY a JSON object with this exact schema:
   } catch (err) {
     console.error("[LEARNING PATHWAY ERROR]", err.message);
   }
-  
+
   const path = (availableCourses || []).slice(0, 5).map((course, idx) => ({
     step: idx + 1,
     title: course.title,
@@ -753,35 +753,42 @@ export const generateQuiz = async ({
   difficulty = "Medium",
   numQuestions = 5,
 }) => {
+  const validDifficulty = ["Easy", "Medium", "Hard"].includes(difficulty)
+    ? difficulty
+    : "Medium";
+  const count = Math.max(3, Math.min(20, Number(numQuestions) || 5));
+
   const prompt = `
-You are the SankhyaIQ AI Statistical Assessment Wing at NSSTA.
+You are the SankhyaIQ AI Statistical Assessment Wing at NSSTA, Ministry of Statistics & Programme Implementation (MoSPI).
 Generate an official statistical diagnostic test on:
 - Topic: ${topic}
 - Domain: ${domain}
-- Difficulty: ${difficulty}
-- Number of Questions: ${numQuestions}
+- Difficulty: ${validDifficulty}
+- Number of Questions: ${count}
 
-Each question must be rigorous, testing real MoSPI / official statistics principles (formulas, standards, classifications).
+Each question must be rigorous, testing real MoSPI / official statistics principles (formulas, standards, classifications, survey rules, and estimation methods).
 
-Return STRICTLY a JSON object with schema:
+Return STRICTLY a JSON object with this exact schema:
 {
   "title": "${topic} — Diagnostic Assessment",
   "domain": "${domain}",
   "topic": "${topic}",
-  "difficulty": "${difficulty}",
-  "timeLimitMinutes": ${numQuestions * 2},
+  "difficulty": "${validDifficulty}",
+  "timeLimitMinutes": ${count * 2},
   "questions": [
     {
-      "question": "Which index formula is predominantly employed in India's Consumer Price Index (CPI) compilation?",
+      "question": "Clear, rigorous question text testing official statistics on ${topic}?",
       "options": [
-        "A) Paasche Index Formula",
-        "B) Modified Laspeyres Price Index Formula",
-        "C) Fisher's Ideal Index Formula",
-        "D) Marshall-Edgeworth Index"
+        "A) [Option text]",
+        "B) [Option text]",
+        "C) [Option text]",
+        "D) [Option text]"
       ],
-      "correctAnswer": "B",
-      "explanation": "India compiles CPI using the modified Laspeyres formula with base period consumption basket weights.",
-      "topic": "${topic}"
+      "correctAnswer": "A",
+      "explanation": "Detailed explanation of why the correct option is right and others are inapplicable.",
+      "topic": "${topic}",
+      "difficulty": "${validDifficulty}",
+      "sourceReference": "NSSTA ${topic} Guidelines"
     }
   ]
 }
@@ -791,37 +798,123 @@ Return STRICTLY a JSON object with schema:
     const raw = await callGeminiOrFallback(
       prompt,
       "You are the SankhyaIQ AI statistical examination authority. Output strict valid JSON object only.",
+      { jsonMode: true },
     );
     const parsed = cleanAndParseJson(raw, null);
     if (parsed && Array.isArray(parsed.questions) && parsed.questions.length) {
-      return parsed;
+      const normalizedQuestions = parsed.questions
+        .map((q) =>
+          normalizeMcq(
+            q,
+            topic,
+            validDifficulty,
+            parsed.title || `${topic} Assessment`,
+          ),
+        )
+        .filter(Boolean);
+
+      if (normalizedQuestions.length > 0) {
+        return {
+          title: parsed.title || `${topic} — Diagnostic Assessment`,
+          domain: parsed.domain || domain,
+          topic: parsed.topic || topic,
+          difficulty: validDifficulty,
+          timeLimitMinutes:
+            Number(parsed.timeLimitMinutes) ||
+            Math.max(5, normalizedQuestions.length * 2),
+          questions: normalizedQuestions.slice(0, count),
+        };
+      }
     }
   } catch (err) {
     console.error("[QUIZ GENERATION ERROR]", err.message);
   }
 
+  const fallbackQuestions = [
+    {
+      question: `In official statistical methodology related to ${topic}, what is the primary objective of sample design stratification?`,
+      options: [
+        "A) To decrease sample variance and enhance estimation precision by grouping homogeneous units",
+        "B) To arbitrarily decrease sample sizes across all geographic administrative zones",
+        "C) To eliminate rural clusters from the primary sampling frame",
+        "D) To bypass the requirement of field listing operations",
+      ],
+      correctAnswer: "A",
+      explanation:
+        "Stratification groups ultimate sampling units into homogeneous strata to minimize within-stratum variance, significantly enhancing estimation precision.",
+      topic,
+      difficulty: validDifficulty,
+      sourceReference: "NSSTA Survey Methodology Core Framework",
+    },
+    {
+      question: `Under standard official statistics guidelines for ${topic}, which principle is essential for controlling non-sampling error?`,
+      options: [
+        "A) Standardized enumerator training, field verification, and computerized logic checks",
+        "B) Arbitrary expansion of sample size without field listing validation",
+        "C) Relying exclusively on voluntary postal survey responses",
+        "D) Excluding non-responding sampling units from the base denominator",
+      ],
+      correctAnswer: "A",
+      explanation:
+        "Non-sampling error is controlled through standardized field procedures, training manuals, and structured multi-stage logic checks.",
+      topic,
+      difficulty: validDifficulty,
+      sourceReference: "MoSPI Data Quality Assurance Framework (NQAF)",
+    },
+    {
+      question: `In the context of ${topic} and official survey compilation, what does the sampling frame represent?`,
+      options: [
+        "A) The comprehensive list or geospatial map of all sampling units from which a sample is drawn",
+        "B) The software environment used for tabulating field schedules",
+        "C) The executive summary report submitted to policy makers",
+        "D) The budgetary allocation allocated for field operations",
+      ],
+      correctAnswer: "A",
+      explanation:
+        "A sampling frame is the complete listing or geographical demarcation (e.g. UFS blocks, Census enumeration blocks) from which sample units are selected.",
+      topic,
+      difficulty: validDifficulty,
+      sourceReference: "NSSTA Statistical Sampling Guidelines",
+    },
+    {
+      question: `When analyzing indicators under ${topic}, how is estimator bias defined in official statistical theory?`,
+      options: [
+        "A) The difference between an estimator's expected value and the true population parameter",
+        "B) The total cost incurred during field investigation rounds",
+        "C) The percentage of questionnaires returned with partial information",
+        "D) The ratio of urban to rural sampling blocks in the survey round",
+      ],
+      correctAnswer: "A",
+      explanation:
+        "Bias represents the systematic divergence between the mathematical expected value of the sample estimator and the actual population parameter.",
+      topic,
+      difficulty: validDifficulty,
+      sourceReference: "MoSPI Estimation & Weighting Manual",
+    },
+    {
+      question: `In official survey data processing for ${topic}, why are sampling weights (multipliers) applied to sample observations?`,
+      options: [
+        "A) To scale sample unit values to represent the entire target population accurately",
+        "B) To artificially inflate survey response scores",
+        "C) To penalize administrative regions with lower response rates",
+        "D) To standardize numerical formatting across different file types",
+      ],
+      correctAnswer: "A",
+      explanation:
+        "Sampling weights (inverse of selection probability adjusted for non-response) are applied to obtain unbiased population-level aggregations.",
+      topic,
+      difficulty: validDifficulty,
+      sourceReference: "MoSPI Microdata Weighting & Multipliers Standards",
+    },
+  ];
+
   return {
-    title: `${topic} Diagnostic Test`,
+    title: `${topic} — Diagnostic Assessment`,
     domain,
     topic,
-    difficulty,
-    timeLimitMinutes: numQuestions * 2,
-    questions: [
-      {
-        question:
-          "In the System of National Accounts (SNA 2008), how is Gross Value Added (GVA) at basic prices related to Gross Domestic Product (GDP)?",
-        options: [
-          "A) GDP = GVA at basic prices + Product Taxes - Product Subsidies",
-          "B) GDP = GVA at factor cost only",
-          "C) GDP = GVA - Net Indirect Taxes",
-          "D) GDP = Net National Income (NNI)",
-        ],
-        correctAnswer: "A",
-        explanation:
-          "Under SNA 2008, GDP at market prices is derived from GVA at basic prices by adding taxes on products and subtracting subsidies on products.",
-        topic,
-      },
-    ],
+    difficulty: validDifficulty,
+    timeLimitMinutes: Math.max(5, count * 2),
+    questions: fallbackQuestions.slice(0, count),
   };
 };
 export const evaluateQuizSubmission = async ({

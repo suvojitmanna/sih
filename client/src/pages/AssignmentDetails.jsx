@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { setUserData } from "../redux/userSlice";
 import axios from "axios";
 import { ServerUrl } from "../App";
 import Navbar from "../components/Navbar";
@@ -12,23 +14,98 @@ import {
   FaAward,
   FaLightbulb,
   FaPaperPlane,
+  FaArrowRight,
+  FaTachometerAlt,
+  FaLock,
+  FaHourglassHalf,
 } from "react-icons/fa";
 import { HiSparkles } from "react-icons/hi";
 import { BsShieldCheck } from "react-icons/bs";
 import toast from "react-hot-toast";
 
+const formatDateTime = (dateStr) => {
+  if (!dateStr) return "-";
+  const d = new Date(dateStr);
+  if (isNaN(d.getTime())) return "-";
+  return d.toLocaleString("en-IN", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: true,
+  });
+};
+
 const AssignmentDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const [assignment, setAssignment] = useState(null);
   const [submission, setSubmission] = useState(null);
   const [submissionText, setSubmissionText] = useState("");
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [countdown, setCountdown] = useState({
+    text: "",
+    isExpired: false,
+    hours: 0,
+    minutes: 0,
+    seconds: 0,
+  });
 
   useEffect(() => {
     fetchAssignmentDetails();
   }, [id]);
+
+  useEffect(() => {
+    if (!assignment?.dueDate) {
+      setCountdown({ text: "No Expiration", isExpired: false });
+      return;
+    }
+
+    const updateTimer = () => {
+      const due = new Date(assignment.dueDate);
+      const now = new Date();
+      const diffMs = due.getTime() - now.getTime();
+
+      if (diffMs <= 0) {
+        setCountdown({
+          text: "Deadline Expired",
+          isExpired: true,
+          hours: 0,
+          minutes: 0,
+          seconds: 0,
+        });
+        return;
+      }
+
+      const totalSecs = Math.floor(diffMs / 1000);
+      const days = Math.floor(totalSecs / 86400);
+      const hours = Math.floor((totalSecs % 86400) / 3600);
+      const minutes = Math.floor((totalSecs % 3600) / 60);
+      const seconds = totalSecs % 60;
+
+      let formattedText = "";
+      if (days > 0) {
+        formattedText = `${days}d ${hours}h ${minutes}m ${seconds}s`;
+      } else {
+        formattedText = `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+      }
+
+      setCountdown({
+        text: formattedText,
+        isExpired: false,
+        hours: days * 24 + hours,
+        minutes,
+        seconds,
+      });
+    };
+
+    updateTimer();
+    const timerInterval = setInterval(updateTimer, 1000);
+    return () => clearInterval(timerInterval);
+  }, [assignment?.dueDate]);
 
   const fetchAssignmentDetails = async () => {
     try {
@@ -53,6 +130,11 @@ const AssignmentDetails = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (countdown.isExpired) {
+      toast.error("Submission deadline has expired. This case study is closed.");
+      return;
+    }
+
     if (!submissionText || submissionText.trim().length < 50) {
       toast.error("Please enter a comprehensive response (at least 50 characters).");
       return;
@@ -67,11 +149,19 @@ const AssignmentDetails = () => {
       );
 
       if (res.data?.success) {
-        toast.success("Assignment evaluated by SankhyaIQ AI!");
+        toast.success("Assignment evaluated by SankhyaIQ AI! 🎉");
         setSubmission(res.data.submission);
+        if (res.data.user) {
+          dispatch(setUserData(res.data.user));
+        }
+        window.dispatchEvent(new CustomEvent("assessmentCompleted", { detail: res.data }));
+        localStorage.setItem("lastAssessmentUpdate", Date.now().toString());
       }
     } catch (err) {
       console.error("Error submitting assignment:", err);
+      if (err.response?.data?.isExpired) {
+        setCountdown((prev) => ({ ...prev, isExpired: true }));
+      }
       toast.error(err.response?.data?.message || "Evaluation failed. Please try again.");
     } finally {
       setSubmitting(false);
@@ -101,14 +191,75 @@ const AssignmentDetails = () => {
   }
 
   const evaluation = submission?.aiEvaluation;
+  const isExpired = countdown.isExpired;
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 transition-colors">
       <Navbar />
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-16 space-y-8">
-
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-16 space-y-6">
         <BackButton to="/assignments" label="Back to All Assignments" />
+
+        {/* TIMER & DEADLINE BANNER */}
+        {assignment.dueDate && (
+          <div
+            className={`p-4 sm:p-5 rounded-3xl border flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-all shadow-md ${
+              isExpired
+                ? "bg-rose-50 dark:bg-rose-950/70 border-rose-200 dark:border-rose-900 text-rose-900 dark:text-rose-200"
+                : countdown.hours < 6
+                ? "bg-amber-50 dark:bg-amber-950/70 border-amber-300 dark:border-amber-800 text-amber-900 dark:text-amber-200"
+                : "bg-blue-50 dark:bg-blue-950/70 border-blue-200 dark:border-blue-900 text-blue-900 dark:text-blue-200"
+            }`}
+          >
+            <div className="flex items-center gap-3">
+              <div
+                className={`p-3 rounded-2xl ${
+                  isExpired
+                    ? "bg-rose-200/80 dark:bg-rose-900/60 text-rose-700 dark:text-rose-300"
+                    : "bg-blue-200/80 dark:bg-blue-900/60 text-blue-700 dark:text-blue-300"
+                }`}
+              >
+                {isExpired ? (
+                  <FaLock size={20} className="text-rose-600 dark:text-rose-400" />
+                ) : (
+                  <FaHourglassHalf size={20} className="animate-spin text-blue-600 dark:text-blue-400" style={{ animationDuration: "6s" }} />
+                )}
+              </div>
+
+              <div>
+                <h3 className="font-black text-sm sm:text-base flex items-center gap-2">
+                  {isExpired ? (
+                    <span>⚠️ Submission Deadline Expired</span>
+                  ) : (
+                    <span>⏳ Active Case Study Timer</span>
+                  )}
+                </h3>
+                <p className="text-xs opacity-90">
+                  {isExpired ? (
+                    <span>This case study closed on <strong>{formatDateTime(assignment.dueDate)}</strong>. Submissions are no longer accepted.</span>
+                  ) : (
+                    <span>Submission deadline: <strong>{formatDateTime(assignment.dueDate)}</strong>. Tasks submitted after deadline will be rejected.</span>
+                  )}
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 self-start sm:self-auto shrink-0">
+              <div
+                className={`px-4 py-2 rounded-2xl text-center font-mono font-black text-sm sm:text-base border shadow-inner ${
+                  isExpired
+                    ? "bg-rose-200/60 dark:bg-rose-900/80 border-rose-300 text-rose-800 dark:text-rose-200"
+                    : "bg-white/80 dark:bg-slate-900/80 border-blue-300 dark:border-blue-800 text-blue-700 dark:text-blue-300"
+                }`}
+              >
+                <span className="text-[9px] font-sans font-bold uppercase tracking-wider block opacity-70">
+                  {isExpired ? "Status" : "Time Remaining"}
+                </span>
+                <span>{countdown.text || "Calculating..."}</span>
+              </div>
+            </div>
+          </div>
+        )}
 
         <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-8 shadow-xs space-y-4">
           <div className="flex flex-wrap items-center gap-2">
@@ -242,9 +393,20 @@ const AssignmentDetails = () => {
                   </div>
                 </div>
 
-                <div className="bg-white/10 p-4 rounded-2xl text-xs text-slate-200 leading-relaxed">
-                  <span className="font-bold text-amber-300 block mb-1">Evaluator Feedback:</span>
-                  {evaluation.detailedFeedback}
+                <div className="bg-white/10 p-4 rounded-2xl text-xs text-slate-200 leading-relaxed space-y-2">
+                  <span className="font-bold text-amber-300 block">Evaluator Feedback:</span>
+                  <p>{evaluation.detailedFeedback}</p>
+                  <div className="pt-2 flex justify-end">
+                    <button
+                      type="button"
+                      onClick={() => navigate("/dashboard")}
+                      className="px-4 py-2 rounded-xl bg-white text-blue-900 font-bold text-xs hover:bg-slate-100 transition-all flex items-center gap-1.5 cursor-pointer shadow-md"
+                    >
+                      <FaTachometerAlt size={12} className="text-blue-700" />
+                      <span>View Updated Competencies in Dashboard</span>
+                      <FaArrowRight size={10} />
+                    </button>
+                  </div>
                 </div>
               </div>
             )}
@@ -252,46 +414,74 @@ const AssignmentDetails = () => {
             <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-7 shadow-xs space-y-4">
               <div className="flex items-center justify-between">
                 <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                  <HiSparkles className="text-amber-400" />
-                  <span>{evaluation ? "Update / Re-Submit Solution" : "Officer Solution & Methodology Submission"}</span>
+                  {isExpired ? (
+                    <>
+                      <FaLock className="text-rose-500" />
+                      <span>Submissions Closed</span>
+                    </>
+                  ) : (
+                    <>
+                      <HiSparkles className="text-amber-400" />
+                      <span>{evaluation ? "Update / Re-Submit Solution" : "Officer Solution & Methodology Submission"}</span>
+                    </>
+                  )}
                 </h3>
                 <span className="text-[11px] font-semibold text-slate-400">
                   {submissionText.trim().split(/\s+/).filter(Boolean).length} Words
                 </span>
               </div>
 
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div>
-                  <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1.5">
-                    Enter your comprehensive analytical report, formulas, and recommendations:
-                  </label>
-                  <textarea
-                    rows={12}
-                    value={submissionText}
-                    onChange={(e) => setSubmissionText(e.target.value)}
-                    placeholder="Provide your step-by-step resolution according to the deliverables specified above. Include sampling frame specifications, multiplier derivations, and policy rationale..."
-                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-4 text-xs font-mono focus:border-blue-500 focus:outline-none leading-relaxed"
-                  />
+              {isExpired ? (
+                <div className="p-6 rounded-2xl bg-rose-50 dark:bg-rose-950/50 border border-rose-200 dark:border-rose-900 text-center space-y-3">
+                  <FaLock size={32} className="mx-auto text-rose-500" />
+                  <h4 className="font-black text-rose-900 dark:text-rose-200 text-sm">
+                    Task Submissions Are No Longer Accepted
+                  </h4>
+                  <p className="text-xs text-rose-700 dark:text-rose-300 max-w-md mx-auto leading-relaxed">
+                    The timer limit set by NSSTA Secretariat has expired for this case study. Late submissions cannot be evaluated.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => navigate("/assignments")}
+                    className="px-4 py-2 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold text-xs shadow-sm hover:opacity-90 cursor-pointer"
+                  >
+                    Browse Active Case Studies
+                  </button>
                 </div>
+              ) : (
+                <form onSubmit={handleSubmit} className="space-y-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1.5">
+                      Enter your comprehensive analytical report, formulas, and recommendations:
+                    </label>
+                    <textarea
+                      rows={12}
+                      value={submissionText}
+                      onChange={(e) => setSubmissionText(e.target.value)}
+                      placeholder="Provide your step-by-step resolution according to the deliverables specified above. Include sampling frame specifications, multiplier derivations, and policy rationale..."
+                      className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-4 text-xs font-mono focus:border-blue-500 focus:outline-none leading-relaxed"
+                    />
+                  </div>
 
-                <button
-                  type="submit"
-                  disabled={submitting || submissionText.trim().length < 50}
-                  className="w-full py-3.5 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-lg shadow-blue-500/25 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
-                >
-                  {submitting ? (
-                    <>
-                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                      <span>SankhyaIQ AI is Evaluating Rubric & Formulas...</span>
-                    </>
-                  ) : (
-                    <>
-                      <FaPaperPlane size={12} />
-                      <span>{evaluation ? "Re-Submit for AI Evaluation (SankhyaIQ AI)" : "Submit Solution for AI Evaluation (SankhyaIQ AI)"}</span>
-                    </>
-                  )}
-                </button>
-              </form>
+                  <button
+                    type="submit"
+                    disabled={submitting || submissionText.trim().length < 50}
+                    className="w-full py-3.5 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-lg shadow-blue-500/25 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                  >
+                    {submitting ? (
+                      <>
+                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                        <span>SankhyaIQ AI is Evaluating Rubric & Formulas...</span>
+                      </>
+                    ) : (
+                      <>
+                        <FaPaperPlane size={12} />
+                        <span>{evaluation ? "Re-Submit for AI Evaluation (SankhyaIQ AI)" : "Submit Solution for AI Evaluation (SankhyaIQ AI)"}</span>
+                      </>
+                    )}
+                  </button>
+                </form>
+              )}
             </div>
           </div>
         </div>

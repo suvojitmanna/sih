@@ -9,20 +9,40 @@ export const generateAiQuiz = async (req, res) => {
         const { topic = "Sampling Techniques", domain = "Statistical Competencies", difficulty = "Medium", numQuestions = 5 } = req.body;
         const userId = req.userId || req.user?._id || null;
 
+        const validDiff = ["Easy", "Medium", "Hard"].includes(difficulty) ? difficulty : "Medium";
+        const count = Math.max(3, Math.min(20, Number(numQuestions) || 5));
+
         const generatedData = await generateQuiz({
             topic,
             domain,
-            difficulty,
-            numQuestions: Number(numQuestions),
+            difficulty: validDiff,
+            numQuestions: count,
         });
 
+        const safeQuestions = (generatedData.questions || []).map((q, idx) => ({
+            question: q.question || `Question ${idx + 1} on ${topic}`,
+            options: Array.isArray(q.options) && q.options.length >= 4 ? q.options.slice(0, 4) : [
+                `A) Standard concept in ${topic}`,
+                `B) Alternative methodological convention`,
+                `C) Secondary operational parameter`,
+                `D) Non-applicable option`
+            ],
+            correctAnswer: (typeof q.correctAnswer === "string" && ["A", "B", "C", "D"].includes(q.correctAnswer.trim().toUpperCase()))
+                ? q.correctAnswer.trim().toUpperCase()
+                : "A",
+            explanation: q.explanation || `Official guideline concept from NSSTA ${topic} framework.`,
+            topic: q.topic || topic,
+            difficulty: ["Easy", "Medium", "Hard"].includes(q.difficulty) ? q.difficulty : validDiff,
+            sourceReference: q.sourceReference || `NSSTA ${topic} Guidelines`,
+        }));
+
         const quiz = await Quiz.create({
-            title: generatedData.title || `${topic} Assessment Test`,
+            title: generatedData.title || `${topic} — Diagnostic Assessment`,
             domain: generatedData.domain || domain,
             topic: generatedData.topic || topic,
-            difficulty: generatedData.difficulty || difficulty,
-            timeLimitMinutes: generatedData.timeLimitMinutes || 10,
-            questions: generatedData.questions || [],
+            difficulty: validDiff,
+            timeLimitMinutes: generatedData.timeLimitMinutes || Math.max(5, count * 2),
+            questions: safeQuestions,
             createdBy: userId,
             isGeneratedByAI: true,
             isPublished: true,
@@ -121,11 +141,13 @@ export const submitQuizAttempt = async (req, res) => {
             user.quizzesCompleted = (user.quizzesCompleted || 0) + 1;
             user.learningHours = (user.learningHours || 0) + Math.max(0.25, Math.round((timeTakenSeconds / 3600) * 10) / 10);
 
-            if (user.competencies) {
+            if (Array.isArray(user.competencies) && quiz.topic) {
+                const quizTopicLower = String(quiz.topic).toLowerCase();
                 const comp = user.competencies.find(
                     (c) =>
-                        c.competencyName.toLowerCase().includes(quiz.topic.toLowerCase()) ||
-                        quiz.topic.toLowerCase().includes(c.competencyName.toLowerCase())
+                        c?.competencyName &&
+                        (c.competencyName.toLowerCase().includes(quizTopicLower) ||
+                        quizTopicLower.includes(c.competencyName.toLowerCase()))
                 );
                 if (comp) {
                     comp.score = Math.round((comp.score + evaluation.score) / 2);
@@ -150,6 +172,23 @@ export const submitQuizAttempt = async (req, res) => {
             message: "Quiz submitted and evaluated successfully! 🎉",
             attempt,
             adaptiveRecommendations,
+            user: user ? {
+                _id: user._id,
+                name: user.name,
+                email: user.email,
+                role: user.role,
+                designation: user.designation,
+                department: user.department,
+                jobRole: user.jobRole,
+                competencies: user.competencies,
+                skillGaps: user.skillGaps,
+                learningPath: user.learningPath,
+                overallCompetencyScore: user.overallCompetencyScore,
+                overallLevel: user.overallLevel,
+                learningStreak: user.learningStreak,
+                learningHours: user.learningHours,
+                quizzesCompleted: user.quizzesCompleted,
+            } : null,
         });
     } catch (error) {
         console.error("[SUBMIT QUIZ ERROR]", error);

@@ -1,6 +1,7 @@
 import Material from "../models/materialModel.js";
 import MaterialRequest from "../models/materialRequestModel.js";
 import Quiz from "../models/quizModel.js";
+import SupportMessage from "../models/supportMessageModel.js";
 import { generateMCQsFromText } from "../services/aiService.js";
 import { extractTextFromFile } from "../utils/documentExtractor.js";
 
@@ -99,6 +100,23 @@ export const uploadMaterial = async (req, res) => {
         material.generatedMCQsCount = generatedMcqs.length;
         await material.save();
       }
+    }
+
+    // Create broadcast announcement message for all officers
+    try {
+      await SupportMessage.create({
+        senderId: req.userId || req.user?._id || material.uploadedBy,
+        senderName: "NSSTA Secretariat - Study Materials Repository",
+        senderRole: "admin",
+        senderCadre: "Official Broadcast",
+        recipientId: null,
+        recipientName: "All Cadre Officers",
+        message: `📚 New Training Material Uploaded: "${material.title}" (${domain} • ${topic}). Access and practice with AI-generated diagnostics in Study Materials Hub.`,
+        isBroadcast: true,
+        isRead: false,
+      });
+    } catch (msgErr) {
+      console.error("[UPLOAD MATERIAL NOTIFICATION ERROR]", msgErr);
     }
 
     return res.status(201).json({

@@ -16,6 +16,11 @@ import {
   Pie,
   Cell,
   Legend,
+  RadarChart,
+  PolarGrid,
+  PolarAngleAxis,
+  PolarRadiusAxis,
+  Radar,
 } from "recharts";
 import {
   FaUsers,
@@ -38,6 +43,10 @@ import {
   FaCalendarAlt,
   FaClock,
   FaCheckCircle,
+  FaBrain,
+  FaSlidersH,
+  FaGraduationCap,
+  FaLock,
 } from "react-icons/fa";
 import {
   BsShieldCheck,
@@ -58,6 +67,108 @@ const formatDateTime = (dateStr) => {
     minute: "2-digit",
     hour12: true,
   });
+};
+
+const getAssignmentDeadlineInfo = (dueDateStr) => {
+  if (!dueDateStr) {
+    return {
+      status: "no_limit",
+      label: "No Expiration",
+      badgeClass:
+        "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400 border border-slate-300 dark:border-slate-700",
+      countdown: "Open Indefinitely",
+      isExpired: false,
+    };
+  }
+
+  const due = new Date(dueDateStr);
+  if (isNaN(due.getTime())) {
+    return {
+      status: "invalid",
+      label: "Invalid Date",
+      badgeClass: "bg-slate-100 text-slate-600",
+      countdown: "-",
+      isExpired: false,
+    };
+  }
+
+  const now = new Date();
+  const diffMs = due.getTime() - now.getTime();
+
+  if (diffMs <= 0) {
+    return {
+      status: "expired",
+      label: "Expired / Closed",
+      badgeClass:
+        "bg-rose-100 dark:bg-rose-950/80 text-rose-700 dark:text-rose-300 border border-rose-300 dark:border-rose-800 font-black",
+      countdown: `Ended on ${formatDateTime(dueDateStr)}`,
+      isExpired: true,
+    };
+  }
+
+  const totalSecs = Math.floor(diffMs / 1000);
+  const days = Math.floor(totalSecs / 86400);
+  const hours = Math.floor((totalSecs % 86400) / 3600);
+  const minutes = Math.floor((totalSecs % 3600) / 60);
+
+  if (days > 0) {
+    return {
+      status: "active",
+      label: `⏳ ${days}d ${hours}h left`,
+      badgeClass:
+        "bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800 font-bold",
+      countdown: `${days} Days ${hours} Hours Left`,
+      isExpired: false,
+    };
+  }
+
+  if (hours >= 6) {
+    return {
+      status: "active",
+      label: `⏳ ${hours}h ${minutes}m left`,
+      badgeClass:
+        "bg-blue-100 dark:bg-blue-950/80 text-blue-800 dark:text-blue-300 border border-blue-300 dark:border-blue-800 font-bold",
+      countdown: `${hours} Hours ${minutes} Mins Left`,
+      isExpired: false,
+    };
+  }
+
+  return {
+    status: "urgent",
+    label: `🔥 Due in ${hours > 0 ? `${hours}h ` : ""}${minutes}m`,
+    badgeClass:
+      "bg-amber-100 dark:bg-amber-950/80 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-800 font-black animate-pulse",
+    countdown: `${hours > 0 ? `${hours} Hours ` : ""}${minutes} Mins Left`,
+    isExpired: false,
+  };
+};
+
+const computeDueDateFromPreset = (presetKey) => {
+  const now = new Date();
+  switch (presetKey) {
+    case "30m":
+      return new Date(now.getTime() + 30 * 60 * 1000).toISOString();
+    case "1h":
+      return new Date(now.getTime() + 60 * 60 * 1000).toISOString();
+    case "2h":
+      return new Date(now.getTime() + 2 * 60 * 60 * 1000).toISOString();
+    case "6h":
+      return new Date(now.getTime() + 6 * 60 * 60 * 1000).toISOString();
+    case "12h":
+      return new Date(now.getTime() + 12 * 60 * 60 * 1000).toISOString();
+    case "24h":
+      return new Date(now.getTime() + 24 * 60 * 60 * 1000).toISOString();
+    case "2d":
+      return new Date(now.getTime() + 2 * 24 * 60 * 60 * 1000).toISOString();
+    case "3d":
+      return new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000).toISOString();
+    case "7d":
+      return new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString();
+    case "none":
+      return "";
+    default:
+      return "";
+  }
 };
 
 const COLORS = [
@@ -116,7 +227,7 @@ const AdminDashboard = () => {
   const [inspectingUser, setInspectingUser] = useState(null);
   const [userDetailedData, setUserDetailedData] = useState(null);
   const [inspectLoading, setInspectLoading] = useState(false);
-  const [inspectTab, setInspectTab] = useState("interviews");
+  const [inspectTab, setInspectTab] = useState("competencies");
 
   const [fulfillingRequest, setFulfillingRequest] = useState(null);
   const [fulfillForm, setFulfillForm] = useState({
@@ -144,6 +255,10 @@ const AdminDashboard = () => {
 
   const [showDispatchAssignmentModal, setShowDispatchAssignmentModal] =
     useState(false);
+  const [dispatchedAssignments, setDispatchedAssignments] = useState([]);
+  const [assignmentSubTab, setAssignmentSubTab] = useState("posted"); // "posted" | "submissions"
+  const [timerPreset, setTimerPreset] = useState("24h");
+  const [customDueDateTime, setCustomDueDateTime] = useState("");
   const [assignmentForm, setAssignmentForm] = useState({
     title: "",
     domain: "Statistical Competencies",
@@ -155,7 +270,7 @@ const AdminDashboard = () => {
     instructions:
       "1. Analyze the sampling frame and institutional constraints.\n2. Formulate the mathematical multiplier and non-response adjustment formula.\n3. Draft an executive guidance note for NSS field teams.",
     estimatedHours: 4,
-    dueDate: "",
+    dueDate: computeDueDateFromPreset("24h"),
     adminNotes: "",
   });
   const [assignmentSubmitting, setAssignmentSubmitting] = useState(false);
@@ -180,6 +295,7 @@ const AdminDashboard = () => {
   const chatContainerRef = useRef(null);
   const prevRequestsCountRef = useRef(null);
   const prevSubmissionsCountRef = useRef(null);
+  const prevQuizzesCountRef = useRef(null);
 
   const fetchAdminData = async (isBackground = false) => {
     try {
@@ -192,6 +308,7 @@ const AdminDashboard = () => {
         subsRes,
         convsRes,
         broadcastsRes,
+        dispatchedRes,
       ] = await Promise.all([
         axios.get(`${ServerUrl}/api/admin/overview`, { withCredentials: true }),
         axios.get(`${ServerUrl}/api/admin/learners`, { withCredentials: true }),
@@ -208,13 +325,34 @@ const AdminDashboard = () => {
         axios.get(`${ServerUrl}/api/support/admin/broadcasts`, {
           withCredentials: true,
         }),
+        axios.get(`${ServerUrl}/api/admin/dispatched-assignments`, {
+          withCredentials: true,
+        }),
       ]);
 
-      if (overviewRes.data.success) setMetrics(overviewRes.data.metrics);
+      if (overviewRes.data.success) {
+        const m = overviewRes.data.metrics;
+        setMetrics(m);
+        if (
+          isBackground &&
+          prevQuizzesCountRef.current !== null &&
+          m?.totalQuizzesAttempted > prevQuizzesCountRef.current
+        ) {
+          toast("📊 Officer completed a new statistical competency quiz!", {
+            icon: "📊",
+            duration: 5000,
+          });
+        }
+        prevQuizzesCountRef.current = m?.totalQuizzesAttempted;
+      }
       const fetchedLearners = learnersRes.data.learners || [];
       if (learnersRes.data.success) setLearners(fetchedLearners);
       if (heatmapRes.data.success) setHeatmap(heatmapRes.data.heatmap || []);
       if (broadcastsRes.data.success) setBroadcasts(broadcastsRes.data.broadcasts || []);
+
+      if (dispatchedRes?.data?.success) {
+        setDispatchedAssignments(dispatchedRes.data.assignments || []);
+      }
 
       if (requestsRes.data.success) {
         const reqs = requestsRes.data.requests || [];
@@ -290,7 +428,21 @@ const AdminDashboard = () => {
     const interval = setInterval(() => {
       fetchAdminData(true);
     }, 3000);
-    return () => clearInterval(interval);
+
+    const handleRealtimeUpdate = () => {
+      fetchAdminData(true);
+    };
+
+    window.addEventListener("assessmentCompleted", handleRealtimeUpdate);
+    window.addEventListener("storage", handleRealtimeUpdate);
+    window.addEventListener("focus", handleRealtimeUpdate);
+
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener("assessmentCompleted", handleRealtimeUpdate);
+      window.removeEventListener("storage", handleRealtimeUpdate);
+      window.removeEventListener("focus", handleRealtimeUpdate);
+    };
   }, [selectedOfficer?.officerId]);
 
   const fetchSelectedConversation = async () => {
@@ -473,9 +625,17 @@ const AdminDashboard = () => {
         .map((i) => i.trim())
         .filter(Boolean);
 
+      let calculatedDueDate = assignmentForm.dueDate;
+      if (timerPreset === "custom" && customDueDateTime) {
+        calculatedDueDate = new Date(customDueDateTime).toISOString();
+      } else if (timerPreset !== "custom") {
+        calculatedDueDate = computeDueDateFromPreset(timerPreset);
+      }
+
       const payload = {
         ...assignmentForm,
         instructions: instructionsArr,
+        dueDate: calculatedDueDate || null,
       };
 
       const { data } = await axios.post(
@@ -486,6 +646,8 @@ const AdminDashboard = () => {
       if (data.success) {
         toast.success("Case study assignment successfully dispatched! 📋✨");
         setShowDispatchAssignmentModal(false);
+        setTimerPreset("24h");
+        setCustomDueDateTime("");
         setAssignmentForm({
           title: "",
           domain: "Statistical Competencies",
@@ -497,10 +659,10 @@ const AdminDashboard = () => {
           instructions:
             "1. Analyze the sampling frame and institutional constraints.\n2. Formulate the mathematical multiplier and non-response adjustment formula.\n3. Draft an executive guidance note for NSS field teams.",
           estimatedHours: 4,
-          dueDate: "",
+          dueDate: computeDueDateFromPreset("24h"),
           adminNotes: "",
         });
-        fetchAdminData();
+        fetchAdminData(true);
       } else {
         toast.error(data.message || "Failed to dispatch assignment.");
       }
@@ -509,6 +671,36 @@ const AdminDashboard = () => {
       console.log(error);
     } finally {
       setAssignmentSubmitting(false);
+    }
+  };
+
+  const handleDeleteDispatchedAssignment = async (assignmentId, title) => {
+    if (
+      !window.confirm(
+        `Are you sure you want to permanently delete the case study assignment:\n\n"${title}"?\n\nThis will remove it from all officers' portals and cannot be undone.`
+      )
+    ) {
+      return;
+    }
+    try {
+      const { data } = await axios.delete(
+        `${ServerUrl}/api/admin/dispatched-assignments/${assignmentId}`,
+        { withCredentials: true }
+      );
+      if (data.success) {
+        toast.success(data.message || "Case study deleted successfully! 🗑️");
+        setDispatchedAssignments((prev) =>
+          prev.filter((a) => a._id !== assignmentId)
+        );
+        fetchAdminData(true);
+      } else {
+        toast.error(data.message || "Failed to delete case study.");
+      }
+    } catch (error) {
+      console.error("Delete assignment error:", error);
+      toast.error(
+        error.response?.data?.message || "Error deleting case study assignment."
+      );
     }
   };
 
@@ -897,13 +1089,19 @@ const AdminDashboard = () => {
                       />
                       <YAxis tick={{ fontSize: 10, fill: "#64748b" }} />
                       <Tooltip
+                        cursor={{ fill: "rgba(59, 130, 246, 0.08)", rx: 8, ry: 8 }}
                         contentStyle={{
-                          backgroundColor: "#0f172a",
-                          borderRadius: "12px",
-                          border: "1px solid #334155",
-                          color: "#fff",
+                          backgroundColor: "#ffffff",
+                          borderRadius: "14px",
+                          border: "1px solid #e2e8f0",
+                          color: "#0f172a",
+                          boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1)",
                           fontSize: "12px",
+                          fontWeight: "600",
+                          padding: "10px 14px",
                         }}
+                        itemStyle={{ color: "#2563eb", fontWeight: "700" }}
+                        labelStyle={{ color: "#0f172a", fontWeight: "800", marginBottom: "4px" }}
                       />
                       <Bar
                         dataKey="officers"
@@ -945,12 +1143,17 @@ const AdminDashboard = () => {
                       </Pie>
                       <Tooltip
                         contentStyle={{
-                          backgroundColor: "#0f172a",
-                          borderRadius: "12px",
-                          border: "1px solid #334155",
-                          color: "#fff",
+                          backgroundColor: "#ffffff",
+                          borderRadius: "14px",
+                          border: "1px solid #e2e8f0",
+                          color: "#0f172a",
+                          boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1)",
                           fontSize: "12px",
+                          fontWeight: "600",
+                          padding: "10px 14px",
                         }}
+                        itemStyle={{ color: "#0f172a", fontWeight: "700" }}
+                        labelStyle={{ color: "#0f172a", fontWeight: "800" }}
                       />
                       <Legend wrapperStyle={{ fontSize: "11px" }} />
                     </PieChart>
@@ -1320,99 +1523,260 @@ const AdminDashboard = () => {
               <div>
                 <h2 className="text-xl font-black text-slate-900 dark:text-white flex items-center gap-2">
                   <FaTasks className="text-blue-600" />
-                  <span>Custom Case Study Dispatcher & Submissions Review</span>
+                  <span>Custom Case Study Dispatcher & Oversight Hub</span>
                 </h2>
                 <p className="text-xs text-slate-500 mt-0.5">
-                  Assign statistical case studies to specific officers/cadres
-                  and inspect submitted solutions and AI evaluations.
+                  Set timer limits for case studies, monitor live countdowns, delete outdated case studies, and review officer submissions.
                 </p>
+
+                <div className="flex items-center gap-2 mt-3">
+                  <button
+                    type="button"
+                    onClick={() => setAssignmentSubTab("posted")}
+                    className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+                      assignmentSubTab === "posted"
+                        ? "bg-blue-600 text-white shadow-xs"
+                        : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:text-blue-600"
+                    }`}
+                  >
+                    <FaClock size={12} />
+                    <span>📋 Posted Case Studies & Timers</span>
+                    <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-white/20 text-white font-black">
+                      {dispatchedAssignments.length}
+                    </span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setAssignmentSubTab("submissions")}
+                    className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+                      assignmentSubTab === "submissions"
+                        ? "bg-blue-600 text-white shadow-xs"
+                        : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:text-blue-600"
+                    }`}
+                  >
+                    <FaCheckCircle size={12} />
+                    <span>📥 Officer Submissions Review</span>
+                    <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-white/20 text-white font-black">
+                      {submissions.length}
+                    </span>
+                  </button>
+                </div>
               </div>
 
               <button
-                onClick={() => setShowDispatchAssignmentModal(true)}
-                className="px-4 py-2 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-md transition-all flex items-center gap-2 cursor-pointer w-fit"
+                onClick={() => {
+                  setTimerPreset("24h");
+                  setCustomDueDateTime("");
+                  setAssignmentForm((prev) => ({
+                    ...prev,
+                    dueDate: computeDueDateFromPreset("24h"),
+                  }));
+                  setShowDispatchAssignmentModal(true);
+                }}
+                className="px-4 py-2.5 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-md transition-all flex items-center gap-2 cursor-pointer w-fit"
               >
                 <FaPlus size={11} />
-                <span>Compose New Case Study</span>
+                <span>Compose New Case Study (With Timer)</span>
               </button>
             </div>
 
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs border-collapse">
-                <thead>
-                  <tr className="bg-slate-50 dark:bg-slate-800/80 border-b border-slate-200 dark:border-slate-700 text-[11px] font-black uppercase text-slate-400">
-                    <th className="p-4">Officer Details</th>
-                    <th className="p-4">Case Study Assignment</th>
-                    <th className="p-4 text-center">AI Grade & Score</th>
-                    <th className="p-4 text-center">Submission Status</th>
-                    <th className="p-4 text-right">Action</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                  {submissions.length === 0 ? (
-                    <tr>
-                      <td
-                        colSpan={5}
-                        className="p-8 text-center text-slate-400"
-                      >
-                        No officer case study submissions recorded yet.
-                      </td>
-                    </tr>
-                  ) : (
-                    submissions.map((sub) => (
-                      <tr
-                        key={sub._id}
-                        className="hover:bg-slate-50/80 dark:hover:bg-slate-800/50 transition-colors"
-                      >
-                        <td className="p-4">
-                          <span className="font-black text-slate-900 dark:text-white block">
-                            {sub.userId?.name || "Statistical Officer"}
-                          </span>
-                          <span className="text-[11px] text-blue-600 dark:text-blue-400 font-semibold block">
-                            {sub.userId?.jobRole || "Statistical Cadre"}
-                          </span>
-                          <span className="text-[10px] text-slate-400">
-                            {sub.userId?.email}
-                          </span>
-                        </td>
-                        <td className="p-4">
-                          <span className="font-bold text-slate-900 dark:text-white block text-xs">
-                            {sub.assignmentTitle}
-                          </span>
-                          <span className="text-[10px] text-slate-400">
-                            {sub.targetCompetency || "Statistical Analysis"}
-                          </span>
-                        </td>
-                        <td className="p-4 text-center">
-                          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800">
-                            <span className="font-black text-emerald-700 dark:text-emerald-300 text-xs">
-                              {sub.aiEvaluation?.overallScore || 85}%
-                            </span>
-                            <span className="text-[10px] font-bold text-emerald-600">
-                              (Grade {sub.aiEvaluation?.grade || "A"})
-                            </span>
-                          </div>
-                        </td>
-                        <td className="p-4 text-center">
-                          <span className="px-2.5 py-0.5 rounded-full font-bold text-[10px] bg-blue-50 dark:bg-blue-950 text-blue-600 border border-blue-200 dark:border-blue-800">
-                            Evaluated (Gemini AI)
-                          </span>
-                        </td>
-                        <td className="p-4 text-right">
-                          <button
-                            onClick={() => setViewingSubmission(sub)}
-                            className="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-bold text-[11px] transition-all cursor-pointer inline-flex items-center gap-1.5"
+            {assignmentSubTab === "posted" ? (
+              <div className="space-y-4">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-xs border-collapse">
+                    <thead>
+                      <tr className="bg-slate-50 dark:bg-slate-800/80 border-b border-slate-200 dark:border-slate-700 text-[11px] font-black uppercase text-slate-400">
+                        <th className="p-4">Case Study Details</th>
+                        <th className="p-4">Target Cadre / Officer</th>
+                        <th className="p-4">Posted Date & Time</th>
+                        <th className="p-4">Timer Limit & Live Status</th>
+                        <th className="p-4 text-center">Submissions</th>
+                        <th className="p-4 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                      {dispatchedAssignments.length === 0 ? (
+                        <tr>
+                          <td
+                            colSpan={6}
+                            className="p-12 text-center text-slate-400"
                           >
-                            <FaEye size={11} />
-                            <span>Review Submission</span>
-                          </button>
+                            <FaTasks size={32} className="mx-auto text-slate-300 dark:text-slate-700 mb-2" />
+                            <p className="font-bold text-slate-700 dark:text-slate-300 text-sm">
+                              No custom case studies posted yet.
+                            </p>
+                            <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
+                              Click "Compose New Case Study" to post a practical drill with a custom countdown timer.
+                            </p>
+                          </td>
+                        </tr>
+                      ) : (
+                        dispatchedAssignments.map((asgn) => {
+                          const deadlineInfo = getAssignmentDeadlineInfo(asgn.dueDate);
+                          return (
+                            <tr
+                              key={asgn._id}
+                              className="hover:bg-slate-50/80 dark:hover:bg-slate-800/50 transition-colors"
+                            >
+                              <td className="p-4 max-w-xs">
+                                <span className="font-black text-slate-900 dark:text-white block text-xs">
+                                  {asgn.title}
+                                </span>
+                                <div className="flex flex-wrap items-center gap-1.5 mt-1">
+                                  <span className="text-[10px] font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/80 px-2 py-0.5 rounded-full">
+                                    {asgn.domain}
+                                  </span>
+                                  <span className="text-[10px] text-slate-500">
+                                    • {asgn.targetCompetency}
+                                  </span>
+                                </div>
+                              </td>
+
+                              <td className="p-4">
+                                <span className="px-2.5 py-1 rounded-xl text-[11px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 block w-fit">
+                                  {asgn.assignedCadre || "All Cadres"}
+                                </span>
+                                {asgn.assignedToUserId && (
+                                  <span className="text-[10px] text-slate-400 block mt-0.5">
+                                    Direct: {asgn.assignedToUserId.name}
+                                  </span>
+                                )}
+                              </td>
+
+                              <td className="p-4">
+                                <div className="flex items-center gap-1.5 text-slate-700 dark:text-slate-300 font-semibold">
+                                  <FaCalendarAlt size={11} className="text-slate-400" />
+                                  <span>{formatDateTime(asgn.createdAt)}</span>
+                                </div>
+                              </td>
+
+                              <td className="p-4">
+                                <div className="space-y-1">
+                                  <div className="flex items-center gap-1.5">
+                                    <span
+                                      className={`px-2.5 py-1 rounded-xl text-[10px] flex items-center gap-1.5 w-fit ${deadlineInfo.badgeClass}`}
+                                    >
+                                      {deadlineInfo.isExpired ? (
+                                        <FaLock size={10} />
+                                      ) : (
+                                        <FaClock size={10} />
+                                      )}
+                                      <span>{deadlineInfo.label}</span>
+                                    </span>
+                                  </div>
+
+                                  {asgn.dueDate && (
+                                    <span className="text-[10px] text-slate-500 dark:text-slate-400 block">
+                                      Deadline: {formatDateTime(asgn.dueDate)}
+                                    </span>
+                                  )}
+                                </div>
+                              </td>
+
+                              <td className="p-4 text-center">
+                                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-black bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
+                                  {asgn.submissionsCount || 0} Submissions
+                                </span>
+                              </td>
+
+                              <td className="p-4 text-right">
+                                <button
+                                  type="button"
+                                  onClick={() => handleDeleteDispatchedAssignment(asgn._id, asgn.title)}
+                                  className="px-3 py-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/60 dark:hover:bg-rose-900/80 text-rose-600 dark:text-rose-300 font-bold text-[11px] transition-all cursor-pointer inline-flex items-center gap-1.5 border border-rose-200 dark:border-rose-800 shadow-2xs"
+                                  title="Permanently delete this case study assignment"
+                                >
+                                  <FaTrash size={11} />
+                                  <span>Delete Case</span>
+                                </button>
+                              </td>
+                            </tr>
+                          );
+                        })
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs border-collapse">
+                  <thead>
+                    <tr className="bg-slate-50 dark:bg-slate-800/80 border-b border-slate-200 dark:border-slate-700 text-[11px] font-black uppercase text-slate-400">
+                      <th className="p-4">Officer Details</th>
+                      <th className="p-4">Case Study Assignment</th>
+                      <th className="p-4 text-center">AI Grade & Score</th>
+                      <th className="p-4 text-center">Submission Status</th>
+                      <th className="p-4 text-right">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                    {submissions.length === 0 ? (
+                      <tr>
+                        <td
+                          colSpan={5}
+                          className="p-8 text-center text-slate-400"
+                        >
+                          No officer case study submissions recorded yet.
                         </td>
                       </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
+                    ) : (
+                      submissions.map((sub) => (
+                        <tr
+                          key={sub._id}
+                          className="hover:bg-slate-50/80 dark:hover:bg-slate-800/50 transition-colors"
+                        >
+                          <td className="p-4">
+                            <span className="font-black text-slate-900 dark:text-white block">
+                              {sub.userId?.name || "Statistical Officer"}
+                            </span>
+                            <span className="text-[11px] text-blue-600 dark:text-blue-400 font-semibold block">
+                              {sub.userId?.jobRole || "Statistical Cadre"}
+                            </span>
+                            <span className="text-[10px] text-slate-400">
+                              {sub.userId?.email}
+                            </span>
+                          </td>
+                          <td className="p-4">
+                            <span className="font-bold text-slate-900 dark:text-white block text-xs">
+                              {sub.assignmentTitle}
+                            </span>
+                            <span className="text-[10px] text-slate-400">
+                              {sub.targetCompetency || "Statistical Analysis"}
+                            </span>
+                          </td>
+                          <td className="p-4 text-center">
+                            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800">
+                              <span className="font-black text-emerald-700 dark:text-emerald-300 text-xs">
+                                {sub.aiEvaluation?.overallScore || 85}%
+                              </span>
+                              <span className="text-[10px] font-bold text-emerald-600">
+                                (Grade {sub.aiEvaluation?.grade || "A"})
+                              </span>
+                            </div>
+                          </td>
+                          <td className="p-4 text-center">
+                            <span className="px-2.5 py-0.5 rounded-full font-bold text-[10px] bg-blue-50 dark:bg-blue-950 text-blue-600 border border-blue-200 dark:border-blue-800">
+                              Evaluated (Gemini AI)
+                            </span>
+                          </td>
+                          <td className="p-4 text-right">
+                            <button
+                              onClick={() => setViewingSubmission(sub)}
+                              className="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-bold text-[11px] transition-all cursor-pointer inline-flex items-center gap-1.5"
+                            >
+                              <FaEye size={11} />
+                              <span>Review Submission</span>
+                            </button>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
         )}
         {activeTab === "communications" && (
@@ -1978,7 +2342,20 @@ const AdminDashboard = () => {
                     </span>
                   </div>
                 </div>
-                <div className="flex gap-2 border-b border-slate-200 dark:border-slate-800 pb-2">
+                <div className="flex flex-wrap gap-2 border-b border-slate-200 dark:border-slate-800 pb-2">
+                  <button
+                    onClick={() => setInspectTab("competencies")}
+                    className={`px-3 py-1.5 rounded-xl font-bold transition cursor-pointer flex items-center gap-1.5 ${inspectTab === "competencies"
+                        ? "bg-blue-600 text-white shadow-xs"
+                        : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400"
+                      }`}
+                  >
+                    <FaBrain size={12} />
+                    <span>
+                      Competencies & Skill Gaps (
+                      {userDetailedData?.learner?.competencies?.length || 0})
+                    </span>
+                  </button>
                   <button
                     onClick={() => setInspectTab("interviews")}
                     className={`px-3 py-1.5 rounded-xl font-bold transition cursor-pointer ${inspectTab === "interviews"
@@ -2020,6 +2397,278 @@ const AdminDashboard = () => {
                     {userDetailedData?.materialRequests?.length || 0})
                   </button>
                 </div>
+
+                {inspectTab === "competencies" && (
+                  <div className="space-y-6">
+                    {/* Radar & Domain Breakdown */}
+                    <div className="grid md:grid-cols-12 gap-4">
+                      <div className="md:col-span-5 p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/80 flex flex-col items-center justify-center">
+                        <span className="text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-2">
+                          4-Domain Competency Radar
+                        </span>
+                        <div className="h-56 w-full">
+                          <ResponsiveContainer width="100%" height="100%">
+                            <RadarChart
+                              data={[
+                                {
+                                  domain: "Statistical",
+                                  score: Math.round(
+                                    (userDetailedData?.learner?.competencies || [])
+                                      .filter((c) => (c.domain || "").toLowerCase().includes("stat"))
+                                      .reduce((acc, c) => acc + (Number(c.score) || 60), 0) /
+                                    Math.max(1, (userDetailedData?.learner?.competencies || []).filter((c) => (c.domain || "").toLowerCase().includes("stat")).length)
+                                  ) || 65,
+                                  fullMark: 100,
+                                },
+                                {
+                                  domain: "Technical",
+                                  score: Math.round(
+                                    (userDetailedData?.learner?.competencies || [])
+                                      .filter((c) => (c.domain || "").toLowerCase().includes("tech"))
+                                      .reduce((acc, c) => acc + (Number(c.score) || 60), 0) /
+                                    Math.max(1, (userDetailedData?.learner?.competencies || []).filter((c) => (c.domain || "").toLowerCase().includes("tech")).length)
+                                  ) || 65,
+                                  fullMark: 100,
+                                },
+                                {
+                                  domain: "Governance",
+                                  score: Math.round(
+                                    (userDetailedData?.learner?.competencies || [])
+                                      .filter((c) => (c.domain || "").toLowerCase().includes("gov"))
+                                      .reduce((acc, c) => acc + (Number(c.score) || 60), 0) /
+                                    Math.max(1, (userDetailedData?.learner?.competencies || []).filter((c) => (c.domain || "").toLowerCase().includes("gov")).length)
+                                  ) || 65,
+                                  fullMark: 100,
+                                },
+                                {
+                                  domain: "Managerial",
+                                  score: Math.round(
+                                    (userDetailedData?.learner?.competencies || [])
+                                      .filter((c) => (c.domain || "").toLowerCase().includes("manag") || (c.domain || "").toLowerCase().includes("behav"))
+                                      .reduce((acc, c) => acc + (Number(c.score) || 60), 0) /
+                                    Math.max(1, (userDetailedData?.learner?.competencies || []).filter((c) => (c.domain || "").toLowerCase().includes("manag") || (c.domain || "").toLowerCase().includes("behav")).length)
+                                  ) || 65,
+                                  fullMark: 100,
+                                },
+                              ]}
+                            >
+                              <PolarGrid stroke="#94a3b8" opacity={0.3} />
+                              <PolarAngleAxis
+                                dataKey="domain"
+                                tick={{ fontSize: 10, fill: "#64748b", fontWeight: 700 }}
+                              />
+                              <PolarRadiusAxis angle={30} domain={[0, 100]} tick={false} axisLine={false} />
+                              <Radar
+                                name="Competency Score"
+                                dataKey="score"
+                                stroke="#2563eb"
+                                fill="#3b82f6"
+                                fillOpacity={0.5}
+                              />
+                            </RadarChart>
+                          </ResponsiveContainer>
+                        </div>
+                      </div>
+
+                      <div className="md:col-span-7 grid grid-cols-2 gap-3 content-center">
+                        <div className="p-3 rounded-2xl bg-blue-50/60 dark:bg-blue-950/30 border border-blue-200/60 dark:border-blue-900/60">
+                          <span className="text-[10px] font-bold text-blue-600 block">Statistical Domain</span>
+                          <span className="text-lg font-black text-blue-900 dark:text-blue-200">
+                            {Math.round(
+                              (userDetailedData?.learner?.competencies || [])
+                                .filter((c) => (c.domain || "").toLowerCase().includes("stat"))
+                                .reduce((acc, c) => acc + (Number(c.score) || 60), 0) /
+                              Math.max(1, (userDetailedData?.learner?.competencies || []).filter((c) => (c.domain || "").toLowerCase().includes("stat")).length)
+                            ) || 65}%
+                          </span>
+                          <span className="text-[10px] text-slate-500 block">Sampling, SNA & Indices</span>
+                        </div>
+
+                        <div className="p-3 rounded-2xl bg-emerald-50/60 dark:bg-emerald-950/30 border border-emerald-200/60 dark:border-emerald-900/60">
+                          <span className="text-[10px] font-bold text-emerald-600 block">Technical Domain</span>
+                          <span className="text-lg font-black text-emerald-900 dark:text-emerald-200">
+                            {Math.round(
+                              (userDetailedData?.learner?.competencies || [])
+                                .filter((c) => (c.domain || "").toLowerCase().includes("tech"))
+                                .reduce((acc, c) => acc + (Number(c.score) || 60), 0) /
+                              Math.max(1, (userDetailedData?.learner?.competencies || []).filter((c) => (c.domain || "").toLowerCase().includes("tech")).length)
+                            ) || 65}%
+                          </span>
+                          <span className="text-[10px] text-slate-500 block">Processing & Microdata</span>
+                        </div>
+
+                        <div className="p-3 rounded-2xl bg-purple-50/60 dark:bg-purple-950/30 border border-purple-200/60 dark:border-purple-900/60">
+                          <span className="text-[10px] font-bold text-purple-600 block">Governance & Privacy</span>
+                          <span className="text-lg font-black text-purple-900 dark:text-purple-200">
+                            {Math.round(
+                              (userDetailedData?.learner?.competencies || [])
+                                .filter((c) => (c.domain || "").toLowerCase().includes("gov"))
+                                .reduce((acc, c) => acc + (Number(c.score) || 60), 0) /
+                              Math.max(1, (userDetailedData?.learner?.competencies || []).filter((c) => (c.domain || "").toLowerCase().includes("gov")).length)
+                            ) || 65}%
+                          </span>
+                          <span className="text-[10px] text-slate-500 block">DPDP Act & Security</span>
+                        </div>
+
+                        <div className="p-3 rounded-2xl bg-amber-50/60 dark:bg-amber-950/30 border border-amber-200/60 dark:border-amber-900/60">
+                          <span className="text-[10px] font-bold text-amber-600 block">Managerial & Policy</span>
+                          <span className="text-lg font-black text-amber-900 dark:text-amber-200">
+                            {Math.round(
+                              (userDetailedData?.learner?.competencies || [])
+                                .filter((c) => (c.domain || "").toLowerCase().includes("manag") || (c.domain || "").toLowerCase().includes("behav"))
+                                .reduce((acc, c) => acc + (Number(c.score) || 60), 0) /
+                              Math.max(1, (userDetailedData?.learner?.competencies || []).filter((c) => (c.domain || "").toLowerCase().includes("manag") || (c.domain || "").toLowerCase().includes("behav")).length)
+                            ) || 65}%
+                          </span>
+                          <span className="text-[10px] text-slate-500 block">Leadership & Briefs</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Competency Matrix Table */}
+                    <div className="space-y-3">
+                      <h4 className="font-bold text-slate-900 dark:text-white flex items-center gap-1.5 text-xs">
+                        <FaSlidersH className="text-blue-600" />
+                        <span>Assessed Competency Matrix</span>
+                      </h4>
+                      {(!userDetailedData?.learner?.competencies || userDetailedData.learner.competencies.length === 0) ? (
+                        <p className="text-slate-400 text-center py-4 bg-slate-50 dark:bg-slate-800/40 rounded-xl">
+                          No competency assessment performed by this officer yet.
+                        </p>
+                      ) : (
+                        <div className="overflow-x-auto">
+                          <table className="w-full text-left text-[11px]">
+                            <thead className="bg-slate-100 dark:bg-slate-800 text-slate-500 uppercase text-[10px] font-bold">
+                              <tr>
+                                <th className="p-2.5 rounded-l-xl">Competency Name</th>
+                                <th className="p-2.5">Domain</th>
+                                <th className="p-2.5 text-center">Score</th>
+                                <th className="p-2.5 text-center">Proficiency</th>
+                                <th className="p-2.5 rounded-r-xl">Assessment Source</th>
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                              {userDetailedData.learner.competencies.map((c, i) => (
+                                <tr key={i} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/40">
+                                  <td className="p-2.5 font-bold text-slate-800 dark:text-slate-200">
+                                    {c.competencyName}
+                                  </td>
+                                  <td className="p-2.5">
+                                    <span className="px-2 py-0.5 rounded-md bg-blue-50 dark:bg-blue-950 text-blue-600 text-[10px] font-bold">
+                                      {c.domain || "Statistical"}
+                                    </span>
+                                  </td>
+                                  <td className="p-2.5 text-center font-black text-blue-700 dark:text-blue-400">
+                                    {c.score}%
+                                  </td>
+                                  <td className="p-2.5 text-center font-semibold text-slate-600 dark:text-slate-300">
+                                    {c.level || "Intermediate"}
+                                  </td>
+                                  <td className="p-2.5 text-slate-500 text-[10px]">
+                                    {c.source || "assessment-derived"}
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Skill Gaps Section */}
+                    <div className="space-y-3">
+                      <h4 className="font-bold text-slate-900 dark:text-white flex items-center gap-1.5 text-xs">
+                        <FaExclamationTriangle className="text-amber-500" />
+                        <span>Identified Skill Gaps & Deficits ({userDetailedData?.learner?.skillGaps?.length || 0})</span>
+                      </h4>
+                      {(!userDetailedData?.learner?.skillGaps || userDetailedData.learner.skillGaps.length === 0) ? (
+                        <p className="text-slate-400 text-center py-4 bg-slate-50 dark:bg-slate-800/40 rounded-xl">
+                          No critical skill gaps identified.
+                        </p>
+                      ) : (
+                        <div className="grid md:grid-cols-2 gap-3">
+                          {userDetailedData.learner.skillGaps.map((g, i) => (
+                            <div
+                              key={i}
+                              className="p-3.5 rounded-2xl bg-amber-50/50 dark:bg-amber-950/20 border border-amber-200/70 dark:border-amber-900/50 space-y-1.5"
+                            >
+                              <div className="flex items-center justify-between">
+                                <span className="font-bold text-slate-900 dark:text-white text-xs">
+                                  {g.competencyName}
+                                </span>
+                                <span
+                                  className={`px-2 py-0.5 rounded-full text-[10px] font-black ${
+                                    g.priority === "High"
+                                      ? "bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-300"
+                                      : "bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300"
+                                  }`}
+                                >
+                                  {g.priority || "Medium"} Priority
+                                </span>
+                              </div>
+                              <p className="text-[11px] text-slate-600 dark:text-slate-300">
+                                Current Level: <strong>{g.currentLevel}</strong> ➔ Target:{" "}
+                                <strong>{g.requiredLevel}</strong>
+                              </p>
+                              {g.recommendedAction && (
+                                <p className="text-[10px] text-blue-700 dark:text-blue-300 font-medium">
+                                  <strong>Action:</strong> {g.recommendedAction}
+                                </p>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Learning Pathway */}
+                    <div className="space-y-3">
+                      <h4 className="font-bold text-slate-900 dark:text-white flex items-center gap-1.5 text-xs">
+                        <FaGraduationCap className="text-emerald-600" />
+                        <span>Tailored AI Learning Pathway ({userDetailedData?.learner?.learningPath?.length || 0} Modules)</span>
+                      </h4>
+                      {(!userDetailedData?.learner?.learningPath || userDetailedData.learner.learningPath.length === 0) ? (
+                        <p className="text-slate-400 text-center py-4 bg-slate-50 dark:bg-slate-800/40 rounded-xl">
+                          No personalized learning pathway generated yet.
+                        </p>
+                      ) : (
+                        <div className="space-y-2">
+                          {userDetailedData.learner.learningPath.map((step, i) => (
+                            <div
+                              key={i}
+                              className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/80 flex items-center justify-between gap-3"
+                            >
+                              <div className="flex items-center gap-2.5">
+                                <span className="w-6 h-6 rounded-full bg-blue-600 text-white font-black text-[10px] flex items-center justify-center shrink-0">
+                                  {step.step || i + 1}
+                                </span>
+                                <div>
+                                  <span className="font-bold text-slate-900 dark:text-white text-xs block">
+                                    {step.title}
+                                  </span>
+                                  <span className="text-[10px] text-slate-400">
+                                    Provider: {step.provider || "iGOT Karmayogi"} • Duration: {step.duration || "12 Hours"}
+                                  </span>
+                                </div>
+                              </div>
+                              <span
+                                className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
+                                  step.status === "completed"
+                                    ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300"
+                                    : step.status === "in-progress"
+                                      ? "bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300"
+                                      : "bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-300"
+                                }`}
+                              >
+                                {step.status || "not-started"}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
 
                 {inspectTab === "interviews" && (
                   <div className="space-y-4">
@@ -2516,12 +3165,12 @@ const AdminDashboard = () => {
           <div className="bg-white dark:bg-slate-900 rounded-3xl max-w-2xl w-full p-6 sm:p-8 shadow-2xl border border-slate-200 dark:border-slate-800 space-y-6 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
               <div>
-                <h3 className="text-lg font-black text-slate-900 dark:text-white">
-                  Compose & Assign Statistical Case Study
+                <h3 className="text-lg font-black text-slate-900 dark:text-white flex items-center gap-2">
+                  <FaTasks className="text-emerald-600" />
+                  <span>Compose & Dispatch Case Study with Timer Limit</span>
                 </h3>
                 <p className="text-xs text-slate-500">
-                  Target custom analytical drills directly to officers or
-                  cadres.
+                  Target analytical drills directly to officers with an automatic expiration timer.
                 </p>
               </div>
               <button
@@ -2662,6 +3311,92 @@ const AdminDashboard = () => {
                 </div>
               </div>
 
+              {/* TIMER LIMIT / DUE DATE PICKER */}
+              <div className="p-4 rounded-2xl bg-amber-50/60 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/60 space-y-3">
+                <div className="flex items-center justify-between">
+                  <label className="font-black text-amber-900 dark:text-amber-200 flex items-center gap-1.5 text-xs">
+                    <FaClock className="text-amber-600 dark:text-amber-400" />
+                    <span>Submission Timer Limit & Expiration Rule *</span>
+                  </label>
+                  <span className="text-[10px] text-amber-700 dark:text-amber-300 font-semibold">
+                    Submissions close automatically
+                  </span>
+                </div>
+
+                <div className="flex flex-wrap gap-1.5">
+                  {[
+                    { key: "30m", label: "30 Mins" },
+                    { key: "1h", label: "1 Hour" },
+                    { key: "2h", label: "2 Hours" },
+                    { key: "6h", label: "6 Hours" },
+                    { key: "12h", label: "12 Hours" },
+                    { key: "24h", label: "24 Hours (1 Day)" },
+                    { key: "3d", label: "3 Days" },
+                    { key: "7d", label: "7 Days" },
+                    { key: "custom", label: "Custom Date/Time" },
+                    { key: "none", label: "No Limit" },
+                  ].map((p) => (
+                    <button
+                      key={p.key}
+                      type="button"
+                      onClick={() => {
+                        setTimerPreset(p.key);
+                        if (p.key !== "custom") {
+                          const computed = computeDueDateFromPreset(p.key);
+                          setAssignmentForm((prev) => ({
+                            ...prev,
+                            dueDate: computed,
+                          }));
+                        }
+                      }}
+                      className={`px-3 py-1.5 rounded-xl text-[11px] font-bold transition-all cursor-pointer ${
+                        timerPreset === p.key
+                          ? "bg-amber-600 text-white shadow-xs"
+                          : "bg-white dark:bg-slate-800 border border-amber-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:border-amber-400"
+                      }`}
+                    >
+                      {p.label}
+                    </button>
+                  ))}
+                </div>
+
+                {timerPreset === "custom" && (
+                  <div className="pt-2">
+                    <label className="font-bold text-slate-700 dark:text-slate-300 block mb-1">
+                      Select Exact Expiration Date & Time:
+                    </label>
+                    <input
+                      type="datetime-local"
+                      required={timerPreset === "custom"}
+                      value={customDueDateTime}
+                      onChange={(e) => {
+                        setCustomDueDateTime(e.target.value);
+                        if (e.target.value) {
+                          setAssignmentForm((prev) => ({
+                            ...prev,
+                            dueDate: new Date(e.target.value).toISOString(),
+                          }));
+                        }
+                      }}
+                      className="w-full p-2.5 bg-white dark:bg-slate-800 border border-amber-300 dark:border-amber-700 rounded-xl text-slate-900 dark:text-white outline-hidden focus:ring-2 focus:ring-amber-500 text-xs"
+                    />
+                  </div>
+                )}
+
+                <div className="p-2.5 rounded-xl bg-amber-100/70 dark:bg-amber-900/40 text-[11px] text-amber-950 dark:text-amber-200 flex items-center justify-between">
+                  <span className="font-semibold">
+                    {assignmentForm.dueDate
+                      ? `⏳ Submissions Deadline: ${formatDateTime(assignmentForm.dueDate)}`
+                      : "⚪ Open Indefinitely (No timer limit applied)"}
+                  </span>
+                  {assignmentForm.dueDate && (
+                    <span className="font-black text-amber-800 dark:text-amber-300">
+                      {getAssignmentDeadlineInfo(assignmentForm.dueDate).countdown}
+                    </span>
+                  )}
+                </div>
+              </div>
+
               <div>
                 <label className="font-bold text-slate-700 dark:text-slate-300 block mb-1.5">
                   Institutional Scenario & Problem Statement *
@@ -2714,7 +3449,9 @@ const AdminDashboard = () => {
                 >
                   <FaTasks size={11} />
                   <span>
-                    {assignmentSubmitting ? "Assigning..." : "Assign to Cadre"}
+                    {assignmentSubmitting
+                      ? "Assigning with Timer..."
+                      : "Post Case Study (With Timer)"}
                   </span>
                 </button>
               </div>

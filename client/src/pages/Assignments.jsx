@@ -12,6 +12,7 @@ import {
   FaArrowRight,
   FaBrain,
   FaFilter,
+  FaLock,
 } from "react-icons/fa";
 import { BsShieldCheck } from "react-icons/bs";
 import toast from "react-hot-toast";
@@ -23,6 +24,58 @@ const DOMAIN_OPTIONS = [
   "Technical & Computational Competencies",
   "Digital Governance & Security",
 ];
+
+const getAssignmentDeadlineInfo = (dueDateStr) => {
+  if (!dueDateStr) return null;
+  const due = new Date(dueDateStr);
+  if (isNaN(due.getTime())) return null;
+
+  const now = new Date();
+  const diffMs = due.getTime() - now.getTime();
+
+  if (diffMs <= 0) {
+    return {
+      status: "expired",
+      label: "Deadline Expired",
+      badgeClass:
+        "bg-rose-50 dark:bg-rose-950/80 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800 font-bold",
+      isExpired: true,
+    };
+  }
+
+  const totalSecs = Math.floor(diffMs / 1000);
+  const days = Math.floor(totalSecs / 86400);
+  const hours = Math.floor((totalSecs % 86400) / 3600);
+  const minutes = Math.floor((totalSecs % 3600) / 60);
+
+  if (days > 0) {
+    return {
+      status: "active",
+      label: `${days}d ${hours}h left`,
+      badgeClass:
+        "bg-emerald-50 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 font-bold",
+      isExpired: false,
+    };
+  }
+
+  if (hours >= 6) {
+    return {
+      status: "active",
+      label: `${hours}h ${minutes}m left`,
+      badgeClass:
+        "bg-blue-50 dark:bg-blue-950/80 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800 font-bold",
+      isExpired: false,
+    };
+  }
+
+  return {
+    status: "urgent",
+    label: `🔥 Due in ${hours > 0 ? `${hours}h ` : ""}${minutes}m`,
+    badgeClass:
+      "bg-amber-50 dark:bg-amber-950/80 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800 font-black animate-pulse",
+    isExpired: false,
+  };
+};
 
 const Assignments = () => {
   const navigate = useNavigate();
@@ -96,7 +149,7 @@ const Assignments = () => {
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 transition-colors">
       <Navbar />
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-19  space-y-4">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-19 space-y-4">
         <div className="flex items-center justify-between">
           <BackButton fallbackUrl="/ai-models" label="Back to AI Models" />
           <span className="text-xs font-bold text-slate-500 dark:text-slate-400">
@@ -163,6 +216,8 @@ const Assignments = () => {
             {assignments.map((asgn) => {
               const submission = asgn.submission;
               const isSubmitted = asgn.hasSubmitted;
+              const deadlineInfo = getAssignmentDeadlineInfo(asgn.dueDate);
+              const isExpired = deadlineInfo?.isExpired;
 
               return (
                 <div
@@ -177,21 +232,32 @@ const Assignments = () => {
                         </span>
                         {asgn.isCustomDispatched && (
                           <span className="text-[10px] font-black text-purple-700 dark:text-purple-300 bg-purple-50 dark:bg-purple-950 px-2.5 py-0.5 rounded-full border border-purple-200 dark:border-purple-800">
-                            ★ Assigned by NSSTA Secretariat
+                            ★ Assigned by NSSTA
                           </span>
                         )}
                       </div>
 
-                      {isSubmitted ? (
-                        <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/80 px-2.5 py-0.5 rounded-full">
-                          <FaCheckCircle size={11} />
-                          <span>Evaluated • {submission?.aiEvaluation?.overallScore || 80}/100</span>
-                        </span>
-                      ) : (
-                        <span className="text-[10px] font-bold text-amber-600 bg-amber-50 dark:bg-amber-950 px-2.5 py-0.5 rounded-full">
-                          {asgn.difficulty} • {asgn.estimatedHours}h
-                        </span>
-                      )}
+                      <div className="flex items-center gap-1.5">
+                        {deadlineInfo && !isSubmitted && (
+                          <span
+                            className={`px-2 py-0.5 rounded-full text-[10px] flex items-center gap-1 ${deadlineInfo.badgeClass}`}
+                          >
+                            {isExpired ? <FaLock size={9} /> : <FaClock size={9} />}
+                            <span>{deadlineInfo.label}</span>
+                          </span>
+                        )}
+
+                        {isSubmitted ? (
+                          <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/80 px-2.5 py-0.5 rounded-full">
+                            <FaCheckCircle size={11} />
+                            <span>Evaluated • {submission?.aiEvaluation?.overallScore || 80}/100</span>
+                          </span>
+                        ) : (
+                          <span className="text-[10px] font-bold text-amber-600 bg-amber-50 dark:bg-amber-950 px-2.5 py-0.5 rounded-full">
+                            {asgn.difficulty} • {asgn.estimatedHours}h
+                          </span>
+                        )}
+                      </div>
                     </div>
 
                     <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white leading-snug">
@@ -221,12 +287,21 @@ const Assignments = () => {
 
                     <button
                       onClick={() => navigate(`/assignments/${asgn._id}`)}
-                      className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shadow-sm cursor-pointer ${isSubmitted
-                        ? "bg-slate-100 dark:bg-slate-800 hover:bg-blue-50 text-blue-600 dark:text-blue-400"
-                        : "bg-blue-600 hover:bg-blue-700 text-white shadow-blue-500/20"
-                        }`}
+                      className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shadow-sm cursor-pointer ${
+                        isSubmitted
+                          ? "bg-slate-100 dark:bg-slate-800 hover:bg-blue-50 text-blue-600 dark:text-blue-400"
+                          : isExpired
+                          ? "bg-rose-100 dark:bg-rose-950/80 hover:bg-rose-200 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800"
+                          : "bg-blue-600 hover:bg-blue-700 text-white shadow-blue-500/20"
+                      }`}
                     >
-                      <span>{isSubmitted ? "View Evaluation Report" : "Solve Case Study"}</span>
+                      <span>
+                        {isSubmitted
+                          ? "View Evaluation Report"
+                          : isExpired
+                          ? "View Closed Case Study"
+                          : "Solve Case Study"}
+                      </span>
                       <FaArrowRight size={10} />
                     </button>
                   </div>

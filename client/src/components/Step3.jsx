@@ -237,11 +237,17 @@ const Step3 = ({ report }) => {
 
                   <Tooltip
                     contentStyle={{
-                      backgroundColor: "#0f172a",
-                      color: "#fff",
-                      borderRadius: "12px",
-                      border: "1px solid #334155",
+                      backgroundColor: "#ffffff",
+                      color: "#0f172a",
+                      borderRadius: "14px",
+                      border: "1px solid #e2e8f0",
+                      boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1)",
+                      fontSize: "12px",
+                      fontWeight: "600",
+                      padding: "10px 14px",
                     }}
+                    itemStyle={{ color: "#10b981", fontWeight: "700" }}
+                    labelStyle={{ color: "#0f172a", fontWeight: "800" }}
                   />
 
                   <Area

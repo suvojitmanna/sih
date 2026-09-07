@@ -129,6 +129,8 @@ const Dashboard = () => {
   const [assignmentSubmissions, setAssignmentSubmissions] = useState([]);
   const [chats, setChats] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [lastSyncedAt, setLastSyncedAt] = useState(new Date());
   const [generatingPath, setGeneratingPath] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
   const [domainFilter, setDomainFilter] = useState("all");
@@ -140,8 +142,11 @@ const Dashboard = () => {
     return () => clearInterval(timer);
   }, []);
 
-  const fetchDashboardData = async () => {
+  const fetchDashboardData = async (isBackground = false) => {
     try {
+      if (!isBackground) {
+        setIsSyncing(true);
+      }
       const [
         profileRes,
         broadcastsRes,
@@ -159,8 +164,9 @@ const Dashboard = () => {
       ]);
 
       if (profileRes.status === "fulfilled" && profileRes.value.data?.success) {
-        setProfile(profileRes.value.data.profile);
-        dispatch(setUserData({ ...userData, ...profileRes.value.data.profile }));
+        const p = profileRes.value.data.profile;
+        setProfile(p);
+        dispatch(setUserData({ ...userData, ...p }));
       }
 
       if (broadcastsRes.status === "fulfilled" && broadcastsRes.value.data?.success) {
@@ -182,24 +188,54 @@ const Dashboard = () => {
       if (chatRes.status === "fulfilled" && chatRes.value.data?.success) {
         setChats(chatRes.value.data.chats || []);
       }
+      setLastSyncedAt(new Date());
     } catch (error) {
-      console.error("Dashboard multi-source fetch error:", error);
+      if (!isBackground) {
+        console.error("Dashboard multi-source fetch error:", error);
+      }
     } finally {
-      setLoading(false);
+      if (!isBackground) {
+        setLoading(false);
+        setIsSyncing(false);
+      }
     }
   };
 
   useEffect(() => {
-    fetchDashboardData();
+    fetchDashboardData(false);
+
+    // Periodic real-time background synchronization (every 3.5s)
     const interval = setInterval(() => {
-      axios
-        .get(`${ServerUrl}/api/support/broadcasts`, { withCredentials: true })
-        .then((res) => {
-          if (res.data?.success) setBroadcasts(res.data.broadcasts || []);
-        })
-        .catch(() => { });
-    }, 4000);
-    return () => clearInterval(interval);
+      fetchDashboardData(true);
+    }, 3500);
+
+    // Real-time custom event and focus listeners
+    const handleAssessmentCompleted = (e) => {
+      console.log("[REALTIME DASHBOARD SYNC] Assessment completed event triggered:", e.detail);
+      fetchDashboardData(false);
+      toast.success("Dashboard metrics updated with latest assessment results! 🎯", { id: "realtime-sync-toast" });
+    };
+
+    const handleWindowFocus = () => {
+      fetchDashboardData(true);
+    };
+
+    const handleStorageChange = (e) => {
+      if (e.key === "lastAssessmentUpdate") {
+        fetchDashboardData(true);
+      }
+    };
+
+    window.addEventListener("assessmentCompleted", handleAssessmentCompleted);
+    window.addEventListener("focus", handleWindowFocus);
+    window.addEventListener("storage", handleStorageChange);
+
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener("assessmentCompleted", handleAssessmentCompleted);
+      window.removeEventListener("focus", handleWindowFocus);
+      window.removeEventListener("storage", handleStorageChange);
+    };
   }, []);
 
   const synthesizedCompetencies = useMemo(() => {
@@ -217,7 +253,7 @@ const Dashboard = () => {
       const lowerName = comp.competencyName.toLowerCase();
       let matchedQuizScores = [];
       (quizAttempts || []).forEach((attempt) => {
-        const title = (attempt.quizId?.title || attempt.title || "").toLowerCase();
+        const title = (attempt.quizTitle || attempt.topic || attempt.quizId?.title || attempt.title || "").toLowerCase();
         if (
           (lowerName.includes("sampling") && title.includes("sampling")) ||
           (lowerName.includes("national account") && (title.includes("national") || title.includes("sna") || title.includes("gdp"))) ||
@@ -228,25 +264,30 @@ const Dashboard = () => {
           (lowerName.includes("microdata") && (title.includes("microdata") || title.includes("survey"))) ||
           (lowerName.includes("policy") && (title.includes("policy") || title.includes("governance")))
         ) {
-          const sc = attempt.percentage || (attempt.score && attempt.totalQuestions ? Math.round((attempt.score / attempt.totalQuestions) * 100) : null);
+          const sc = attempt.score !== undefined && attempt.score !== null
+            ? attempt.score
+            : (attempt.percentage || (attempt.totalQuestions ? Math.round((attempt.correctCount / attempt.totalQuestions) * 100) : null));
           if (sc !== null && sc !== undefined) matchedQuizScores.push(sc);
         }
       });
 
       let matchedAssignmentScores = [];
       (assignmentSubmissions || []).forEach((sub) => {
-        const title = (sub.assignmentId?.title || sub.title || "").toLowerCase();
+        const title = (sub.assignmentTitle || sub.targetCompetency || sub.assignmentId?.title || sub.title || "").toLowerCase();
         if (
-          (lowerName.includes("sampling") && title.includes("sampling")) ||
-          (lowerName.includes("national account") && title.includes("national")) ||
-          (lowerName.includes("price") && title.includes("price")) ||
-          (lowerName.includes("computing") && title.includes("computing")) ||
-          (lowerName.includes("privacy") && title.includes("privacy")) ||
-          (lowerName.includes("labour") && title.includes("labour")) ||
-          (lowerName.includes("microdata") && title.includes("microdata"))
+          (lowerName.includes("sampling") && (title.includes("sampling") || title.includes("frame") || title.includes("multiplier"))) ||
+          (lowerName.includes("national account") && (title.includes("national") || title.includes("sna") || title.includes("gdp") || title.includes("gva"))) ||
+          (lowerName.includes("price") && (title.includes("price") || title.includes("cpi") || title.includes("wpi"))) ||
+          (lowerName.includes("computing") && (title.includes("computing") || title.includes("cleaning") || title.includes("pipeline") || title.includes("data"))) ||
+          (lowerName.includes("privacy") && (title.includes("privacy") || title.includes("dpdp") || title.includes("anonymization"))) ||
+          (lowerName.includes("labour") && (title.includes("labour") || title.includes("plfs") || title.includes("employment"))) ||
+          (lowerName.includes("microdata") && (title.includes("microdata") || title.includes("survey") || title.includes("weighting"))) ||
+          (lowerName.includes("policy") && (title.includes("policy") || title.includes("governance") || title.includes("brief")))
         ) {
-          if (sub.score !== null && sub.score !== undefined) {
-            const sc = sub.scoreMax === 10 ? sub.score * 10 : sub.score;
+          const sc = sub.aiEvaluation?.overallScore !== undefined && sub.aiEvaluation?.overallScore !== null
+            ? sub.aiEvaluation.overallScore
+            : (sub.score !== undefined ? (sub.scoreMax === 10 ? sub.score * 10 : sub.score) : null);
+          if (sc !== null && sc !== undefined) {
             matchedAssignmentScores.push(sc);
           }
         }
@@ -574,6 +615,22 @@ const Dashboard = () => {
               </div>
 
               <div className="flex flex-wrap items-center gap-3">
+                <div className="inline-flex items-center gap-2 px-3.5 py-2 rounded-2xl bg-emerald-500/15 border border-emerald-400/30 text-emerald-300 text-xs font-bold shadow-sm">
+                  <span className="relative flex h-2.5 w-2.5">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+                  </span>
+                  <span>Live Real-Time Sync</span>
+                  <button
+                    type="button"
+                    onClick={() => fetchDashboardData(false)}
+                    title="Force Refresh Live Data"
+                    className="ml-1 p-1 hover:text-white transition rounded-lg hover:bg-emerald-500/20 cursor-pointer"
+                  >
+                    <FaSyncAlt size={11} className={isSyncing ? "animate-spin text-white" : ""} />
+                  </button>
+                </div>
+
                 <button
                   onClick={handleDownloadPDF}
                   className="px-5 py-2.5 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-lg hover:scale-105 transition-all cursor-pointer flex items-center gap-2"
@@ -767,8 +824,8 @@ const Dashboard = () => {
                         type="button"
                         onClick={() => setDomainFilter(cat.id)}
                         className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${domainFilter === cat.id
-                            ? "bg-blue-600 text-white shadow-xs"
-                            : "text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white"
+                          ? "bg-blue-600 text-white shadow-xs"
+                          : "text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white"
                           }`}
                       >
                         {cat.label}
@@ -803,17 +860,23 @@ const Dashboard = () => {
                       tickLine={{ stroke: "#94a3b8", opacity: 0.3 }}
                     />
                     <Tooltip
+                      cursor={{ fill: "rgba(59, 130, 246, 0.08)", rx: 8, ry: 8 }}
                       formatter={(val, name, item) => [
                         `${val}%`,
                         `Score: ${item.payload.fullName} (${item.payload.domain})`,
                       ]}
                       contentStyle={{
-                        backgroundColor: "#0f172a",
+                        backgroundColor: "#ffffff",
                         borderRadius: "14px",
-                        border: "1px solid #334155",
-                        color: "#fff",
+                        border: "1px solid #e2e8f0",
+                        color: "#0f172a",
+                        boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1)",
                         fontSize: "12px",
+                        fontWeight: "600",
+                        padding: "10px 14px",
                       }}
+                      itemStyle={{ color: "#2563eb", fontWeight: "700" }}
+                      labelStyle={{ color: "#0f172a", fontWeight: "800", marginBottom: "4px" }}
                     />
                     <ReferenceLine
                       y={75}
@@ -908,12 +971,17 @@ const Dashboard = () => {
                       />
                       <Tooltip
                         contentStyle={{
-                          backgroundColor: "#0f172a",
-                          borderRadius: "12px",
-                          border: "none",
-                          color: "#fff",
+                          backgroundColor: "#ffffff",
+                          borderRadius: "14px",
+                          border: "1px solid #e2e8f0",
+                          color: "#0f172a",
+                          boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1)",
                           fontSize: "12px",
+                          fontWeight: "600",
+                          padding: "10px 14px",
                         }}
+                        itemStyle={{ color: "#4f46e5", fontWeight: "700" }}
+                        labelStyle={{ color: "#0f172a", fontWeight: "800" }}
                       />
                     </RadarChart>
                   </ResponsiveContainer>
@@ -931,10 +999,10 @@ const Dashboard = () => {
                         </span>
                         <span
                           className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-md ${d.score >= 75
-                              ? "bg-emerald-100 dark:bg-emerald-950 text-emerald-600"
-                              : d.score >= 50
-                                ? "bg-blue-100 dark:bg-blue-950 text-blue-600"
-                                : "bg-rose-100 dark:bg-rose-950 text-rose-600"
+                            ? "bg-emerald-100 dark:bg-emerald-950 text-emerald-600"
+                            : d.score >= 50
+                              ? "bg-blue-100 dark:bg-blue-950 text-blue-600"
+                              : "bg-rose-100 dark:bg-rose-950 text-rose-600"
                             }`}
                         >
                           {d.score >= 75 ? "Benchmark Met" : d.score >= 50 ? "Developing" : "Deficit"}
@@ -1015,12 +1083,17 @@ const Dashboard = () => {
                         `Score: ${item.payload.title || item.payload.type}`,
                       ]}
                       contentStyle={{
-                        backgroundColor: "#0f172a",
+                        backgroundColor: "#ffffff",
                         borderRadius: "14px",
-                        border: "1px solid #334155",
-                        color: "#fff",
+                        border: "1px solid #e2e8f0",
+                        color: "#0f172a",
+                        boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1)",
                         fontSize: "12px",
+                        fontWeight: "600",
+                        padding: "10px 14px",
                       }}
+                      itemStyle={{ color: "#2563eb", fontWeight: "700" }}
+                      labelStyle={{ color: "#0f172a", fontWeight: "800", marginBottom: "4px" }}
                     />
                     <ReferenceLine
                       y={75}
@@ -1076,10 +1149,10 @@ const Dashboard = () => {
                     <div
                       key={idx}
                       className={`p-4 rounded-2xl border transition-all flex flex-col justify-between space-y-3 ${isWeak
-                          ? "bg-rose-50/50 dark:bg-rose-950/20 border-rose-200 dark:border-rose-900/60"
-                          : isMastered
-                            ? "bg-emerald-50/40 dark:bg-emerald-950/20 border-emerald-200 dark:border-emerald-900/60"
-                            : "bg-slate-50 dark:bg-slate-800/40 border-slate-200 dark:border-slate-800"
+                        ? "bg-rose-50/50 dark:bg-rose-950/20 border-rose-200 dark:border-rose-900/60"
+                        : isMastered
+                          ? "bg-emerald-50/40 dark:bg-emerald-950/20 border-emerald-200 dark:border-emerald-900/60"
+                          : "bg-slate-50 dark:bg-slate-800/40 border-slate-200 dark:border-slate-800"
                         }`}
                     >
                       <div className="space-y-2">
@@ -1089,10 +1162,10 @@ const Dashboard = () => {
                           </span>
                           <span
                             className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-md ${isWeak
-                                ? "bg-rose-100 dark:bg-rose-950 text-rose-600"
-                                : isMastered
-                                  ? "bg-emerald-100 dark:bg-emerald-950 text-emerald-600"
-                                  : "bg-blue-100 dark:bg-blue-950 text-blue-600"
+                              ? "bg-rose-100 dark:bg-rose-950 text-rose-600"
+                              : isMastered
+                                ? "bg-emerald-100 dark:bg-emerald-950 text-emerald-600"
+                                : "bg-blue-100 dark:bg-blue-950 text-blue-600"
                               }`}
                           >
                             {isWeak ? "Gap" : isMastered ? "Mastered" : "Developing"}

@@ -232,21 +232,30 @@ const LiveAdminChatWidget = () => {
                 const firstNew = newAdminMsgs[0];
                 if (firstNew.isBroadcast) {
                   toast(`📢 ${firstNew.senderName}: ${firstNew.message}`, {
-                    duration: 6000,
+                    duration: 7500,
                     style: {
                       borderRadius: "14px",
                       background: "#0f172a",
                       color: "#fbbf24",
                       border: "1px solid #f59e0b",
+                      boxShadow: "0 10px 25px -5px rgba(245, 158, 11, 0.25)",
+                      maxWidth: "480px",
+                      fontSize: "13px",
+                      lineHeight: "1.4",
                     },
                   });
                 } else {
-                  toast("🏛️ NSSTA Faculty Desk replied to your message!", {
+                  toast(`📩 ${firstNew.senderName || "NSSTA Secretariat"}: ${firstNew.message}`, {
+                    duration: 7500,
                     style: {
                       borderRadius: "14px",
                       background: "#0f172a",
-                      color: "#fff",
-                      border: "1px solid #334155",
+                      color: "#93c5fd",
+                      border: "1px solid #3b82f6",
+                      boxShadow: "0 10px 25px -5px rgba(59, 130, 246, 0.25)",
+                      maxWidth: "480px",
+                      fontSize: "13px",
+                      lineHeight: "1.4",
                     },
                   });
                 }

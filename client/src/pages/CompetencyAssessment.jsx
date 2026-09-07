@@ -6,17 +6,17 @@ import { ServerUrl } from "../App";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { setUserData } from "../redux/userSlice";
 import {
   FaBrain,
-  FaCheckCircle,
   FaArrowRight,
   FaSlidersH,
-  FaIdCard,
-  FaExclamationTriangle,
   FaUserTie,
-  FaGraduationCap,
   FaHandSparkles,
   FaFilePdf,
+  FaTachometerAlt,
 } from "react-icons/fa";
 import { HiSparkles } from "react-icons/hi";
 import { BsShieldCheck, BsBarChartSteps } from "react-icons/bs";
@@ -60,6 +60,10 @@ const CORE_EVALUATION_SKILLS = [
 ];
 
 const CompetencyAssessment = () => {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const { userData } = useSelector((state) => state.user);
+
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("form"); // "form" | "results"
   const [profile, setProfile] = useState(null);
@@ -140,6 +144,13 @@ const CompetencyAssessment = () => {
 
       if (data.success) {
         toast.success(data.message || "Assessment successfully completed! ✨");
+        if (data.user) {
+          dispatch(setUserData(data.user));
+        }
+        // Broadcast real-time event
+        window.dispatchEvent(new CustomEvent("assessmentCompleted", { detail: data }));
+        localStorage.setItem("lastAssessmentUpdate", Date.now().toString());
+
         await fetchProfile();
         setActiveTab("results");
       }
@@ -197,8 +208,8 @@ const CompetencyAssessment = () => {
             <button
               onClick={() => setActiveTab("form")}
               className={`px-4 py-2 rounded-xl transition-all cursor-pointer ${activeTab === "form"
-                  ? "bg-white dark:bg-slate-900 text-blue-700 dark:text-blue-400 shadow-xs"
-                  : "text-slate-500 hover:text-slate-900 dark:hover:text-white"
+                ? "bg-white dark:bg-slate-900 text-blue-700 dark:text-blue-400 shadow-xs"
+                : "text-slate-500 hover:text-slate-900 dark:hover:text-white"
                 }`}
             >
               Self-Rating Form
@@ -206,8 +217,8 @@ const CompetencyAssessment = () => {
             <button
               onClick={() => setActiveTab("results")}
               className={`px-4 py-2 rounded-xl transition-all cursor-pointer ${activeTab === "results"
-                  ? "bg-white dark:bg-slate-900 text-blue-700 dark:text-blue-400 shadow-xs"
-                  : "text-slate-500 hover:text-slate-900 dark:hover:text-white"
+                ? "bg-white dark:bg-slate-900 text-blue-700 dark:text-blue-400 shadow-xs"
+                : "text-slate-500 hover:text-slate-900 dark:hover:text-white"
                 }`}
             >
               Assessed Matrix & Gaps
@@ -427,7 +438,16 @@ const CompetencyAssessment = () => {
                 <span>AI Assessment Complete: Multi-Domain scores & Skill Gaps computed.</span>
               </div>
 
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  onClick={() => navigate("/dashboard")}
+                  className="px-4 py-2 rounded-xl bg-gradient-to-r from-blue-700 to-indigo-700 hover:from-blue-800 hover:to-indigo-800 text-white font-bold text-xs shadow-md transition-all flex items-center gap-1.5 cursor-pointer"
+                >
+                  <FaTachometerAlt size={12} />
+                  <span>View Live Dashboard</span>
+                  <FaArrowRight size={10} />
+                </button>
+
                 <button
                   onClick={() =>
                     generateCompetencyPDF({
@@ -445,8 +465,8 @@ const CompetencyAssessment = () => {
                 </button>
 
                 <button
-                  onClick={() => (window.location.href = "/learning-path")}
-                  className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-md transition-all flex items-center gap-1.5 cursor-pointer"
+                  onClick={() => navigate("/learning-path")}
+                  className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs shadow-md transition-all flex items-center gap-1.5 cursor-pointer"
                 >
                   <span>View Learning Pathway</span>
                   <FaArrowRight size={10} />

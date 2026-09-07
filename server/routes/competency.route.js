@@ -1,13 +1,13 @@
 import express from "express";
 import isAuth from "../middleware/isAuth.js";
 import {
-    getCompetencyFramework,
-    getLearnerProfile,
-    updateLearnerProfile,
-    runAiAssessment,
-    getSkillGaps,
-    generatePathway,
-    updatePathwayProgress,
+  getCompetencyFramework,
+  getLearnerProfile,
+  updateLearnerProfile,
+  runAiAssessment,
+  getSkillGaps,
+  generatePathway,
+  updatePathwayProgress,
 } from "../controller/competency.controller.js";
 
 const competencyRouter = express.Router();

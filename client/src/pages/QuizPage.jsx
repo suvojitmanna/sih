@@ -3,6 +3,8 @@ import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import BackButton from "../components/BackButton";
 import { useParams, useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { setUserData } from "../redux/userSlice";
 import { ServerUrl } from "../App";
 import axios from "axios";
 import toast from "react-hot-toast";
@@ -15,6 +17,7 @@ import {
   FaRedo,
   FaBookOpen,
   FaHandSparkles,
+  FaTachometerAlt,
 } from "react-icons/fa";
 
 const QuizPage = () => {
@@ -99,6 +102,11 @@ const QuizPage = () => {
         toast.success("Assessment evaluated successfully! 🎉");
         setResult(data);
         setSubmitted(true);
+        if (data.user) {
+          dispatch(setUserData(data.user));
+        }
+        window.dispatchEvent(new CustomEvent("assessmentCompleted", { detail: data }));
+        localStorage.setItem("lastAssessmentUpdate", Date.now().toString());
       }
     } catch (error) {
       toast.error(
@@ -368,6 +376,15 @@ const QuizPage = () => {
               </div>
 
               <div className="flex flex-wrap justify-center gap-3 pt-2">
+                <button
+                  onClick={() => navigate("/dashboard")}
+                  className="px-5 py-2.5 rounded-2xl bg-gradient-to-r from-blue-700 to-indigo-700 hover:from-blue-800 hover:to-indigo-800 text-white text-xs font-bold flex items-center gap-2 shadow-md cursor-pointer"
+                >
+                  <FaTachometerAlt size={12} />
+                  <span>View Live Dashboard</span>
+                  <FaArrowRight size={10} />
+                </button>
+
                 <BackButton to="/quizzes" label="Back to Quizzes" />
 
                 <button
@@ -380,7 +397,7 @@ const QuizPage = () => {
 
                 <button
                   onClick={() => navigate("/learning-path")}
-                  className="px-5 py-2.5 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold flex items-center gap-2 shadow-md cursor-pointer"
+                  className="px-5 py-2.5 rounded-2xl bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold flex items-center gap-2 shadow-md cursor-pointer"
                 >
                   <FaBookOpen size={12} />
                   <span>View Recommended Learning</span>

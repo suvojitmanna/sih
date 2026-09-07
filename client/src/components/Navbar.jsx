@@ -71,14 +71,17 @@ const Navbar = () => {
 
   const navLinks = [
     { label: "Home", path: "/", icon: FaHome },
-    { label: "Dashboard", path: "/dashboard", icon: BsBarChartLine },
-    { label: "History", path: "/history", icon: FaHistory },
+    ...(userData?.role !== "admin"
+      ? [
+          { label: "Dashboard", path: "/dashboard", icon: BsBarChartLine },
+          { label: "History", path: "/history", icon: FaHistory },
+        ]
+      : []),
     { label: "AI Models", path: "/ai-models", icon: HiSparkles, isAiModel: true },
+    ...(userData?.role === "admin"
+      ? [{ label: "Admin Portal", path: "/admin", icon: BsShieldLock }]
+      : []),
   ];
-
-  if (userData?.role === "admin") {
-    navLinks.push({ label: "Admin Portal", path: "/admin", icon: BsShieldLock });
-  }
 
   const popupVariants = {
     hidden: { opacity: 0, y: 10, scale: 0.95 },
@@ -241,16 +244,18 @@ const Navbar = () => {
                           </span>
                         </button>
 
-                        <button
-                          onClick={() => {
-                            setShowUserPopup(false);
-                            navigate("/dashboard");
-                          }}
-                          className="w-full text-left px-3.5 py-2.5 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-800 text-xs font-bold text-slate-700 dark:text-slate-200 flex items-center gap-2.5 transition-colors cursor-pointer"
-                        >
-                          <BsBarChartLine size={14} className="text-blue-600" />
-                          <span>My Performance Dashboard</span>
-                        </button>
+                        {userData?.role !== "admin" && (
+                          <button
+                            onClick={() => {
+                              setShowUserPopup(false);
+                              navigate("/dashboard");
+                            }}
+                            className="w-full text-left px-3.5 py-2.5 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-800 text-xs font-bold text-slate-700 dark:text-slate-200 flex items-center gap-2.5 transition-colors cursor-pointer"
+                          >
+                            <BsBarChartLine size={14} className="text-blue-600" />
+                            <span>My Performance Dashboard</span>
+                          </button>
+                        )}
 
                         <button
                           onClick={() => {
@@ -263,27 +268,44 @@ const Navbar = () => {
                           <span>AI Models & Workflows Hub</span>
                         </button>
 
-                        <button
-                          onClick={() => {
-                            setShowUserPopup(false);
-                            handleDownloadDossier();
-                          }}
-                          className="w-full text-left px-3.5 py-2.5 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-800 text-xs font-bold text-slate-700 dark:text-slate-200 flex items-center gap-2.5 transition-colors cursor-pointer"
-                        >
-                          <FaFilePdf size={14} className="text-rose-600" />
-                          <span>Export Official Dossier (PDF)</span>
-                        </button>
+                        {userData?.role !== "admin" && (
+                          <button
+                            onClick={() => {
+                              setShowUserPopup(false);
+                              handleDownloadDossier();
+                            }}
+                            className="w-full text-left px-3.5 py-2.5 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-800 text-xs font-bold text-slate-700 dark:text-slate-200 flex items-center gap-2.5 transition-colors cursor-pointer"
+                          >
+                            <FaFilePdf size={14} className="text-rose-600" />
+                            <span>Export Official Dossier (PDF)</span>
+                          </button>
+                        )}
 
-                        <button
-                          onClick={() => {
-                            setShowUserPopup(false);
-                            navigate("/history");
-                          }}
-                          className="w-full text-left px-3.5 py-2.5 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-800 text-xs font-bold text-slate-700 dark:text-slate-200 flex items-center gap-2.5 transition-colors cursor-pointer"
-                        >
-                          <FaHistory size={14} className="text-indigo-600" />
-                          <span>Interview History & Scorecards</span>
-                        </button>
+                        {userData?.role !== "admin" && (
+                          <button
+                            onClick={() => {
+                              setShowUserPopup(false);
+                              navigate("/history");
+                            }}
+                            className="w-full text-left px-3.5 py-2.5 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-800 text-xs font-bold text-slate-700 dark:text-slate-200 flex items-center gap-2.5 transition-colors cursor-pointer"
+                          >
+                            <FaHistory size={14} className="text-indigo-600" />
+                            <span>Interview History & Scorecards</span>
+                          </button>
+                        )}
+
+                        {userData?.role === "admin" && (
+                          <button
+                            onClick={() => {
+                              setShowUserPopup(false);
+                              navigate("/admin");
+                            }}
+                            className="w-full text-left px-3.5 py-2.5 rounded-2xl hover:bg-blue-50/60 dark:hover:bg-blue-950/40 text-xs font-bold text-blue-700 dark:text-blue-300 flex items-center gap-2.5 transition-colors cursor-pointer"
+                          >
+                            <BsShieldLock size={14} className="text-blue-600" />
+                            <span>Executive Admin Portal</span>
+                          </button>
+                        )}
 
                         <button
                           onClick={() => {

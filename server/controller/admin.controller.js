@@ -4,6 +4,7 @@ import Material from "../models/materialModel.js";
 import MaterialRequest from "../models/materialRequestModel.js";
 import Interview from "../models/interviewModel.js";
 import { Assignment, AssignmentSubmission } from "../models/assignmentModel.js";
+import SupportMessage from "../models/supportMessageModel.js";
 
 export const getAdminOverviewMetrics = async (req, res) => {
     try {
@@ -202,6 +203,26 @@ export const fulfillMaterialRequest = async (req, res) => {
 
         await request.save();
 
+        // Create direct notification message to requester
+        try {
+            if (request.requesterId) {
+                const reqUser = await User.findById(request.requesterId);
+                await SupportMessage.create({
+                    senderId: req.user._id,
+                    senderName: "NSSTA Secretariat - Material Request Desk",
+                    senderRole: "admin",
+                    senderCadre: "Official Secretariat",
+                    recipientId: request.requesterId,
+                    recipientName: reqUser?.name || request.requesterName || "Statistical Officer",
+                    message: `📄 Your Study Material Request has been fulfilled: "${request.dispatchedMaterialTitle || request.topic}". Note: ${request.adminResponseNote || "Dispatched by NSSTA Secretariat."}. Access the material in your Study Materials Hub.`,
+                    isBroadcast: false,
+                    isRead: false,
+                });
+            }
+        } catch (msgErr) {
+            console.error("[MATERIAL FULFILL NOTIFICATION ERROR]", msgErr);
+        }
+
         return res.status(200).json({
             success: true,
             message: "Study material request updated and dispatched to the officer.",
@@ -240,15 +261,16 @@ export const dispatchMaterial = async (req, res) => {
             fileType = req.file.originalname.split(".").pop().toLowerCase();
         }
 
+        let directTargetUser = null;
         if (targetUserId) {
-            const targetUser = await User.findById(targetUserId);
-            if (targetUser) {
+            directTargetUser = await User.findById(targetUserId);
+            if (directTargetUser) {
                 await MaterialRequest.create({
-                    requesterId: targetUser._id,
-                    requesterName: targetUser.name,
-                    requesterEmail: targetUser.email,
-                    requesterCadre: targetUser.jobRole,
-                    requesterDepartment: targetUser.department,
+                    requesterId: directTargetUser._id,
+                    requesterName: directTargetUser.name,
+                    requesterEmail: directTargetUser.email,
+                    requesterCadre: directTargetUser.jobRole,
+                    requesterDepartment: directTargetUser.department,
                     topic: title,
                     domain,
                     description: `Direct administrative dispatch for ${targetCadre}`,
@@ -279,6 +301,38 @@ export const dispatchMaterial = async (req, res) => {
             summary: description,
             uploadedBy: req.user._id,
         });
+
+        // Create direct or broadcast notification message for officers
+        try {
+            if (targetUserId && directTargetUser) {
+                await SupportMessage.create({
+                    senderId: req.user._id,
+                    senderName: "NSSTA Secretariat - Study Material Hub",
+                    senderRole: "admin",
+                    senderCadre: "Official Secretariat",
+                    recipientId: directTargetUser._id,
+                    recipientName: directTargetUser.name || directTargetUser.email || "Statistical Officer",
+                    message: `📚 New Study Material Dispatched: "${title}" (${domain} • ${topic}). ${description ? `Summary: ${description}. ` : ""}Available now in your Study Materials Hub.`,
+                    isBroadcast: false,
+                    isRead: false,
+                });
+            } else {
+                const targetLabel = targetCadre === "All" ? "All Cadre Officers" : `${targetCadre} Officers`;
+                await SupportMessage.create({
+                    senderId: req.user._id,
+                    senderName: `NSSTA Secretariat - Study Material Alert [${targetCadre}]`,
+                    senderRole: "admin",
+                    senderCadre: "Official Broadcast",
+                    recipientId: null,
+                    recipientName: targetLabel,
+                    message: `📚 New Study Material Dispatched: "${title}" (${domain} • ${topic}). ${description ? `Summary: ${description}. ` : ""}Access full reference material in the Study Materials section.`,
+                    isBroadcast: true,
+                    isRead: false,
+                });
+            }
+        } catch (msgErr) {
+            console.error("[DISPATCH MATERIAL NOTIFICATION ERROR]", msgErr);
+        }
 
         return res.status(201).json({
             success: true,
@@ -350,6 +404,52 @@ export const dispatchAssignment = async (req, res) => {
             adminNotes,
         });
 
+        // Create direct or broadcast notification message for officers
+        try {
+            const formattedDueDate = dueDate
+                ? new Date(dueDate).toLocaleString("en-IN", {
+                    day: "2-digit",
+                    month: "short",
+                    year: "numeric",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    hour12: true,
+                })
+                : "Open submission (No timer limit)";
+
+            if (assignedToUserId) {
+                const targetOfficer = await User.findById(assignedToUserId);
+                if (targetOfficer) {
+                    await SupportMessage.create({
+                        senderId: req.user._id,
+                        senderName: "NSSTA Secretariat - Case Study Assignment",
+                        senderRole: "admin",
+                        senderCadre: "Official Secretariat",
+                        recipientId: targetOfficer._id,
+                        recipientName: targetOfficer.name || targetOfficer.email || "Statistical Officer",
+                        message: `📋 New Case Study Assigned: "${title}" (${domain} • ${targetCompetency}). Deadline: ${formattedDueDate}. Please review scenario and submit your response in Assignments.`,
+                        isBroadcast: false,
+                        isRead: false,
+                    });
+                }
+            } else {
+                const targetLabel = assignedCadre === "All" ? "All Cadre Officers" : `${assignedCadre} Officers`;
+                await SupportMessage.create({
+                    senderId: req.user._id,
+                    senderName: `NSSTA Secretariat - Case Study Alert [${assignedCadre}]`,
+                    senderRole: "admin",
+                    senderCadre: "Official Broadcast",
+                    recipientId: null,
+                    recipientName: targetLabel,
+                    message: `📋 New Case Study Dispatched: "${title}" [Domain: ${domain} | Target: ${assignedCadre}]. Deadline: ${formattedDueDate}. Head over to Assignments to review and solve.`,
+                    isBroadcast: true,
+                    isRead: false,
+                });
+            }
+        } catch (msgErr) {
+            console.error("[DISPATCH ASSIGNMENT NOTIFICATION ERROR]", msgErr);
+        }
+
         return res.status(201).json({
             success: true,
             message: `Custom case study successfully assigned to ${assignedCadre}.`,
@@ -377,6 +477,62 @@ export const getAllAssignmentSubmissions = async (req, res) => {
     }
 };
 
+export const getAllDispatchedAssignments = async (req, res) => {
+    try {
+        const assignments = await Assignment.find()
+            .populate("assignedBy", "name email")
+            .populate("assignedToUserId", "name email jobRole")
+            .sort({ createdAt: -1 })
+            .lean();
+
+        const assignmentsWithCounts = await Promise.all(
+            assignments.map(async (asgn) => {
+                const subCount = await AssignmentSubmission.countDocuments({
+                    $or: [
+                        { assignmentId: asgn._id.toString() },
+                        { assignmentTitle: asgn.title },
+                    ],
+                });
+                const isExpired = asgn.dueDate ? new Date() > new Date(asgn.dueDate) : false;
+                return {
+                    ...asgn,
+                    submissionsCount: subCount,
+                    isExpired,
+                };
+            })
+        );
+
+        return res.status(200).json({
+            success: true,
+            count: assignmentsWithCounts.length,
+            assignments: assignmentsWithCounts,
+        });
+    } catch (error) {
+        console.error("[GET DISPATCHED ASSIGNMENTS ERROR]", error);
+        return res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+export const deleteDispatchedAssignment = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const assignment = await Assignment.findById(id);
+        if (!assignment) {
+            return res.status(404).json({ success: false, message: "Case study assignment not found." });
+        }
+
+        await Assignment.findByIdAndDelete(id);
+
+        return res.status(200).json({
+            success: true,
+            message: `Case study "${assignment.title}" deleted successfully.`,
+        });
+    } catch (error) {
+        console.error("[DELETE DISPATCHED ASSIGNMENT ERROR]", error);
+        return res.status(500).json({ success: false, message: error.message });
+    }
+};
+
 export const getDepartmentHeatmap = async (req, res) => {
     try {
         const heatmap = [
@@ -395,3 +551,4 @@ export const getDepartmentHeatmap = async (req, res) => {
         return res.status(500).json({ success: false, message: error.message });
     }
 };
+
