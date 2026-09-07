@@ -271,10 +271,17 @@ const Dashboard = () => {
           (lowerName.includes("microdata") && (title.includes("microdata") || title.includes("survey"))) ||
           (lowerName.includes("policy") && (title.includes("policy") || title.includes("governance")))
         ) {
-          const sc = attempt.score !== undefined && attempt.score !== null
+          let sc = attempt.score !== undefined && attempt.score !== null
             ? attempt.score
-            : (attempt.percentage || (attempt.totalQuestions ? Math.round((attempt.correctCount / attempt.totalQuestions) * 100) : null));
-          if (sc !== null && sc !== undefined) matchedQuizScores.push(sc);
+            : (attempt.percentage !== undefined && attempt.percentage !== null
+              ? attempt.percentage
+              : (attempt.totalQuestions ? Math.round(((attempt.correctCount || 0) / attempt.totalQuestions) * 100) : null));
+          if (sc !== null && sc !== undefined) {
+            if (sc <= 10 && attempt.totalQuestions && attempt.totalQuestions <= 10) {
+              sc = Math.round((sc / attempt.totalQuestions) * 100);
+            }
+            matchedQuizScores.push(Math.min(100, Math.max(0, Number(sc) || 0)));
+          }
         }
       });
 
@@ -295,7 +302,7 @@ const Dashboard = () => {
             ? sub.aiEvaluation.overallScore
             : (sub.score !== undefined ? (sub.scoreMax === 10 ? sub.score * 10 : sub.score) : null);
           if (sc !== null && sc !== undefined) {
-            matchedAssignmentScores.push(sc);
+            matchedAssignmentScores.push(Math.min(100, Math.max(0, Number(sc) || 0)));
           }
         }
       });
@@ -327,7 +334,15 @@ const Dashboard = () => {
     const completedQuizzes = quizAttempts.length;
     const avgQuizScore = completedQuizzes > 0
       ? Math.round(
-        quizAttempts.reduce((acc, q) => acc + (q.percentage || (q.score && q.totalQuestions ? (q.score / q.totalQuestions) * 100 : 70)), 0) / completedQuizzes
+        quizAttempts.reduce((acc, q) => {
+          let sc = q.score !== undefined && q.score !== null ? q.score : q.percentage;
+          if (sc === undefined || sc === null) {
+            sc = q.totalQuestions ? Math.round(((q.correctCount || 0) / q.totalQuestions) * 100) : 70;
+          } else if (sc <= 10 && q.totalQuestions && q.totalQuestions <= 10) {
+            sc = Math.round((sc / q.totalQuestions) * 100);
+          }
+          return acc + Math.min(100, Math.max(0, Number(sc) || 0));
+        }, 0) / completedQuizzes
       )
       : 0;
 
@@ -337,7 +352,7 @@ const Dashboard = () => {
         interviews.reduce((acc, i) => {
           const raw = Number(i.finalScore) || Number(i.score) || (i.feedback?.rating ? i.feedback.rating * 10 : null);
           const scaled = raw !== null ? (raw <= 10 ? raw * 10 : raw) : 75;
-          return acc + scaled;
+          return acc + Math.min(100, Math.max(0, Math.round(scaled)));
         }, 0) / completedInterviews
       )
       : 0;
@@ -446,22 +461,29 @@ const Dashboard = () => {
     let events = [];
 
     (quizAttempts || []).forEach((q, idx) => {
-      const sc = q.percentage || (q.score && q.totalQuestions ? Math.round((q.score / q.totalQuestions) * 100) : 70);
+      let sc = q.score !== undefined && q.score !== null ? q.score : q.percentage;
+      if (sc === undefined || sc === null) {
+        sc = q.totalQuestions ? Math.round(((q.correctCount || 0) / q.totalQuestions) * 100) : 70;
+      } else if (sc <= 10 && q.totalQuestions && q.totalQuestions <= 10) {
+        sc = Math.round((sc / q.totalQuestions) * 100);
+      }
+      sc = Math.min(100, Math.max(0, Number(sc) || 0));
       events.push({
         date: q.createdAt ? new Date(q.createdAt) : new Date(Date.now() - ((quizAttempts?.length || 1) - idx) * 86400000 * 2),
         score: sc,
         type: "Quiz Test",
-        title: q.quizId?.title || q.title || `Quiz Evaluation #${idx + 1}`,
-        domain: q.quizId?.domain || "Statistical",
+        title: q.quizId?.title || q.quizTitle || q.title || `Quiz Evaluation #${idx + 1}`,
+        domain: q.quizId?.domain || q.domain || "Statistical",
       });
     });
 
     (interviews || []).forEach((i, idx) => {
       const raw = Number(i.finalScore) || Number(i.score) || (i.feedback?.rating ? i.feedback.rating * 10 : null);
       const sc = raw !== null ? (raw <= 10 ? raw * 10 : raw) : 75;
+      const normalizedScore = Math.min(100, Math.max(0, Math.round(sc)));
       events.push({
         date: i.createdAt ? new Date(i.createdAt) : new Date(Date.now() - ((interviews?.length || 1) - idx) * 86400000 * 3),
-        score: sc,
+        score: normalizedScore,
         type: "Viva Voce",
         title: i.role || i.jobRole || i.title || `Cadre Board Viva #${idx + 1}`,
         domain: "Oral Board",
@@ -470,12 +492,16 @@ const Dashboard = () => {
 
     (assignmentSubmissions || []).forEach((a, idx) => {
       if (a.score !== null && a.score !== undefined) {
-        const sc = a.scoreMax === 10 ? a.score * 10 : a.score;
+        let sc = a.scoreMax === 10 || a.score <= 10 ? a.score * 10 : a.score;
+        if (a.aiEvaluation?.overallScore !== undefined && a.aiEvaluation?.overallScore !== null) {
+          sc = a.aiEvaluation.overallScore;
+        }
+        const normalizedScore = Math.min(100, Math.max(0, Math.round(sc)));
         events.push({
           date: a.createdAt ? new Date(a.createdAt) : new Date(Date.now() - ((assignmentSubmissions?.length || 1) - idx) * 86400000 * 2.5),
-          score: sc,
+          score: normalizedScore,
           type: "Practicum",
-          title: a.assignmentId?.title || a.title || `Practicum Case #${idx + 1}`,
+          title: a.assignmentId?.title || a.assignmentTitle || a.title || `Practicum Case #${idx + 1}`,
           domain: a.assignmentId?.domain || "Technical",
         });
       }
@@ -867,9 +893,12 @@ const Dashboard = () => {
                     />
                     <YAxis
                       domain={[0, 100]}
+                      ticks={[0, 25, 50, 75, 100]}
+                      tickFormatter={(v) => `${v}%`}
                       tick={{ fontSize: 11, fill: "#64748b" }}
                       axisLine={{ stroke: "#94a3b8", opacity: 0.3 }}
                       tickLine={{ stroke: "#94a3b8", opacity: 0.3 }}
+                      allowDataOverflow={true}
                     />
                     <Tooltip
                       cursor={{ fill: "rgba(59, 130, 246, 0.08)", rx: 8, ry: 8 }}
@@ -1086,8 +1115,11 @@ const Dashboard = () => {
                     />
                     <YAxis
                       domain={[0, 100]}
+                      ticks={[0, 25, 50, 75, 100]}
+                      tickFormatter={(v) => `${v}%`}
                       tick={{ fontSize: 11, fill: "#64748b" }}
                       axisLine={{ stroke: "#94a3b8", opacity: 0.3 }}
+                      allowDataOverflow={true}
                     />
                     <Tooltip
                       formatter={(val, name, item) => [
