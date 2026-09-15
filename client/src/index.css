@@ -81,5 +81,11 @@ body.layout-mode-sidebar.sidebar-collapsed {
     padding-left: var(--sidebar-w) !important;
     transition: padding-left 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   }
+
+  body.layout-mode-sidebar main.max-w-7xl,
+  body.layout-mode-sidebar main {
+    max-width: 100% !important;
+  }
 }
+
 

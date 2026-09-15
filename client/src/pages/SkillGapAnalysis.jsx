@@ -7,7 +7,6 @@ import axios from "axios";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
-import { setUserData } from "../redux/userSlice";
 import {
   ResponsiveContainer,
   BarChart,
@@ -16,39 +15,27 @@ import {
   YAxis,
   Tooltip,
   CartesianGrid,
-  Legend,
-  ReferenceLine,
 } from "recharts";
 import {
-  FaBrain,
-  FaArrowRight,
   FaCheckCircle,
   FaExclamationTriangle,
-  FaAward,
   FaStar,
   FaSyncAlt,
   FaFilePdf,
   FaSearch,
-  FaSlidersH,
   FaBookOpen,
   FaMicrophone,
-  FaChartBar,
   FaGraduationCap,
-  FaShieldAlt,
-  FaFire,
   FaLock,
 } from "react-icons/fa";
 import {
   BsShieldCheck,
   BsBarChartSteps,
   BsBullseye,
-  BsLightbulbFill,
   BsArrowUpRight,
   BsExclamationOctagonFill,
-  BsCheckAll,
   BsCircleHalf,
 } from "react-icons/bs";
-import { HiSparkles } from "react-icons/hi";
 import { motion, AnimatePresence } from "framer-motion";
 import { generateCompetencyPDF } from "../utils/pdfGenerator";
 import PageTransition from "../components/PageTransition";
@@ -183,15 +170,12 @@ const SkillGapAnalysis = () => {
   const [syncing, setSyncing] = useState(false);
   const [data, setData] = useState(null);
 
-  // Filters & Controls
   const [selectedCadre, setSelectedCadre] = useState("");
   const [activeTab, setActiveTab] = useState("all_required");
-  // Tabs: "all_required" | "on_target" | "strong" | "needs_improvement" | "critical" | "all_gaps"
   const [selectedDomain, setSelectedDomain] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
-  const [benchmarkViewMode, setBenchmarkViewMode] = useState("circles"); // "circles" | "bars"
+  const [benchmarkViewMode, setBenchmarkViewMode] = useState("circles");
 
-  // Fetch detailed skill gap analysis
   const fetchGapAnalysis = async (cadreOverride = null, isSync = false) => {
     try {
       if (isSync) setSyncing(true);
@@ -268,7 +252,6 @@ const SkillGapAnalysis = () => {
     });
   };
 
-  // Filter skills based on tab, domain, and search
   const displayedSkills = useMemo(() => {
     if (!data) return [];
 
@@ -296,7 +279,6 @@ const SkillGapAnalysis = () => {
     }
 
     return pool.filter((skill) => {
-      // Domain filter
       if (selectedDomain !== "all") {
         const d = (skill.domain || "").toLowerCase();
         if (selectedDomain === "statistical" && !d.includes("statistical")) return false;
@@ -305,7 +287,6 @@ const SkillGapAnalysis = () => {
         if (selectedDomain === "managerial" && !d.includes("managerial") && !d.includes("behavioural")) return false;
       }
 
-      // Search filter
       if (searchQuery.trim()) {
         const query = searchQuery.toLowerCase();
         const matchName = skill.competencyName.toLowerCase().includes(query);
@@ -318,7 +299,6 @@ const SkillGapAnalysis = () => {
     });
   }, [data, activeTab, selectedDomain, searchQuery]);
 
-  // Comparison Chart Data (Current vs Benchmark)
   const chartData = useMemo(() => {
     if (!data?.requiredSkills) return [];
     return data.requiredSkills.map((s) => ({
@@ -346,7 +326,6 @@ const SkillGapAnalysis = () => {
 
       <PageTransition>
         <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 pt-20 sm:pt-24 pb-20 space-y-6">
-          {/* Top Breadcrumb / Back Bar */}
           <div className="flex items-center justify-between">
             <BackButton fallbackUrl="/dashboard" label="Back to Dashboard" />
             <div className="flex items-center gap-2 text-xs font-bold text-slate-500 dark:text-slate-400">
@@ -355,9 +334,7 @@ const SkillGapAnalysis = () => {
             </div>
           </div>
 
-          {/* Executive Header Banner */}
           <div className="relative overflow-hidden bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-3xl p-6 sm:p-8 shadow-xs">
-            {/* Tricolor Ribbon Top Accent */}
             <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-[#FF9933] via-white to-[#138808]" />
 
             <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
@@ -374,7 +351,6 @@ const SkillGapAnalysis = () => {
                 </p>
               </div>
 
-              {/* Cadre Switcher & Top Actions */}
               <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 shrink-0">
                 <div className="bg-slate-50 dark:bg-slate-800/90 p-2 rounded-2xl border border-slate-200 dark:border-slate-700 flex flex-col gap-1">
                   <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 px-1">
@@ -406,11 +382,10 @@ const SkillGapAnalysis = () => {
 
                   <button
                     onClick={handleDownloadDossier}
-                    className={`px-4 py-3 rounded-2xl text-xs font-bold shadow-md transition-all flex items-center gap-2 cursor-pointer ${
-                      isIntakePending
+                    className={`px-4 py-3 rounded-2xl text-xs font-bold shadow-md transition-all flex items-center gap-2 cursor-pointer ${isIntakePending
                         ? "bg-slate-200 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border border-slate-300 dark:border-slate-700"
                         : "bg-emerald-600 hover:bg-emerald-700 text-white hover:shadow-emerald-600/30"
-                    }`}
+                      }`}
                   >
                     <FaFilePdf size={13} className={isIntakePending ? "text-slate-400" : "text-white"} />
                     <span>Export Dossier (PDF)</span>
@@ -434,9 +409,7 @@ const SkillGapAnalysis = () => {
             </div>
           ) : (
             <>
-              {/* 6 Dimension Executive Summary KPI Cards */}
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3.5">
-                {/* 1. Cadre Compliance Rate */}
                 <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-4 shadow-xs flex flex-col justify-between">
                   <div className="flex items-center justify-between">
                     <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
@@ -456,7 +429,6 @@ const SkillGapAnalysis = () => {
                   </div>
                 </div>
 
-                {/* 2. Skills on Target */}
                 <div className="bg-white dark:bg-slate-900 border border-emerald-200/80 dark:border-emerald-900/50 rounded-3xl p-4 shadow-xs flex flex-col justify-between">
                   <div className="flex items-center justify-between">
                     <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">
@@ -474,7 +446,6 @@ const SkillGapAnalysis = () => {
                   </div>
                 </div>
 
-                {/* 3. Required Skills */}
                 <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-4 shadow-xs flex flex-col justify-between">
                   <div className="flex items-center justify-between">
                     <span className="text-[11px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider">
@@ -492,7 +463,6 @@ const SkillGapAnalysis = () => {
                   </div>
                 </div>
 
-                {/* 4. Strong Skills */}
                 <div className="bg-white dark:bg-slate-900 border border-indigo-200/80 dark:border-indigo-900/50 rounded-3xl p-4 shadow-xs flex flex-col justify-between">
                   <div className="flex items-center justify-between">
                     <span className="text-[11px] font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider">
@@ -510,7 +480,6 @@ const SkillGapAnalysis = () => {
                   </div>
                 </div>
 
-                {/* 5. Needs Improvement */}
                 <div className="bg-white dark:bg-slate-900 border border-amber-200/80 dark:border-amber-900/50 rounded-3xl p-4 shadow-xs flex flex-col justify-between">
                   <div className="flex items-center justify-between">
                     <span className="text-[11px] font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wider">
@@ -528,7 +497,6 @@ const SkillGapAnalysis = () => {
                   </div>
                 </div>
 
-                {/* 6. Critical Gaps */}
                 <div className="bg-white dark:bg-slate-900 border border-rose-200/80 dark:border-rose-900/50 rounded-3xl p-4 shadow-xs flex flex-col justify-between relative overflow-hidden">
                   {summary.criticalGapsCount > 0 && (
                     <div className="absolute top-0 right-0 w-2 h-2 rounded-full bg-rose-500 animate-ping m-2" />
@@ -550,7 +518,6 @@ const SkillGapAnalysis = () => {
                 </div>
               </div>
 
-              {/* Benchmark Visualizer: Current Score vs Cadre Target Circles & Chart */}
               <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-xs space-y-5">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-100 dark:border-slate-800 pb-4">
                   <div>
@@ -570,7 +537,6 @@ const SkillGapAnalysis = () => {
                   </div>
 
                   <div className="flex flex-wrap items-center gap-3">
-                    {/* Visual Legend */}
                     <div className="hidden sm:flex items-center gap-3 text-[11px] font-semibold bg-slate-50 dark:bg-slate-800/60 px-3 py-1.5 rounded-xl border border-slate-200/80 dark:border-slate-700/60">
                       <div className="flex items-center gap-1.5">
                         <span className="w-2.5 h-2.5 rounded-full bg-blue-600 inline-block" />
@@ -582,15 +548,13 @@ const SkillGapAnalysis = () => {
                       </div>
                     </div>
 
-                    {/* View Mode Toggle */}
                     <div className="inline-flex items-center bg-slate-100 dark:bg-slate-800 p-1 rounded-2xl border border-slate-200/80 dark:border-slate-700/60 text-xs font-bold">
                       <button
                         onClick={() => setBenchmarkViewMode("circles")}
-                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl transition-all cursor-pointer ${
-                          benchmarkViewMode === "circles"
+                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl transition-all cursor-pointer ${benchmarkViewMode === "circles"
                             ? "bg-white dark:bg-slate-900 text-blue-600 dark:text-blue-400 shadow-xs"
                             : "text-slate-500 hover:text-slate-900 dark:hover:text-white"
-                        }`}
+                          }`}
                       >
                         <BsCircleHalf size={12} />
                         <span>Circular Rings</span>
@@ -598,11 +562,10 @@ const SkillGapAnalysis = () => {
 
                       <button
                         onClick={() => setBenchmarkViewMode("bars")}
-                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl transition-all cursor-pointer ${
-                          benchmarkViewMode === "bars"
+                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl transition-all cursor-pointer ${benchmarkViewMode === "bars"
                             ? "bg-white dark:bg-slate-900 text-blue-600 dark:text-blue-400 shadow-xs"
                             : "text-slate-500 hover:text-slate-900 dark:hover:text-white"
-                        }`}
+                          }`}
                       >
                         <BsBarChartSteps size={12} />
                         <span>Bar Chart</span>
@@ -611,7 +574,6 @@ const SkillGapAnalysis = () => {
                   </div>
                 </div>
 
-                {/* Animated Views Container */}
                 <AnimatePresence mode="wait">
                   {benchmarkViewMode === "circles" ? (
                     <motion.div
@@ -640,13 +602,11 @@ const SkillGapAnalysis = () => {
                               whileHover={{ y: -4, scale: 1.01, transition: { duration: 0.2 } }}
                               className={`relative bg-white dark:bg-slate-900/90 rounded-3xl p-4 sm:p-5 border ${palette.border} shadow-xs ${palette.glow} flex flex-col justify-between overflow-hidden transition-all duration-300 group`}
                             >
-                              {/* Ambient Colored Radial Glow */}
                               <div
                                 className="absolute -top-6 -right-6 w-24 h-24 rounded-full blur-2xl opacity-15 pointer-events-none group-hover:opacity-30 transition-opacity"
                                 style={{ backgroundColor: palette.stroke }}
                               />
 
-                              {/* Card Header: Domain Tag & Delta Badge */}
                               <div className="flex items-center justify-between gap-2 relative z-10">
                                 <span
                                   className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${palette.badge} capitalize truncate max-w-[110px]`}
@@ -672,10 +632,8 @@ const SkillGapAnalysis = () => {
                                 )}
                               </div>
 
-                              {/* Concentric Animated SVG Circle Gauge */}
                               <div className="relative w-28 h-28 my-3 mx-auto flex items-center justify-center z-10">
                                 <svg className="w-28 h-28" viewBox="0 0 112 112">
-                                  {/* Outer Track Base */}
                                   <circle
                                     cx="56"
                                     cy="56"
@@ -686,7 +644,6 @@ const SkillGapAnalysis = () => {
                                     className="text-slate-100 dark:text-slate-800/80"
                                   />
 
-                                  {/* Inner Target Track Base (Dashed) */}
                                   <circle
                                     cx="56"
                                     cy="56"
@@ -698,7 +655,6 @@ const SkillGapAnalysis = () => {
                                     className="text-slate-200 dark:text-slate-700/60"
                                   />
 
-                                  {/* Inner Cadre Target Animated Arc */}
                                   <motion.circle
                                     cx="56"
                                     cy="56"
@@ -715,7 +671,6 @@ const SkillGapAnalysis = () => {
                                     transform="rotate(-90 56 56)"
                                   />
 
-                                  {/* Outer Officer Current Proficiency Animated Arc */}
                                   <motion.circle
                                     cx="56"
                                     cy="56"
@@ -732,7 +687,6 @@ const SkillGapAnalysis = () => {
                                   />
                                 </svg>
 
-                                {/* Center Content: Current Score & Target */}
                                 <div className="absolute inset-0 flex flex-col items-center justify-center text-center select-none pointer-events-none">
                                   <motion.span
                                     initial={{ opacity: 0, scale: 0.5 }}
@@ -748,7 +702,6 @@ const SkillGapAnalysis = () => {
                                 </div>
                               </div>
 
-                              {/* Competency Name & Bottom Progress Pill */}
                               <div className="space-y-2 relative z-10">
                                 <h4
                                   className="text-xs font-bold text-slate-900 dark:text-white text-center line-clamp-2 h-8 flex items-center justify-center group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors"
@@ -757,7 +710,6 @@ const SkillGapAnalysis = () => {
                                   {skill.competencyName}
                                 </h4>
 
-                                {/* Mini Comparison Linear Bar */}
                                 <div className="w-full bg-slate-100 dark:bg-slate-800 h-1.5 rounded-full overflow-hidden flex relative">
                                   <motion.div
                                     className="h-full rounded-full"
@@ -832,9 +784,8 @@ const SkillGapAnalysis = () => {
                                     <div className="flex justify-between gap-4 pt-1 border-t border-slate-800">
                                       <span className="text-slate-400">Delta Status:</span>
                                       <span
-                                        className={`font-bold ${
-                                          delta >= 0 ? "text-emerald-400" : delta >= -20 ? "text-amber-400" : "text-rose-400"
-                                        }`}
+                                        className={`font-bold ${delta >= 0 ? "text-emerald-400" : delta >= -20 ? "text-amber-400" : "text-rose-400"
+                                          }`}
                                       >
                                         {delta >= 0 ? `+${delta}% (On Target)` : `${delta}% (Gap)`}
                                       </span>
@@ -854,18 +805,15 @@ const SkillGapAnalysis = () => {
                 </AnimatePresence>
               </div>
 
-              {/* Filter Tabs & Search Bar */}
               <div className="space-y-4">
                 <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-4 shadow-xs">
-                  {/* Category Filter Tabs */}
                   <div className="flex flex-wrap items-center gap-1.5 text-xs font-bold">
                     <button
                       onClick={() => setActiveTab("all_required")}
-                      className={`px-3.5 py-2 rounded-xl transition-all cursor-pointer flex items-center gap-2 ${
-                        activeTab === "all_required"
+                      className={`px-3.5 py-2 rounded-xl transition-all cursor-pointer flex items-center gap-2 ${activeTab === "all_required"
                           ? "bg-blue-600 text-white shadow-xs"
                           : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
-                      }`}
+                        }`}
                     >
                       <span>Required Skills</span>
                       <span className="px-1.5 py-0.5 rounded-md bg-white/20 text-[10px]">
@@ -875,11 +823,10 @@ const SkillGapAnalysis = () => {
 
                     <button
                       onClick={() => setActiveTab("on_target")}
-                      className={`px-3.5 py-2 rounded-xl transition-all cursor-pointer flex items-center gap-2 ${
-                        activeTab === "on_target"
+                      className={`px-3.5 py-2 rounded-xl transition-all cursor-pointer flex items-center gap-2 ${activeTab === "on_target"
                           ? "bg-emerald-600 text-white shadow-xs"
                           : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
-                      }`}
+                        }`}
                     >
                       <FaCheckCircle size={11} />
                       <span>On Target</span>
@@ -890,11 +837,10 @@ const SkillGapAnalysis = () => {
 
                     <button
                       onClick={() => setActiveTab("strong")}
-                      className={`px-3.5 py-2 rounded-xl transition-all cursor-pointer flex items-center gap-2 ${
-                        activeTab === "strong"
+                      className={`px-3.5 py-2 rounded-xl transition-all cursor-pointer flex items-center gap-2 ${activeTab === "strong"
                           ? "bg-indigo-600 text-white shadow-xs"
                           : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
-                      }`}
+                        }`}
                     >
                       <FaStar size={11} />
                       <span>Strong Skills</span>
@@ -905,11 +851,10 @@ const SkillGapAnalysis = () => {
 
                     <button
                       onClick={() => setActiveTab("needs_improvement")}
-                      className={`px-3.5 py-2 rounded-xl transition-all cursor-pointer flex items-center gap-2 ${
-                        activeTab === "needs_improvement"
+                      className={`px-3.5 py-2 rounded-xl transition-all cursor-pointer flex items-center gap-2 ${activeTab === "needs_improvement"
                           ? "bg-amber-600 text-white shadow-xs"
                           : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
-                      }`}
+                        }`}
                     >
                       <FaExclamationTriangle size={11} />
                       <span>Needs Improvement</span>
@@ -920,11 +865,10 @@ const SkillGapAnalysis = () => {
 
                     <button
                       onClick={() => setActiveTab("critical")}
-                      className={`px-3.5 py-2 rounded-xl transition-all cursor-pointer flex items-center gap-2 ${
-                        activeTab === "critical"
+                      className={`px-3.5 py-2 rounded-xl transition-all cursor-pointer flex items-center gap-2 ${activeTab === "critical"
                           ? "bg-rose-600 text-white shadow-xs"
                           : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
-                      }`}
+                        }`}
                     >
                       <BsExclamationOctagonFill size={11} />
                       <span>Critical Gaps</span>
@@ -935,11 +879,10 @@ const SkillGapAnalysis = () => {
 
                     <button
                       onClick={() => setActiveTab("all_gaps")}
-                      className={`px-3.5 py-2 rounded-xl transition-all cursor-pointer flex items-center gap-2 ${
-                        activeTab === "all_gaps"
+                      className={`px-3.5 py-2 rounded-xl transition-all cursor-pointer flex items-center gap-2 ${activeTab === "all_gaps"
                           ? "bg-slate-900 text-white dark:bg-white dark:text-slate-900 shadow-xs"
                           : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
-                      }`}
+                        }`}
                     >
                       <span>All Gaps</span>
                       <span className="px-1.5 py-0.5 rounded-md bg-black/10 dark:bg-white/20 text-[10px]">
@@ -948,7 +891,6 @@ const SkillGapAnalysis = () => {
                     </button>
                   </div>
 
-                  {/* Search and Domain Filters */}
                   <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
                     <div className="relative">
                       <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs" />
@@ -975,7 +917,6 @@ const SkillGapAnalysis = () => {
                   </div>
                 </div>
 
-                {/* Competency Gap Cards Grid */}
                 {displayedSkills.length === 0 ? (
                   <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-12 text-center space-y-3">
                     <div className="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-400 flex items-center justify-center mx-auto text-xl">
@@ -1008,15 +949,13 @@ const SkillGapAnalysis = () => {
                       return (
                         <div
                           key={idx}
-                          className={`bg-white dark:bg-slate-900 border rounded-3xl p-5 shadow-xs transition-all space-y-4 ${
-                            isCritical
+                          className={`bg-white dark:bg-slate-900 border rounded-3xl p-5 shadow-xs transition-all space-y-4 ${isCritical
                               ? "border-rose-300/80 dark:border-rose-900/60 hover:shadow-rose-500/10"
                               : isNeedsImprovement
-                              ? "border-amber-200/80 dark:border-amber-900/40 hover:shadow-amber-500/10"
-                              : "border-slate-200 dark:border-slate-800 hover:border-blue-300 dark:hover:border-blue-800"
-                          }`}
+                                ? "border-amber-200/80 dark:border-amber-900/40 hover:shadow-amber-500/10"
+                                : "border-slate-200 dark:border-slate-800 hover:border-blue-300 dark:hover:border-blue-800"
+                            }`}
                         >
-                          {/* Card Top: Domain, Title, Status Badge */}
                           <div className="flex items-start justify-between gap-3">
                             <div className="space-y-1">
                               <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 uppercase tracking-wider">
@@ -1027,7 +966,6 @@ const SkillGapAnalysis = () => {
                               </h3>
                             </div>
 
-                            {/* Status Badge */}
                             {isOnTarget ? (
                               <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-emerald-50 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 text-[11px] font-bold border border-emerald-200 dark:border-emerald-800 shrink-0">
                                 <FaCheckCircle size={10} />
@@ -1046,7 +984,6 @@ const SkillGapAnalysis = () => {
                             )}
                           </div>
 
-                          {/* Progress Comparison Bar */}
                           <div className="space-y-2 bg-slate-50 dark:bg-slate-800/40 p-3.5 rounded-2xl border border-slate-100 dark:border-slate-800">
                             <div className="flex items-center justify-between text-xs">
                               <div className="flex items-center gap-2">
@@ -1061,19 +998,16 @@ const SkillGapAnalysis = () => {
                               </div>
                             </div>
 
-                            {/* Dual Bar Visualizer */}
                             <div className="relative w-full h-3 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
                               <div
-                                className={`h-full rounded-full transition-all duration-500 ${
-                                  isOnTarget
+                                className={`h-full rounded-full transition-all duration-500 ${isOnTarget
                                     ? "bg-emerald-500"
                                     : isCritical
-                                    ? "bg-rose-500"
-                                    : "bg-amber-500"
-                                }`}
+                                      ? "bg-rose-500"
+                                      : "bg-amber-500"
+                                  }`}
                                 style={{ width: `${Math.min(100, skill.currentScore)}%` }}
                               />
-                              {/* Target Marker Tick Line */}
                               <div
                                 className="absolute top-0 bottom-0 w-1 bg-slate-900 dark:bg-white z-10 shadow-xs"
                                 style={{ left: `${Math.min(99, skill.targetScore)}%` }}
@@ -1081,17 +1015,15 @@ const SkillGapAnalysis = () => {
                               />
                             </div>
 
-                            {/* Delta Score & Status */}
                             <div className="flex items-center justify-between text-[11px] font-bold pt-0.5">
                               <span className="text-slate-500">Benchmark Gap Delta:</span>
                               <span
-                                className={`${
-                                  skill.deltaScore >= 0
+                                className={`${skill.deltaScore >= 0
                                     ? "text-emerald-600 dark:text-emerald-400"
                                     : skill.deltaScore >= -20
-                                    ? "text-amber-600 dark:text-amber-400"
-                                    : "text-rose-600 dark:text-rose-400"
-                                }`}
+                                      ? "text-amber-600 dark:text-amber-400"
+                                      : "text-rose-600 dark:text-rose-400"
+                                  }`}
                               >
                                 {skill.deltaScore >= 0
                                   ? `+${skill.deltaScore}% (Target Exceeded)`
@@ -1100,7 +1032,6 @@ const SkillGapAnalysis = () => {
                             </div>
                           </div>
 
-                          {/* Impact & Guidance */}
                           <div className="space-y-1.5 text-xs">
                             <p className="text-slate-600 dark:text-slate-400 leading-relaxed text-[11px]">
                               <strong className="text-slate-800 dark:text-slate-200">Operational Impact: </strong>
@@ -1112,7 +1043,6 @@ const SkillGapAnalysis = () => {
                             </p>
                           </div>
 
-                          {/* Actionable Remediation Links */}
                           <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex flex-wrap items-center gap-2">
                             {skill.suggestedQuizzes && skill.suggestedQuizzes.length > 0 ? (
                               <button

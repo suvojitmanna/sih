@@ -34,7 +34,6 @@ const QuizPage = () => {
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Fetch Quiz
   useEffect(() => {
     const fetchQuiz = async () => {
       try {
@@ -96,7 +95,6 @@ const QuizPage = () => {
     }
   };
 
-  // Timer Tick
   useEffect(() => {
     if (!submitted && timeLeft > 0 && !loading) {
       const interval = setInterval(() => {
@@ -145,7 +143,6 @@ const QuizPage = () => {
       <Navbar />
 
       <main className="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-16 space-y-6">
-        {/* Back Navigation Bar */}
         <div className="flex items-center justify-between">
           <BackButton
             to="/quizzes"
@@ -153,14 +150,14 @@ const QuizPage = () => {
             onClick={
               !submitted
                 ? () => {
-                    if (
-                      window.confirm(
-                        "Are you sure you want to exit this assessment? Unsaved answers will be discarded.",
-                      )
-                    ) {
-                      navigate("/quizzes");
-                    }
+                  if (
+                    window.confirm(
+                      "Are you sure you want to exit this assessment? Unsaved answers will be discarded.",
+                    )
+                  ) {
+                    navigate("/quizzes");
                   }
+                }
                 : undefined
             }
           />
@@ -183,11 +180,10 @@ const QuizPage = () => {
 
               <div className="flex items-center gap-3">
                 <div
-                  className={`flex items-center gap-2 px-4 py-2 rounded-2xl font-mono font-bold text-sm border ${
-                    timeLeft < 120
+                  className={`flex items-center gap-2 px-4 py-2 rounded-2xl font-mono font-bold text-sm border ${timeLeft < 120
                       ? "bg-rose-50 border-rose-200 text-rose-600 animate-pulse"
                       : "bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200"
-                  }`}
+                    }`}
                 >
                   <FaClock size={14} />
                   <span>{formatTime(timeLeft)}</span>
@@ -217,13 +213,12 @@ const QuizPage = () => {
                 <button
                   key={i}
                   onClick={() => setCurrentIdx(i)}
-                  className={`w-8 h-8 rounded-xl font-bold text-xs flex items-center justify-center transition-all cursor-pointer shrink-0 ${
-                    currentIdx === i
+                  className={`w-8 h-8 rounded-xl font-bold text-xs flex items-center justify-center transition-all cursor-pointer shrink-0 ${currentIdx === i
                       ? "bg-blue-600 text-white shadow-sm ring-2 ring-blue-400"
                       : userAnswers[i]
                         ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300"
                         : "bg-slate-100 dark:bg-slate-800 text-slate-500 hover:bg-slate-200"
-                  }`}
+                    }`}
                 >
                   {i + 1}
                 </button>
@@ -252,21 +247,19 @@ const QuizPage = () => {
                     <div
                       key={optIdx}
                       onClick={() => handleSelectOption(option)}
-                      className={`p-4 rounded-2xl border-2 transition-all cursor-pointer flex items-center justify-between ${
-                        isSelected
+                      className={`p-4 rounded-2xl border-2 transition-all cursor-pointer flex items-center justify-between ${isSelected
                           ? "border-blue-600 bg-blue-50/80 dark:bg-blue-950/60 shadow-xs"
                           : "border-slate-200 dark:border-slate-800 hover:border-slate-300 bg-slate-50/50 dark:bg-slate-800/40"
-                      }`}
+                        }`}
                     >
                       <span className="text-xs sm:text-sm font-medium text-slate-800 dark:text-slate-200">
                         {option}
                       </span>
                       <div
-                        className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${
-                          isSelected
+                        className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${isSelected
                             ? "border-blue-600 bg-blue-600 text-white"
                             : "border-slate-300 dark:border-slate-600"
-                        }`}
+                          }`}
                       >
                         {isSelected && (
                           <span className="w-2 h-2 rounded-full bg-white" />
@@ -315,22 +308,20 @@ const QuizPage = () => {
           <div className="space-y-6">
             <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-8 shadow-xs text-center space-y-4">
               <div
-                className={`w-16 h-16 rounded-3xl mx-auto flex items-center justify-center font-black text-2xl shadow-lg ${
-                  result?.attempt?.passed
+                className={`w-16 h-16 rounded-3xl mx-auto flex items-center justify-center font-black text-2xl shadow-lg ${result?.attempt?.passed
                     ? "bg-emerald-500 text-white"
                     : "bg-amber-500 text-white"
-                }`}
+                  }`}
               >
                 {result?.attempt?.score}%
               </div>
 
               <div>
                 <span
-                  className={`inline-block px-3 py-1 rounded-full text-xs font-extrabold uppercase tracking-wide mb-2 ${
-                    result?.attempt?.passed
+                  className={`inline-block px-3 py-1 rounded-full text-xs font-extrabold uppercase tracking-wide mb-2 ${result?.attempt?.passed
                       ? "bg-emerald-100 text-emerald-700"
                       : "bg-amber-100 text-amber-700"
-                  }`}
+                    }`}
                 >
                   {result?.attempt?.passed
                     ? "Assessment Passed"
@@ -425,13 +416,12 @@ const QuizPage = () => {
                           {t.topic}
                         </span>
                         <span
-                          className={`text-[11px] font-black px-2 py-0.5 rounded-full ${
-                            t.status === "Mastered"
+                          className={`text-[11px] font-black px-2 py-0.5 rounded-full ${t.status === "Mastered"
                               ? "bg-emerald-100 text-emerald-700"
                               : t.status === "Developing"
                                 ? "bg-blue-100 text-blue-700"
                                 : "bg-rose-100 text-rose-700"
-                          }`}
+                            }`}
                         >
                           {t.status} ({t.score}%)
                         </span>
@@ -450,11 +440,10 @@ const QuizPage = () => {
                 {(result?.attempt?.userAnswers || []).map((ans, idx) => (
                   <div
                     key={idx}
-                    className={`p-4 rounded-2xl border-2 space-y-2.5 ${
-                      ans.isCorrect
+                    className={`p-4 rounded-2xl border-2 space-y-2.5 ${ans.isCorrect
                         ? "border-emerald-200 bg-emerald-50/40 dark:bg-emerald-950/20 dark:border-emerald-900"
                         : "border-rose-200 bg-rose-50/40 dark:bg-rose-950/20 dark:border-rose-900"
-                    }`}
+                      }`}
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex items-start gap-2">

@@ -41,7 +41,6 @@ export const DiagnosticProvider = ({ children }) => {
     fetchDiagnosticStatus();
   }, [fetchDiagnosticStatus]);
 
-  // Listen for assessment completion events across the platform
   useEffect(() => {
     const handleUpdate = () => {
       fetchDiagnosticStatus();
@@ -56,25 +55,21 @@ export const DiagnosticProvider = ({ children }) => {
     };
   }, [fetchDiagnosticStatus]);
 
-  // Intake completion status
-  // True if user is admin OR if both diagnostic quiz and viva are completed
   const isIntakeComplete = Boolean(
     !userData ||
-      userData.role === "admin" ||
-      (diagnosticStatus?.isDiagnosticFullyCompleted ??
-        (diagnosticStatus?.isQuizCompleted &&
-          diagnosticStatus?.isInterviewCompleted))
+    userData.role === "admin" ||
+    (diagnosticStatus?.isDiagnosticFullyCompleted ??
+      (diagnosticStatus?.isQuizCompleted &&
+        diagnosticStatus?.isInterviewCompleted))
   );
 
   const isIntakePending = Boolean(
     userData &&
-      userData.isProfileCompleted &&
-      userData.role !== "admin" &&
-      !isIntakeComplete
+    userData.isProfileCompleted &&
+    userData.role !== "admin" &&
+    !isIntakeComplete
   );
 
-  // Function to check if a specific navigation function/path is locked in UI
-  // Home ('/') is always unlocked. If intake is pending, all other functions are locked.
   const isPathLocked = (path) => {
     if (!isIntakePending) return false;
     if (!path || path === "/" || path === "" || path === "/auth" || path === "/terms" || path === "/privacy") {
@@ -84,30 +79,23 @@ export const DiagnosticProvider = ({ children }) => {
     return true;
   };
 
-  // Route protection guard check for App.jsx:
-  // Allows taking the intake viva and diagnostic quiz, visiting Home and Settings,
-  // but blocks direct URL access to dashboard, competencies, skill-gaps, etc.
   const isAssessmentAllowed = (pathname) => {
     if (!isIntakePending) return true;
     if (!pathname || pathname === "/" || pathname === "" || pathname === "/auth" || pathname === "/terms" || pathname === "/privacy" || pathname === "/settings") {
       return true;
     }
-    // Allow intake viva voce
     if (pathname === "/interview") {
       return true;
     }
-    // Allow diagnostic quiz
     if (pathname.startsWith("/quiz/")) {
       const diagQuizId = diagnosticStatus?.diagnosticQuiz?._id;
       if (!diagQuizId || pathname.includes(diagQuizId)) {
         return true;
       }
     }
-    // All other pages are protected until intake is completed
     return false;
   };
 
-  // Helper to trigger error toast when user clicks a locked function
   const triggerLockedError = (featureName = "") => {
     const msg = featureName
       ? `Access Restricted: ${featureName} is locked! Please complete both the Mandatory Intake Viva and Diagnostic Quiz from the Home page.`

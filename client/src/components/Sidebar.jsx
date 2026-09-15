@@ -19,6 +19,7 @@ import {
   BsLayoutSidebarInsetReverse,
   BsStars,
   BsBarChartSteps,
+  BsShieldCheck,
 } from "react-icons/bs";
 import {
   FaHome,
@@ -319,31 +320,29 @@ const Sidebar = ({ onOpenAuth }) => {
                     <button
                       onClick={() => handleNavigate(link.path, link.isPublic, link.label)}
                       title={isLocked ? `Locked: Complete Intake Viva Voce & Diagnostic Quiz first` : link.label}
-                      className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-2xl text-xs font-bold transition-all cursor-pointer group ${
-                        isLocked
+                      className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-2xl text-xs font-bold transition-all cursor-pointer group ${isLocked
                           ? "text-slate-400 dark:text-slate-500 hover:bg-amber-50/50 dark:hover:bg-amber-950/30 hover:text-amber-600 dark:hover:text-amber-400 border border-transparent hover:border-amber-400/30"
                           : isActive
-                          ? link.isAi
-                            ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md font-black"
-                            : "bg-blue-50 dark:bg-blue-950/70 text-blue-700 dark:text-blue-300 font-black shadow-xs border border-blue-200/50 dark:border-blue-800/50"
-                          : link.isAi
-                            ? "text-blue-600 dark:text-blue-400 hover:bg-blue-50/60 dark:hover:bg-blue-950/40"
-                            : "text-slate-600 dark:text-slate-300 hover:bg-slate-100/80 dark:hover:bg-slate-800/80 hover:text-slate-900 dark:hover:text-white"
+                            ? link.isAi
+                              ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md font-black"
+                              : "bg-blue-50 dark:bg-blue-950/70 text-blue-700 dark:text-blue-300 font-black shadow-xs border border-blue-200/50 dark:border-blue-800/50"
+                            : link.isAi
+                              ? "text-blue-600 dark:text-blue-400 hover:bg-blue-50/60 dark:hover:bg-blue-950/40"
+                              : "text-slate-600 dark:text-slate-300 hover:bg-slate-100/80 dark:hover:bg-slate-800/80 hover:text-slate-900 dark:hover:text-white"
                         } ${isCollapsed && !mobileOpen ? "justify-center px-0" : ""}`}
                     >
                       <div className="relative shrink-0">
                         <Icon
                           size={17}
-                          className={`${
-                            isLocked
+                          className={`${isLocked
                               ? "text-slate-400 dark:text-slate-500 group-hover:text-amber-500 transition-colors"
                               : isActive
-                              ? link.isAi
-                                ? "text-amber-300"
-                                : "text-blue-600 dark:text-blue-400"
-                              : link.isAi
-                                ? "text-blue-500 group-hover:scale-110 transition-transform"
-                                : "text-slate-400 group-hover:text-slate-700 dark:group-hover:text-slate-200"
+                                ? link.isAi
+                                  ? "text-amber-300"
+                                  : "text-blue-600 dark:text-blue-400"
+                                : link.isAi
+                                  ? "text-blue-500 group-hover:scale-110 transition-transform"
+                                  : "text-slate-400 group-hover:text-slate-700 dark:group-hover:text-slate-200"
                             }`}
                         />
                         {isLocked ? (
@@ -406,53 +405,120 @@ const Sidebar = ({ onOpenAuth }) => {
         {/* Sidebar Footer: Officer Profile Card & Controls */}
         <div className="p-3 border-t border-slate-200/80 dark:border-slate-800/80 bg-slate-50/50 dark:bg-slate-900/50 space-y-2 shrink-0">
 
-          {/* Officer Dossier Quick PDF Export */}
-          {userData && userData.role !== "admin" && (
-            (!isCollapsed || mobileOpen) ? (
-              <button
-                onClick={handleDownloadDossier}
-                className={`w-full flex items-center justify-between px-3 py-1.5 rounded-xl text-[11px] font-bold transition-colors cursor-pointer ${
-                  isIntakePending
-                    ? "bg-slate-100/60 dark:bg-slate-800/40 text-slate-500 dark:text-slate-400 hover:bg-slate-200/60 dark:hover:bg-slate-800/80"
-                    : "hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300"
-                }`}
-                title={isIntakePending ? "Export Dossier (Locked: Complete Intake Viva & Quiz first)" : "Export Dossier (PDF)"}
-              >
-                <div className="flex items-center gap-2">
-                  <FaFilePdf size={12} className={isIntakePending ? "text-slate-400" : "text-rose-600"} />
-                  <span>Export Dossier (PDF)</span>
-                </div>
-                {isIntakePending ? (
-                  <span className="flex items-center gap-1 text-[9px] font-black px-1.5 py-0.5 rounded-md bg-amber-500/10 dark:bg-amber-500/20 text-amber-600 dark:text-amber-400 border border-amber-500/20 shrink-0 ml-1.5 shadow-2xs">
-                    <FaLock size={8} />
-                    <span>LOCKED</span>
-                  </span>
-                ) : (
-                  <span className="text-[10px] text-slate-400">PDF</span>
-                )}
-              </button>
-            ) : (
-              <div className="relative flex justify-center">
+          {/* Quick Actions: Export Dossier & Portal Difference */}
+          {(!isCollapsed || mobileOpen) ? (
+            <div className="space-y-1.5">
+              {/* 1. Export Official Dossier PDF */}
+              {userData && userData.role !== "admin" && (
                 <button
                   onClick={handleDownloadDossier}
-                  className={`w-9 h-9 flex items-center justify-center rounded-xl transition-all cursor-pointer ${
-                    isIntakePending
-                      ? "bg-slate-100/60 dark:bg-slate-800/40 text-slate-400 hover:bg-slate-200/60 dark:hover:bg-slate-800/80"
-                      : "hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300"
-                  }`}
-                  title={isIntakePending ? "Export Dossier (Locked: Complete Intake Viva & Quiz first)" : "Export Dossier (PDF)"}
+                  className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${isIntakePending
+                      ? "bg-slate-100/70 dark:bg-slate-800/50 text-slate-400 dark:text-slate-500 hover:bg-amber-500/10 hover:text-amber-600 dark:hover:text-amber-400 border border-slate-200/50 dark:border-slate-700/50"
+                      : "bg-white dark:bg-slate-800/90 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200/80 dark:border-slate-700/80 shadow-2xs"
+                    }`}
+                  title={isIntakePending ? "Export Dossier (Locked: Complete Intake Viva & Quiz first)" : "Export Performance Dossier (PDF)"}
                 >
-                  <div className="relative">
-                    <FaFilePdf size={14} className={isIntakePending ? "text-slate-400" : "text-rose-600"} />
-                    {isIntakePending && (
-                      <span className="absolute -top-1.5 -right-2 w-3.5 h-3.5 rounded-full bg-amber-500 text-white flex items-center justify-center text-[7px] shadow-xs">
-                        <FaLock size={6} />
-                      </span>
-                    )}
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <FaFilePdf size={13} className={isIntakePending ? "text-slate-400" : "text-rose-600"} />
+                    <span className="truncate">Export Dossier (PDF)</span>
                   </div>
+                  {isIntakePending ? (
+                    <span className="flex items-center gap-1 text-[9px] font-black px-1.5 py-0.5 rounded-md bg-amber-500/10 dark:bg-amber-500/20 text-amber-600 dark:text-amber-400 border border-amber-500/20 shrink-0 ml-1.5 shadow-2xs">
+                      <FaLock size={8} />
+                      <span>LOCKED</span>
+                    </span>
+                  ) : (
+                    <span className="text-[9px] font-black px-1.5 py-0.5 rounded bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-300 border border-rose-200/50">
+                      PDF
+                    </span>
+                  )}
                 </button>
+              )}
+
+              {/* 2. Portal Difference (Directly DOWN from Export Dossier) */}
+              <button
+                onClick={() => handleNavigate("/portal-comparison", true, "Portal Difference")}
+                className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${location.pathname === "/portal-comparison"
+                    ? "bg-blue-600 text-white shadow-xs font-black"
+                    : "bg-white dark:bg-slate-800/90 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200/80 dark:border-slate-700/80 shadow-2xs"
+                  }`}
+                title="Compare Legacy Portals vs SankhyaIQ AI Platform"
+              >
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <BsShieldCheck size={14} className={location.pathname === "/portal-comparison" ? "text-white" : "text-blue-600 dark:text-blue-400"} />
+                  <span className="truncate">Portal Difference</span>
+                </div>
+                <span className={`text-[9px] font-black px-1.5 py-0.5 rounded uppercase tracking-wider ${location.pathname === "/portal-comparison"
+                    ? "bg-white/20 text-white"
+                    : "bg-blue-50 dark:bg-blue-950/80 text-blue-700 dark:text-blue-300 border border-blue-200/50"
+                  }`}>
+                  VS
+                </span>
+              </button>
+            </div>
+          ) : (
+            <div className="flex flex-col items-center gap-2">
+              {userData && userData.role !== "admin" && (
+                <div
+                  className="relative"
+                  onMouseEnter={() => setHoveredLink("footer-dossier")}
+                  onMouseLeave={() => setHoveredLink(null)}
+                >
+                  <button
+                    onClick={handleDownloadDossier}
+                    className={`w-9 h-9 flex items-center justify-center rounded-xl transition-all cursor-pointer ${isIntakePending
+                        ? "bg-slate-100/60 dark:bg-slate-800/40 text-slate-400 hover:bg-slate-200/60 dark:hover:bg-slate-800/80"
+                        : "hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300"
+                      }`}
+                  >
+                    <div className="relative">
+                      <FaFilePdf size={14} className={isIntakePending ? "text-slate-400" : "text-rose-600"} />
+                      {isIntakePending && (
+                        <span className="absolute -top-1.5 -right-2 w-3.5 h-3.5 rounded-full bg-amber-500 text-white flex items-center justify-center text-[7px] shadow-xs">
+                          <FaLock size={6} />
+                        </span>
+                      )}
+                    </div>
+                  </button>
+
+                  {hoveredLink === "footer-dossier" && (
+                    <div className="fixed left-[84px] z-[130] -translate-y-9 px-2.5 py-1.5 bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 text-xs font-bold rounded-xl shadow-xl whitespace-nowrap pointer-events-none flex items-center gap-1.5 animate-fadeIn">
+                      <span>Export Dossier (PDF)</span>
+                      {isIntakePending && (
+                        <span className="text-[9px] font-extrabold px-1.5 py-0.5 rounded bg-amber-500 text-white flex items-center gap-1 uppercase">
+                          <FaLock size={7} /> Locked
+                        </span>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              <div
+                className="relative"
+                onMouseEnter={() => setHoveredLink("footer-comparison")}
+                onMouseLeave={() => setHoveredLink(null)}
+              >
+                <button
+                  onClick={() => handleNavigate("/portal-comparison", true, "Portal Difference")}
+                  className={`w-9 h-9 flex items-center justify-center rounded-xl transition-all cursor-pointer ${location.pathname === "/portal-comparison"
+                      ? "bg-blue-600 text-white shadow-xs"
+                      : "hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300"
+                    }`}
+                >
+                  <BsShieldCheck size={14} className={location.pathname === "/portal-comparison" ? "text-white" : "text-blue-600 dark:text-blue-400"} />
+                </button>
+
+                {hoveredLink === "footer-comparison" && (
+                  <div className="fixed left-[84px] z-[130] -translate-y-9 px-2.5 py-1.5 bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 text-xs font-bold rounded-xl shadow-xl whitespace-nowrap pointer-events-none flex items-center gap-1.5 animate-fadeIn">
+                    <span>Portal Difference</span>
+                    <span className="text-[9px] font-extrabold px-1 rounded bg-blue-500 text-white uppercase">
+                      VS
+                    </span>
+                  </div>
+                )}
               </div>
-            )
+            </div>
           )}
 
           {/* User Profile Card (Click to open dropdown in Sidebar mode) */}
@@ -513,7 +579,7 @@ const Sidebar = ({ onOpenAuth }) => {
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: 8, scale: 0.96 }}
                     transition={{ duration: 0.16 }}
-                    className={`bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden z-[150] ${isCollapsed && !mobileOpen
+                    className={`bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden z-[150] max-h-[85vh] overflow-y-auto custom-scrollbar ${isCollapsed && !mobileOpen
                       ? "fixed left-[84px] bottom-3 w-80 shadow-[0_10px_40px_rgba(0,0,0,0.25)]"
                       : "absolute bottom-[calc(100%+8px)] left-0 right-0 w-full min-w-[250px] shadow-[0_10px_40px_rgba(0,0,0,0.25)]"
                       }`}
@@ -614,11 +680,10 @@ const Sidebar = ({ onOpenAuth }) => {
                             setShowUserDropdown(false);
                             handleDownloadDossier();
                           }}
-                          className={`w-full text-left px-3 py-2 rounded-xl text-xs font-bold flex items-center justify-between transition-colors cursor-pointer ${
-                            isIntakePending
+                          className={`w-full text-left px-3 py-2 rounded-xl text-xs font-bold flex items-center justify-between transition-colors cursor-pointer ${isIntakePending
                               ? "hover:bg-amber-500/5 text-slate-500 dark:text-slate-400"
                               : "hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200"
-                          }`}
+                            }`}
                         >
                           <div className="flex items-center gap-2.5">
                             <FaFilePdf size={13} className={isIntakePending ? "text-slate-400" : "text-rose-600"} />
@@ -634,6 +699,22 @@ const Sidebar = ({ onOpenAuth }) => {
                           )}
                         </button>
                       )}
+
+                      <button
+                        onClick={() => {
+                          setShowUserDropdown(false);
+                          navigate("/portal-comparison");
+                        }}
+                        className="w-full text-left px-3 py-2 rounded-xl text-xs font-bold flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 transition-colors cursor-pointer"
+                      >
+                        <div className="flex items-center gap-2.5">
+                          <BsShieldCheck size={13} className="text-blue-600 dark:text-blue-400" />
+                          <span>Portal Difference (Legacy vs Ours)</span>
+                        </div>
+                        <span className="text-[9px] font-black px-1.5 py-0.5 rounded-md bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300">
+                          VS
+                        </span>
+                      </button>
 
                       {userData?.role !== "admin" && (
                         <button

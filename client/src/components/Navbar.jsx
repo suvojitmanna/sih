@@ -416,10 +416,10 @@ const Navbar = () => {
                       type="button"
                       onClick={() => setActiveDropdown(isOpen ? null : section.title)}
                       className={`relative flex items-center gap-1.5 px-3.5 py-2 rounded-xl transition-all cursor-pointer select-none text-xs font-bold ${isSectionActive
-                          ? "bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 shadow-xs font-black border border-slate-200/60 dark:border-slate-700/60"
-                          : isOpen
-                            ? "bg-white/80 dark:bg-slate-800/80 text-slate-900 dark:text-white"
-                            : "hover:bg-white/60 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-white"
+                        ? "bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 shadow-xs font-black border border-slate-200/60 dark:border-slate-700/60"
+                        : isOpen
+                          ? "bg-white/80 dark:bg-slate-800/80 text-slate-900 dark:text-white"
+                          : "hover:bg-white/60 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-white"
                         }`}
                     >
                       <span>{section.title}</span>
@@ -473,24 +473,22 @@ const Navbar = () => {
                                       navigate(link.path);
                                     }}
                                     title={isLocked ? `Locked: Complete Intake Viva & Quiz first` : link.label}
-                                    className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-left transition-all cursor-pointer group/sub ${
-                                      isLocked
+                                    className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-left transition-all cursor-pointer group/sub ${isLocked
                                         ? "text-slate-400 dark:text-slate-500 hover:bg-amber-50/50 dark:hover:bg-amber-950/20 hover:text-amber-600 dark:hover:text-amber-400"
                                         : isLinkActive
-                                        ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-black shadow-sm"
-                                        : "hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200"
+                                          ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-black shadow-sm"
+                                          : "hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200"
                                       }`}
                                   >
                                     <div className="flex items-center gap-2.5 min-w-0">
                                       <div
-                                        className={`p-1.5 rounded-lg shrink-0 transition-colors relative ${
-                                          isLocked
+                                        className={`p-1.5 rounded-lg shrink-0 transition-colors relative ${isLocked
                                             ? "bg-amber-500/10 text-amber-600 dark:text-amber-400"
                                             : isLinkActive
-                                            ? "bg-white/20 text-white"
-                                            : link.isAi
-                                              ? "bg-amber-100 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 group-hover/sub:bg-blue-100 dark:group-hover/sub:bg-blue-950/80"
-                                              : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 group-hover/sub:text-blue-600 dark:group-hover/sub:text-blue-400"
+                                              ? "bg-white/20 text-white"
+                                              : link.isAi
+                                                ? "bg-amber-100 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 group-hover/sub:bg-blue-100 dark:group-hover/sub:bg-blue-950/80"
+                                                : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 group-hover/sub:text-blue-600 dark:group-hover/sub:text-blue-400"
                                           }`}
                                       >
                                         <Icon size={14} />
@@ -506,8 +504,7 @@ const Navbar = () => {
                                         </span>
                                         {link.desc && (
                                           <span
-                                            className={`text-[9.5px] truncate block leading-tight mt-0.5 ${
-                                              isLinkActive
+                                            className={`text-[9.5px] truncate block leading-tight mt-0.5 ${isLinkActive
                                                 ? "text-blue-100"
                                                 : "text-slate-400 dark:text-slate-500 font-medium"
                                               }`}
@@ -526,10 +523,10 @@ const Navbar = () => {
                                     ) : link.badge ? (
                                       <span
                                         className={`text-[9px] font-black uppercase px-1.5 py-0.5 rounded ml-2 shrink-0 ${isLinkActive
-                                            ? "bg-white/20 text-white"
-                                            : link.isAi
-                                              ? "bg-amber-100 text-amber-700 dark:bg-amber-950/80 dark:text-amber-300 border border-amber-300/40"
-                                              : "bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300 border border-blue-200/50"
+                                          ? "bg-white/20 text-white"
+                                          : link.isAi
+                                            ? "bg-amber-100 text-amber-700 dark:bg-amber-950/80 dark:text-amber-300 border border-amber-300/40"
+                                            : "bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300 border border-blue-200/50"
                                           }`}
                                       >
                                         {link.badge}
@@ -763,11 +760,10 @@ const Navbar = () => {
                               setShowUserPopup(false);
                               handleDownloadDossier();
                             }}
-                            className={`w-full text-left px-3.5 py-2.5 rounded-2xl text-xs font-bold flex items-center justify-between transition-colors cursor-pointer ${
-                              isIntakePending
+                            className={`w-full text-left px-3.5 py-2.5 rounded-2xl text-xs font-bold flex items-center justify-between transition-colors cursor-pointer ${isIntakePending
                                 ? "hover:bg-amber-500/5 text-slate-500 dark:text-slate-400"
                                 : "hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200"
-                            }`}
+                              }`}
                           >
                             <div className="flex items-center gap-2.5">
                               <FaFilePdf size={14} className={isIntakePending ? "text-slate-400" : "text-rose-600"} />
@@ -927,12 +923,11 @@ const Navbar = () => {
                               }
                               navigate(link.path);
                             }}
-                            className={`flex items-center justify-between p-2.5 rounded-xl text-xs font-bold text-left transition-colors cursor-pointer ${
-                              isLocked
+                            className={`flex items-center justify-between p-2.5 rounded-xl text-xs font-bold text-left transition-colors cursor-pointer ${isLocked
                                 ? "text-slate-400 dark:text-slate-500 hover:bg-amber-50/50 dark:hover:bg-amber-950/30"
                                 : isActive
-                                ? "bg-blue-600 text-white shadow-xs"
-                                : "hover:bg-slate-200/60 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300"
+                                  ? "bg-blue-600 text-white shadow-xs"
+                                  : "hover:bg-slate-200/60 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300"
                               }`}
                           >
                             <div className="flex items-center gap-2 min-w-0">
@@ -956,8 +951,8 @@ const Navbar = () => {
                   <button
                     onClick={() => setTheme("system")}
                     className={`py-1.5 rounded-lg text-center ${theme === "system"
-                        ? "bg-white dark:bg-slate-700 text-blue-600 font-black shadow-xs"
-                        : "text-slate-600 dark:text-slate-400"
+                      ? "bg-white dark:bg-slate-700 text-blue-600 font-black shadow-xs"
+                      : "text-slate-600 dark:text-slate-400"
                       }`}
                   >
                     System
@@ -965,8 +960,8 @@ const Navbar = () => {
                   <button
                     onClick={() => setTheme("light")}
                     className={`py-1.5 rounded-lg text-center ${theme === "light"
-                        ? "bg-white dark:bg-slate-700 text-amber-500 font-black shadow-xs"
-                        : "text-slate-600 dark:text-slate-400"
+                      ? "bg-white dark:bg-slate-700 text-amber-500 font-black shadow-xs"
+                      : "text-slate-600 dark:text-slate-400"
                       }`}
                   >
                     Light
@@ -974,8 +969,8 @@ const Navbar = () => {
                   <button
                     onClick={() => setTheme("dark")}
                     className={`py-1.5 rounded-lg text-center ${theme === "dark"
-                        ? "bg-white dark:bg-slate-700 text-indigo-400 font-black shadow-xs"
-                        : "text-slate-600 dark:text-slate-400"
+                      ? "bg-white dark:bg-slate-700 text-indigo-400 font-black shadow-xs"
+                      : "text-slate-600 dark:text-slate-400"
                       }`}
                   >
                     Dark
