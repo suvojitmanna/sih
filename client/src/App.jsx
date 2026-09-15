@@ -18,7 +18,6 @@ import PrivacyPolicy from "./pages/Privacy";
 import TermsOfService from "./pages/Terms";
 import InterviewPage from "./pages/InterviewPage";
 import InterviewHistory from "./pages/InterviewHistory";
-import Pricing from "./pages/Pricing";
 import InterviewReport from "./pages/InterviewReport";
 import axios from "axios";
 import { useDispatch, useSelector } from "react-redux";
@@ -206,14 +205,7 @@ const App = () => {
             </ProtectedRoute>
           }
         />
-        <Route
-          path="/pricing"
-          element={
-            <ProtectedRoute loading={loading}>
-              <Pricing />
-            </ProtectedRoute>
-          }
-        />
+        <Route path="/pricing" element={<Navigate to="/dashboard" replace />} />
         <Route
           path="/report/:id"
           element={

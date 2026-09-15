@@ -67,3 +67,19 @@
   color: #f8fafc !important;
 }
 
+/* Sidebar Navigation Layout Offsets */
+body.layout-mode-sidebar {
+  --sidebar-w: 260px;
+}
+
+body.layout-mode-sidebar.sidebar-collapsed {
+  --sidebar-w: 76px;
+}
+
+@media (min-width: 768px) {
+  body.layout-mode-sidebar #root {
+    padding-left: var(--sidebar-w) !important;
+    transition: padding-left 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+}
+

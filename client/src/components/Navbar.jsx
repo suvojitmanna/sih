@@ -8,6 +8,8 @@ import {
   BsSun,
   BsMoonStars,
   BsDisplay,
+  BsLayoutSidebar,
+  BsLayoutSidebarInsetReverse,
 } from "react-icons/bs";
 import {
   FaUserGraduate,
@@ -16,7 +18,13 @@ import {
   FaHome,
   FaComments,
 } from "react-icons/fa";
-import { HiOutlineLogout, HiMenu, HiX, HiSparkles } from "react-icons/hi";
+import {
+  HiOutlineLogout,
+  HiMenu,
+  HiX,
+  HiSparkles,
+  HiOutlineViewBoards,
+} from "react-icons/hi";
 import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
 import { ServerUrl } from "../App";
@@ -24,11 +32,21 @@ import { setUserData } from "../redux/userSlice";
 import { useOutsideClick } from "../utils/outsideClick";
 import { generateCompetencyPDF } from "../utils/pdfGenerator";
 import { useTheme } from "../context/ThemeContext";
+import { useNavigation } from "../context/NavigationContext";
+import Sidebar from "./Sidebar";
 import AuthModel from "./AuthModel";
 import toast from "react-hot-toast";
 
 const Navbar = () => {
   const { userData } = useSelector((state) => state.user);
+  const {
+    navMode,
+    toggleNavMode,
+    setNavMode,
+    isCollapsed,
+    setMobileOpen,
+  } = useNavigation();
+
   const [showUserPopup, setShowUserPopup] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showAuth, setShowAuth] = useState(false);
@@ -37,7 +55,7 @@ const Navbar = () => {
   const location = useLocation();
   const dispatch = useDispatch();
 
-  const { theme, setTheme, resolvedTheme } = useTheme();
+  const { theme, setTheme } = useTheme();
   const userRef = useOutsideClick(() => setShowUserPopup(false));
 
   const handleLogout = async () => {
@@ -49,6 +67,7 @@ const Navbar = () => {
       dispatch(setUserData(null));
       setShowUserPopup(false);
       navigate("/auth");
+      toast.success("Successfully logged out");
     } catch (error) {
       console.log(error);
     }
@@ -89,9 +108,238 @@ const Navbar = () => {
     exit: { opacity: 0, y: 8, scale: 0.95 },
   };
 
+  const getPageTitle = () => {
+    const path = location.pathname;
+    if (path === "/") return "National Statistical Portal • Overview";
+    if (path === "/dashboard") return "Officer Performance Dashboard";
+    if (path === "/competencies") return "Official Statistical Competency Assessment";
+    if (path === "/learning-path") return "AI Adaptive Learning Pathway";
+    if (path === "/quizzes") return "Cadre Statistical Assessments & Quizzes";
+    if (path === "/assignments") return "Survey & Data Practicum Assignments";
+    if (path === "/materials") return "Official Curriculum & Training Materials";
+    if (path === "/ai-models") return "SankhyaIQ AI Models & Workflows Hub";
+    if (path === "/admin") return "Executive Administrative Analytics";
+    if (path === "/chat") return "AI Copilot & Statistical Assistant";
+    if (path === "/community") return "National Statistical Officer Community";
+    if (path === "/interview") return "Cadre Board Oral Viva Simulation";
+    if (path === "/history") return "Viva Evaluation Records & History";
+    return "MoSPI SkillIQ • NSSTA";
+  };
+
+  // ==========================================
+  // RENDER: SIDEBAR NAVIGATION MODE
+  // ==========================================
+  if (navMode === "sidebar") {
+    return (
+      <>
+        {/* Render the Sidebar component */}
+        <Sidebar onOpenAuth={() => setShowAuth(true)} />
+
+        {/* Companion Top Utility Header in Sidebar Mode */}
+        <header
+          className={`fixed top-0 right-0 z-[90] h-14 bg-white/85 dark:bg-slate-950/85 backdrop-blur-xl border-b border-slate-200/80 dark:border-slate-800/80 transition-all duration-300 left-0 ${
+            isCollapsed ? "md:left-[76px]" : "md:left-[260px]"
+          } flex items-center justify-between px-3 sm:px-6 select-none`}
+        >
+          {/* Mobile: Hamburger Drawer Toggle & Logo */}
+          <div className="flex items-center gap-2.5 md:hidden">
+            <button
+              onClick={() => setMobileOpen(true)}
+              className="p-1.5 rounded-xl text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+              title="Open Navigation Menu"
+            >
+              <HiMenu size={22} />
+            </button>
+
+            <div
+              onClick={() => navigate("/")}
+              className="flex items-center gap-2 cursor-pointer"
+            >
+              <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-slate-950 via-blue-900 to-indigo-900 text-white flex items-center justify-center font-black text-xs shadow-xs border border-blue-500/30">
+                <span>NSSTA</span>
+              </div>
+              <span className="font-black text-xs sm:text-sm text-slate-900 dark:text-white">
+                MoSPI <span className="text-blue-600 dark:text-blue-400">SkillIQ</span>
+              </span>
+            </div>
+          </div>
+
+          {/* Desktop: Page Title / Breadcrumb */}
+          <div className="hidden md:flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-blue-600 dark:bg-blue-400" />
+            <span className="text-xs font-black text-slate-800 dark:text-slate-200 truncate">
+              {getPageTitle()}
+            </span>
+          </div>
+
+          {/* Right Header Actions: Convert to Navbar, Credits, Profile */}
+          <div className="flex items-center gap-2 sm:gap-3">
+            {/* Quick Button: Convert to Topbar */}
+            <button
+              onClick={toggleNavMode}
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold transition-all cursor-pointer shadow-2xs group"
+              title="Convert navigation layout back to horizontal Top Navbar"
+            >
+              <BsLayoutSidebarInsetReverse
+                size={13}
+                className="text-blue-600 dark:text-blue-400 group-hover:scale-110 transition-transform"
+              />
+              <span className="hidden sm:inline">Convert to Navbar</span>
+              <span className="sm:hidden text-[10px]">Topbar</span>
+            </button>
+
+            {/* Profile Dropdown Toggle */}
+            <div ref={userRef} className="relative">
+              {userData ? (
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => setShowUserPopup(!showUserPopup)}
+                  className="flex items-center gap-2 p-1 pl-2 rounded-2xl bg-slate-100/90 dark:bg-slate-800/90 hover:bg-slate-200/70 border border-slate-200 dark:border-slate-700 transition-all cursor-pointer shadow-xs"
+                >
+                  <div className="flex flex-col text-right hidden sm:block">
+                    <span className="text-xs font-black text-slate-900 dark:text-slate-100 leading-tight truncate max-w-[120px]">
+                      {userData.name}
+                    </span>
+                    <span className="text-[9px] text-blue-600 dark:text-blue-400 font-bold truncate max-w-[120px]">
+                      {userData.jobRole || "Officer"}
+                    </span>
+                  </div>
+
+                  <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-blue-700 to-indigo-700 text-white flex items-center justify-center font-black text-xs shadow-md">
+                    {userData.name ? userData.name.charAt(0).toUpperCase() : <FaUserGraduate size={14} />}
+                  </div>
+                  <BsChevronDown size={10} className={`text-slate-400 transition-transform ${showUserPopup ? "rotate-180" : ""}`} />
+                </motion.button>
+              ) : (
+                <button
+                  onClick={() => navigate("/auth")}
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-blue-700 to-indigo-700 text-white rounded-xl text-xs font-black shadow-md transition-all cursor-pointer"
+                >
+                  <FaUserGraduate size={12} />
+                  <span>Sign In</span>
+                </button>
+              )}
+
+              {/* User Dropdown Menu */}
+              <AnimatePresence>
+                {showUserPopup && userData && (
+                  <motion.div
+                    variants={popupVariants}
+                    initial="hidden"
+                    animate="visible"
+                    exit="exit"
+                    className="absolute right-0 mt-2 w-80 bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden z-50 origin-top-right"
+                  >
+                    <div className="p-4 bg-gradient-to-br from-slate-50 to-blue-50/40 dark:from-slate-800/80 dark:to-blue-950/40 border-b border-slate-100 dark:border-slate-800">
+                      <div className="flex items-center gap-3">
+                        <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-blue-700 to-indigo-700 text-white flex items-center justify-center font-black text-sm shadow-md">
+                          {userData.name ? userData.name.charAt(0).toUpperCase() : "O"}
+                        </div>
+                        <div className="flex flex-col min-w-0">
+                          <span className="font-black text-sm text-slate-900 dark:text-white truncate">
+                            {userData.name}
+                          </span>
+                          <span className="text-xs text-slate-500 dark:text-slate-400 truncate">
+                            {userData.email}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="mt-2.5 pt-2 border-t border-slate-200/60 dark:border-slate-700 flex items-center justify-between text-[11px]">
+                        <span className="font-semibold text-slate-600 dark:text-slate-300">Cadre:</span>
+                        <span className="font-bold text-blue-700 dark:text-blue-400 truncate max-w-[180px]">
+                          {userData.jobRole || "ISS Officer"}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Navigation Layout Switcher inside Popup */}
+                    <div className="p-2.5 bg-slate-50/80 dark:bg-slate-800/50 border-b border-slate-100 dark:border-slate-800">
+                      <div className="flex items-center justify-between mb-1.5 px-1">
+                        <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                          Navigation Layout
+                        </span>
+                        <span className="text-[9px] font-black px-1.5 py-0.5 rounded bg-blue-100 dark:bg-blue-900/60 text-blue-700 dark:text-blue-300">
+                          Active: Sidebar
+                        </span>
+                      </div>
+                      <div className="grid grid-cols-2 gap-1 bg-slate-200/60 dark:bg-slate-900/80 p-1 rounded-xl text-xs font-bold">
+                        <button
+                          onClick={() => setNavMode("sidebar")}
+                          className="flex items-center justify-center gap-1.5 py-1.5 rounded-lg bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 shadow-2xs font-black cursor-pointer"
+                        >
+                          <BsLayoutSidebar size={12} />
+                          <span>Sidebar</span>
+                        </button>
+                        <button
+                          onClick={() => {
+                            setNavMode("topbar");
+                            setShowUserPopup(false);
+                          }}
+                          className="flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white cursor-pointer"
+                        >
+                          <BsLayoutSidebarInsetReverse size={12} />
+                          <span>Navbar</span>
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="p-2 space-y-1">
+
+                      {userData?.role !== "admin" && (
+                        <button
+                          onClick={() => {
+                            setShowUserPopup(false);
+                            handleDownloadDossier();
+                          }}
+                          className="w-full text-left px-3 py-2 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-800 text-xs font-bold text-slate-700 dark:text-slate-200 flex items-center gap-2.5 transition-colors cursor-pointer"
+                        >
+                          <FaFilePdf size={14} className="text-rose-600" />
+                          <span>Export Official Dossier (PDF)</span>
+                        </button>
+                      )}
+
+                      <button
+                        onClick={() => {
+                          setShowUserPopup(false);
+                          window.dispatchEvent(new CustomEvent("open-nssta-helpdesk"));
+                        }}
+                        className="w-full text-left px-3 py-2 rounded-2xl hover:bg-emerald-50/60 dark:hover:bg-emerald-950/40 text-xs font-bold text-slate-700 dark:text-slate-200 flex items-center gap-2.5 transition-colors cursor-pointer"
+                      >
+                        <FaComments size={14} className="text-emerald-500" />
+                        <span>NSSTA Live Chat Helpdesk</span>
+                      </button>
+                    </div>
+
+                    <div className="p-2 border-t border-slate-100 dark:border-slate-800">
+                      <button
+                        onClick={handleLogout}
+                        className="w-full px-3 py-2 rounded-2xl hover:bg-rose-50 dark:hover:bg-rose-950/60 text-xs font-bold text-rose-600 dark:text-rose-400 flex items-center gap-2.5 transition-colors cursor-pointer"
+                      >
+                        <HiOutlineLogout size={16} />
+                        <span>Sign Out</span>
+                      </button>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          </div>
+        </header>
+
+        {showAuth && <AuthModel onClose={() => setShowAuth(false)} />}
+      </>
+    );
+  }
+
+  // ==========================================
+  // RENDER: HORIZONTAL TOP NAVBAR MODE
+  // ==========================================
   return (
     <>
       <nav className="fixed top-0 left-0 right-0 z-[100] bg-white/85 dark:bg-slate-950/85 backdrop-blur-2xl border-b border-slate-200/70 dark:border-slate-800/80 shadow-[0_4px_30px_rgba(0,0,0,0.03)] transition-all">
+        {/* Tricolor Government Ribbon Accent */}
         <div className="h-1 w-full bg-gradient-to-r from-[#FF9933] via-white to-[#138808]" />
 
         <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
@@ -121,6 +369,7 @@ const Navbar = () => {
               </div>
             </div>
 
+            {/* Desktop Navigation Links */}
             <div className="hidden md:flex items-center gap-1.5 bg-slate-100/80 dark:bg-slate-900/80 p-1.5 rounded-2xl border border-slate-200/60 dark:border-slate-800 text-xs font-bold text-slate-600 dark:text-slate-300 shadow-inner">
               {navLinks.map((link) => {
                 const Icon = link.icon;
@@ -135,19 +384,29 @@ const Navbar = () => {
                       }
                       navigate(link.path);
                     }}
-                    className={`relative flex items-center gap-2 px-4 py-2 rounded-xl transition-all cursor-pointer ${isActive
-                      ? link.isAiModel
-                        ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md font-black"
-                        : "bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 shadow-xs font-black"
-                      : link.isAiModel
+                    className={`relative flex items-center gap-2 px-4 py-2 rounded-xl transition-all cursor-pointer ${
+                      isActive
+                        ? link.isAiModel
+                          ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md font-black"
+                          : "bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 shadow-xs font-black"
+                        : link.isAiModel
                         ? "text-blue-700 dark:text-blue-300 hover:bg-blue-50/80 dark:hover:bg-blue-950/60 font-extrabold"
                         : "hover:bg-white/60 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-white"
-                      }`}
+                    }`}
                   >
                     {link.isAiModel && (
                       <span className="w-2 h-2 rounded-full bg-amber-400 animate-ping mr-0.5" />
                     )}
-                    <Icon size={14} className={isActive ? (link.isAiModel ? "text-amber-300" : "text-blue-600 dark:text-blue-400") : "text-slate-400"} />
+                    <Icon
+                      size={14}
+                      className={
+                        isActive
+                          ? link.isAiModel
+                            ? "text-amber-300"
+                            : "text-blue-600 dark:text-blue-400"
+                          : "text-slate-400"
+                      }
+                    />
                     <span>{link.label}</span>
                   </button>
                 );
@@ -155,7 +414,21 @@ const Navbar = () => {
             </div>
 
             <div className="flex items-center gap-2 sm:gap-2.5">
+              {/* Prominent "Convert to Sidebar" Action Button */}
+              <button
+                onClick={toggleNavMode}
+                className="hidden sm:flex items-center gap-2 px-3.5 py-2 rounded-xl bg-gradient-to-r from-indigo-50 to-blue-50 dark:from-blue-950/70 dark:to-indigo-950/70 hover:from-indigo-100 hover:to-blue-100 dark:hover:from-blue-900/80 dark:hover:to-indigo-900/80 border border-blue-200/80 dark:border-blue-700/60 text-blue-700 dark:text-blue-300 text-xs font-black shadow-xs hover:shadow-md transition-all cursor-pointer group"
+                title="Convert this top navbar into a modern left sidebar"
+              >
+                <BsLayoutSidebar
+                  size={14}
+                  className="text-blue-600 dark:text-blue-400 group-hover:scale-110 transition-transform"
+                />
+                <span>Convert to Sidebar</span>
+                <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-ping" />
+              </button>
 
+              {/* User Avatar & Popup */}
               <div ref={userRef} className="relative">
                 {userData ? (
                   <motion.button
@@ -176,7 +449,10 @@ const Navbar = () => {
                     <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-blue-700 to-indigo-700 text-white flex items-center justify-center font-black text-xs shadow-md">
                       {userData.name ? userData.name.charAt(0).toUpperCase() : <FaUserGraduate size={14} />}
                     </div>
-                    <BsChevronDown size={11} className={`text-slate-400 transition-transform ${showUserPopup ? "rotate-180" : ""}`} />
+                    <BsChevronDown
+                      size={11}
+                      className={`text-slate-400 transition-transform ${showUserPopup ? "rotate-180" : ""}`}
+                    />
                   </motion.button>
                 ) : (
                   <button
@@ -227,22 +503,40 @@ const Navbar = () => {
                         </div>
                       </div>
 
-                      <div className="p-2 space-y-1">
-                        <button
-                          onClick={() => {
-                            setShowUserPopup(false);
-                            navigate("/pricing");
-                          }}
-                          className="w-full text-left px-3.5 py-2.5 rounded-2xl hover:bg-amber-50/60 dark:hover:bg-amber-950/40 text-xs font-bold text-slate-700 dark:text-slate-200 flex items-center justify-between transition-colors cursor-pointer group"
-                        >
-                          <div className="flex items-center gap-2.5">
-                            <HiSparkles size={14} className="text-amber-500 group-hover:scale-110 transition-transform" />
-                            <span>AI Credits & Plans</span>
-                          </div>
-                          <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-900/60 text-amber-700 dark:text-amber-300 border border-amber-300/50 dark:border-amber-700/50">
-                            {userData.credits ?? 0} Left
+                      {/* Navigation Layout Switcher */}
+                      <div className="p-2.5 bg-slate-50/80 dark:bg-slate-800/50 border-b border-slate-100 dark:border-slate-800">
+                        <div className="flex items-center justify-between mb-1.5 px-1">
+                          <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                            Navigation Layout
                           </span>
-                        </button>
+                          <span className="text-[9px] font-black px-1.5 py-0.5 rounded bg-blue-100 dark:bg-blue-900/60 text-blue-700 dark:text-blue-300">
+                            Active: Topbar
+                          </span>
+                        </div>
+                        <div className="grid grid-cols-2 gap-1 bg-slate-200/60 dark:bg-slate-900/80 p-1 rounded-xl text-xs font-bold">
+                          <button
+                            onClick={() => {
+                              setNavMode("topbar");
+                            }}
+                            className="flex items-center justify-center gap-1.5 py-1.5 rounded-lg bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 shadow-2xs font-black cursor-pointer"
+                          >
+                            <BsLayoutSidebarInsetReverse size={12} />
+                            <span>Navbar</span>
+                          </button>
+                          <button
+                            onClick={() => {
+                              setNavMode("sidebar");
+                              setShowUserPopup(false);
+                            }}
+                            className="flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white cursor-pointer"
+                          >
+                            <BsLayoutSidebar size={12} />
+                            <span>Sidebar</span>
+                          </button>
+                        </div>
+                      </div>
+
+                      <div className="p-2 space-y-1">
 
                         {userData?.role !== "admin" && (
                           <button
@@ -319,6 +613,7 @@ const Navbar = () => {
                         </button>
                       </div>
 
+                      {/* Appearance Switcher */}
                       <div className="p-3 bg-slate-50/80 dark:bg-slate-800/60 border-t border-slate-100 dark:border-slate-800 space-y-2">
                         <div className="flex items-center justify-between px-1">
                           <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
@@ -339,10 +634,11 @@ const Navbar = () => {
                         <div className="grid grid-cols-3 gap-1 bg-slate-200/70 dark:bg-slate-900/80 p-1 rounded-2xl border border-slate-200/50 dark:border-slate-800 text-xs font-bold">
                           <button
                             onClick={() => setTheme("system")}
-                            className={`flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-xl transition-all cursor-pointer ${theme === "system"
-                              ? "bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 shadow-sm font-black"
-                              : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
-                              }`}
+                            className={`flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-xl transition-all cursor-pointer ${
+                              theme === "system"
+                                ? "bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 shadow-sm font-black"
+                                : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+                            }`}
                           >
                             <BsDisplay size={12} />
                             <span>System</span>
@@ -350,10 +646,11 @@ const Navbar = () => {
 
                           <button
                             onClick={() => setTheme("light")}
-                            className={`flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-xl transition-all cursor-pointer ${theme === "light"
-                              ? "bg-white dark:bg-slate-800 text-amber-500 shadow-sm font-black"
-                              : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
-                              }`}
+                            className={`flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-xl transition-all cursor-pointer ${
+                              theme === "light"
+                                ? "bg-white dark:bg-slate-800 text-amber-500 shadow-sm font-black"
+                                : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+                            }`}
                           >
                             <BsSun size={12} />
                             <span>Light</span>
@@ -361,10 +658,11 @@ const Navbar = () => {
 
                           <button
                             onClick={() => setTheme("dark")}
-                            className={`flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-xl transition-all cursor-pointer ${theme === "dark"
-                              ? "bg-white dark:bg-slate-800 text-indigo-400 shadow-sm font-black"
-                              : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
-                              }`}
+                            className={`flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-xl transition-all cursor-pointer ${
+                              theme === "dark"
+                                ? "bg-white dark:bg-slate-800 text-indigo-400 shadow-sm font-black"
+                                : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+                            }`}
                           >
                             <BsMoonStars size={12} />
                             <span>Dark</span>
@@ -386,9 +684,10 @@ const Navbar = () => {
                 </AnimatePresence>
               </div>
 
+              {/* Mobile Menu Button */}
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="md:hidden p-2 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                className="md:hidden p-2 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
               >
                 {mobileMenuOpen ? <HiX size={22} /> : <HiMenu size={22} />}
               </button>
@@ -396,6 +695,7 @@ const Navbar = () => {
           </div>
         </div>
 
+        {/* Mobile Dropdown Menu in Navbar Mode */}
         <AnimatePresence>
           {mobileMenuOpen && (
             <motion.div
@@ -404,30 +704,39 @@ const Navbar = () => {
               exit={{ opacity: 0, height: 0 }}
               className="md:hidden border-t border-slate-200 dark:border-slate-800 bg-white/95 dark:bg-slate-950/95 backdrop-blur-2xl px-4 py-4 space-y-3"
             >
-              {userData && (
-                <div className="flex items-center justify-between p-3 bg-amber-50/80 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/80 rounded-2xl">
-                  <div className="flex items-center gap-2">
-                    <HiSparkles size={16} className="text-amber-500 animate-pulse" />
-                    <div>
-                      <span className="text-xs font-bold text-slate-800 dark:text-slate-200 block">
-                        AI Interaction Credits
-                      </span>
-                      <span className="text-[10px] text-amber-600 dark:text-amber-400 font-extrabold">
-                        {userData.credits ?? 0} Credits Available
-                      </span>
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => {
-                      setMobileMenuOpen(false);
-                      navigate("/pricing");
-                    }}
-                    className="px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-xs font-black shadow-xs cursor-pointer uppercase tracking-wider text-[10px]"
-                  >
-                    Top Up
-                  </button>
+              {/* Convert to Sidebar option on mobile */}
+              <button
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  setNavMode("sidebar");
+                }}
+                className="w-full flex items-center justify-between p-3 bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-800 rounded-2xl text-blue-700 dark:text-blue-300 text-xs font-bold"
+              >
+                <div className="flex items-center gap-2">
+                  <BsLayoutSidebar size={16} />
+                  <span>Switch to Sidebar Mode</span>
                 </div>
-              )}
+                <span className="text-[10px] font-black uppercase bg-blue-200 dark:bg-blue-800 px-2 py-0.5 rounded">
+                  Convert
+                </span>
+              </button>
+
+              <div className="flex items-center justify-between p-3 bg-emerald-50/80 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/80 rounded-2xl">
+                <div className="flex items-center gap-2">
+                  <HiSparkles size={16} className="text-emerald-500 animate-pulse" />
+                  <div>
+                    <span className="text-xs font-bold text-slate-800 dark:text-slate-200 block">
+                      Unlimited AI Access
+                    </span>
+                    <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-extrabold">
+                      All Models Active • No Tokens Required
+                    </span>
+                  </div>
+                </div>
+                <span className="px-2 py-0.5 rounded-lg bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 font-black text-[10px] uppercase">
+                  Enabled
+                </span>
+              </div>
 
               <div className="grid grid-cols-2 gap-2">
                 {navLinks.map((link) => {
@@ -444,10 +753,11 @@ const Navbar = () => {
                         }
                         navigate(link.path);
                       }}
-                      className={`flex items-center gap-2 p-3 rounded-2xl text-xs font-bold text-left transition-colors ${isActive
-                        ? "bg-blue-600 text-white"
-                        : "bg-slate-50 dark:bg-slate-900 text-slate-700 dark:text-slate-300"
-                        }`}
+                      className={`flex items-center gap-2 p-3 rounded-2xl text-xs font-bold text-left transition-colors ${
+                        isActive
+                          ? "bg-blue-600 text-white"
+                          : "bg-slate-50 dark:bg-slate-900 text-slate-700 dark:text-slate-300"
+                      }`}
                     >
                       <Icon size={15} />
                       <span>{link.label}</span>
@@ -463,22 +773,31 @@ const Navbar = () => {
                 <div className="grid grid-cols-3 gap-1 bg-slate-200/80 dark:bg-slate-800 p-1 rounded-xl text-xs font-bold">
                   <button
                     onClick={() => setTheme("system")}
-                    className={`py-1.5 rounded-lg text-center ${theme === "system" ? "bg-white dark:bg-slate-700 text-blue-600 font-black shadow-xs" : "text-slate-600 dark:text-slate-400"
-                      }`}
+                    className={`py-1.5 rounded-lg text-center ${
+                      theme === "system"
+                        ? "bg-white dark:bg-slate-700 text-blue-600 font-black shadow-xs"
+                        : "text-slate-600 dark:text-slate-400"
+                    }`}
                   >
                     System
                   </button>
                   <button
                     onClick={() => setTheme("light")}
-                    className={`py-1.5 rounded-lg text-center ${theme === "light" ? "bg-white dark:bg-slate-700 text-amber-500 font-black shadow-xs" : "text-slate-600 dark:text-slate-400"
-                      }`}
+                    className={`py-1.5 rounded-lg text-center ${
+                      theme === "light"
+                        ? "bg-white dark:bg-slate-700 text-amber-500 font-black shadow-xs"
+                        : "text-slate-600 dark:text-slate-400"
+                    }`}
                   >
                     Light
                   </button>
                   <button
                     onClick={() => setTheme("dark")}
-                    className={`py-1.5 rounded-lg text-center ${theme === "dark" ? "bg-white dark:bg-slate-700 text-indigo-400 font-black shadow-xs" : "text-slate-600 dark:text-slate-400"
-                      }`}
+                    className={`py-1.5 rounded-lg text-center ${
+                      theme === "dark"
+                        ? "bg-white dark:bg-slate-700 text-indigo-400 font-black shadow-xs"
+                        : "text-slate-600 dark:text-slate-400"
+                    }`}
                   >
                     Dark
                   </button>

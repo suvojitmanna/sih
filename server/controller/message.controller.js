@@ -20,9 +20,6 @@ export const textMessageController = async (req, res) => {
             return res.status(404).json({ success: false, message: "User not found" });
         }
 
-        if (user.credits < 1) {
-            return res.status(403).json({ success: false, message: "Not enough credits. Minimum 1 required." });
-        }
 
         const chat = await Chat.findOne({ userId, _id: chatId });
         if (!chat) {
@@ -90,9 +87,6 @@ Rules:
         chat.messages.push(reply);
         await chat.save();
 
-        // Deduct 1 credit
-        user.credits = Math.max(0, user.credits - 1);
-        await user.save();
 
         res.status(200).json({
             success: true,
@@ -120,9 +114,6 @@ export const imageMessageController = async (req, res) => {
             return res.status(404).json({ success: false, message: "User not found" });
         }
 
-        if (user.credits < 2) {
-            return res.status(403).json({ success: false, message: "Not enough credits. Minimum 2 required." });
-        }
 
         const chat = await Chat.findOne({ userId, _id: chatId });
         if (!chat) {
@@ -201,9 +192,6 @@ export const imageMessageController = async (req, res) => {
         chat.messages.push(reply);
         await chat.save();
 
-        // Deduct 2 credits
-        user.credits = Math.max(0, user.credits - 2);
-        await user.save();
 
         res.status(200).json({
             success: true,

@@ -224,7 +224,7 @@ const LearningPath = () => {
                       {step.status === "completed" ? (
                         <span className="flex items-center gap-1.5 px-4 py-2.5 rounded-2xl bg-emerald-50 dark:bg-emerald-950 text-emerald-600 font-bold text-xs">
                           <FaCheckCircle size={14} />
-                          <span>Completed (+10 Credits)</span>
+                          <span>Completed (+10 Competency XP)</span>
                         </span>
                       ) : step.status === "in-progress" ? (
                         <button

@@ -88,11 +88,6 @@ export const generateQuestion = async (req, res) => {
                 messages: "User not found"
             })
         }
-        if (user.credits < 50) {
-            return res.status(400).json({
-                messages: "Not enough credits. Minium 50 required."
-            })
-        }
 
         const projectText = Array.isArray(projects) && projects.length ? projects.join(",") : "None";
 
@@ -167,9 +162,6 @@ export const generateQuestion = async (req, res) => {
                 messages: "AI failed to generate questions."
             })
         }
-
-        user.credits -= 50;
-        await user.save()
 
         const interview = await Interview.create({
             userId: user._id,

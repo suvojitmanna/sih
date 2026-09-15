@@ -13,6 +13,7 @@ import {
   FaComments,
 } from "react-icons/fa";
 import { BsRobot } from "react-icons/bs";
+import { HiSparkles } from "react-icons/hi";
 import { useTheme } from "../../context/ThemeContext";
 import BackButton from "../BackButton";
 
@@ -170,19 +171,6 @@ const ChatSidebar = ({
           >
             <FaImages className="text-indigo-500" size={14} />
             <span>Community Gallery</span>
-          </div>
-
-          <div
-            onClick={() => navigate("/pricing")}
-            className="flex items-center justify-between p-2.5 rounded-xl bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-500/20 text-slate-700 dark:text-slate-200 cursor-pointer hover:border-amber-500/40 transition-all"
-          >
-            <div className="flex items-center gap-2 text-xs">
-              <FaCoins className="text-amber-500" size={14} />
-              <span className="font-semibold">{userData?.credits || 0} Credits</span>
-            </div>
-            <span className="text-[10px] bg-amber-500 text-white font-bold px-2 py-0.5 rounded-full">
-              Get More
-            </span>
           </div>
 
           <div className="flex items-center justify-between p-2 rounded-xl bg-slate-50 dark:bg-slate-800/50 text-xs text-slate-600 dark:text-slate-300">

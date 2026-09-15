@@ -211,12 +211,6 @@ const ChatBox = ({
 
     if (loading || !textToSend || !userData) return;
 
-    const requiredCredits = activeMode === "image" ? 2 : 1;
-    if ((userData.credits || 0) < requiredCredits) {
-      toast.error(`Not enough credits! Minimum ${requiredCredits} required.`);
-      return;
-    }
-
     setLoading(true);
     setPrompt("");
 
