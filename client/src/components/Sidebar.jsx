@@ -66,6 +66,8 @@ const Sidebar = ({ onOpenAuth }) => {
   const [showUserDropdown, setShowUserDropdown] = useState(false);
   const userCardRef = useOutsideClick(() => setShowUserDropdown(false));
 
+  const userPhoto = userData?.image || userData?.picture || userData?.avatar || userData?.photoUrl || userData?.avatarUrl;
+
   const handleLogout = async () => {
     try {
       await axios.post(`${ServerUrl}/api/auth/logout`, {}, { withCredentials: true });
@@ -144,13 +146,13 @@ const Sidebar = ({ onOpenAuth }) => {
     },
     ...(userData?.role === "admin"
       ? [
-          {
-            title: "Governance",
-            links: [
-              { label: "Admin Portal", path: "/admin", icon: BsShieldLock, badge: "Officer" },
-            ],
-          },
-        ]
+        {
+          title: "Governance",
+          links: [
+            { label: "Admin Portal", path: "/admin", icon: BsShieldLock, badge: "Officer" },
+          ],
+        },
+      ]
       : []),
   ];
 
@@ -171,34 +173,56 @@ const Sidebar = ({ onOpenAuth }) => {
 
       {/* Main Sidebar Component */}
       <aside
-        className={`fixed top-0 bottom-0 left-0 z-[120] h-[100dvh] bg-white/95 dark:bg-slate-950/95 backdrop-blur-2xl border-r border-slate-200/80 dark:border-slate-800/80 shadow-2xl flex flex-col transition-all duration-300 ease-in-out select-none ${
-          mobileOpen ? "translate-x-0 w-[280px] sm:w-72 max-w-[85vw]" : "-translate-x-full md:translate-x-0"
-        } ${isCollapsed ? "md:w-[76px]" : "md:w-[260px]"}`}
+        className={`fixed top-0 bottom-0 left-0 z-[120] h-[100dvh] bg-white/95 dark:bg-slate-950/95 backdrop-blur-2xl border-r border-slate-200/80 dark:border-slate-800/80 shadow-2xl flex flex-col transition-all duration-300 ease-in-out select-none ${mobileOpen ? "translate-x-0 w-[280px] sm:w-72 max-w-[85vw]" : "-translate-x-full md:translate-x-0"
+          } ${isCollapsed ? "md:w-[76px]" : "md:w-[260px]"}`}
       >
         {/* Tricolor Government Ribbon Accent */}
         <div className="h-1 w-full bg-gradient-to-r from-[#FF9933] via-white to-[#138808] shrink-0" />
 
-        {/* Sidebar Header: Brand & Conversion Controls */}
-        <div className="p-3 sm:p-3.5 flex items-center justify-between border-b border-slate-200/70 dark:border-slate-800/70 shrink-0">
-          <div
-            onClick={() => handleNavigate("/", true)}
-            onMouseEnter={() => setHoveredLink("brand")}
-            onMouseLeave={() => setHoveredLink(null)}
-            className="flex items-center gap-2.5 cursor-pointer group min-w-0 overflow-hidden relative"
-          >
-            {/* Modern & Premium Logo Emblem */}
-            <div className="relative w-10 h-10 rounded-2xl bg-gradient-to-br from-slate-950 via-blue-950 to-indigo-900 text-white flex flex-col items-center justify-center shadow-lg group-hover:scale-105 group-hover:shadow-blue-500/25 transition-all duration-300 border border-blue-400/30 shrink-0 overflow-hidden">
-              <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-[#FF9933] via-white to-[#138808]" />
-              <span className="font-black text-sm tracking-tight text-white drop-shadow-xs">
-                S
-              </span>
-              <span className="text-[7px] font-black tracking-widest text-amber-300 flex items-center gap-0.5">
-                <HiSparkles size={6} className="text-amber-400 animate-pulse" /> AI
-              </span>
-            </div>
+        {/* Sidebar Header: Collapsed Rail vs Expanded View */}
+        {isCollapsed && !mobileOpen ? (
+          <div className="p-3 flex items-center justify-center border-b border-slate-200/70 dark:border-slate-800/70 shrink-0 relative group/logo">
+            <button
+              onClick={toggleCollapse}
+              className="relative w-11 h-11 rounded-2xl flex items-center justify-center cursor-pointer transition-all duration-300 focus:outline-none"
+              title="Expand Sidebar (260px)"
+            >
+              {/* Default State: Sleek Logo Emblem */}
+              <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-slate-950 via-blue-950 to-indigo-900 text-white flex flex-col items-center justify-center shadow-lg border border-blue-400/30 overflow-hidden transition-all duration-300 group-hover/logo:opacity-0 group-hover/logo:scale-90 group-hover/logo:pointer-events-none">
+                <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-[#FF9933] via-white to-[#138808]" />
+                <span className="font-black text-sm tracking-tight text-white drop-shadow-xs">
+                  S
+                </span>
+                <span className="text-[7px] font-black tracking-widest text-amber-300 flex items-center gap-0.5">
+                  <HiSparkles size={6} className="text-amber-400 animate-pulse" /> AI
+                </span>
+              </div>
 
-            {/* Brand Title & Subtitle */}
-            {(!isCollapsed || mobileOpen) && (
+              {/* Hover State: Expanded Arrow (Centered, smooth transition, ZERO overlap!) */}
+              <div className="absolute inset-0 rounded-2xl bg-blue-600 dark:bg-blue-600 text-white flex flex-col items-center justify-center shadow-xl shadow-blue-500/30 border border-blue-400/50 transition-all duration-300 opacity-0 scale-90 pointer-events-none group-hover/logo:opacity-100 group-hover/logo:scale-100 group-hover/logo:pointer-events-auto">
+                <BsChevronRight size={18} className="text-white" />
+                <span className="text-[7px] font-black tracking-wider uppercase text-blue-100 mt-0.5">Expand</span>
+              </div>
+            </button>
+          </div>
+        ) : (
+          <div className="p-3 sm:p-3.5 flex items-center justify-between border-b border-slate-200/70 dark:border-slate-800/70 shrink-0">
+            <div
+              onClick={() => handleNavigate("/", true)}
+              className="flex items-center gap-2.5 cursor-pointer group min-w-0 overflow-hidden relative"
+            >
+              {/* Modern & Premium Logo Emblem */}
+              <div className="relative w-10 h-10 rounded-2xl bg-gradient-to-br from-slate-950 via-blue-950 to-indigo-900 text-white flex flex-col items-center justify-center shadow-lg group-hover:scale-105 group-hover:shadow-blue-500/25 transition-all duration-300 border border-blue-400/30 shrink-0 overflow-hidden">
+                <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-[#FF9933] via-white to-[#138808]" />
+                <span className="font-black text-sm tracking-tight text-white drop-shadow-xs">
+                  S
+                </span>
+                <span className="text-[7px] font-black tracking-widest text-amber-300 flex items-center gap-0.5">
+                  <HiSparkles size={6} className="text-amber-400 animate-pulse" /> AI
+                </span>
+              </div>
+
+              {/* Brand Title & Subtitle */}
               <div className="flex flex-col min-w-0 pr-1">
                 <span className="font-black text-base text-slate-900 dark:text-white tracking-tight leading-tight">
                   SankhyaIQ <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400">AI</span>
@@ -210,41 +234,29 @@ const Sidebar = ({ onOpenAuth }) => {
                   National Statistical Systems Training Academy
                 </span>
               </div>
-            )}
+            </div>
 
-            {/* Floating Tooltip for Logo when Collapsed */}
-            {isCollapsed && !mobileOpen && hoveredLink === "brand" && (
-              <div className="fixed left-[84px] top-3.5 z-[140] px-3.5 py-2 bg-slate-900/95 dark:bg-slate-900/95 backdrop-blur-xl border border-slate-700 text-white rounded-2xl shadow-2xl min-w-[210px] pointer-events-none animate-fadeIn">
-                <div className="font-black text-xs text-white">
-                  SankhyaIQ <span className="text-blue-400">AI</span>
-                </div>
-                <div className="text-[9.5px] text-slate-300 leading-tight mt-0.5 font-medium">
-                  National Statistical Systems Training Academy
-                </div>
-              </div>
-            )}
+            <div className="flex items-center gap-1">
+              {/* Close button on Mobile */}
+              <button
+                onClick={() => setMobileOpen(false)}
+                className="md:hidden p-1.5 rounded-xl text-slate-500 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+                title="Close Menu"
+              >
+                <HiX size={20} />
+              </button>
+
+              {/* Desktop Collapse / Expand Rail Toggle */}
+              <button
+                onClick={toggleCollapse}
+                className="hidden md:flex p-1.5 rounded-xl text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-all cursor-pointer"
+                title="Collapse Sidebar (76px)"
+              >
+                <BsChevronLeft size={14} />
+              </button>
+            </div>
           </div>
-
-          <div className="flex items-center gap-1">
-            {/* Close button on Mobile */}
-            <button
-              onClick={() => setMobileOpen(false)}
-              className="md:hidden p-1.5 rounded-xl text-slate-500 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
-              title="Close Menu"
-            >
-              <HiX size={20} />
-            </button>
-
-            {/* Desktop Collapse / Expand Rail Toggle */}
-            <button
-              onClick={toggleCollapse}
-              className="hidden md:flex p-1.5 rounded-xl text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-all cursor-pointer"
-              title={isCollapsed ? "Expand Sidebar (260px)" : "Collapse Sidebar (76px)"}
-            >
-              {isCollapsed ? <BsChevronRight size={14} /> : <BsChevronLeft size={14} />}
-            </button>
-          </div>
-        </div>
+        )}
 
         {/* Navigation Sections & Links */}
         <div className="flex-1 overflow-y-auto custom-scrollbar px-2.5 py-3 space-y-4">
@@ -272,28 +284,26 @@ const Sidebar = ({ onOpenAuth }) => {
                   >
                     <button
                       onClick={() => handleNavigate(link.path, link.isPublic)}
-                      className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-2xl text-xs font-bold transition-all cursor-pointer group ${
-                        isActive
+                      className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-2xl text-xs font-bold transition-all cursor-pointer group ${isActive
                           ? link.isAi
                             ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md font-black"
                             : "bg-blue-50 dark:bg-blue-950/70 text-blue-700 dark:text-blue-300 font-black shadow-xs border border-blue-200/50 dark:border-blue-800/50"
                           : link.isAi
-                          ? "text-blue-600 dark:text-blue-400 hover:bg-blue-50/60 dark:hover:bg-blue-950/40"
-                          : "text-slate-600 dark:text-slate-300 hover:bg-slate-100/80 dark:hover:bg-slate-800/80 hover:text-slate-900 dark:hover:text-white"
-                      } ${isCollapsed && !mobileOpen ? "justify-center px-0" : ""}`}
+                            ? "text-blue-600 dark:text-blue-400 hover:bg-blue-50/60 dark:hover:bg-blue-950/40"
+                            : "text-slate-600 dark:text-slate-300 hover:bg-slate-100/80 dark:hover:bg-slate-800/80 hover:text-slate-900 dark:hover:text-white"
+                        } ${isCollapsed && !mobileOpen ? "justify-center px-0" : ""}`}
                     >
                       <div className="relative shrink-0">
                         <Icon
                           size={17}
-                          className={`${
-                            isActive
+                          className={`${isActive
                               ? link.isAi
                                 ? "text-amber-300"
                                 : "text-blue-600 dark:text-blue-400"
                               : link.isAi
-                              ? "text-blue-500 group-hover:scale-110 transition-transform"
-                              : "text-slate-400 group-hover:text-slate-700 dark:group-hover:text-slate-200"
-                          }`}
+                                ? "text-blue-500 group-hover:scale-110 transition-transform"
+                                : "text-slate-400 group-hover:text-slate-700 dark:group-hover:text-slate-200"
+                            }`}
                         />
                         {link.isAi && (
                           <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-amber-400 animate-ping" />
@@ -305,11 +315,10 @@ const Sidebar = ({ onOpenAuth }) => {
                           <span className="truncate">{link.label}</span>
                           {link.badge && (
                             <span
-                              className={`text-[9px] font-black px-1.5 py-0.5 rounded-md uppercase tracking-wider ${
-                                isActive
+                              className={`text-[9px] font-black px-1.5 py-0.5 rounded-md uppercase tracking-wider ${isActive
                                   ? "bg-white/20 text-white"
                                   : "bg-blue-100 dark:bg-blue-900/60 text-blue-700 dark:text-blue-300"
-                              }`}
+                                }`}
                             >
                               {link.badge}
                             </span>
@@ -338,7 +347,7 @@ const Sidebar = ({ onOpenAuth }) => {
 
         {/* Sidebar Footer: Officer Profile Card & Controls */}
         <div className="p-3 border-t border-slate-200/80 dark:border-slate-800/80 bg-slate-50/50 dark:bg-slate-900/50 space-y-2 shrink-0">
-          
+
           {/* Officer Dossier Quick PDF Export */}
           {(!isCollapsed || mobileOpen) && userData && userData.role !== "admin" && (
             <button
@@ -349,7 +358,7 @@ const Sidebar = ({ onOpenAuth }) => {
                 <FaFilePdf size={12} className="text-rose-600" />
                 <span>Export Dossier (PDF)</span>
               </div>
-              <span className="text-[10px] text-slate-400">MoSPI</span>
+              <span className="text-[10px] text-slate-400">PDF</span>
             </button>
           )}
 
@@ -359,13 +368,21 @@ const Sidebar = ({ onOpenAuth }) => {
               <button
                 type="button"
                 onClick={() => setShowUserDropdown(!showUserDropdown)}
-                className={`w-full flex items-center gap-2.5 p-2 rounded-2xl bg-white dark:bg-slate-800/90 hover:bg-slate-100/80 dark:hover:bg-slate-800 border border-slate-200/80 dark:border-slate-700/80 shadow-xs transition-all cursor-pointer group text-left ${
-                  isCollapsed && !mobileOpen ? "justify-center p-1.5" : ""
-                }`}
+                className={`w-full flex items-center gap-2.5 p-2 rounded-2xl bg-white dark:bg-slate-800/90 hover:bg-slate-100/80 dark:hover:bg-slate-800 border border-slate-200/80 dark:border-slate-700/80 shadow-xs transition-all cursor-pointer group text-left ${isCollapsed && !mobileOpen ? "justify-center p-1.5" : ""
+                  }`}
                 title="Officer Account & Session • Click to open settings & options"
               >
-                <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-blue-700 to-indigo-700 text-white flex items-center justify-center font-black text-xs shadow-sm shrink-0 group-hover:scale-105 transition-transform">
-                  {userData.name ? userData.name.charAt(0).toUpperCase() : <FaUserGraduate size={14} />}
+                <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-blue-700 to-indigo-700 text-white flex items-center justify-center font-black text-xs shadow-sm shrink-0 group-hover:scale-105 transition-transform overflow-hidden relative">
+                  {userPhoto ? (
+                    <img
+                      src={userPhoto}
+                      alt={userData?.name || "Officer"}
+                      className="w-full h-full object-cover rounded-xl"
+                      onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                    />
+                  ) : (
+                    <span>{userData.name ? userData.name.charAt(0).toUpperCase() : <FaUserGraduate size={14} />}</span>
+                  )}
                 </div>
 
                 {(!isCollapsed || mobileOpen) && (
@@ -397,11 +414,10 @@ const Sidebar = ({ onOpenAuth }) => {
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: 8, scale: 0.96 }}
                     transition={{ duration: 0.16 }}
-                    className={`bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden z-[150] ${
-                      isCollapsed && !mobileOpen
+                    className={`bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden z-[150] ${isCollapsed && !mobileOpen
                         ? "fixed left-[84px] bottom-3 w-80 shadow-[0_10px_40px_rgba(0,0,0,0.25)]"
                         : "absolute bottom-[calc(100%+8px)] left-0 right-0 w-full min-w-[250px] shadow-[0_10px_40px_rgba(0,0,0,0.25)]"
-                    }`}
+                      }`}
                   >
                     {/* Tricolor Government Ribbon Accent */}
                     <div className="h-1 w-full bg-gradient-to-r from-[#FF9933] via-white to-[#138808]" />
@@ -409,8 +425,17 @@ const Sidebar = ({ onOpenAuth }) => {
                     {/* Officer Details Header */}
                     <div className="p-3.5 bg-gradient-to-br from-slate-50 to-blue-50/40 dark:from-slate-800/80 dark:to-blue-950/40 border-b border-slate-100 dark:border-slate-800">
                       <div className="flex items-center gap-2.5">
-                        <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-blue-700 to-indigo-700 text-white flex items-center justify-center font-black text-sm shadow-md shrink-0">
-                          {userData.name ? userData.name.charAt(0).toUpperCase() : "O"}
+                        <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-blue-700 to-indigo-700 text-white flex items-center justify-center font-black text-sm shadow-md shrink-0 overflow-hidden relative">
+                          {userPhoto ? (
+                            <img
+                              src={userPhoto}
+                              alt={userData?.name || "Officer"}
+                              className="w-full h-full object-cover rounded-2xl"
+                              onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                            />
+                          ) : (
+                            <span>{userData.name ? userData.name.charAt(0).toUpperCase() : "O"}</span>
+                          )}
                         </div>
                         <div className="flex flex-col min-w-0">
                           <span className="font-black text-xs sm:text-sm text-slate-900 dark:text-white truncate">
@@ -463,90 +488,6 @@ const Sidebar = ({ onOpenAuth }) => {
                       </button>
                     </div>
 
-                    {/* Quick Settings: Layout & Theme */}
-                    <div className="p-2.5 bg-slate-50/80 dark:bg-slate-800/50 border-b border-slate-100 dark:border-slate-800 space-y-2">
-                      {/* Navigation Layout Switcher */}
-                      <div>
-                        <div className="flex items-center justify-between mb-1 px-0.5">
-                          <span className="text-[9.5px] font-extrabold uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-1">
-                            <BsLayoutSidebar size={10} />
-                            <span>Navigation Layout</span>
-                          </span>
-                        </div>
-                        <div className="grid grid-cols-2 gap-1 bg-slate-200/60 dark:bg-slate-900/80 p-1 rounded-xl text-[11px] font-bold">
-                          <button
-                            onClick={() => {
-                              setShowUserDropdown(false);
-                              setNavMode("topbar");
-                            }}
-                            className="flex items-center justify-center gap-1.5 py-1 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-all cursor-pointer"
-                          >
-                            <BsLayoutSidebarInsetReverse size={11} />
-                            <span>Navbar</span>
-                          </button>
-                          <button
-                            onClick={() => {
-                              setNavMode("sidebar");
-                            }}
-                            className="flex items-center justify-center gap-1.5 py-1 rounded-lg bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 shadow-2xs font-black transition-all cursor-pointer"
-                          >
-                            <BsLayoutSidebar size={11} />
-                            <span>Sidebar</span>
-                          </button>
-                        </div>
-                      </div>
-
-                      {/* Theme / Appearance Switcher */}
-                      <div>
-                        <div className="flex items-center justify-between mb-1 px-0.5">
-                          <span className="text-[9.5px] font-extrabold uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-1">
-                            {theme === "dark" ? (
-                              <BsMoonStars size={10} className="text-indigo-400" />
-                            ) : theme === "light" ? (
-                              <BsSun size={10} className="text-amber-500" />
-                            ) : (
-                              <BsDisplay size={10} className="text-blue-500" />
-                            )}
-                            <span>Theme</span>
-                          </span>
-                        </div>
-                        <div className="grid grid-cols-3 gap-1 bg-slate-200/60 dark:bg-slate-900/80 p-1 rounded-xl text-[10.5px] font-bold">
-                          <button
-                            onClick={() => setTheme("light")}
-                            className={`flex items-center justify-center gap-1 py-1 rounded-lg transition-all cursor-pointer ${
-                              theme === "light"
-                                ? "bg-white dark:bg-slate-800 text-amber-600 shadow-2xs font-black"
-                                : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
-                            }`}
-                          >
-                            <BsSun size={11} />
-                            <span>Light</span>
-                          </button>
-                          <button
-                            onClick={() => setTheme("dark")}
-                            className={`flex items-center justify-center gap-1 py-1 rounded-lg transition-all cursor-pointer ${
-                              theme === "dark"
-                                ? "bg-white dark:bg-slate-800 text-indigo-400 shadow-2xs font-black"
-                                : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
-                            }`}
-                          >
-                            <BsMoonStars size={11} />
-                            <span>Dark</span>
-                          </button>
-                          <button
-                            onClick={() => setTheme("system")}
-                            className={`flex items-center justify-center gap-1 py-1 rounded-lg transition-all cursor-pointer ${
-                              theme === "system"
-                                ? "bg-white dark:bg-slate-800 text-blue-500 shadow-2xs font-black"
-                                : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
-                            }`}
-                          >
-                            <BsDisplay size={11} />
-                            <span>Auto</span>
-                          </button>
-                        </div>
-                      </div>
-                    </div>
 
                     {/* Quick Shortcuts */}
                     <div className="p-1.5 space-y-0.5">
@@ -621,9 +562,8 @@ const Sidebar = ({ onOpenAuth }) => {
           ) : (
             <button
               onClick={() => handleNavigate("/auth", true)}
-              className={`w-full flex items-center justify-center gap-2 py-2 px-3 bg-gradient-to-r from-blue-700 to-indigo-700 hover:from-blue-800 hover:to-indigo-800 text-white rounded-xl text-xs font-black shadow-md transition-all cursor-pointer ${
-                isCollapsed && !mobileOpen ? "px-1.5" : ""
-              }`}
+              className={`w-full flex items-center justify-center gap-2 py-2 px-3 bg-gradient-to-r from-blue-700 to-indigo-700 hover:from-blue-800 hover:to-indigo-800 text-white rounded-xl text-xs font-black shadow-md transition-all cursor-pointer ${isCollapsed && !mobileOpen ? "px-1.5" : ""
+                }`}
             >
               <FaUserGraduate size={13} />
               {(!isCollapsed || mobileOpen) && <span>Officer Sign In</span>}

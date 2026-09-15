@@ -7,6 +7,7 @@ import axios from "axios";
 import toast from "react-hot-toast";
 import { FaUserGraduate, FaShieldAlt, FaKey, FaEnvelope, FaArrowLeft } from "react-icons/fa";
 import { BsCheckCircleFill, BsShieldLockFill } from "react-icons/bs";
+import { HiSparkles } from "react-icons/hi";
 import { signInWithGooglePopup } from "../utils/googleAuth";
 
 const CADRE_OPTIONS = [
@@ -210,7 +211,7 @@ const Auth = ({ isModel = false }) => {
           { withCredentials: true }
         );
         if (data.success) {
-          toast.success("Account activated successfully! Welcome to MoSPI SkillIQ. 🚀");
+          toast.success("Account activated successfully! Welcome to SankhyaIQ AI. 🚀");
           dispatch(setUserData(data.user));
           if (data.token) localStorage.setItem("token", data.token);
           navigate("/");
@@ -255,14 +256,21 @@ const Auth = ({ isModel = false }) => {
       <div className="max-w-md w-full mx-auto text-center z-10">
         <div
           onClick={() => navigate("/")}
-          className="inline-flex items-center gap-3 cursor-pointer group mb-2"
+          className="inline-flex items-center gap-3 cursor-pointer group mb-2 select-none"
         >
-          <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center font-black text-sm tracking-wider border border-white/20 shadow-lg">
-            NSSTA
+          {/* Modern & Premium Logo Emblem */}
+          <div className="relative w-11 h-11 rounded-2xl bg-gradient-to-br from-slate-950 via-blue-950 to-indigo-900 text-white flex flex-col items-center justify-center shadow-xl border border-blue-400/30 overflow-hidden shrink-0 group-hover:scale-105 transition-transform">
+            <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-[#FF9933] via-white to-[#138808]" />
+            <span className="font-black text-sm tracking-tight text-white drop-shadow-xs">
+              S
+            </span>
+            <span className="text-[7px] font-black tracking-widest text-amber-300 flex items-center gap-0.5">
+              <HiSparkles size={6} className="text-amber-400 animate-pulse" /> AI
+            </span>
           </div>
           <div className="text-left">
-            <h1 className="text-xl font-extrabold tracking-tight">
-              MoSPI <span className="text-blue-400">SkillIQ</span>
+            <h1 className="text-xl font-black tracking-tight text-white">
+              SankhyaIQ <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-indigo-300 to-violet-400">AI</span>
             </h1>
             <p className="text-[11px] text-slate-300 font-medium">
               National Statistical Systems Training Academy
@@ -282,8 +290,8 @@ const Auth = ({ isModel = false }) => {
                 type="button"
                 onClick={() => setIsLogin(true)}
                 className={`py-2.5 rounded-xl transition-all cursor-pointer ${isLogin
-                    ? "bg-blue-600 text-white shadow-md"
-                    : "text-slate-400 hover:text-white"
+                  ? "bg-blue-600 text-white shadow-md"
+                  : "text-slate-400 hover:text-white"
                   }`}
               >
                 Officer Sign In
@@ -292,8 +300,8 @@ const Auth = ({ isModel = false }) => {
                 type="button"
                 onClick={() => setIsLogin(false)}
                 className={`py-2.5 rounded-xl transition-all cursor-pointer ${!isLogin
-                    ? "bg-blue-600 text-white shadow-md"
-                    : "text-slate-400 hover:text-white"
+                  ? "bg-blue-600 text-white shadow-md"
+                  : "text-slate-400 hover:text-white"
                   }`}
               >
                 New Registration
