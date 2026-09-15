@@ -179,39 +179,24 @@ const Sidebar = ({ onOpenAuth }) => {
             className="flex items-center gap-2.5 cursor-pointer group min-w-0 overflow-hidden relative"
           >
             {/* Modern & Premium Logo Emblem */}
-            <div className="relative w-10 h-10 rounded-2xl bg-gradient-to-br from-slate-950 via-blue-950 to-indigo-900 text-white flex flex-col items-center justify-center shadow-lg group-hover:scale-105 group-hover:shadow-blue-500/20 transition-all duration-300 border border-blue-400/30 shrink-0 overflow-hidden">
+            <div className="relative w-10 h-10 rounded-2xl bg-gradient-to-br from-slate-950 via-blue-950 to-indigo-900 text-white flex flex-col items-center justify-center shadow-lg group-hover:scale-105 group-hover:shadow-blue-500/25 transition-all duration-300 border border-blue-400/30 shrink-0 overflow-hidden">
               <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-[#FF9933] via-white to-[#138808]" />
-              <span className="font-black text-[11px] tracking-wider text-white drop-shadow-xs">
-                NSSTA
+              <span className="font-black text-sm tracking-tight text-white drop-shadow-xs">
+                S
               </span>
               <span className="text-[7px] font-black tracking-widest text-amber-300 flex items-center gap-0.5">
                 <HiSparkles size={6} className="text-amber-400 animate-pulse" /> AI
               </span>
             </div>
 
-            {/* Brand Names & Subtitle (when expanded or on mobile drawer) */}
+            {/* Brand Title & Subtitle */}
             {(!isCollapsed || mobileOpen) && (
               <div className="flex flex-col min-w-0 pr-1">
-                {/* Row 1: App Name & NSSTA Badge */}
-                <div className="flex items-center gap-1.5 flex-wrap">
-                  <span className="font-black text-sm text-slate-900 dark:text-white tracking-tight leading-none">
-                    SankhyaIQ <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400">AI</span>
-                  </span>
-                  <span className="inline-flex items-center px-1.5 py-0.2 rounded-md text-[8px] font-black bg-blue-100 dark:bg-blue-900/60 text-blue-700 dark:text-blue-300 uppercase tracking-wide border border-blue-200/60 dark:border-blue-800/60">
-                    NSSTA
-                  </span>
-                </div>
-
-                {/* Row 2: Ministry & Platform Subtitle */}
-                <div className="flex items-center gap-1 mt-1 leading-none">
-                  <span className="text-[11px] font-extrabold text-slate-700 dark:text-slate-300">
-                    MoSPI <span className="text-blue-600 dark:text-blue-400">SkillIQ</span>
-                  </span>
-                </div>
-
-                {/* Row 3: Apex Academy Official Subtitle */}
+                <span className="font-black text-base text-slate-900 dark:text-white tracking-tight leading-tight">
+                  SankhyaIQ <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400">AI</span>
+                </span>
                 <span
-                  className="text-[8.5px] text-slate-500 dark:text-slate-400 font-medium tracking-tight leading-tight mt-0.5 truncate"
+                  className="text-[9px] text-slate-500 dark:text-slate-400 font-medium tracking-tight leading-tight mt-0.5 truncate"
                   title="National Statistical Systems Training Academy"
                 >
                   National Statistical Systems Training Academy
@@ -221,13 +206,11 @@ const Sidebar = ({ onOpenAuth }) => {
 
             {/* Floating Tooltip for Logo when Collapsed */}
             {isCollapsed && !mobileOpen && hoveredLink === "brand" && (
-              <div className="fixed left-[84px] top-3 z-[140] p-3 bg-slate-900/95 dark:bg-slate-900/95 backdrop-blur-xl border border-slate-700 text-white rounded-2xl shadow-2xl min-w-[220px] pointer-events-none animate-fadeIn">
-                <div className="flex items-center gap-1.5 mb-0.5">
-                  <span className="font-black text-xs text-white">SankhyaIQ AI</span>
-                  <span className="text-[8px] font-black px-1.5 py-0.2 rounded bg-blue-600 text-white uppercase">NSSTA</span>
+              <div className="fixed left-[84px] top-3.5 z-[140] px-3.5 py-2 bg-slate-900/95 dark:bg-slate-900/95 backdrop-blur-xl border border-slate-700 text-white rounded-2xl shadow-2xl min-w-[210px] pointer-events-none animate-fadeIn">
+                <div className="font-black text-xs text-white">
+                  SankhyaIQ <span className="text-blue-400">AI</span>
                 </div>
-                <div className="text-[10px] font-bold text-blue-400 mb-0.5">MoSPI SkillIQ</div>
-                <div className="text-[9px] text-slate-300 leading-tight">
+                <div className="text-[9.5px] text-slate-300 leading-tight mt-0.5 font-medium">
                   National Statistical Systems Training Academy
                 </div>
               </div>

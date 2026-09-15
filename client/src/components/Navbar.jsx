@@ -158,14 +158,20 @@ const Navbar = () => {
 
             <div
               onClick={() => navigate("/")}
-              className="flex items-center gap-2 cursor-pointer"
+              className="flex items-center gap-2 cursor-pointer select-none"
             >
-              <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-slate-950 via-blue-900 to-indigo-900 text-white flex items-center justify-center font-black text-xs shadow-xs border border-blue-500/30">
-                <span>NSSTA</span>
+              <div className="relative w-8 h-8 rounded-xl bg-gradient-to-br from-slate-950 via-blue-950 to-indigo-900 text-white flex flex-col items-center justify-center font-black text-xs shadow-xs border border-blue-400/30 overflow-hidden shrink-0">
+                <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-[#FF9933] via-white to-[#138808]" />
+                <span className="leading-none">S</span>
               </div>
-              <span className="font-black text-xs sm:text-sm text-slate-900 dark:text-white">
-                MoSPI <span className="text-blue-600 dark:text-blue-400">SkillIQ</span>
-              </span>
+              <div className="flex flex-col min-w-0">
+                <span className="font-black text-xs sm:text-sm text-slate-900 dark:text-white leading-tight truncate">
+                  SankhyaIQ <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400">AI</span>
+                </span>
+                <span className="text-[8px] text-slate-500 dark:text-slate-400 font-medium truncate">
+                  National Statistical Systems Training Academy
+                </span>
+              </div>
             </div>
           </div>
 
@@ -272,103 +278,6 @@ const Navbar = () => {
                       </button>
                     </div>
 
-                    {/* Quick Settings: Navigation Layout & Theme */}
-                    <div className="p-3 bg-slate-50/80 dark:bg-slate-800/50 border-b border-slate-100 dark:border-slate-800 space-y-2.5">
-                      {/* Navigation Layout Switcher */}
-                      <div>
-                        <div className="flex items-center justify-between mb-1.5 px-0.5">
-                          <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-1">
-                            <BsLayoutSidebar size={11} />
-                            <span>Navigation Layout</span>
-                          </span>
-                          <span className="text-[9px] font-black px-1.5 py-0.5 rounded bg-blue-100 dark:bg-blue-900/60 text-blue-700 dark:text-blue-300">
-                            Active: {navMode === "sidebar" ? "Sidebar" : "Navbar"}
-                          </span>
-                        </div>
-                        <div className="grid grid-cols-2 gap-1 bg-slate-200/60 dark:bg-slate-900/80 p-1 rounded-xl text-xs font-bold">
-                          <button
-                            onClick={() => setNavMode("sidebar")}
-                            className={`flex items-center justify-center gap-1.5 py-1.5 rounded-lg transition-all cursor-pointer ${
-                              navMode === "sidebar"
-                                ? "bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 shadow-2xs font-black"
-                                : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
-                            }`}
-                          >
-                            <BsLayoutSidebar size={12} />
-                            <span>Sidebar</span>
-                          </button>
-                          <button
-                            onClick={() => {
-                              setNavMode("topbar");
-                              setShowUserPopup(false);
-                            }}
-                            className={`flex items-center justify-center gap-1.5 py-1.5 rounded-lg transition-all cursor-pointer ${
-                              navMode === "topbar"
-                                ? "bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 shadow-2xs font-black"
-                                : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
-                            }`}
-                          >
-                            <BsLayoutSidebarInsetReverse size={12} />
-                            <span>Navbar</span>
-                          </button>
-                        </div>
-                      </div>
-
-                      {/* Theme / Appearance Switcher */}
-                      <div>
-                        <div className="flex items-center justify-between mb-1.5 px-0.5">
-                          <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-1">
-                            {theme === "dark" ? (
-                              <BsMoonStars size={11} className="text-indigo-400" />
-                            ) : theme === "light" ? (
-                              <BsSun size={11} className="text-amber-500" />
-                            ) : (
-                              <BsDisplay size={11} className="text-blue-500" />
-                            )}
-                            <span>Theme Mode</span>
-                          </span>
-                          <span className="text-[9px] font-black px-1.5 py-0.5 rounded bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 capitalize">
-                            {theme}
-                          </span>
-                        </div>
-                        <div className="grid grid-cols-3 gap-1 bg-slate-200/60 dark:bg-slate-900/80 p-1 rounded-xl text-xs font-bold">
-                          <button
-                            onClick={() => setTheme("system")}
-                            className={`flex items-center justify-center gap-1 py-1.5 rounded-lg transition-all cursor-pointer ${
-                              theme === "system"
-                                ? "bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 shadow-2xs font-black"
-                                : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
-                            }`}
-                          >
-                            <BsDisplay size={11} />
-                            <span>System</span>
-                          </button>
-                          <button
-                            onClick={() => setTheme("light")}
-                            className={`flex items-center justify-center gap-1 py-1.5 rounded-lg transition-all cursor-pointer ${
-                              theme === "light"
-                                ? "bg-white dark:bg-slate-800 text-amber-500 shadow-2xs font-black"
-                                : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
-                            }`}
-                          >
-                            <BsSun size={11} />
-                            <span>Light</span>
-                          </button>
-                          <button
-                            onClick={() => setTheme("dark")}
-                            className={`flex items-center justify-center gap-1 py-1.5 rounded-lg transition-all cursor-pointer ${
-                              theme === "dark"
-                                ? "bg-white dark:bg-slate-800 text-indigo-400 shadow-2xs font-black"
-                                : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
-                            }`}
-                          >
-                            <BsMoonStars size={11} />
-                            <span>Dark</span>
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-
                     <div className="p-2 space-y-1">
 
                       {userData?.role !== "admin" && (
@@ -430,22 +339,24 @@ const Navbar = () => {
             <div className="flex items-center gap-2 sm:gap-3">
               <div
                 onClick={() => navigate("/")}
-                className="flex items-center gap-3 cursor-pointer group select-none"
+                className="flex items-center gap-2.5 sm:gap-3 cursor-pointer group select-none"
               >
-                <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-slate-950 via-blue-900 to-indigo-900 text-white flex items-center justify-center shadow-lg group-hover:scale-105 transition-all duration-300 border border-blue-500/30">
-                  <span className="font-black text-xs sm:text-sm tracking-wider">NSSTA</span>
+                {/* Modern & Premium Logo Emblem */}
+                <div className="relative w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-gradient-to-br from-slate-950 via-blue-950 to-indigo-900 text-white flex flex-col items-center justify-center shadow-lg group-hover:scale-105 group-hover:shadow-blue-500/25 transition-all duration-300 border border-blue-400/30 shrink-0 overflow-hidden">
+                  <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-[#FF9933] via-white to-[#138808]" />
+                  <span className="font-black text-sm sm:text-base tracking-tight text-white drop-shadow-xs">
+                    S
+                  </span>
+                  <span className="text-[7.5px] font-black tracking-widest text-amber-300 flex items-center gap-0.5">
+                    <HiSparkles size={7} className="text-amber-400 animate-pulse" /> AI
+                  </span>
                 </div>
+
                 <div className="flex flex-col">
-                  <div className="flex items-center gap-1.5">
-                    <span className="font-black text-sm sm:text-base text-slate-900 dark:text-white tracking-tight">
-                      MoSPI <span className="text-blue-600 dark:text-blue-400">SkillIQ</span>
-                    </span>
-                    <span className="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-extrabold bg-blue-50 dark:bg-blue-950/80 text-blue-700 dark:text-blue-300 uppercase tracking-wider border border-blue-200/80 dark:border-blue-800">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                      <span>SankhyaIQ AI</span>
-                    </span>
-                  </div>
-                  <span className="text-[10px] text-slate-500 dark:text-slate-400 font-semibold hidden md:block">
+                  <span className="font-black text-base sm:text-lg text-slate-900 dark:text-white tracking-tight leading-tight">
+                    SankhyaIQ <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-600 dark:from-blue-400 dark:via-indigo-300 dark:to-violet-400">AI</span>
+                  </span>
+                  <span className="text-[9.5px] sm:text-[10.5px] text-slate-500 dark:text-slate-400 font-medium tracking-tight leading-tight mt-0.5">
                     National Statistical Systems Training Academy
                   </span>
                 </div>
