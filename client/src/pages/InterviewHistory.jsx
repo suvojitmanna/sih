@@ -58,10 +58,21 @@ import {
   BsArrowRight,
   BsSortDown,
   BsSortUp,
+  BsSliders,
   BsMouse,
 } from "react-icons/bs";
+import { HiSparkles } from "react-icons/hi2";
+import { HiOutlineArrowNarrowRight } from "react-icons/hi";
 
-import { HiOutlineArrowNarrowRight, HiSparkles } from "react-icons/hi";
+export const getGradeFromScore = (score) => {
+  if (score === undefined || score === null) return "N/A";
+  if (score >= 90) return "A+";
+  if (score >= 80) return "A";
+  if (score >= 70) return "B";
+  if (score >= 60) return "C";
+  if (score >= 50) return "D";
+  return "F";
+};
 
 const MODEL_FILTERS = [
   {
@@ -511,14 +522,13 @@ const InterviewHistory = () => {
       });
     });
 
-    // 3. Case Study Practicums & Assignments
-    const submittedAsgnIds = new Set();
+    // 3. Case Study Practicums & Assignments (Evaluated Submissions Only)
     (assignmentSubmissions || []).forEach((a) => {
-      const asgnId = a.assignmentId?.toString() || a._id;
-      submittedAsgnIds.add(asgnId);
-      if (a.assignmentTitle) submittedAsgnIds.add(a.assignmentTitle);
-      const overallMarks = a.aiEvaluation?.overallScore || 0;
-      const grade = a.aiEvaluation?.grade || "A";
+      const overallMarks =
+        a.aiEvaluation?.overallScore !== undefined && a.aiEvaluation?.overallScore !== null
+          ? a.aiEvaluation.overallScore
+          : 0;
+      const grade = a.aiEvaluation?.grade || getGradeFromScore(overallMarks);
       list.push({
         id: a._id,
         type: "assignment",
@@ -529,13 +539,16 @@ const InterviewHistory = () => {
         score: overallMarks,
         scoreMax: 100,
         scoreLabel: `${overallMarks} / 100`,
-        previewText: a.aiEvaluation?.detailedFeedback || a.submissionText?.substring(0, 120) + "...",
+        grade: grade,
+        previewText:
+          a.aiEvaluation?.detailedFeedback ||
+          (a.submissionText ? a.submissionText.substring(0, 120) + "..." : "Submitted case study evaluation."),
         statusGroup: "completed",
-        status: "Completed (Evaluated)",
+        status: `Completed • Grade ${grade}`,
         actionText: "View Evaluation",
         actionLink: `/assignments/${a.assignmentId || a._id}`,
         modelName: "Case Study Rubric Evaluator",
-        modelBadge: "4-Criterion Rubric",
+        modelBadge: `Grade ${grade}`,
         gradient: "from-amber-500 via-orange-600 to-amber-700",
         glowBorder: "border-amber-500/30 dark:border-amber-500/40 hover:border-amber-500",
         icon: FaFileAlt,
@@ -544,62 +557,32 @@ const InterviewHistory = () => {
       });
     });
 
-    (allAssignments || []).forEach((a) => {
-      const asgnId = a._id?.toString() || a.id;
-      if (submittedAsgnIds.has(asgnId) || submittedAsgnIds.has(a.title) || a.hasSubmitted) {
-        return;
-      }
-      list.push({
-        id: asgnId,
-        type: "assignment",
-        title: a.title || "Operational Case Study Practicum",
-        subtitle: `${a.targetCompetency || a.domain || "Official Statistics"} • ${a.difficulty || "Intermediate"}`,
-        topic: a.targetCompetency || a.domain || "Practicum",
-        date: new Date(a.createdAt || Date.now()),
-        score: null,
-        scoreMax: 100,
-        scoreLabel: "Pending",
-        previewText: a.scenario?.substring(0, 140) + "...",
-        statusGroup: "pending",
-        status: "Pending Submission",
-        actionText: "Complete Practicum",
-        actionLink: `/assignments/${asgnId}`,
-        modelName: "Case Study Rubric Evaluator",
-        modelBadge: "Assigned Practicum",
-        gradient: "from-amber-500 via-orange-600 to-amber-700",
-        glowBorder: "border-amber-500/30 dark:border-amber-500/40 hover:border-amber-500",
-        icon: FaFileAlt,
-        iconBg: "bg-amber-100 dark:bg-amber-950/80 text-amber-600 dark:text-amber-400",
-        raw: a,
-      });
-    });
-
-    // 4. Timed Diagnostic Quizzes
-    const attemptedQuizIds = new Set();
+    // 4. Timed Diagnostic Quizzes (Completed Attempts Only)
     (quizAttempts || []).forEach((q) => {
-      const qId = q.quizId?.toString() || q._id;
-      attemptedQuizIds.add(qId);
-      if (q.quizTitle) attemptedQuizIds.add(q.quizTitle);
-      const sc = q.score || 0;
+      const sc = q.score !== undefined && q.score !== null ? q.score : 0;
       const totalQ = q.totalQuestions || 0;
       const correct = q.correctCount || 0;
+      const grade = getGradeFromScore(sc);
       list.push({
         id: q._id,
         type: "quiz",
-        title: q.quizTitle || `${q.topic} Assessment`,
-        subtitle: `${q.topic || "Core Topic"} • ${correct}/${totalQ} Correct • ${q.difficulty || "Medium"}`,
+        title: q.quizTitle || `${q.topic || "Statistical"} Assessment`,
+        subtitle: `${q.topic || "Core Topic"} • Grade: ${grade} (${sc}%) • ${correct}/${totalQ} Correct`,
         topic: q.topic || "Diagnostic",
         date: new Date(q.createdAt || Date.now()),
         score: sc,
         scoreMax: 100,
         scoreLabel: `${sc}%`,
-        previewText: q.aiFeedback || `Timed diagnostic examination completed with ${q.accuracy || sc}% accuracy.`,
+        grade: grade,
+        previewText:
+          q.aiFeedback ||
+          `Timed diagnostic examination completed with ${q.accuracy || sc}% accuracy (Grade: ${grade}).`,
         statusGroup: "completed",
-        status: q.passed ? "Completed (Passed)" : "Completed",
+        status: q.passed ? `Passed • Grade ${grade}` : `Completed • Grade ${grade}`,
         actionText: "View Breakdown",
         actionLink: `/quiz/${q.quizId || q._id}`,
         modelName: "Diagnostic Test Engine",
-        modelBadge: "Timed Test",
+        modelBadge: `Grade ${grade}`,
         gradient: "from-teal-500 via-emerald-600 to-teal-700",
         glowBorder: "border-teal-500/30 dark:border-teal-500/40 hover:border-teal-500",
         icon: FaTasks,
@@ -608,79 +591,28 @@ const InterviewHistory = () => {
       });
     });
 
-    (allQuizzes || []).forEach((q) => {
-      const qId = q._id?.toString() || q.id;
-      if (attemptedQuizIds.has(qId) || attemptedQuizIds.has(q.title)) {
-        return;
-      }
-      list.push({
-        id: qId,
-        type: "quiz",
-        title: q.title || `${q.topic || "Diagnostic"} Assessment Test`,
-        subtitle: `${q.topic || "Core Domain"} • ${q.difficulty || "Medium"} • ${q.questions?.length || 5} Questions`,
-        topic: q.topic || "Diagnostic",
-        date: new Date(q.createdAt || Date.now()),
-        score: null,
-        scoreMax: 100,
-        scoreLabel: "Pending",
-        previewText: `Official ${q.topic || "Statistical"} diagnostic assessment ready to attempt.`,
-        statusGroup: "pending",
-        status: "Pending Attempt",
-        actionText: "Attempt Quiz",
-        actionLink: `/quiz/${qId}`,
-        modelName: "Diagnostic Test Engine",
-        modelBadge: "Available Quiz",
-        gradient: "from-teal-500 via-emerald-600 to-teal-700",
-        glowBorder: "border-teal-500/30 dark:border-teal-500/40 hover:border-teal-500",
-        icon: FaTasks,
-        iconBg: "bg-teal-100 dark:bg-teal-950/80 text-teal-600 dark:text-teal-400",
-        raw: q,
-      });
-    });
-
-    // 5. Cadre Competency Profile & Skill Gap Matrix
+    // 5. Cadre Competency Profile & Skill Gap Matrix (If assessed)
     if (userData?.competencies && userData.competencies.length > 0) {
+      const compScore = userData.overallCompetencyScore || 0;
+      const grade = getGradeFromScore(compScore);
       list.push({
         id: "competency-profile-main",
         type: "competency",
         title: `${userData.jobRole || "Cadre"} Competency Radar & Skill Gap Analysis`,
-        subtitle: `${userData.competencies.length} Assessed Competencies • ${userData.skillGaps?.length || 0} Priority Gaps`,
+        subtitle: `${userData.competencies.length} Assessed Competencies • Grade: ${grade}`,
         topic: "Cadre Matrix Taxonomy",
         date: new Date(userData.updatedAt || Date.now()),
-        score: userData.overallCompetencyScore || 72,
+        score: compScore,
         scoreMax: 100,
-        scoreLabel: `${userData.overallCompetencyScore || 72}%`,
+        scoreLabel: `${compScore}%`,
+        grade: grade,
         previewText: `Assessed across 4 domains (Statistical, Technical, Governance, Managerial) with targeted iGOT learning pathways.`,
         statusGroup: "completed",
         status: "Completed (Active)",
         actionText: "Open Radar",
         actionLink: "/competencies",
         modelName: "Cadre Competency Engine",
-        modelBadge: "Skill Gap Matrix",
-        gradient: "from-cyan-600 via-blue-700 to-indigo-800",
-        glowBorder: "border-cyan-500/30 dark:border-cyan-500/40 hover:border-cyan-500",
-        icon: FaBrain,
-        iconBg: "bg-cyan-100 dark:bg-cyan-950/80 text-cyan-600 dark:text-cyan-400",
-        raw: userData,
-      });
-    } else {
-      list.push({
-        id: "competency-profile-pending",
-        type: "competency",
-        title: `${userData?.jobRole || "Cadre"} Competency Baseline Assessment`,
-        subtitle: `Skill Gap Matrix & iGOT Learning Pathway Assignment`,
-        topic: "Cadre Matrix Taxonomy",
-        date: new Date(userData?.createdAt || Date.now()),
-        score: null,
-        scoreMax: 100,
-        scoreLabel: "Pending",
-        previewText: `Baseline multi-domain competency assessment has not been finalized yet. Complete your self-assessment radar.`,
-        statusGroup: "pending",
-        status: "Pending Assessment",
-        actionText: "Take Assessment",
-        actionLink: "/competencies",
-        modelName: "Cadre Competency Engine",
-        modelBadge: "Baseline Assessment",
+        modelBadge: `Grade ${grade}`,
         gradient: "from-cyan-600 via-blue-700 to-indigo-800",
         glowBorder: "border-cyan-500/30 dark:border-cyan-500/40 hover:border-cyan-500",
         icon: FaBrain,
@@ -690,7 +622,7 @@ const InterviewHistory = () => {
     }
 
     return list;
-  }, [chats, interviews, assignmentSubmissions, allAssignments, quizAttempts, allQuizzes, userData]);
+  }, [chats, interviews, assignmentSubmissions, quizAttempts, userData]);
 
   const statusCounts = useMemo(() => {
     let scopeList = unifiedHistory;
@@ -901,7 +833,7 @@ const InterviewHistory = () => {
     }
     if (selectedFilter === "competency") {
       return [
-        { label: "Competency Radar", value: `${userData?.overallCompetencyScore || 72}% Index`, icon: FaBrain, color: "text-cyan-600 dark:text-cyan-400", bg: "bg-cyan-100 dark:bg-cyan-950" },
+        { label: "Competency Radar", value: `${userData?.overallCompetencyScore !== undefined && userData?.overallCompetencyScore !== null ? userData.overallCompetencyScore : 0}% Index`, icon: FaBrain, color: "text-cyan-600 dark:text-cyan-400", bg: "bg-cyan-100 dark:bg-cyan-950" },
         { label: "Identified Skill Gaps", value: userData?.skillGaps?.length || 0, icon: FaChartLine, color: "text-rose-600 dark:text-rose-400", bg: "bg-rose-100 dark:bg-rose-950" },
         { label: "Pathway Steps", value: userData?.learningPath?.length || 3, icon: FaGraduationCap, color: "text-indigo-600 dark:text-indigo-400", bg: "bg-indigo-100 dark:bg-indigo-950" },
       ];
@@ -1028,20 +960,18 @@ const InterviewHistory = () => {
                 <div className="flex flex-wrap items-center gap-1 bg-white/90 dark:bg-slate-900/90 border border-slate-200 dark:border-slate-700/80 p-1 rounded-2xl shadow-2xs">
                   <button
                     onClick={() => setStatusFilter("all")}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                      statusFilter === "all"
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${statusFilter === "all"
                         ? "bg-blue-600 text-white shadow-sm shadow-blue-500/25"
                         : "text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/80"
-                    }`}
+                      }`}
                   >
                     <FaLayerGroup size={11} />
                     <span>All Status</span>
                     <span
-                      className={`px-1.5 py-0.2 rounded-full text-[10px] font-black ${
-                        statusFilter === "all"
+                      className={`px-1.5 py-0.2 rounded-full text-[10px] font-black ${statusFilter === "all"
                           ? "bg-white/20 text-white"
                           : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300"
-                      }`}
+                        }`}
                     >
                       {statusCounts.all}
                     </span>
@@ -1049,11 +979,10 @@ const InterviewHistory = () => {
 
                   <button
                     onClick={() => setStatusFilter("completed")}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                      statusFilter === "completed"
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${statusFilter === "completed"
                         ? "bg-emerald-600 text-white shadow-sm shadow-emerald-500/25"
                         : "text-slate-600 dark:text-slate-300 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-emerald-50/70 dark:hover:bg-emerald-950/40"
-                    }`}
+                      }`}
                   >
                     <FaCheckCircle
                       size={11}
@@ -1061,11 +990,10 @@ const InterviewHistory = () => {
                     />
                     <span>Completed</span>
                     <span
-                      className={`px-1.5 py-0.2 rounded-full text-[10px] font-black ${
-                        statusFilter === "completed"
+                      className={`px-1.5 py-0.2 rounded-full text-[10px] font-black ${statusFilter === "completed"
                           ? "bg-white/20 text-white"
                           : "bg-emerald-50 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 border border-emerald-200/50 dark:border-emerald-800/50"
-                      }`}
+                        }`}
                     >
                       {statusCounts.completed}
                     </span>
@@ -1073,20 +1001,18 @@ const InterviewHistory = () => {
 
                   <button
                     onClick={() => setStatusFilter("pending")}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                      statusFilter === "pending"
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${statusFilter === "pending"
                         ? "bg-amber-600 text-white shadow-sm shadow-amber-500/25"
                         : "text-slate-600 dark:text-slate-300 hover:text-amber-600 dark:hover:text-amber-400 hover:bg-amber-50/70 dark:hover:bg-amber-950/40"
-                    }`}
+                      }`}
                   >
                     <span className={`w-2 h-2 rounded-full ${statusFilter === "pending" ? "bg-white" : "bg-amber-400 animate-ping"}`} />
                     <span>Pending</span>
                     <span
-                      className={`px-1.5 py-0.2 rounded-full text-[10px] font-black ${
-                        statusFilter === "pending"
+                      className={`px-1.5 py-0.2 rounded-full text-[10px] font-black ${statusFilter === "pending"
                           ? "bg-white/20 text-white"
                           : "bg-amber-50 dark:bg-amber-950/80 text-amber-700 dark:text-amber-300 border border-amber-200/50 dark:border-amber-800/50"
-                      }`}
+                        }`}
                     >
                       {statusCounts.pending}
                     </span>
@@ -1098,11 +1024,10 @@ const InterviewHistory = () => {
                   <button
                     type="button"
                     onClick={() => setIsSortOpen((prev) => !prev)}
-                    className={`flex items-center gap-2 px-3.5 py-2 rounded-2xl border text-xs font-bold transition-all duration-200 shadow-2xs cursor-pointer select-none ${
-                      isSortOpen
+                    className={`flex items-center gap-2 px-3.5 py-2 rounded-2xl border text-xs font-bold transition-all duration-200 shadow-2xs cursor-pointer select-none ${isSortOpen
                         ? "bg-blue-50/80 dark:bg-slate-800 border-blue-500 text-blue-600 dark:text-blue-400 ring-2 ring-blue-500/20"
                         : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700/80 text-slate-700 dark:text-slate-200 hover:border-blue-400 dark:hover:border-blue-500"
-                    }`}
+                      }`}
                   >
                     <selectedSortOption.icon size={13} className={selectedSortOption.color} />
                     <span className="truncate max-w-[130px]">{selectedSortOption.label}</span>
@@ -1138,11 +1063,10 @@ const InterviewHistory = () => {
                                   setSortBy(opt.id);
                                   setIsSortOpen(false);
                                 }}
-                                className={`w-full flex items-center justify-between gap-2.5 px-3 py-2 rounded-xl text-xs font-bold transition-all duration-150 cursor-pointer text-left ${
-                                  isSelected
+                                className={`w-full flex items-center justify-between gap-2.5 px-3 py-2 rounded-xl text-xs font-bold transition-all duration-150 cursor-pointer text-left ${isSelected
                                     ? opt.activeBg
                                     : `text-slate-700 dark:text-slate-300 ${opt.hoverBg}`
-                                }`}
+                                  }`}
                               >
                                 <div className="flex items-center gap-2.5 min-w-0">
                                   <span className={`p-1.5 rounded-lg ${opt.iconBg} shrink-0`}>
@@ -1154,11 +1078,10 @@ const InterviewHistory = () => {
                                 <div className="flex items-center gap-1.5 shrink-0">
                                   {opt.badge && (
                                     <span
-                                      className={`px-1.5 py-0.5 rounded-md text-[9px] font-extrabold ${
-                                        isSelected
+                                      className={`px-1.5 py-0.5 rounded-md text-[9px] font-extrabold ${isSelected
                                           ? "bg-white/30 text-current"
                                           : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
-                                      }`}
+                                        }`}
                                     >
                                       {opt.badge}
                                     </span>
@@ -1234,20 +1157,18 @@ const InterviewHistory = () => {
                     <button
                       key={f.id}
                       onClick={() => setSelectedFilter(f.id)}
-                      className={`flex-shrink-0 relative flex items-center gap-2 px-4 py-2.5 rounded-2xl text-xs font-bold transition-all duration-300 whitespace-nowrap cursor-pointer select-none ${
-                        isSelected
+                      className={`flex-shrink-0 relative flex items-center gap-2 px-4 py-2.5 rounded-2xl text-xs font-bold transition-all duration-300 whitespace-nowrap cursor-pointer select-none ${isSelected
                           ? `bg-gradient-to-r ${f.activeColor} shadow-md scale-105`
                           : "bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white border border-slate-200/80 dark:border-slate-700/80 shadow-2xs"
-                      }`}
+                        }`}
                     >
                       <Icon className={isSelected ? "text-white" : "text-slate-500 dark:text-slate-400"} />
                       <span>{f.label}</span>
                       <span
-                        className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold ${
-                          isSelected
+                        className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold ${isSelected
                             ? "bg-white/20 text-white"
                             : "bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300"
-                        }`}
+                          }`}
                       >
                         {count}
                       </span>
@@ -1376,6 +1297,19 @@ const InterviewHistory = () => {
                               </span>
                             )}
 
+                            {item.grade && (
+                              <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider ${
+                                ["A+", "A"].includes(item.grade)
+                                  ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800"
+                                  : ["B", "C"].includes(item.grade)
+                                    ? "bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300 border border-blue-200 dark:border-blue-800"
+                                    : "bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300 border border-amber-200 dark:border-amber-800"
+                              }`}>
+                                <FaTrophy size={9} className="shrink-0 text-amber-500" />
+                                <span>Grade {item.grade}</span>
+                              </span>
+                            )}
+
                             <div className="flex items-center gap-1 text-slate-400 text-xs font-semibold">
                               <FaCalendarAlt size={10} />
                               <span>
@@ -1409,7 +1343,12 @@ const InterviewHistory = () => {
                         </div>
                         <div className="flex items-center justify-between lg:justify-end gap-4 border-t lg:border-t-0 border-slate-100 dark:border-slate-800 pt-4 lg:pt-0">
                           {item.score !== null ? (
-                            <div className="flex flex-col items-center justify-center px-4 py-2 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-700/60 min-w-[80px]">
+                            <div className="flex flex-col items-center justify-center px-3.5 py-2 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-700/60 min-w-[86px]">
+                              {item.grade && (
+                                <span className="text-[11px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-tight">
+                                  Grade {item.grade}
+                                </span>
+                              )}
                               <span
                                 className={`text-xl font-black ${(item.scoreMax === 10 ? item.score >= 8 : item.score >= 70)
                                   ? "text-emerald-600 dark:text-emerald-400"
@@ -1968,16 +1907,28 @@ const InterviewHistory = () => {
                             </h3>
                             <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">
                               Topic: <span className="font-bold">{activeModalItem.raw.topic}</span> • Difficulty: {activeModalItem.raw.difficulty || "Medium"}
+                              {activeModalItem.grade && (
+                                <span className="ml-2 font-black text-teal-600 dark:text-teal-400">
+                                  • Assigned Grade: {activeModalItem.grade}
+                                </span>
+                              )}
                             </p>
                           </div>
-                          <span
-                            className={`px-3.5 py-1.5 rounded-xl font-extrabold text-xs uppercase tracking-wider ${activeModalItem.raw.passed
-                              ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300"
-                              : "bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300"
-                              }`}
-                          >
-                            {activeModalItem.raw.passed ? "Passed" : "Completed"}
-                          </span>
+                          <div className="flex flex-col items-end gap-1.5">
+                            {activeModalItem.grade && (
+                              <span className="px-3 py-1 rounded-xl bg-teal-600 text-white font-black text-xs shadow-xs">
+                                Grade {activeModalItem.grade}
+                              </span>
+                            )}
+                            <span
+                              className={`px-3.5 py-1.5 rounded-xl font-extrabold text-xs uppercase tracking-wider ${activeModalItem.raw.passed
+                                ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300"
+                                : "bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300"
+                                }`}
+                            >
+                              {activeModalItem.raw.passed ? "Passed" : "Completed"}
+                            </span>
+                          </div>
                         </div>
 
                         <div className="space-y-3">
@@ -2062,7 +2013,7 @@ const InterviewHistory = () => {
                           Cadre Multi-Domain Framework
                         </span>
                         <h3 className="text-2xl font-black text-slate-900 dark:text-white mt-0.5">
-                          {userData?.overallCompetencyScore || 72}% Overall Index
+                          {userData?.overallCompetencyScore !== undefined && userData?.overallCompetencyScore !== null ? userData.overallCompetencyScore : 0}% Overall Index
                         </h3>
                         <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">
                           Role: {userData?.jobRole || "ISS Officer"} • {userData?.skillGaps?.length || 0} Priority Skill Gaps Detected

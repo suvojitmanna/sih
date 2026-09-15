@@ -19,6 +19,7 @@ import TermsOfService from "./pages/Terms";
 import InterviewPage from "./pages/InterviewPage";
 import InterviewHistory from "./pages/InterviewHistory";
 import InterviewReport from "./pages/InterviewReport";
+import Settings from "./pages/Settings";
 import axios from "axios";
 import { useDispatch, useSelector } from "react-redux";
 import { setUserData } from "./redux/userSlice";
@@ -273,6 +274,15 @@ const App = () => {
           element={
             <ProtectedRoute loading={loading}>
               <InterviewReport />
+            </ProtectedRoute>
+          }
+        />
+        {/* System Settings (Profile Option & Layout Setting) */}
+        <Route
+          path="/settings"
+          element={
+            <ProtectedRoute loading={loading}>
+              <Settings />
             </ProtectedRoute>
           }
         />

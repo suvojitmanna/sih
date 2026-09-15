@@ -51,12 +51,12 @@ export const getLearnerProfile = async (req, res) => {
         competencies: user.competencies || [],
         skillGaps: user.skillGaps || [],
         learningPath: user.learningPath || [],
-        overallCompetencyScore: user.overallCompetencyScore || 65,
-        overallLevel: user.overallLevel || "Intermediate",
-        learningStreak: user.learningStreak || 1,
+        overallCompetencyScore: user.overallCompetencyScore !== undefined && user.overallCompetencyScore !== null ? user.overallCompetencyScore : 0,
+        overallLevel: user.overallLevel || "Novice",
+        learningStreak: user.learningStreak !== undefined && user.learningStreak !== null ? user.learningStreak : 0,
         learningHours: user.learningHours || 0,
         quizzesCompleted: user.quizzesCompleted || 0,
-        credits: user.credits || 100,
+        credits: user.credits !== undefined ? user.credits : 100,
       },
     });
   } catch (error) {

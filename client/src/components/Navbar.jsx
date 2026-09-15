@@ -128,6 +128,7 @@ const Navbar = () => {
     if (path === "/community") return "National Statistical Officer Community";
     if (path === "/interview") return "Cadre Board Oral Viva Simulation";
     if (path === "/history") return "Viva Evaluation Records & History";
+    if (path === "/settings") return "System Settings • Profile & Layout Options";
     return "SankhyaIQ AI • National Statistical Systems Training Academy";
   };
 
@@ -376,7 +377,7 @@ const Navbar = () => {
                         <div className="mt-1 flex items-center justify-between text-[11px]">
                           <span className="font-semibold text-slate-600 dark:text-slate-300">Competency:</span>
                           <span className="font-black text-emerald-600 dark:text-emerald-400">
-                            {userData.overallCompetencyScore || 65}% ({userData.overallLevel || "Intermediate"})
+                            {userData.overallCompetencyScore !== undefined && userData.overallCompetencyScore !== null ? userData.overallCompetencyScore : 0}% ({userData.overallLevel || "Novice"})
                           </span>
                         </div>
                       </div>
@@ -386,7 +387,7 @@ const Navbar = () => {
                         <button
                           onClick={() => {
                             setShowUserPopup(false);
-                            openSettings();
+                            navigate("/settings");
                           }}
                           className="w-full text-left px-3 py-2 rounded-2xl hover:bg-blue-50/70 dark:hover:bg-blue-950/40 text-xs font-bold text-slate-700 dark:text-slate-200 flex items-center justify-between transition-colors cursor-pointer group"
                         >

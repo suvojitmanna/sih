@@ -121,8 +121,8 @@ const userSchema = new mongoose.Schema(
             {
                 domain: { type: String },
                 competencyName: { type: String },
-                level: { type: String, enum: ["Beginner", "Intermediate", "Advanced", "Expert"], default: "Intermediate" },
-                score: { type: Number, default: 60 },
+                level: { type: String, enum: ["Beginner", "Intermediate", "Advanced", "Expert", "Novice"], default: "Novice" },
+                score: { type: Number, default: 0 },
                 source: { type: String, enum: ["self-reported", "assessment-derived", "ai-inferred"], default: "self-reported" },
                 rationale: { type: String },
                 lastAssessedAt: { type: Date, default: Date.now },
@@ -161,15 +161,15 @@ const userSchema = new mongoose.Schema(
 
         overallCompetencyScore: {
             type: Number,
-            default: 65,
+            default: 0,
         },
         overallLevel: {
             type: String,
-            default: "Intermediate",
+            default: "Novice",
         },
         learningStreak: {
             type: Number,
-            default: 1,
+            default: 0,
         },
         learningHours: {
             type: Number,

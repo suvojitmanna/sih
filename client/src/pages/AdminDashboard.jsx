@@ -1328,7 +1328,7 @@ const AdminDashboard = () => {
                       </td>
                       <td className="p-4 text-center">
                         <span className="px-3 py-1 rounded-full font-black text-xs bg-blue-50 dark:bg-blue-950 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
-                          {l.overallCompetencyScore || 65}%
+                          {l.overallCompetencyScore !== undefined && l.overallCompetencyScore !== null ? l.overallCompetencyScore : 0}%
                         </span>
                       </td>
                       <td className="p-4 text-center">
@@ -2312,7 +2312,7 @@ const AdminDashboard = () => {
                       Overall Score
                     </span>
                     <span className="text-xl font-black text-blue-900 dark:text-blue-200">
-                      {userDetailedData?.learner?.overallCompetencyScore || 65}%
+                      {userDetailedData?.learner?.overallCompetencyScore !== undefined && userDetailedData?.learner?.overallCompetencyScore !== null ? userDetailedData.learner.overallCompetencyScore : 0}%
                     </span>
                   </div>
                   <div className="p-3.5 rounded-2xl bg-emerald-50/70 dark:bg-emerald-950/40 border border-emerald-200/60 dark:border-emerald-800/60">

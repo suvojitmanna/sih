@@ -394,12 +394,12 @@ const CompetencyAssessment = () => {
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-xs flex items-center gap-4">
                 <div className="w-14 h-14 rounded-2xl bg-blue-50 dark:bg-blue-950 text-blue-600 flex items-center justify-center font-black text-xl">
-                  {profile?.overallCompetencyScore || 65}%
+                  {profile?.overallCompetencyScore !== undefined && profile?.overallCompetencyScore !== null ? profile.overallCompetencyScore : 0}%
                 </div>
                 <div>
                   <span className="text-xs font-semibold text-slate-500">Overall Competency Score</span>
                   <h3 className="text-xl font-bold text-slate-900 dark:text-white">
-                    {profile?.overallLevel || "Intermediate"} Level
+                    {profile?.overallLevel || "Novice"} Level
                   </h3>
                 </div>
               </div>

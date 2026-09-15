@@ -328,8 +328,9 @@ export const finishInterview = async (req, res) => {
             if (user) {
                 user.learningHours = (user.learningHours || 0) + 1;
                 const scoreScaled = Math.round(finalScore * 10);
-                if (scoreScaled > (user.overallCompetencyScore || 65)) {
-                    user.overallCompetencyScore = Math.min(100, Math.round(((user.overallCompetencyScore || 65) * 0.8) + (scoreScaled * 0.2)));
+                const currentScore = user.overallCompetencyScore !== undefined && user.overallCompetencyScore !== null ? user.overallCompetencyScore : 0;
+                if (scoreScaled > currentScore) {
+                    user.overallCompetencyScore = currentScore === 0 ? scoreScaled : Math.min(100, Math.round((currentScore * 0.8) + (scoreScaled * 0.2)));
                 }
                 await user.save();
             }

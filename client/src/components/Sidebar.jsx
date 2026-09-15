@@ -141,7 +141,6 @@ const Sidebar = ({ onOpenAuth }) => {
         { label: "AI Copilot", path: "/chat", icon: BsRobot },
         { label: "Interview Viva", path: "/interview", icon: FaMicrophone },
         { label: "Viva History", path: "/history", icon: FaHistory },
-        { label: "Community", path: "/community", icon: FaUsers, isPublic: true },
       ],
     },
     ...(userData?.role === "admin"
@@ -457,7 +456,7 @@ const Sidebar = ({ onOpenAuth }) => {
                       <div className="mt-1 flex items-center justify-between text-[10.5px]">
                         <span className="font-semibold text-slate-600 dark:text-slate-300">Competency:</span>
                         <span className="font-black text-emerald-600 dark:text-emerald-400">
-                          {userData.overallCompetencyScore || 65}% ({userData.overallLevel || "Intermediate"})
+                          {userData.overallCompetencyScore !== undefined && userData.overallCompetencyScore !== null ? userData.overallCompetencyScore : 0}% ({userData.overallLevel || "Novice"})
                         </span>
                       </div>
                     </div>
@@ -467,7 +466,7 @@ const Sidebar = ({ onOpenAuth }) => {
                       <button
                         onClick={() => {
                           setShowUserDropdown(false);
-                          openSettings();
+                          navigate("/settings");
                         }}
                         className="w-full text-left px-3 py-2 rounded-2xl hover:bg-blue-50/70 dark:hover:bg-blue-950/40 text-xs font-bold text-slate-700 dark:text-slate-200 flex items-center justify-between transition-colors cursor-pointer group"
                       >
@@ -477,13 +476,7 @@ const Sidebar = ({ onOpenAuth }) => {
                           </div>
                           <div>
                             <span className="block font-black text-slate-900 dark:text-white text-xs">Settings</span>
-                            <span className="block text-[9.5px] text-slate-500 dark:text-slate-400 font-medium">Layout & Theme Preferences</span>
                           </div>
-                        </div>
-                        <div className="flex items-center gap-1 text-[9px] font-black px-1.5 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-blue-600 dark:text-blue-400 border border-slate-200/60 dark:border-slate-700/60">
-                          <span className="capitalize">{navMode}</span>
-                          <span>•</span>
-                          <span className="capitalize">{theme}</span>
                         </div>
                       </button>
                     </div>

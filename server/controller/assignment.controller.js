@@ -258,7 +258,7 @@ export const submitAssignment = async (req, res) => {
 
         // Dynamically update user's competency score & training hours
         if (user) {
-            const currentScore = user.overallCompetencyScore || 65;
+            const currentScore = user.overallCompetencyScore !== undefined && user.overallCompetencyScore !== null ? user.overallCompetencyScore : 0;
             const delta = evaluation.competencyScoreDelta || 5;
             user.overallCompetencyScore = Math.min(98, currentScore + delta);
             user.learningHours = (user.learningHours || 0) + (assignment.estimatedHours || 3);

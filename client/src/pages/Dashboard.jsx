@@ -99,14 +99,14 @@ const getShortCompetencyName = (name = "") => {
 };
 
 const OFFICIAL_BASELINE_COMPETENCIES = [
-  { competencyName: "Sampling Techniques & Estimation", domain: "Statistical", score: 62 },
-  { competencyName: "National Accounts & GDP (SNA 2008)", domain: "Statistical", score: 82 },
-  { competencyName: "Price Statistics (CPI, WPI, Inflation)", domain: "Statistical", score: 78 },
-  { competencyName: "Statistical Computing & Automated Processing", domain: "Technical", score: 48 },
-  { competencyName: "Data Privacy, Ethics & DPDP Act", domain: "Governance", score: 72 },
-  { competencyName: "Labour & Employment Statistics (PLFS)", domain: "Statistical", score: 84 },
-  { competencyName: "Microdata Analytics & Survey Weighting", domain: "Technical", score: 52 },
-  { competencyName: "Evidence-Based Policy & Decision Leadership", domain: "Managerial", score: 80 },
+  { competencyName: "Sampling Techniques & Estimation", domain: "Statistical", score: 0 },
+  { competencyName: "National Accounts & GDP (SNA 2008)", domain: "Statistical", score: 0 },
+  { competencyName: "Price Statistics (CPI, WPI, Inflation)", domain: "Statistical", score: 0 },
+  { competencyName: "Statistical Computing & Automated Processing", domain: "Technical", score: 0 },
+  { competencyName: "Data Privacy, Ethics & DPDP Act", domain: "Governance", score: 0 },
+  { competencyName: "Labour & Employment Statistics (PLFS)", domain: "Statistical", score: 0 },
+  { competencyName: "Microdata Analytics & Survey Weighting", domain: "Technical", score: 0 },
+  { competencyName: "Evidence-Based Policy & Decision Leadership", domain: "Managerial", score: 0 },
 ];
 
 const DOMAIN_CATEGORIES = [
@@ -251,7 +251,7 @@ const Dashboard = () => {
         ? profile.competencies.map((c) => ({
           competencyName: c.competencyName,
           domain: c.domain || "Statistical",
-          score: Number(c.score) || 60,
+          score: Number.isFinite(Number(c.score)) ? Number(c.score) : 0,
           source: c.source || "assessment-derived",
         }))
         : OFFICIAL_BASELINE_COMPETENCIES;
@@ -316,7 +316,7 @@ const Dashboard = () => {
 
       return {
         ...comp,
-        score: Math.min(100, Math.max(10, finalScore)),
+        score: Math.min(100, Math.max(0, finalScore)),
         evaluationsCount: matchedQuizScores.length + matchedAssignmentScores.length,
       };
     });
@@ -362,14 +362,15 @@ const Dashboard = () => {
 
     const totalConsultations = chats.reduce((acc, c) => acc + (c.messages?.length || 0), 0);
 
-    const baseHours = profile?.learningHours || 12;
+    const baseHours = profile?.learningHours !== undefined && profile?.learningHours !== null ? profile.learningHours : 0;
     const computedHours = baseHours + completedQuizzes * 0.5 + completedInterviews * 0.75 + completedAssignments * 1.5;
 
-    let overallLevel = "Intermediate";
+    let overallLevel = "Novice";
     if (overallScore >= 80) overallLevel = "Expert (ISS)";
     else if (overallScore >= 70) overallLevel = "Advanced (SSO)";
     else if (overallScore >= 55) overallLevel = "Intermediate (JSO)";
-    else overallLevel = "Foundational";
+    else if (overallScore > 0) overallLevel = "Foundational";
+    else overallLevel = "Novice";
 
     return {
       overallScore,
@@ -386,7 +387,7 @@ const Dashboard = () => {
       evaluatedAssignments,
       totalConsultations,
       learningHours: Math.round(computedHours),
-      learningStreak: profile?.learningStreak || (completedQuizzes > 0 ? 4 : 2),
+      learningStreak: profile?.learningStreak !== undefined && profile?.learningStreak !== null ? profile.learningStreak : 0,
     };
   }, [synthesizedCompetencies, quizAttempts, interviews, assignmentSubmissions, chats, profile]);
 
@@ -396,7 +397,7 @@ const Dashboard = () => {
       const comps = synthesizedCompetencies.filter((c) =>
         c.domain?.toLowerCase().includes(pattern.toLowerCase())
       );
-      if (!comps.length) return 70;
+      if (!comps.length) return 0;
       return Math.round(comps.reduce((acc, c) => acc + c.score, 0) / comps.length);
     };
 

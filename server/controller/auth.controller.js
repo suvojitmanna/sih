@@ -11,10 +11,10 @@ const generateDefaultCompetencies = (jobRole = "Indian Statistical Service (ISS)
             list.push({
                 domain: domain.name,
                 competencyName: comp.name,
-                level: "Intermediate",
-                score: 55,
+                level: "Novice",
+                score: 0,
                 source: "self-reported",
-                rationale: "Initial baseline assessment upon registration.",
+                rationale: "Initial baseline upon registration.",
                 lastAssessedAt: new Date(),
             });
         });
@@ -78,6 +78,10 @@ export const initiateSignup = async (req, res) => {
                 targetCadre: jobRole || "Indian Statistical Service (ISS) Officer",
                 emailVerified: false,
                 isProfileCompleted: false,
+                overallCompetencyScore: 0,
+                overallLevel: "Novice",
+                learningHours: 0,
+                quizzesCompleted: 0,
                 otpHash,
                 otpExpiresAt,
                 otpAttempts: 0,
@@ -537,6 +541,10 @@ export const googleAuth = async (req, res) => {
                 jobRole: "Indian Statistical Service (ISS) Officer",
                 targetCadre: "Indian Statistical Service (ISS) Officer",
                 isProfileCompleted: false,
+                overallCompetencyScore: 0,
+                overallLevel: "Novice",
+                learningHours: 0,
+                quizzesCompleted: 0,
                 competencies: generateDefaultCompetencies("Indian Statistical Service (ISS) Officer"),
             });
         } else {
@@ -629,11 +637,21 @@ export const completeProfile = async (req, res) => {
             jobRole,
             role,
             experienceYears,
+            designation,
+            department,
         } = req.body;
 
         const user = await User.findById(userId);
         if (!user) {
             return res.status(404).json({ success: false, message: "User not found." });
+        }
+
+        if (designation !== undefined) {
+            user.designation = designation;
+        }
+
+        if (department !== undefined) {
+            user.department = department;
         }
 
         if (name && name.trim()) {

@@ -249,6 +249,7 @@ const Quizzes = () => {
                     <tr>
                       <th className="p-3.5 rounded-l-xl">Assessment Title</th>
                       <th className="p-3.5">Topic</th>
+                      <th className="p-3.5">Grade</th>
                       <th className="p-3.5">Score</th>
                       <th className="p-3.5">Accuracy</th>
                       <th className="p-3.5">Result</th>
@@ -256,41 +257,59 @@ const Quizzes = () => {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                    {(myAttempts || []).map((att, idx) => (
-                      <tr
-                        key={idx}
-                        className="hover:bg-slate-50/50 dark:hover:bg-slate-800/40"
-                      >
-                        <td className="p-3.5 font-bold text-slate-800 dark:text-slate-200">
-                          {att.quizTitle || "Official Statistics Test"}
-                        </td>
-                        <td className="p-3.5 text-slate-500 font-medium">
-                          {att.topic}
-                        </td>
-                        <td className="p-3.5">
-                          <span className="font-extrabold text-blue-600 dark:text-blue-400">
-                            {att.score}%
-                          </span>
-                        </td>
-                        <td className="p-3.5 font-semibold text-slate-600 dark:text-slate-300">
-                          {att.correctCount}/{att.totalQuestions} (
-                          {att.accuracy}%)
-                        </td>
-                        <td className="p-3.5">
-                          <span
-                            className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${att.passed
-                                ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300"
-                                : "bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-300"
+                    {(myAttempts || []).map((att, idx) => {
+                      const sc = att.score ?? 0;
+                      const grade =
+                        sc >= 90 ? "A+" : sc >= 80 ? "A" : sc >= 70 ? "B" : sc >= 60 ? "C" : sc >= 50 ? "D" : "F";
+                      return (
+                        <tr
+                          key={idx}
+                          className="hover:bg-slate-50/50 dark:hover:bg-slate-800/40"
+                        >
+                          <td className="p-3.5 font-bold text-slate-800 dark:text-slate-200">
+                            {att.quizTitle || "Official Statistics Test"}
+                          </td>
+                          <td className="p-3.5 text-slate-500 font-medium">
+                            {att.topic}
+                          </td>
+                          <td className="p-3.5">
+                            <span
+                              className={`px-2.5 py-1 rounded-lg text-[11px] font-black ${
+                                sc >= 80
+                                  ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 border border-emerald-300/40"
+                                  : sc >= 60
+                                  ? "bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300 border border-blue-300/40"
+                                  : "bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300 border border-amber-300/40"
                               }`}
-                          >
-                            {att.passed ? "Passed" : "Needs Review"}
-                          </span>
-                        </td>
-                        <td className="p-3.5 text-slate-400 text-[11px]">
-                          {new Date(att.createdAt).toLocaleDateString()}
-                        </td>
-                      </tr>
-                    ))}
+                            >
+                              Grade {grade}
+                            </span>
+                          </td>
+                          <td className="p-3.5">
+                            <span className="font-extrabold text-blue-600 dark:text-blue-400">
+                              {att.score}%
+                            </span>
+                          </td>
+                          <td className="p-3.5 font-semibold text-slate-600 dark:text-slate-300">
+                            {att.correctCount}/{att.totalQuestions} (
+                            {att.accuracy}%)
+                          </td>
+                          <td className="p-3.5">
+                            <span
+                              className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${att.passed
+                                  ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300"
+                                  : "bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-300"
+                                }`}
+                            >
+                              {att.passed ? "Passed" : "Needs Review"}
+                            </span>
+                          </td>
+                          <td className="p-3.5 text-slate-400 text-[11px]">
+                            {new Date(att.createdAt).toLocaleDateString()}
+                          </td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>
