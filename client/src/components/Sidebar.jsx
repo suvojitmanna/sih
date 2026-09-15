@@ -68,7 +68,7 @@ const Sidebar = ({ onOpenAuth }) => {
   const [showUserDropdown, setShowUserDropdown] = useState(false);
   const userCardRef = useOutsideClick(() => setShowUserDropdown(false));
 
-  const userPhoto = userData?.image || userData?.picture || userData?.avatar || userData?.photoUrl || userData?.avatarUrl;
+  const userPhoto = userData?.image || userData?.picture || userData?.avatar || userData?.photoUrl || userData?.avatarUrl || userData?.profilePicture;
 
   const handleLogout = async () => {
     try {
@@ -135,17 +135,16 @@ const Sidebar = ({ onOpenAuth }) => {
       title: "Intelligence Board",
       links: [
         {
+          label: "Interview Viva",
+          path: "/interview",
+          icon: FaMicrophone,
+          badge: "Oral Board",
+        }, {
           label: "AI Copilot",
           path: "/chat",
           icon: BsRobot,
           isAi: true,
           badge: "AI Copilot",
-        },
-        {
-          label: "Interview Viva",
-          path: "/interview",
-          icon: FaMicrophone,
-          badge: "Oral Board",
         },
       ],
     },
@@ -290,24 +289,24 @@ const Sidebar = ({ onOpenAuth }) => {
                     <button
                       onClick={() => handleNavigate(link.path, link.isPublic)}
                       className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-2xl text-xs font-bold transition-all cursor-pointer group ${isActive
-                          ? link.isAi
-                            ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md font-black"
-                            : "bg-blue-50 dark:bg-blue-950/70 text-blue-700 dark:text-blue-300 font-black shadow-xs border border-blue-200/50 dark:border-blue-800/50"
-                          : link.isAi
-                            ? "text-blue-600 dark:text-blue-400 hover:bg-blue-50/60 dark:hover:bg-blue-950/40"
-                            : "text-slate-600 dark:text-slate-300 hover:bg-slate-100/80 dark:hover:bg-slate-800/80 hover:text-slate-900 dark:hover:text-white"
+                        ? link.isAi
+                          ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md font-black"
+                          : "bg-blue-50 dark:bg-blue-950/70 text-blue-700 dark:text-blue-300 font-black shadow-xs border border-blue-200/50 dark:border-blue-800/50"
+                        : link.isAi
+                          ? "text-blue-600 dark:text-blue-400 hover:bg-blue-50/60 dark:hover:bg-blue-950/40"
+                          : "text-slate-600 dark:text-slate-300 hover:bg-slate-100/80 dark:hover:bg-slate-800/80 hover:text-slate-900 dark:hover:text-white"
                         } ${isCollapsed && !mobileOpen ? "justify-center px-0" : ""}`}
                     >
                       <div className="relative shrink-0">
                         <Icon
                           size={17}
                           className={`${isActive
-                              ? link.isAi
-                                ? "text-amber-300"
-                                : "text-blue-600 dark:text-blue-400"
-                              : link.isAi
-                                ? "text-blue-500 group-hover:scale-110 transition-transform"
-                                : "text-slate-400 group-hover:text-slate-700 dark:group-hover:text-slate-200"
+                            ? link.isAi
+                              ? "text-amber-300"
+                              : "text-blue-600 dark:text-blue-400"
+                            : link.isAi
+                              ? "text-blue-500 group-hover:scale-110 transition-transform"
+                              : "text-slate-400 group-hover:text-slate-700 dark:group-hover:text-slate-200"
                             }`}
                         />
                         {link.isAi && (
@@ -321,8 +320,8 @@ const Sidebar = ({ onOpenAuth }) => {
                           {link.badge && (
                             <span
                               className={`text-[9px] font-black px-1.5 py-0.5 rounded-md uppercase tracking-wider ${isActive
-                                  ? "bg-white/20 text-white"
-                                  : "bg-blue-100 dark:bg-blue-900/60 text-blue-700 dark:text-blue-300"
+                                ? "bg-white/20 text-white"
+                                : "bg-blue-100 dark:bg-blue-900/60 text-blue-700 dark:text-blue-300"
                                 }`}
                             >
                               {link.badge}
@@ -383,11 +382,17 @@ const Sidebar = ({ onOpenAuth }) => {
                       src={userPhoto}
                       alt={userData?.name || "Officer"}
                       className="w-full h-full object-cover rounded-xl"
-                      onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                      onError={(e) => {
+                        e.currentTarget.style.display = 'none';
+                        if (e.currentTarget.nextElementSibling) {
+                          e.currentTarget.nextElementSibling.style.display = 'flex';
+                        }
+                      }}
                     />
-                  ) : (
-                    <span>{userData.name ? userData.name.charAt(0).toUpperCase() : <FaUserGraduate size={14} />}</span>
-                  )}
+                  ) : null}
+                  <span className={userPhoto ? "hidden" : "flex items-center justify-center"}>
+                    {userData.name ? userData.name.charAt(0).toUpperCase() : <FaUserGraduate size={14} />}
+                  </span>
                 </div>
 
                 {(!isCollapsed || mobileOpen) && (
@@ -420,8 +425,8 @@ const Sidebar = ({ onOpenAuth }) => {
                     exit={{ opacity: 0, y: 8, scale: 0.96 }}
                     transition={{ duration: 0.16 }}
                     className={`bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden z-[150] ${isCollapsed && !mobileOpen
-                        ? "fixed left-[84px] bottom-3 w-80 shadow-[0_10px_40px_rgba(0,0,0,0.25)]"
-                        : "absolute bottom-[calc(100%+8px)] left-0 right-0 w-full min-w-[250px] shadow-[0_10px_40px_rgba(0,0,0,0.25)]"
+                      ? "fixed left-[84px] bottom-3 w-80 shadow-[0_10px_40px_rgba(0,0,0,0.25)]"
+                      : "absolute bottom-[calc(100%+8px)] left-0 right-0 w-full min-w-[250px] shadow-[0_10px_40px_rgba(0,0,0,0.25)]"
                       }`}
                   >
                     {/* Tricolor Government Ribbon Accent */}
@@ -436,11 +441,17 @@ const Sidebar = ({ onOpenAuth }) => {
                               src={userPhoto}
                               alt={userData?.name || "Officer"}
                               className="w-full h-full object-cover rounded-2xl"
-                              onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                              onError={(e) => {
+                                e.currentTarget.style.display = 'none';
+                                if (e.currentTarget.nextElementSibling) {
+                                  e.currentTarget.nextElementSibling.style.display = 'flex';
+                                }
+                              }}
                             />
-                          ) : (
-                            <span>{userData.name ? userData.name.charAt(0).toUpperCase() : "O"}</span>
-                          )}
+                          ) : null}
+                          <span className={userPhoto ? "hidden" : "flex items-center justify-center"}>
+                            {userData.name ? userData.name.charAt(0).toUpperCase() : "O"}
+                          </span>
                         </div>
                         <div className="flex flex-col min-w-0">
                           <span className="font-black text-xs sm:text-sm text-slate-900 dark:text-white truncate">

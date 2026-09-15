@@ -4,6 +4,7 @@ import { askAi } from "../services/openRouter.service.js";
 import Interview from "../models/interviewModel.js";
 import User from "../models/userModel.js";
 import { recalculateUserCompetencyAndGaps } from "../services/competencyCalculationService.js";
+import { generateDiagnosticAssessmentsForUser } from "../services/diagnosticAssessmentService.js";
 
 export const analyzeResume = async (req, res) => {
     try {
@@ -441,5 +442,64 @@ export const deleteInterview = async (req, res) => {
         return res.status(500).json({
             message: `Failed to delete interview ${error}`,
         });
+    }
+};
+
+export const getDiagnosticInterview = async (req, res) => {
+    try {
+        const userId = req.userId;
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({ success: false, message: "User not found" });
+        }
+
+        let diagnosticInterview = await Interview.findOne({
+            userId,
+            isDiagnostic: true,
+        });
+
+        if (!diagnosticInterview || !Array.isArray(diagnosticInterview.question) || diagnosticInterview.question.length === 0) {
+            const diag = await generateDiagnosticAssessmentsForUser(user);
+            diagnosticInterview = diag?.diagnosticInterview || await Interview.findOne({ userId, isDiagnostic: true });
+        }
+
+        if (!diagnosticInterview) {
+            return res.status(404).json({ success: false, message: "Diagnostic viva not found" });
+        }
+
+        // Allow resetting an existing diagnostic viva if reset parameter is requested
+        if (req.query.reset === "true" || req.query.retake === "true") {
+            diagnosticInterview.status = "Incompleted";
+            diagnosticInterview.finalScore = 0;
+            if (Array.isArray(diagnosticInterview.question)) {
+                diagnosticInterview.question.forEach((q) => {
+                    q.answer = "";
+                    q.score = 0;
+                    q.feedback = "";
+                    q.confidence = 0;
+                    q.communication = 0;
+                    q.correctness = 0;
+                });
+            }
+            await diagnosticInterview.save();
+        }
+
+        const qList = Array.isArray(diagnosticInterview.question) && diagnosticInterview.question.length
+            ? diagnosticInterview.question
+            : (Array.isArray(diagnosticInterview.questions) ? diagnosticInterview.questions : []);
+
+        return res.status(200).json({
+            success: true,
+            interviewId: diagnosticInterview._id,
+            creditsLeft: user.credits,
+            username: user.name,
+            question: qList,
+            role: diagnosticInterview.role,
+            status: diagnosticInterview.status,
+            isDiagnostic: true,
+        });
+    } catch (error) {
+        console.error("[GET DIAGNOSTIC INTERVIEW ERROR]", error);
+        return res.status(500).json({ success: false, message: error.message });
     }
 };

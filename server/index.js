@@ -44,6 +44,7 @@ app.use("/api/auth", authRouter);
 app.use("/api/user", userRouter);
 
 app.use("/api/competencies", competencyRouter);
+app.use("/api/competency", competencyRouter);
 app.use("/api/quizzes", quizRouter);
 app.use("/api/quiz", quizRouter);
 app.use("/api/assignments", assignmentRouter);

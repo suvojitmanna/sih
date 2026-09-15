@@ -926,7 +926,7 @@ const Dashboard = () => {
                         </button>
                       ) : (
                         <button
-                          onClick={() => navigate("/interview")}
+                          onClick={() => navigate("/interview?type=intake")}
                           className="w-full py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-md transition flex items-center justify-center gap-1.5 cursor-pointer hover:scale-[1.02]"
                         >
                           <BsFillCameraVideoFill size={12} />

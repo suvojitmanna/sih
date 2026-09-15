@@ -15,6 +15,8 @@ const Step2 = ({ interviewData, onFinish }) => {
     interviewId,
     question: questions = [],
     username: userName = "Candidate",
+    isDiagnostic = false,
+    role = "",
   } = interviewData || {};
 
   const [isIntroPhase, setIntroPhase] = useState(true);
@@ -378,6 +380,7 @@ const Step2 = ({ interviewData, onFinish }) => {
 
       // Notify dashboard and sync metrics in real-time
       window.dispatchEvent(new CustomEvent("assessmentCompleted", { detail: result.data }));
+      window.dispatchEvent(new CustomEvent("diagnostic-updated", { detail: result.data }));
       localStorage.setItem("lastAssessmentUpdate", Date.now().toString());
 
       onFinish(result.data);
@@ -523,9 +526,16 @@ const Step2 = ({ interviewData, onFinish }) => {
                 SankhyaIQ™ <span className="text-blue-600 dark:text-blue-400">Viva Voce Engine</span>
               </h2>
             </div>
-            <span className="px-2.5 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-800 text-[10px] font-bold text-blue-700 dark:text-blue-300">
-              Live Session
-            </span>
+            {isDiagnostic ? (
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-300/50 dark:border-indigo-800 text-[10px] font-extrabold text-indigo-700 dark:text-indigo-300">
+                <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-pulse"></span>
+                <span>Cadre Diagnostic Intake Viva</span>
+              </span>
+            ) : (
+              <span className="px-2.5 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-800 text-[10px] font-bold text-blue-700 dark:text-blue-300">
+                Live Session
+              </span>
+            )}
           </div>
 
           {!isIntroPhase && currentQuestion ? (

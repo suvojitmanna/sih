@@ -142,6 +142,24 @@ const Step1 = ({ onStart }) => {
     }
   };
 
+  const handleStartDiagnostic = async () => {
+    setLoading(true);
+    try {
+      const { data } = await axios.get(`${ServerUrl}/api/interview/diagnostic`, {
+        withCredentials: true,
+      });
+      if (data && data.success && Array.isArray(data.question) && data.question.length > 0) {
+        toast.success("Cadre Diagnostic Viva loaded! 🎙️");
+        onStart(data);
+        return;
+      }
+    } catch (err) {
+      console.warn("Direct diagnostic load error:", err.message);
+    }
+    setRole(diagnosticStatus?.diagnosticInterview?.role || role);
+    handleStart();
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 15 }}
@@ -243,10 +261,7 @@ const Step1 = ({ onStart }) => {
                 </div>
                 <button
                   type="button"
-                  onClick={() => {
-                    setRole(diagnosticStatus.diagnosticInterview?.role || role);
-                    handleStart();
-                  }}
+                  onClick={handleStartDiagnostic}
                   className="px-3.5 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-md shrink-0 flex items-center gap-1.5 cursor-pointer hover:scale-105 transition"
                 >
                   <BsFillCameraVideoFill size={11} />

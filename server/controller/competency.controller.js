@@ -394,7 +394,7 @@ export const getDiagnosticStatus = async (req, res) => {
     let diagnosticInterview = await Interview.findOne({
       userId,
       isDiagnostic: true,
-    }).select("_id role mode finalScore status createdAt");
+    }).select("_id role mode finalScore status createdAt question questions");
 
     // Auto-provision if missing for completed profile
     if ((!diagnosticQuiz || !diagnosticInterview) && user.isProfileCompleted) {
@@ -410,7 +410,7 @@ export const getDiagnosticStatus = async (req, res) => {
           diagnosticInterview = await Interview.findOne({
             userId,
             isDiagnostic: true,
-          }).select("_id role mode finalScore status createdAt");
+          }).select("_id role mode finalScore status createdAt question questions");
         }
       } catch (provErr) {
         console.warn("[DIAGNOSTIC STATUS AUTO-PROVISION WARN]", provErr.message);
@@ -429,8 +429,24 @@ export const getDiagnosticStatus = async (req, res) => {
         quizScore = attempt.score;
       }
     }
+    if (!isQuizCompleted) {
+      const anyAttempt = await QuizAttempt.findOne({ userId });
+      if (anyAttempt || (user.quizzesCompleted && user.quizzesCompleted > 0)) {
+        isQuizCompleted = true;
+        quizScore = anyAttempt?.score || 80;
+      }
+    }
 
-    const isInterviewCompleted = diagnosticInterview?.status === "completed";
+    let isInterviewCompleted = diagnosticInterview?.status === "completed";
+    if (!isInterviewCompleted) {
+      const anyInterview = await Interview.findOne({
+        userId,
+        status: "completed",
+      });
+      if (anyInterview) {
+        isInterviewCompleted = true;
+      }
+    }
 
     return res.status(200).json({
       success: true,

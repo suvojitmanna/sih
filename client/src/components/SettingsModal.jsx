@@ -63,7 +63,7 @@ const SettingsModal = ({ isOpen, onClose }) => {
     navigate(`/settings?tab=${tab}`);
   };
 
-  const userPhoto = userData?.image || userData?.picture;
+  const userPhoto = userData?.image || userData?.picture || userData?.avatar || userData?.photoUrl || userData?.avatarUrl || userData?.profilePicture;
 
   return (
     <AnimatePresence>
@@ -168,11 +168,15 @@ const SettingsModal = ({ isOpen, onClose }) => {
                               className="w-full h-full object-cover"
                               onError={(e) => {
                                 e.currentTarget.style.display = "none";
+                                if (e.currentTarget.nextElementSibling) {
+                                  e.currentTarget.nextElementSibling.style.display = "flex";
+                                }
                               }}
                             />
-                          ) : (
-                            <span>{userData.name ? userData.name.charAt(0).toUpperCase() : "O"}</span>
-                          )}
+                          ) : null}
+                          <span className={userPhoto ? "hidden" : "flex items-center justify-center"}>
+                            {userData.name ? userData.name.charAt(0).toUpperCase() : "O"}
+                          </span>
                         </div>
 
                         <div className="space-y-1 flex-1 min-w-0">
