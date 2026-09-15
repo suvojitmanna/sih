@@ -132,9 +132,9 @@ const Navbar = () => {
   };
 
   // ==========================================
-  // RENDER: SIDEBAR NAVIGATION MODE
+  // RENDER: SIDEBAR NAVIGATION MODE (Only when user is signed in)
   // ==========================================
-  if (navMode === "sidebar") {
+  if (navMode === "sidebar" && userData) {
     return (
       <>
         {/* Render the Sidebar component */}

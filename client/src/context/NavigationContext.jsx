@@ -1,26 +1,24 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
+import { useSelector } from "react-redux";
 
 const NavigationContext = createContext();
 
 export const NavigationProvider = ({ children }) => {
   const location = useLocation();
+  const { userData } = useSelector((state) => state.user);
 
-  // navMode: 'sidebar' | 'topbar' (default: 'sidebar' for modern dashboard layout)
   const [navMode, setNavModeState] = useState(() => {
     const saved = localStorage.getItem("nav_layout_mode");
     return saved === "topbar" || saved === "sidebar" ? saved : "sidebar";
   });
 
-  // isCollapsed: true (mini rail ~72px) | false (full ~260px)
   const [isCollapsed, setIsCollapsedState] = useState(() => {
     const saved = localStorage.getItem("sidebar_collapsed");
     return saved === "true";
   });
-
-  // Mobile drawer open/close
   const [mobileOpen, setMobileOpen] = useState(false);
-
+  
   // Settings Modal open/close state
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
@@ -63,11 +61,12 @@ export const NavigationProvider = ({ children }) => {
   }, []);
 
   // Synchronize body classes so main page containers adapt automatically (excluding /auth)
+  // When user is not signed in, sidebar mode is never applied to the page
   useEffect(() => {
     const root = document.body;
     const isAuthPage = location.pathname === "/auth";
 
-    if (navMode === "sidebar" && !isAuthPage) {
+    if (userData && navMode === "sidebar" && !isAuthPage) {
       root.classList.add("layout-mode-sidebar");
       if (isCollapsed) {
         root.classList.add("sidebar-collapsed");
@@ -78,12 +77,15 @@ export const NavigationProvider = ({ children }) => {
       root.classList.remove("layout-mode-sidebar");
       root.classList.remove("sidebar-collapsed");
     }
-  }, [navMode, isCollapsed, location.pathname]);
+  }, [userData, navMode, isCollapsed, location.pathname]);
+
+  const effectiveNavMode = userData ? navMode : "topbar";
 
   return (
     <NavigationContext.Provider
       value={{
-        navMode,
+        navMode: effectiveNavMode,
+        savedNavMode: navMode,
         setNavMode,
         toggleNavMode,
         isCollapsed,

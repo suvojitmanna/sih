@@ -220,7 +220,7 @@ const App = () => {
         <Route path="/privacy" element={<PrivacyPolicy />} />
         <Route path="/welcome" element={<Home />} />
       </Routes>
-      <LiveAdminChatWidget />
+      {userData && <LiveAdminChatWidget />}
     </>
   );
 };

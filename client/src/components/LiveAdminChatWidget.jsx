@@ -283,11 +283,11 @@ const LiveAdminChatWidget = () => {
   };
 
   useEffect(() => {
-    if (!isAllowed) return;
+    if (!isAllowed || !userData) return;
     fetchMessages();
     const interval = setInterval(() => fetchMessages(true), 2500);
     return () => clearInterval(interval);
-  }, [lastMessageCount, isOpen, isAllowed]);
+  }, [lastMessageCount, isOpen, isAllowed, userData]);
 
   useEffect(() => {
     if (isOpen) {
@@ -347,7 +347,8 @@ const LiveAdminChatWidget = () => {
     setInputText(prompt);
   };
 
-  if (!isAllowed) {
+  // Do not show widget if user is not signed in or route is not allowed
+  if (!userData || !isAllowed) {
     return null;
   }
 
