@@ -2,6 +2,7 @@ import Quiz from "../models/quizModel.js";
 import QuizAttempt from "../models/quizAttemptModel.js";
 import User from "../models/userModel.js";
 import { generateQuiz, evaluateQuizSubmission, generateAdaptiveRecommendations } from "../services/aiService.js";
+import { recalculateUserCompetencyAndGaps } from "../services/competencyCalculationService.js";
 
 // 1. Generate On-Demand AI Quiz
 export const generateAiQuiz = async (req, res) => {
@@ -63,13 +64,24 @@ export const generateAiQuiz = async (req, res) => {
 export const getQuizzes = async (req, res) => {
     try {
         const { domain, difficulty, topic } = req.query;
+        const userId = req.userId || req.user?._id;
         const query = { isPublished: true };
+
+        if (userId) {
+            query.$or = [
+                { isDiagnostic: false },
+                { isDiagnostic: { $exists: false } },
+                { isDiagnostic: true, assignedTo: userId },
+            ];
+        } else {
+            query.isDiagnostic = { $ne: true };
+        }
 
         if (domain) query.domain = domain;
         if (difficulty) query.difficulty = difficulty;
         if (topic) query.topic = { $regex: topic, $options: "i" };
 
-        const quizzes = await Quiz.find(query).sort({ createdAt: -1 }).limit(30);
+        const quizzes = await Quiz.find(query).sort({ isDiagnostic: -1, createdAt: -1 }).limit(35);
 
         return res.status(200).json({
             success: true,
@@ -135,36 +147,30 @@ export const submitQuizAttempt = async (req, res) => {
                 : `Review recommended in ${quiz.topic}. Focus on foundational formulas and NSSTA methodology standards.`,
         });
 
-        const user = await User.findById(userId);
+        let user = await User.findById(userId);
         let adaptiveRecommendations = [];
         if (user) {
             user.quizzesCompleted = (user.quizzesCompleted || 0) + 1;
             user.learningHours = (user.learningHours || 0) + Math.max(0.25, Math.round((timeTakenSeconds / 3600) * 10) / 10);
+            await user.save();
 
-            if (Array.isArray(user.competencies) && quiz.topic) {
-                const quizTopicLower = String(quiz.topic).toLowerCase();
-                const comp = user.competencies.find(
-                    (c) =>
-                        c?.competencyName &&
-                        (c.competencyName.toLowerCase().includes(quizTopicLower) ||
-                        quizTopicLower.includes(c.competencyName.toLowerCase()))
-                );
-                if (comp) {
-                    comp.score = Math.round((comp.score + evaluation.score) / 2);
-                    comp.source = "assessment-derived";
-                    comp.lastAssessedAt = new Date();
+            // Run centralized 4-Domain Competency and Skill Gap Recalculation Engine
+            try {
+                const recalcResult = await recalculateUserCompetencyAndGaps(userId);
+                if (recalcResult?.user) {
+                    user = recalcResult.user;
                 }
+            } catch (recalcErr) {
+                console.error("[QUIZ RECALCULATION ERROR]", recalcErr.message);
             }
 
-            const weakTopics = evaluation.topicAnalysis.filter((t) => t.status === "Needs Review").map((t) => t.topic);
+            const weakTopics = evaluation.topicAnalysis?.filter((t) => t.status === "Needs Review").map((t) => t.topic) || [];
             if (weakTopics.length) {
                 adaptiveRecommendations = await generateAdaptiveRecommendations({
                     weakTopics,
                     recentScores: [evaluation.score],
                 });
             }
-
-            await user.save();
         }
 
         return res.status(200).json({

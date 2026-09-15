@@ -8,6 +8,7 @@ import {
   getSkillGaps,
   generatePathway,
   updatePathwayProgress,
+  getDiagnosticStatus,
 } from "../controller/competency.controller.js";
 
 const competencyRouter = express.Router();
@@ -17,6 +18,7 @@ competencyRouter.get("/framework", getCompetencyFramework);
 
 // Protected learner routes
 competencyRouter.get("/my-profile", isAuth, getLearnerProfile);
+competencyRouter.get("/diagnostic-status", isAuth, getDiagnosticStatus);
 competencyRouter.put("/update-profile", isAuth, updateLearnerProfile);
 competencyRouter.post("/assess", isAuth, runAiAssessment);
 competencyRouter.get("/skill-gaps", isAuth, getSkillGaps);

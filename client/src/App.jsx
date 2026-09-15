@@ -206,7 +206,15 @@ const App = () => {
           path="/materials"
           element={
             <ProtectedRoute loading={loading}>
-              <MaterialsUpload />
+              <MaterialsUpload initialTab="material-request" />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/mcq-create"
+          element={
+            <ProtectedRoute loading={loading}>
+              <MaterialsUpload initialTab="mcq-create" />
             </ProtectedRoute>
           }
         />

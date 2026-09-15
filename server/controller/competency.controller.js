@@ -1,4 +1,7 @@
 import User from "../models/userModel.js";
+import Quiz from "../models/quizModel.js";
+import QuizAttempt from "../models/quizAttemptModel.js";
+import Interview from "../models/interviewModel.js";
 import {
   COMPETENCY_DOMAINS,
   ROLE_BENCHMARK_PROFILES,
@@ -10,6 +13,8 @@ import {
 } from "../services/aiService.js";
 import { getIgotCourses } from "../services/igotService.js";
 import { getTpacProgrammes } from "../services/tpacService.js";
+import { recalculateUserCompetencyAndGaps } from "../services/competencyCalculationService.js";
+import { generateDiagnosticAssessmentsForUser } from "../services/diagnosticAssessmentService.js";
 
 // 1. Get Taxonomy Framework
 export const getCompetencyFramework = async (req, res) => {
@@ -349,8 +354,16 @@ export const updatePathwayProgress = async (req, res) => {
         user.learningPath[stepIndex].completedAt = new Date();
         user.learningHours = (user.learningHours || 0) + 4;
         user.credits = (user.credits || 100) + 10;
+        await user.save();
+
+        try {
+          await recalculateUserCompetencyAndGaps(user._id);
+        } catch (rErr) {
+          console.error("[PATH STEP RECALCULATION ERROR]", rErr);
+        }
+      } else {
+        await user.save();
       }
-      await user.save();
     }
 
     return res.status(200).json({
@@ -363,3 +376,74 @@ export const updatePathwayProgress = async (req, res) => {
     return res.status(500).json({ success: false, message: error.message });
   }
 };
+
+// 8. Get Diagnostic Assessment Status for User
+export const getDiagnosticStatus = async (req, res) => {
+  try {
+    const userId = req.userId || req.user?._id;
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    let diagnosticQuiz = await Quiz.findOne({
+      assignedTo: userId,
+      isDiagnostic: true,
+    }).select("_id title topic domain difficulty passingScore questions");
+
+    let diagnosticInterview = await Interview.findOne({
+      userId,
+      isDiagnostic: true,
+    }).select("_id role mode finalScore status createdAt");
+
+    // Auto-provision if missing for completed profile
+    if ((!diagnosticQuiz || !diagnosticInterview) && user.isProfileCompleted) {
+      try {
+        await generateDiagnosticAssessmentsForUser(user);
+        if (!diagnosticQuiz) {
+          diagnosticQuiz = await Quiz.findOne({
+            assignedTo: userId,
+            isDiagnostic: true,
+          }).select("_id title topic domain difficulty passingScore questions");
+        }
+        if (!diagnosticInterview) {
+          diagnosticInterview = await Interview.findOne({
+            userId,
+            isDiagnostic: true,
+          }).select("_id role mode finalScore status createdAt");
+        }
+      } catch (provErr) {
+        console.warn("[DIAGNOSTIC STATUS AUTO-PROVISION WARN]", provErr.message);
+      }
+    }
+
+    let isQuizCompleted = false;
+    let quizScore = null;
+    if (diagnosticQuiz) {
+      const attempt = await QuizAttempt.findOne({
+        quizId: diagnosticQuiz._id,
+        userId,
+      });
+      if (attempt) {
+        isQuizCompleted = true;
+        quizScore = attempt.score;
+      }
+    }
+
+    const isInterviewCompleted = diagnosticInterview?.status === "completed";
+
+    return res.status(200).json({
+      success: true,
+      diagnosticQuiz,
+      isQuizCompleted,
+      quizScore,
+      diagnosticInterview,
+      isInterviewCompleted,
+      isDiagnosticFullyCompleted: isQuizCompleted && isInterviewCompleted,
+      isAnyDiagnosticCompleted: isQuizCompleted || isInterviewCompleted,
+    });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+

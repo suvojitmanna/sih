@@ -166,62 +166,87 @@ const Quizzes = () => {
               <CardGridSkeleton count={6} />
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-                {(quizzes || []).map((quiz) => (
-                  <div
-                    key={quiz._id}
-                    className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-5 shadow-xs hover:border-blue-400 transition-all flex flex-col justify-between"
-                  >
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between">
-                        <span className="text-[10px] font-extrabold text-blue-700 dark:text-blue-400 bg-blue-50 dark:bg-blue-950 px-2.5 py-0.5 rounded-full uppercase">
-                          {quiz.domain}
-                        </span>
-                        <span
-                          className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${quiz.difficulty === "Hard"
-                              ? "bg-rose-100 text-rose-700"
-                              : quiz.difficulty === "Easy"
+                {(quizzes || []).map((quiz) => {
+                  const isDiag = quiz.isDiagnostic === true;
+                  return (
+                    <div
+                      key={quiz._id}
+                      className={`border rounded-3xl p-5 shadow-xs transition-all flex flex-col justify-between ${
+                        isDiag
+                          ? "bg-gradient-to-br from-amber-50/60 via-white to-orange-50/40 dark:from-slate-900 dark:via-amber-950/20 dark:to-slate-900 border-2 border-amber-500/80 dark:border-amber-400/70 shadow-lg hover:shadow-xl hover:scale-[1.01]"
+                          : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:border-blue-400"
+                      }`}
+                    >
+                      <div className="space-y-3">
+                        {isDiag && (
+                          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/20 border border-amber-500/40 text-amber-800 dark:text-amber-300 text-[10px] font-black uppercase tracking-wider">
+                            <BsShieldCheck size={12} className="text-amber-500 animate-pulse" />
+                            <span>Official Cadre Diagnostic Baseline Exam</span>
+                          </div>
+                        )}
+
+                        <div className="flex items-center justify-between">
+                          <span
+                            className={`text-[10px] font-extrabold px-2.5 py-0.5 rounded-full uppercase ${
+                              isDiag
+                                ? "text-amber-800 dark:text-amber-300 bg-amber-100 dark:bg-amber-950"
+                                : "text-blue-700 dark:text-blue-400 bg-blue-50 dark:bg-blue-950"
+                            }`}
+                          >
+                            {quiz.domain}
+                          </span>
+                          <span
+                            className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                              quiz.difficulty === "Hard"
+                                ? "bg-rose-100 text-rose-700"
+                                : quiz.difficulty === "Easy"
                                 ? "bg-emerald-100 text-emerald-700"
                                 : "bg-amber-100 text-amber-700"
                             }`}
+                          >
+                            {quiz.difficulty}
+                          </span>
+                        </div>
+
+                        <h4 className="font-bold text-sm sm:text-base text-slate-900 dark:text-white leading-snug">
+                          {quiz.title}
+                        </h4>
+
+                        <div className="flex items-center gap-4 text-xs text-slate-500">
+                          <span className="flex items-center gap-1.5">
+                            <FaTasks size={11} className={isDiag ? "text-amber-500" : "text-blue-500"} />
+                            <span>{quiz.questions?.length || 5} Questions</span>
+                          </span>
+                          <span className="flex items-center gap-1.5">
+                            <FaClock size={11} className="text-amber-500" />
+                            <span>{quiz.timeLimitMinutes || 10} Mins</span>
+                          </span>
+                        </div>
+
+                        <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 text-[11px] text-slate-600 dark:text-slate-400">
+                          Topic: <strong>{quiz.topic}</strong>
+                        </div>
+                      </div>
+
+                      <div className="mt-5 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
+                        <span className="text-[11px] font-bold text-slate-400">
+                          Pass Mark: 60%
+                        </span>
+                        <button
+                          onClick={() => navigate(`/quiz/${quiz._id}`)}
+                          className={`px-4 py-2 rounded-xl text-white font-bold text-xs flex items-center gap-1.5 hover:shadow-md transition-all cursor-pointer ${
+                            isDiag
+                              ? "bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 shadow-md"
+                              : "bg-gradient-to-r from-blue-700 to-indigo-700"
+                          }`}
                         >
-                          {quiz.difficulty}
-                        </span>
-                      </div>
-
-                      <h4 className="font-bold text-sm sm:text-base text-slate-900 dark:text-white leading-snug">
-                        {quiz.title}
-                      </h4>
-
-                      <div className="flex items-center gap-4 text-xs text-slate-500">
-                        <span className="flex items-center gap-1.5">
-                          <FaTasks size={11} className="text-blue-500" />
-                          <span>{quiz.questions?.length || 5} Questions</span>
-                        </span>
-                        <span className="flex items-center gap-1.5">
-                          <FaClock size={11} className="text-amber-500" />
-                          <span>{quiz.timeLimitMinutes || 10} Mins</span>
-                        </span>
-                      </div>
-
-                      <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 text-[11px] text-slate-600 dark:text-slate-400">
-                        Topic: <strong>{quiz.topic}</strong>
+                          <FaPlay size={10} />
+                          <span>{isDiag ? "Start Diagnostic Intake" : "Start Assessment"}</span>
+                        </button>
                       </div>
                     </div>
-
-                    <div className="mt-5 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
-                      <span className="text-[11px] font-bold text-slate-400">
-                        Pass Mark: 60%
-                      </span>
-                      <button
-                        onClick={() => navigate(`/quiz/${quiz._id}`)}
-                        className="px-4 py-2 rounded-xl bg-gradient-to-r from-blue-700 to-indigo-700 text-white font-bold text-xs flex items-center gap-1.5 hover:shadow-md transition-all cursor-pointer"
-                      >
-                        <FaPlay size={10} />
-                        <span>Start Assessment</span>
-                      </button>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>

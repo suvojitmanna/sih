@@ -121,7 +121,8 @@ const Navbar = () => {
     if (path === "/learning-path") return "AI Adaptive Learning Pathway";
     if (path === "/quizzes") return "Cadre Statistical Assessments & Quizzes";
     if (path === "/assignments") return "Survey & Data Practicum Assignments";
-    if (path === "/materials") return "Official Curriculum & Training Materials";
+    if (path === "/materials") return "NSSTA Official Study Material Requisition";
+    if (path === "/mcq-create") return "AI Diagnostic MCQ Creation Studio";
     if (path === "/ai-models") return "SankhyaIQ AI Models & Workflows Hub";
     if (path === "/admin") return "Executive Administrative Analytics";
     if (path === "/chat") return "AI Copilot & Statistical Assistant";

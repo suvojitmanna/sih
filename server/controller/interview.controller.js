@@ -3,6 +3,7 @@ import * as pdfjsLib from "pdfjs-dist/legacy/build/pdf.mjs";
 import { askAi } from "../services/openRouter.service.js";
 import Interview from "../models/interviewModel.js";
 import User from "../models/userModel.js";
+import { recalculateUserCompetencyAndGaps } from "../services/competencyCalculationService.js";
 
 export const analyzeResume = async (req, res) => {
     try {
@@ -322,18 +323,14 @@ export const finishInterview = async (req, res) => {
         interview.finalScore = finalScore;
         await interview.save();
 
-        // Update user learning stats and competency score
+        // Update user learning stats and competency score across 4-Domain taxonomy
         try {
             const user = await User.findById(interview.userId);
             if (user) {
                 user.learningHours = (user.learningHours || 0) + 1;
-                const scoreScaled = Math.round(finalScore * 10);
-                const currentScore = user.overallCompetencyScore !== undefined && user.overallCompetencyScore !== null ? user.overallCompetencyScore : 0;
-                if (scoreScaled > currentScore) {
-                    user.overallCompetencyScore = currentScore === 0 ? scoreScaled : Math.min(100, Math.round((currentScore * 0.8) + (scoreScaled * 0.2)));
-                }
                 await user.save();
             }
+            await recalculateUserCompetencyAndGaps(interview.userId);
         } catch (uErr) {
             console.error("Error updating user stats on finish interview:", uErr);
         }
@@ -363,8 +360,8 @@ export const finishInterview = async (req, res) => {
 export const getMyInterview = async (req, res) => {
     try {
         const interviews = await Interview.find({ userId: req.userId })
-            .select("role experience mode finalScore score status createdAt question questions resumeText")
-            .sort({ createdAt: -1 });
+            .select("role experience mode finalScore score status createdAt question questions resumeText isDiagnostic targetCadre")
+            .sort({ isDiagnostic: -1, createdAt: -1 });
 
         return res.status(200).json({
             success: true,

@@ -44,6 +44,15 @@ const interviewSchema = new mongoose.Schema({
         default: "Incompleted",
     },
 
+    isDiagnostic: {
+        type: Boolean,
+        default: false,
+    },
+    targetCadre: {
+        type: String,
+        default: "",
+    },
+
 }, { timestamps: true })
 
 const Interview = mongoose.model("Interview", interviewSchema)

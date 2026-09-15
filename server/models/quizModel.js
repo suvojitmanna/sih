@@ -82,6 +82,19 @@ const quizSchema = new mongoose.Schema(
             type: Boolean,
             default: true,
         },
+        isDiagnostic: {
+            type: Boolean,
+            default: false,
+        },
+        assignedTo: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "User",
+            default: null,
+        },
+        targetCadre: {
+            type: String,
+            default: "",
+        },
     },
     { timestamps: true }
 );

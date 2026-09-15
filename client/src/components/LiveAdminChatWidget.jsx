@@ -52,10 +52,21 @@ const formatDateTime = (dateStr) => {
   });
 };
 
+// Core Portal Pages: Home (/), Dashboard (/dashboard), Competency (/competencies), History (/history)
+const CORE_PORTAL_PAGES = [
+  "/",
+  "/welcome",
+  "/dashboard",
+  "/competencies",
+  "/history",
+];
+
 const isAllowedRoute = (pathname) => {
   const clean = pathname.replace(/\/+$/, "") || "/";
-  if (clean === "/auth" || clean === "/privacy" || clean === "/terms" || clean.startsWith("/admin")) return false;
-  return true;
+  return CORE_PORTAL_PAGES.some((coreRoute) => {
+    if (coreRoute === "/") return clean === "/" || clean === "/welcome";
+    return clean === coreRoute || clean.startsWith(`${coreRoute}/`);
+  });
 };
 
 const LiveAdminChatWidget = () => {

@@ -17,6 +17,7 @@ import {
   BsGearFill,
   BsLayoutSidebar,
   BsLayoutSidebarInsetReverse,
+  BsStars,
 } from "react-icons/bs";
 import {
   FaHome,
@@ -26,6 +27,7 @@ import {
   FaFilePdf,
   FaUserGraduate,
   FaUpload,
+  FaBookOpen,
   FaUsers,
   FaMicrophone,
 } from "react-icons/fa";
@@ -115,32 +117,36 @@ const Sidebar = ({ onOpenAuth }) => {
         ...(userData?.role !== "admin"
           ? [{ label: "Dashboard", path: "/dashboard", icon: BsBarChartLine }]
           : []),
-        {
-          label: "AI Models Hub",
-          path: "/ai-models",
-          icon: HiSparkles,
-          isPublic: true,
-          badge: "AI Core",
-          isAi: true,
-        },
+        { label: "Competency", path: "/competencies", icon: FaBrain },
+        { label: "History", path: "/history", icon: FaHistory },
       ],
     },
     {
       title: "Capacity Building",
       links: [
-        { label: "Competencies", path: "/competencies", icon: FaBrain },
         { label: "Learning Path", path: "/learning-path", icon: BsBookHalf },
         { label: "Quizzes", path: "/quizzes", icon: FaTasks },
-        { label: "Assignments", path: "/assignments", icon: FaFilePdf },
-        { label: "Materials", path: "/materials", icon: FaUpload },
+        { label: "Assignment", path: "/assignments", icon: FaFilePdf },
+        { label: "Material Request", path: "/materials", icon: FaBookOpen },
+        { label: "MCQ Create", path: "/mcq-create", icon: BsStars, isAi: true, badge: "AI Gen" },
       ],
     },
     {
-      title: "Intelligence & Board",
+      title: "Intelligence Board",
       links: [
-        { label: "AI Copilot", path: "/chat", icon: BsRobot },
-        { label: "Interview Viva", path: "/interview", icon: FaMicrophone },
-        { label: "Viva History", path: "/history", icon: FaHistory },
+        {
+          label: "AI Copilot",
+          path: "/chat",
+          icon: BsRobot,
+          isAi: true,
+          badge: "AI Copilot",
+        },
+        {
+          label: "Interview Viva",
+          path: "/interview",
+          icon: FaMicrophone,
+          badge: "Oral Board",
+        },
       ],
     },
     ...(userData?.role === "admin"

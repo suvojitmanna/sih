@@ -2,6 +2,7 @@ import genToken from "../config/token.js";
 import User from "../models/userModel.js";
 import { generateSecureOtp, sendSignupOtp, sendLoginOtp, sendPasswordResetOtp } from "../services/emailService.js";
 import { COMPETENCY_DOMAINS, ROLE_BENCHMARK_PROFILES } from "../config/competencyFramework.js";
+import { generateDiagnosticAssessmentsForUser } from "../services/diagnosticAssessmentService.js";
 import bcrypt from "bcryptjs";
 
 const generateDefaultCompetencies = (jobRole = "Indian Statistical Service (ISS) Officer") => {
@@ -703,9 +704,20 @@ export const completeProfile = async (req, res) => {
         user.isProfileCompleted = true;
         await user.save();
 
+        // Immediately provision Target-Role AI Diagnostic Assessments (Quiz & Oral Viva)
+        let diagnostics = { diagnosticQuiz: null, diagnosticInterview: null };
+        try {
+            diagnostics = await generateDiagnosticAssessmentsForUser(user);
+        } catch (diagErr) {
+            console.error("[DIAGNOSTIC AUTO-PROVISION ERROR]", diagErr.message);
+        }
+
         return res.status(200).json({
             success: true,
             message: "User profile configured successfully! Welcome to SankhyaIQ AI.",
+            diagnosticQuizId: diagnostics?.diagnosticQuiz?._id || null,
+            diagnosticInterviewId: diagnostics?.diagnosticInterview?._id || null,
+            diagnosticQuizTitle: diagnostics?.diagnosticQuiz?.title || null,
             user: {
                 _id: user._id,
                 name: user.name,

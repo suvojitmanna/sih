@@ -1,6 +1,7 @@
 import { Assignment, AssignmentSubmission } from "../models/assignmentModel.js";
 import User from "../models/userModel.js";
 import { evaluateAssignmentSubmission } from "../services/aiService.js";
+import { recalculateUserCompetencyAndGaps } from "../services/competencyCalculationService.js";
 
 // Default Curated Official Statistics Assignments
 export const OFFICIAL_ASSIGNMENTS = [
@@ -256,28 +257,19 @@ export const submitAssignment = async (req, res) => {
             aiEvaluation: evaluation,
         });
 
-        // Dynamically update user's competency score & training hours
+        // Dynamically update user's training hours and trigger 4-Domain Competency & Gap recalculation
         if (user) {
-            const currentScore = user.overallCompetencyScore !== undefined && user.overallCompetencyScore !== null ? user.overallCompetencyScore : 0;
-            const delta = evaluation.competencyScoreDelta || 5;
-            user.overallCompetencyScore = Math.min(98, currentScore + delta);
             user.learningHours = (user.learningHours || 0) + (assignment.estimatedHours || 3);
-
-            // Update matching competency in user's profile if exists
-            if (user.competencies && user.competencies.length) {
-                const targetComp = user.competencies.find(
-                    (c) =>
-                        c?.competencyName &&
-                        (c.competencyName.toLowerCase().includes(assignment.targetCompetency.toLowerCase()) ||
-                        assignment.targetCompetency.toLowerCase().includes(c.competencyName.toLowerCase()))
-                );
-                if (targetComp) {
-                    targetComp.score = Math.min(100, (targetComp.score || 60) + delta * 2);
-                    targetComp.source = "assessment-derived";
-                    targetComp.lastAssessedAt = new Date();
-                }
-            }
             await user.save();
+
+            try {
+                const recalcResult = await recalculateUserCompetencyAndGaps(userId);
+                if (recalcResult?.user) {
+                    user = recalcResult.user;
+                }
+            } catch (recalcErr) {
+                console.error("[ASSIGNMENT RECALCULATION ERROR]", recalcErr.message);
+            }
         }
 
         res.json({
