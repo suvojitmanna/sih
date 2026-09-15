@@ -6,7 +6,6 @@ import cors from "cors";
 import authRouter from "./routes/auth.route.js";
 import userRouter from "./routes/user.route.js";
 import interviewRoute from "./routes/interview.route.js";
-import paymentRouter from "./routes/payment.route.js";
 import chatRouter from "./routes/chat.route.js";
 import messageRouter from "./routes/message.route.js";
 import communityRouter from "./routes/community.route.js";
@@ -61,7 +60,6 @@ app.use("/api/chat", chatRouter);
 app.use("/api/message", messageRouter);
 app.use("/api/community", communityRouter);
 app.use("/api/interview", interviewRoute);
-app.use("/api/payment", paymentRouter);
 
 connectDb()
   .then(() => {

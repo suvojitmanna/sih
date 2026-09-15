@@ -80,6 +80,34 @@ const userSchema = new mongoose.Schema(
             type: String,
             default: "M.Sc. in Statistics / Applied Economics",
         },
+        collegeName: {
+            type: String,
+            default: "",
+        },
+        passOutYearRange: {
+            type: String,
+            default: "",
+        },
+        education: [
+            {
+                degree: { type: String, default: "" },
+                institution: { type: String, default: "" },
+                yearRange: { type: String, default: "" },
+                fieldOfStudy: { type: String, default: "" },
+            },
+        ],
+        targetCadre: {
+            type: String,
+            default: "Indian Statistical Service (ISS) Officer",
+        },
+        experienceYears: {
+            type: Number,
+            default: 0,
+        },
+        isProfileCompleted: {
+            type: Boolean,
+            default: false,
+        },
         workExperience: {
             type: Number,
             default: 3,

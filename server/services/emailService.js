@@ -106,19 +106,12 @@ export const sendSignupOtp = async (email, name, otp) => {
 
         if (transporter) {
             const info = await transporter.sendMail(mailOptions);
-            console.log(`[EMAIL SERVICE] Signup OTP sent to ${email} (MessageId: ${info.messageId})`);
             return { success: true, messageId: info.messageId };
         } else {
-            console.log(`\n========================================================`);
-            console.log(`[DEV EMAIL SIMULATOR] SIGNUP OTP FOR ${email} (${name}):`);
-            console.log(`>>> OTP: ${otp} <<< (Valid for 10 minutes)`);
-            console.log(`========================================================\n`);
             return { success: true, simulated: true };
         }
     } catch (error) {
         console.error(`[EMAIL ERROR] Failed to send signup OTP to ${email}:`, error.message);
-        // Fallback log for local dev continuity
-        console.log(`\n>>> [DEV FALLBACK OTP] For ${email}: ${otp} <<<\n`);
         return { success: true, fallback: true, error: error.message };
     }
 };
@@ -142,18 +135,42 @@ export const sendLoginOtp = async (email, name, otp) => {
 
         if (transporter) {
             const info = await transporter.sendMail(mailOptions);
-            console.log(`[EMAIL SERVICE] Login OTP sent to ${email} (MessageId: ${info.messageId})`);
             return { success: true, messageId: info.messageId };
         } else {
-            console.log(`\n========================================================`);
-            console.log(`[DEV EMAIL SIMULATOR] LOGIN OTP FOR ${email} (${name}):`);
-            console.log(`>>> OTP: ${otp} <<< (Valid for 10 minutes)`);
-            console.log(`========================================================\n`);
             return { success: true, simulated: true };
         }
     } catch (error) {
         console.error(`[EMAIL ERROR] Failed to send login OTP to ${email}:`, error.message);
-        console.log(`\n>>> [DEV FALLBACK OTP] For ${email}: ${otp} <<<\n`);
+        return { success: true, fallback: true, error: error.message };
+    }
+};
+
+// Send Password Reset OTP
+export const sendPasswordResetOtp = async (email, name, otp) => {
+    try {
+        const transporter = createTransporter();
+        const mailOptions = {
+            from: `"${process.env.EMAIL_FROM_NAME || 'MoSPI-NSSTA Skill Intelligence'}" <${process.env.EMAIL_FROM || process.env.EMAIL_USER || 'no-reply@mospi.gov.in'}>`,
+            to: email,
+            subject: `[NSSTA-MoSPI] Your Password Reset Security Code: ${otp}`,
+            html: getEmailHtmlTemplate({
+                title: "Password Reset Request - NSSTA MoSPI",
+                preheader: `Your password reset code is ${otp}`,
+                name,
+                otp,
+                purposeText: "A request was received to reset your password on the <strong>AI-Enabled Skill Intelligence and Capacity Building Platform</strong>. Enter the 6-digit one-time code below to choose a new password.",
+            }),
+        };
+
+        if (transporter) {
+            const info = await transporter.sendMail(mailOptions);
+            return { success: true, messageId: info.messageId };
+        } else {
+            return { success: true, simulated: true };
+            return { success: true, simulated: true };
+        }
+    } catch (error) {
+        console.error(`[EMAIL ERROR] Failed to send password reset OTP to ${email}:`, error.message);
         return { success: true, fallback: true, error: error.message };
     }
 };
@@ -162,4 +179,6 @@ export default {
     generateSecureOtp,
     sendSignupOtp,
     sendLoginOtp,
+    sendPasswordResetOtp,
 };
+

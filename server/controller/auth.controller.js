@@ -1,10 +1,9 @@
 import genToken from "../config/token.js";
 import User from "../models/userModel.js";
-import { generateSecureOtp, sendSignupOtp, sendLoginOtp } from "../services/emailService.js";
+import { generateSecureOtp, sendSignupOtp, sendLoginOtp, sendPasswordResetOtp } from "../services/emailService.js";
 import { COMPETENCY_DOMAINS, ROLE_BENCHMARK_PROFILES } from "../config/competencyFramework.js";
 import bcrypt from "bcryptjs";
 
-// Helper: Initialize baseline competencies for a new user
 const generateDefaultCompetencies = (jobRole = "Indian Statistical Service (ISS) Officer") => {
     const list = [];
     COMPETENCY_DOMAINS.forEach((domain) => {
@@ -23,9 +22,6 @@ const generateDefaultCompetencies = (jobRole = "Indian Statistical Service (ISS)
     return list;
 };
 
-// ==========================================
-// 1. SIGNUP — INITIATE (SEND OTP)
-// ==========================================
 export const initiateSignup = async (req, res) => {
     try {
         const { name, email, password, role, designation, department, jobRole } = req.body;
@@ -52,19 +48,19 @@ export const initiateSignup = async (req, res) => {
             }
         }
 
-        // Generate cryptographically secure 6-digit OTP
         const otp = generateSecureOtp();
         const salt = await bcrypt.genSalt(10);
         const otpHash = await bcrypt.hash(otp, salt);
-        const otpExpiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+        const otpExpiresAt = new Date(Date.now() + 10 * 60 * 1000);
 
         if (existingUser) {
             existingUser.name = name;
-            existingUser.password = password; // pre-save will hash
-            existingUser.role = role || "learner";
+            existingUser.password = password; 
+            existingUser.role = role || existingUser.role || "learner";
             existingUser.designation = designation || existingUser.designation;
             existingUser.department = department || existingUser.department;
             existingUser.jobRole = jobRole || existingUser.jobRole;
+            existingUser.targetCadre = jobRole || existingUser.targetCadre || "Indian Statistical Service (ISS) Officer";
             existingUser.otpHash = otpHash;
             existingUser.otpExpiresAt = otpExpiresAt;
             existingUser.otpAttempts = 0;
@@ -79,7 +75,9 @@ export const initiateSignup = async (req, res) => {
                 designation: designation || "Statistical Officer",
                 department: department || "National Sample Survey Office (NSSO)",
                 jobRole: jobRole || "Indian Statistical Service (ISS) Officer",
+                targetCadre: jobRole || "Indian Statistical Service (ISS) Officer",
                 emailVerified: false,
+                isProfileCompleted: false,
                 otpHash,
                 otpExpiresAt,
                 otpAttempts: 0,
@@ -102,9 +100,7 @@ export const initiateSignup = async (req, res) => {
     }
 };
 
-// ==========================================
 // 2. SIGNUP — VERIFY OTP & ACTIVATE
-// ==========================================
 export const verifySignupOtp = async (req, res) => {
     const isProduction = process.env.NODE_ENV === "production";
     try {
@@ -173,6 +169,13 @@ export const verifySignupOtp = async (req, res) => {
                 designation: user.designation,
                 department: user.department,
                 jobRole: user.jobRole,
+                targetCadre: user.targetCadre || user.jobRole,
+                educationalQualification: user.educationalQualification,
+                collegeName: user.collegeName || "",
+                passOutYearRange: user.passOutYearRange || "",
+                education: user.education || [],
+                experienceYears: user.experienceYears || 0,
+                isProfileCompleted: Boolean(user.isProfileCompleted),
                 credits: user.credits,
                 overallCompetencyScore: user.overallCompetencyScore,
                 overallLevel: user.overallLevel,
@@ -310,6 +313,13 @@ export const verifyLoginOtp = async (req, res) => {
                 designation: user.designation,
                 department: user.department,
                 jobRole: user.jobRole,
+                targetCadre: user.targetCadre || user.jobRole,
+                educationalQualification: user.educationalQualification,
+                collegeName: user.collegeName || "",
+                passOutYearRange: user.passOutYearRange || "",
+                education: user.education || [],
+                experienceYears: user.experienceYears || 0,
+                isProfileCompleted: Boolean(user.isProfileCompleted),
                 image: user.image || user.picture,
                 credits: user.credits,
                 overallCompetencyScore: user.overallCompetencyScore,
@@ -376,6 +386,114 @@ export const resendOtp = async (req, res) => {
 };
 
 // ==========================================
+// 5B. FORGOT PASSWORD — INITIATE (SEND OTP)
+// ==========================================
+export const initiateForgotPassword = async (req, res) => {
+    try {
+        const { email } = req.body;
+        if (!email) {
+            return res.status(400).json({ success: false, message: "Email is required." });
+        }
+
+        const normalizedEmail = email.toLowerCase().trim();
+        const user = await User.findOne({ email: normalizedEmail });
+
+        if (!user) {
+            return res.status(404).json({ success: false, message: "No account registered with this email address." });
+        }
+
+        // Check resend cooldown (60 seconds)
+        if (user.otpLastSentAt) {
+            const timeSinceLastOtp = (Date.now() - new Date(user.otpLastSentAt).getTime()) / 1000;
+            if (timeSinceLastOtp < 60) {
+                return res.status(429).json({
+                    success: false,
+                    message: `Please wait ${Math.ceil(60 - timeSinceLastOtp)} seconds before requesting a new password reset code.`,
+                });
+            }
+        }
+
+        const otp = generateSecureOtp();
+        const salt = await bcrypt.genSalt(10);
+        user.otpHash = await bcrypt.hash(otp, salt);
+        user.otpExpiresAt = new Date(Date.now() + 10 * 60 * 1000);
+        user.otpAttempts = 0;
+        user.otpLastSentAt = new Date();
+        await user.save();
+
+        await sendPasswordResetOtp(normalizedEmail, user.name, otp);
+
+        return res.status(200).json({
+            success: true,
+            message: `Password reset security code sent to ${normalizedEmail}.`,
+            email: normalizedEmail,
+        });
+    } catch (error) {
+        console.error("[FORGOT PASSWORD INITIATE ERROR]", error);
+        return res.status(500).json({ success: false, message: error.message || "Failed to initiate password reset." });
+    }
+};
+
+// ==========================================
+// 5C. FORGOT PASSWORD — VERIFY OTP & RESET
+// ==========================================
+export const verifyForgotPasswordOtp = async (req, res) => {
+    try {
+        const { email, otp, newPassword } = req.body;
+
+        if (!email || !otp || !newPassword) {
+            return res.status(400).json({ success: false, message: "Email, OTP, and new password are required." });
+        }
+
+        if (newPassword.length < 6) {
+            return res.status(400).json({ success: false, message: "Password must be at least 6 characters long." });
+        }
+
+        const normalizedEmail = email.toLowerCase().trim();
+        const user = await User.findOne({ email: normalizedEmail });
+
+        if (!user) {
+            return res.status(404).json({ success: false, message: "User not found." });
+        }
+
+        // Check OTP expiration
+        if (!user.otpExpiresAt || new Date() > new Date(user.otpExpiresAt)) {
+            return res.status(400).json({ success: false, message: "Password reset code has expired. Please request a new code." });
+        }
+
+        // Check attempt limit
+        if (user.otpAttempts >= 5) {
+            return res.status(429).json({ success: false, message: "Maximum attempts exceeded. Please request a new code." });
+        }
+
+        const isMatch = await user.matchOtp(otp.trim());
+        if (!isMatch) {
+            user.otpAttempts += 1;
+            await user.save();
+            return res.status(400).json({
+                success: false,
+                message: `Invalid reset code. ${5 - user.otpAttempts} attempts remaining.`,
+            });
+        }
+
+        // Set new password (pre-save hook hashes it) and clear OTP
+        user.password = newPassword;
+        user.otpHash = null;
+        user.otpExpiresAt = null;
+        user.otpAttempts = 0;
+        await user.save();
+
+        return res.status(200).json({
+            success: true,
+            message: "Password reset successfully! You can now sign in with your new password.",
+        });
+    } catch (error) {
+        console.error("[FORGOT PASSWORD VERIFY ERROR]", error);
+        return res.status(500).json({ success: false, message: error.message || "Failed to reset password." });
+    }
+};
+
+// ==========================================
 // 6. GOOGLE AUTH (ENHANCED)
 // ==========================================
 export const googleAuth = async (req, res) => {
@@ -417,6 +535,8 @@ export const googleAuth = async (req, res) => {
                 designation: "Statistical Officer",
                 department: "National Sample Survey Office (NSSO)",
                 jobRole: "Indian Statistical Service (ISS) Officer",
+                targetCadre: "Indian Statistical Service (ISS) Officer",
+                isProfileCompleted: false,
                 competencies: generateDefaultCompetencies("Indian Statistical Service (ISS) Officer"),
             });
         } else {
@@ -450,6 +570,13 @@ export const googleAuth = async (req, res) => {
                 designation: user.designation,
                 department: user.department,
                 jobRole: user.jobRole,
+                targetCadre: user.targetCadre || user.jobRole,
+                educationalQualification: user.educationalQualification,
+                collegeName: user.collegeName || "",
+                passOutYearRange: user.passOutYearRange || "",
+                education: user.education || [],
+                experienceYears: user.experienceYears || 0,
+                isProfileCompleted: Boolean(user.isProfileCompleted),
                 image: user.image || user.picture,
                 credits: user.credits,
                 overallCompetencyScore: user.overallCompetencyScore,
@@ -478,5 +605,103 @@ export const logout = async (req, res) => {
         });
     } catch (error) {
         return res.status(500).json({ message: `${error}` });
+    }
+};
+
+// ==========================================
+// 7. COMPLETE USER ONBOARDING PROFILE
+// ==========================================
+export const completeProfile = async (req, res) => {
+    try {
+        const userId = req.userId || req.user?._id || req.body.userId;
+        if (!userId) {
+            return res.status(401).json({ success: false, message: "Authentication required to configure profile." });
+        }
+
+        const {
+            educationalQualification,
+            collegeName,
+            passOutYearRange,
+            education,
+            targetCadre,
+            jobRole,
+            role,
+            experienceYears,
+        } = req.body;
+
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({ success: false, message: "User not found." });
+        }
+
+        // Support both structured multiple education array and legacy fields
+        if (Array.isArray(education) && education.length > 0) {
+            const validEducation = education.map((item) => ({
+                degree: (item.degree || item.educationalQualification || "").trim(),
+                institution: (item.institution || item.collegeName || "").trim(),
+                yearRange: (item.yearRange || item.passOutYearRange || "").trim(),
+                fieldOfStudy: (item.fieldOfStudy || "").trim(),
+            })).filter((item) => item.degree || item.institution);
+
+            if (validEducation.length > 0) {
+                user.education = validEducation;
+                user.educationalQualification = validEducation.map((e) => e.degree).filter(Boolean).join(", ");
+                user.collegeName = validEducation[0].institution || "";
+                user.passOutYearRange = validEducation[0].yearRange || "";
+            }
+        } else {
+            if (educationalQualification) user.educationalQualification = educationalQualification;
+            if (collegeName) user.collegeName = collegeName;
+            if (passOutYearRange) user.passOutYearRange = passOutYearRange;
+        }
+
+        const selectedCadre = targetCadre || jobRole;
+        if (selectedCadre) {
+            user.jobRole = selectedCadre;
+            user.targetCadre = selectedCadre;
+        }
+
+        if (role) {
+            user.role = role;
+        }
+
+        const expNum = Number(experienceYears) || 0;
+        user.experienceYears = expNum;
+        if (role === "trainer" || expNum > 0) {
+            user.workExperience = expNum;
+        }
+
+        user.isProfileCompleted = true;
+        await user.save();
+
+        return res.status(200).json({
+            success: true,
+            message: "User profile configured successfully! Welcome to SankhyaIQ AI.",
+            user: {
+                _id: user._id,
+                name: user.name,
+                email: user.email,
+                role: user.role,
+                designation: user.designation,
+                department: user.department,
+                jobRole: user.jobRole,
+                targetCadre: user.targetCadre || user.jobRole,
+                educationalQualification: user.educationalQualification,
+                collegeName: user.collegeName,
+                passOutYearRange: user.passOutYearRange,
+                education: user.education || [],
+                experienceYears: user.experienceYears,
+                workExperience: user.workExperience,
+                isProfileCompleted: user.isProfileCompleted,
+                image: user.image || user.picture,
+                picture: user.picture || user.image,
+                credits: user.credits,
+                overallCompetencyScore: user.overallCompetencyScore,
+                overallLevel: user.overallLevel,
+            },
+        });
+    } catch (error) {
+        console.error("[COMPLETE PROFILE ERROR]", error);
+        return res.status(500).json({ success: false, message: error.message || "Failed to configure user profile." });
     }
 };

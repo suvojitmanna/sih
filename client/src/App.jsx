@@ -205,7 +205,6 @@ const App = () => {
             </ProtectedRoute>
           }
         />
-        <Route path="/pricing" element={<Navigate to="/dashboard" replace />} />
         <Route
           path="/report/:id"
           element={
