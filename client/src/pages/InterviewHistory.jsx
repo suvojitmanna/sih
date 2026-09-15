@@ -410,6 +410,20 @@ const InterviewHistory = () => {
     };
 
     fetchAllHistories();
+
+    const handleRealtimeSync = () => {
+      fetchAllHistories();
+    };
+
+    window.addEventListener("assessmentCompleted", handleRealtimeSync);
+    window.addEventListener("storage", handleRealtimeSync);
+    window.addEventListener("focus", handleRealtimeSync);
+
+    return () => {
+      window.removeEventListener("assessmentCompleted", handleRealtimeSync);
+      window.removeEventListener("storage", handleRealtimeSync);
+      window.removeEventListener("focus", handleRealtimeSync);
+    };
   }, []);
 
   const handleDeleteInterview = async (id, e) => {
@@ -469,7 +483,7 @@ const InterviewHistory = () => {
         title: c.name || "Statistical Methodology Consultation",
         subtitle: `${msgCount} exchanges • SankhyaCopilot AI`,
         topic: "MoSPI Methodology & Circulars",
-        date: new Date(c.updatedAt || c.createdAt || Date.now()),
+        date: new Date(c.updatedAt || c.createdAt || 1735689600000),
         score: null,
         previewText: lastMsg,
         statusGroup: isComplete ? "completed" : "pending",
@@ -497,7 +511,7 @@ const InterviewHistory = () => {
         title: i.role || "Cadre Viva Voce",
         subtitle: `${i.experience || "Intermediate"} • ${(i.mode || "Technical").toUpperCase()} Mode`,
         topic: i.role,
-        date: new Date(i.createdAt || Date.now()),
+        date: new Date(i.createdAt || 1735689600000),
         score: isDone ? sc : null,
         scoreMax: 10,
         scoreLabel: isDone ? `${sc} / 10` : "Pending",
@@ -535,7 +549,7 @@ const InterviewHistory = () => {
         title: a.assignmentTitle || "Operational Case Study Practicum",
         subtitle: `${a.targetCompetency || "Official Statistics"} • Grade: ${grade}`,
         topic: a.targetCompetency || "Practicum",
-        date: new Date(a.createdAt || Date.now()),
+        date: new Date(a.createdAt || 1735689600000),
         score: overallMarks,
         scoreMax: 100,
         scoreLabel: `${overallMarks} / 100`,
@@ -569,7 +583,7 @@ const InterviewHistory = () => {
         title: q.quizTitle || `${q.topic || "Statistical"} Assessment`,
         subtitle: `${q.topic || "Core Topic"} • Grade: ${grade} (${sc}%) • ${correct}/${totalQ} Correct`,
         topic: q.topic || "Diagnostic",
-        date: new Date(q.createdAt || Date.now()),
+        date: new Date(q.createdAt || 1735689600000),
         score: sc,
         scoreMax: 100,
         scoreLabel: `${sc}%`,
@@ -601,7 +615,7 @@ const InterviewHistory = () => {
         title: `${userData.jobRole || "Cadre"} Competency Radar & Skill Gap Analysis`,
         subtitle: `${userData.competencies.length} Assessed Competencies • Grade: ${grade}`,
         topic: "Cadre Matrix Taxonomy",
-        date: new Date(userData.updatedAt || Date.now()),
+        date: new Date(userData.updatedAt || 1735689600000),
         score: compScore,
         scoreMax: 100,
         scoreLabel: `${compScore}%`,

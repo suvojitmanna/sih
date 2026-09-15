@@ -63,7 +63,7 @@ export const generateAiQuiz = async (req, res) => {
 // 2. List Available Quizzes
 export const getQuizzes = async (req, res) => {
     try {
-        const { domain, difficulty, topic } = req.query;
+        const { domain, difficulty, topic, includeMastered } = req.query;
         const userId = req.userId || req.user?._id;
         const query = { isPublished: true };
 
@@ -73,6 +73,31 @@ export const getQuizzes = async (req, res) => {
                 { isDiagnostic: { $exists: false } },
                 { isDiagnostic: true, assignedTo: userId },
             ];
+
+            // If user obtained >= 75% marks on any quiz, do not show in available quizzes
+            if (includeMastered !== "true") {
+                const highScoringAttempts = await QuizAttempt.find({
+                    userId,
+                    $or: [
+                        { score: { $gte: 75 } },
+                        { accuracy: { $gte: 75 } },
+                    ],
+                }).select("quizId quizTitle score accuracy");
+
+                const masteredIds = highScoringAttempts
+                    .map((a) => a.quizId)
+                    .filter(Boolean);
+                const masteredTitles = highScoringAttempts
+                    .map((a) => a.quizTitle?.trim())
+                    .filter(Boolean);
+
+                if (masteredIds.length > 0) {
+                    query._id = { $nin: masteredIds };
+                }
+                if (masteredTitles.length > 0) {
+                    query.title = { $nin: masteredTitles };
+                }
+            }
         } else {
             query.isDiagnostic = { $ne: true };
         }
@@ -81,7 +106,7 @@ export const getQuizzes = async (req, res) => {
         if (difficulty) query.difficulty = difficulty;
         if (topic) query.topic = { $regex: topic, $options: "i" };
 
-        const quizzes = await Quiz.find(query).sort({ isDiagnostic: -1, createdAt: -1 }).limit(35);
+        const quizzes = await Quiz.find(query).sort({ isDiagnostic: -1, createdAt: -1 }).limit(50);
 
         return res.status(200).json({
             success: true,
@@ -206,7 +231,7 @@ export const submitQuizAttempt = async (req, res) => {
 export const getMyQuizAttempts = async (req, res) => {
     try {
         const userId = req.userId || req.user?._id;
-        const attempts = await QuizAttempt.find({ userId }).sort({ createdAt: -1 }).limit(20);
+        const attempts = await QuizAttempt.find({ userId }).sort({ createdAt: -1 }).limit(100);
 
         return res.status(200).json({
             success: true,

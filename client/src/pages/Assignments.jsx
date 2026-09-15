@@ -85,16 +85,6 @@ const Assignments = () => {
   const [mySubmissions, setMySubmissions] = useState([]);
   const prevAssignmentsCountRef = useRef(null);
 
-  useEffect(() => {
-    fetchAssignments(false);
-    fetchMySubmissions();
-    const interval = setInterval(() => {
-      fetchAssignments(true);
-      fetchMySubmissions();
-    }, 3500);
-    return () => clearInterval(interval);
-  }, [selectedDomain]);
-
   const fetchAssignments = async (isBackground = false) => {
     try {
       if (!isBackground) setLoading(true);
@@ -139,6 +129,16 @@ const Assignments = () => {
       console.error("Error fetching submissions:", err);
     }
   };
+
+  useEffect(() => {
+    fetchAssignments(false);
+    fetchMySubmissions();
+    const interval = setInterval(() => {
+      fetchAssignments(true);
+      fetchMySubmissions();
+    }, 3500);
+    return () => clearInterval(interval);
+  }, [selectedDomain]);
 
   const completedCount = mySubmissions.length;
   const avgScore = completedCount > 0

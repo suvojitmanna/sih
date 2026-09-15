@@ -14,6 +14,7 @@ import {
   BsRobot,
   BsBookHalf,
   BsStars,
+  BsBarChartSteps,
 } from "react-icons/bs";
 import {
   FaUserGraduate,
@@ -25,6 +26,7 @@ import {
   FaTasks,
   FaBookOpen,
   FaMicrophone,
+  FaUserTie,
 } from "react-icons/fa";
 import {
   HiOutlineLogout,
@@ -126,6 +128,8 @@ const Navbar = () => {
           ? [{ label: "Dashboard", path: "/dashboard", icon: BsBarChartLine, desc: "Performance & Gap Analytics" }]
           : []),
         { label: "Competency", path: "/competencies", icon: FaBrain, desc: "Statistical Competency Framework" },
+        { label: "Skill Gaps", path: "/skill-gaps", icon: BsBarChartSteps, badge: "Cadre AI", desc: "Cadre Benchmark & Gap Analysis" },
+        { label: "Job Readiness", path: "/job-readiness", icon: FaUserTie, badge: "Report", desc: "Target Cadre Readiness & Deployment Audit" },
         { label: "History", path: "/history", icon: FaHistory, desc: "Viva Records & Evaluation Logs" },
       ],
     },
@@ -183,6 +187,8 @@ const Navbar = () => {
     if (path === "/") return "National Statistical Portal • Overview";
     if (path === "/dashboard") return "Officer Performance Dashboard";
     if (path === "/competencies") return "Official Statistical Competency Assessment";
+    if (path === "/skill-gaps" || path === "/skill-gap-analysis") return "Official Cadre Skill Gap Analysis & Target Audit";
+    if (path === "/job-readiness") return "Target Job Readiness & Cadre Deployment Audit";
     if (path === "/learning-path") return "AI Adaptive Learning Pathway";
     if (path === "/quizzes") return "Cadre Statistical Assessments & Quizzes";
     if (path === "/assignments") return "Survey & Data Practicum Assignments";
@@ -284,11 +290,11 @@ const Navbar = () => {
                   className="flex items-center gap-2 p-1 pl-2.5 rounded-2xl bg-slate-100/90 dark:bg-slate-800/90 hover:bg-slate-200/80 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-blue-400/50 shadow-xs select-none cursor-pointer transition-all"
                   title="Active Officer Session • Click to view Profile & Settings"
                 >
-                  <div className="flex flex-col text-right hidden sm:block">
-                    <span className="text-xs font-black text-slate-900 dark:text-slate-100 leading-tight truncate max-w-[120px]">
+                  <div className="flex flex-col text-right hidden sm:block max-w-[130px] overflow-hidden">
+                    <span className="text-xs font-black text-slate-900 dark:text-slate-100 leading-tight truncate block max-w-[130px]">
                       {userData.name}
                     </span>
-                    <span className="text-[9px] text-blue-600 dark:text-blue-400 font-bold truncate max-w-[120px]">
+                    <span className="text-[9px] text-blue-600 dark:text-blue-400 font-bold truncate block max-w-[130px]">
                       {userData.jobRole || "Officer"}
                     </span>
                   </div>
@@ -370,7 +376,12 @@ const Navbar = () => {
             {/* Desktop Navigation: 3 Category Dropdowns (Core Portal, Capacity Building, Intelligence Board) */}
             <div className="hidden md:flex items-center gap-1.5 bg-slate-100/80 dark:bg-slate-900/80 p-1.5 rounded-2xl border border-slate-200/60 dark:border-slate-800 text-xs font-bold text-slate-600 dark:text-slate-300 shadow-inner">
               {navSections.map((section) => {
-                const isSectionActive = section.links.some((l) => location.pathname === l.path);
+                const isSectionActive = section.links.some((l) => {
+                  if (l.path === "/skill-gaps") {
+                    return location.pathname === "/skill-gaps" || location.pathname === "/skill-gap-analysis";
+                  }
+                  return location.pathname === l.path;
+                });
                 const isOpen = activeDropdown === section.title;
 
                 return (
@@ -423,7 +434,9 @@ const Navbar = () => {
                             <div className="space-y-0.5">
                               {section.links.map((link) => {
                                 const Icon = link.icon;
-                                const isLinkActive = location.pathname === link.path;
+                                const isLinkActive = link.path === "/skill-gaps"
+                                  ? (location.pathname === "/skill-gaps" || location.pathname === "/skill-gap-analysis")
+                                  : location.pathname === link.path;
 
                                 return (
                                   <button

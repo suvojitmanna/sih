@@ -37,6 +37,30 @@ const Quizzes = () => {
   const [myAttempts, setMyAttempts] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  // Filter out any quiz where user has obtained >= 75% marks in any attempt
+  const isQuizMastered = (quiz) => {
+    if (!quiz) return false;
+    const targetId = String(quiz._id || "");
+    const targetTitle = (quiz.title || "").trim().toLowerCase();
+
+    return (myAttempts || []).some((att) => {
+      const attQuizId = String(
+        (att.quizId && typeof att.quizId === "object" ? att.quizId._id : att.quizId) || ""
+      );
+      const attTitle = (att.quizTitle || "").trim().toLowerCase();
+
+      const isIdMatch = Boolean(targetId && attQuizId && targetId === attQuizId);
+      const isTitleMatch = Boolean(targetTitle && attTitle && targetTitle === attTitle);
+
+      const score = Number(att.score ?? att.accuracy ?? 0);
+      return (isIdMatch || isTitleMatch) && score >= 75;
+    });
+  };
+
+  // Only show quizzes where the user has NOT obtained >= 75% marks
+  const availableQuizzes = (quizzes || []).filter((quiz) => !isQuizMastered(quiz));
+  const masteredQuizzesCount = (quizzes || []).filter((quiz) => isQuizMastered(quiz)).length;
+
   // Modal State for AI Generator
   const [showGenModal, setShowGenModal] = useState(false);
   const [topic, setTopic] = useState(SAMPLE_TOPICS[0]);
@@ -65,6 +89,20 @@ const Quizzes = () => {
 
   useEffect(() => {
     fetchQuizzesAndAttempts();
+
+    const handleRealtimeSync = () => {
+      fetchQuizzesAndAttempts();
+    };
+
+    window.addEventListener("assessmentCompleted", handleRealtimeSync);
+    window.addEventListener("storage", handleRealtimeSync);
+    window.addEventListener("focus", handleRealtimeSync);
+
+    return () => {
+      window.removeEventListener("assessmentCompleted", handleRealtimeSync);
+      window.removeEventListener("storage", handleRealtimeSync);
+      window.removeEventListener("focus", handleRealtimeSync);
+    };
   }, []);
 
   const handleGenerateQuiz = async (e) => {
@@ -125,6 +163,14 @@ const Quizzes = () => {
               Benchmark your conceptual mastery, receive instant topic-level
               diagnostics, and update your competency profile.
             </p>
+            {masteredQuizzesCount > 0 && (
+              <div className="inline-flex items-center gap-1.5 mt-2.5 px-3 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 text-[11px] font-bold text-emerald-700 dark:text-emerald-400">
+                <FaCheckCircle size={11} className="text-emerald-500 shrink-0" />
+                <span>
+                  {masteredQuizzesCount} assessment{masteredQuizzesCount > 1 ? "s" : ""} mastered (≥ 75% marks obtained) • Archived from available list
+                </span>
+              </div>
+            )}
           </div>
 
           <div className="flex items-center gap-3">
@@ -136,7 +182,7 @@ const Quizzes = () => {
                     : "text-slate-500 hover:text-slate-900 dark:hover:text-white"
                   }`}
               >
-                Available Quizzes
+                Available Quizzes ({availableQuizzes.length})
               </button>
               <button
                 onClick={() => setActiveTab("history")}
@@ -145,7 +191,7 @@ const Quizzes = () => {
                     : "text-slate-500 hover:text-slate-900 dark:hover:text-white"
                   }`}
               >
-                My Past Attempts
+                My Past Attempts ({myAttempts.length})
               </button>
             </div>
 
@@ -159,14 +205,47 @@ const Quizzes = () => {
           </div>
         </div>
 
-        {/* TAB 1: EXPLORE QUIZZES */}
+        {/* TAB 1: EXPLORE QUIZZES (EXCLUDES QUIZZES WITH >= 75% MARKS) */}
         {activeTab === "explore" && (
           <div className="space-y-6">
             {loading ? (
               <CardGridSkeleton count={6} />
+            ) : availableQuizzes.length === 0 ? (
+              <div className="text-center py-16 px-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-8 shadow-xs space-y-4">
+                <div className="w-14 h-14 rounded-2xl bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mx-auto shadow-xs">
+                  <FaCheckCircle size={26} />
+                </div>
+                <div>
+                  <h3 className="text-base sm:text-lg font-black text-slate-900 dark:text-white">
+                    {masteredQuizzesCount > 0
+                      ? "All Assessments Mastered (75%+ Marks Obtained) 🎓"
+                      : "No Assessments Available"}
+                  </h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 max-w-md mx-auto leading-relaxed">
+                    {masteredQuizzesCount > 0
+                      ? "You have achieved 75% or higher marks on all completed quizzes! As per MoSPI competency standards, mastered quizzes are omitted from this page. You can review your scores and explanations in My Past Attempts or generate a fresh AI quiz below."
+                      : "No assessments currently assigned. Click the button below to generate an on-demand AI assessment tailored to your statistical cadre track."}
+                  </p>
+                </div>
+                <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
+                  <button
+                    onClick={() => setShowGenModal(true)}
+                    className="px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition shadow-xs flex items-center gap-1.5 cursor-pointer"
+                  >
+                    <FaHandSparkles size={11} className="text-amber-300" />
+                    <span>Generate New AI Quiz</span>
+                  </button>
+                  <button
+                    onClick={() => setActiveTab("history")}
+                    className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl text-xs font-bold transition cursor-pointer"
+                  >
+                    <span>View My Past Attempts ({myAttempts.length})</span>
+                  </button>
+                </div>
+              </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-                {(quizzes || []).map((quiz) => {
+                {availableQuizzes.map((quiz) => {
                   const isDiag = quiz.isDiagnostic === true;
                   return (
                     <div
@@ -298,17 +377,24 @@ const Quizzes = () => {
                             {att.topic}
                           </td>
                           <td className="p-3.5">
-                            <span
-                              className={`px-2.5 py-1 rounded-lg text-[11px] font-black ${
-                                sc >= 80
-                                  ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 border border-emerald-300/40"
-                                  : sc >= 60
-                                  ? "bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300 border border-blue-300/40"
-                                  : "bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300 border border-amber-300/40"
-                              }`}
-                            >
-                              Grade {grade}
-                            </span>
+                            <div className="flex items-center gap-1.5">
+                              <span
+                                className={`px-2.5 py-1 rounded-lg text-[11px] font-black ${
+                                  sc >= 75
+                                    ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 border border-emerald-300/40"
+                                    : sc >= 60
+                                    ? "bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300 border border-blue-300/40"
+                                    : "bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300 border border-amber-300/40"
+                                }`}
+                              >
+                                Grade {grade}
+                              </span>
+                              {sc >= 75 && (
+                                <span className="px-1.5 py-0.5 rounded-md text-[9px] font-black bg-emerald-600 text-white shadow-2xs">
+                                  75%+ Mastered
+                                </span>
+                              )}
+                            </div>
                           </td>
                           <td className="p-3.5">
                             <span className="font-extrabold text-blue-600 dark:text-blue-400">

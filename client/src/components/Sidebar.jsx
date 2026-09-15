@@ -18,6 +18,7 @@ import {
   BsLayoutSidebar,
   BsLayoutSidebarInsetReverse,
   BsStars,
+  BsBarChartSteps,
 } from "react-icons/bs";
 import {
   FaHome,
@@ -30,6 +31,7 @@ import {
   FaBookOpen,
   FaUsers,
   FaMicrophone,
+  FaUserTie,
 } from "react-icons/fa";
 import {
   HiSparkles,
@@ -118,6 +120,8 @@ const Sidebar = ({ onOpenAuth }) => {
           ? [{ label: "Dashboard", path: "/dashboard", icon: BsBarChartLine }]
           : []),
         { label: "Competency", path: "/competencies", icon: FaBrain },
+        { label: "Skill Gaps", path: "/skill-gaps", icon: BsBarChartSteps, badge: "Cadre AI" },
+        { label: "Job Readiness", path: "/job-readiness", icon: FaUserTie, badge: "Report" },
         { label: "History", path: "/history", icon: FaHistory },
       ],
     },
@@ -160,6 +164,20 @@ const Sidebar = ({ onOpenAuth }) => {
       : []),
   ];
 
+  const isLinkActive = (path) => {
+    if (path === "/") return location.pathname === "/";
+    if (path === "/skill-gaps") {
+      return location.pathname === "/skill-gaps" || location.pathname === "/skill-gap-analysis";
+    }
+    if (path === "/quizzes") {
+      return location.pathname === "/quizzes" || location.pathname.startsWith("/quiz/");
+    }
+    if (path === "/assignments") {
+      return location.pathname === "/assignments" || location.pathname.startsWith("/assignments/");
+    }
+    return location.pathname === path;
+  };
+
   return (
     <>
       {/* Mobile Backdrop Overlay */}
@@ -181,7 +199,7 @@ const Sidebar = ({ onOpenAuth }) => {
           } ${isCollapsed ? "md:w-[76px]" : "md:w-[260px]"}`}
       >
         {/* Tricolor Government Ribbon Accent */}
-        <div className="h-1 w-full bg-gradient-to-r from-[#FF9933] via-white to-[#138808] shrink-0" />
+        <div className="h-1 w-full bg-gradient-to-r from-[#FF9933] via-white to-[#138808]" />
 
         {/* Sidebar Header: Collapsed Rail vs Expanded View */}
         {isCollapsed && !mobileOpen ? (
@@ -277,7 +295,7 @@ const Sidebar = ({ onOpenAuth }) => {
 
               {section.links.map((link) => {
                 const Icon = link.icon;
-                const isActive = location.pathname === link.path;
+                const isActive = isLinkActive(link.path);
 
                 return (
                   <div
@@ -320,7 +338,9 @@ const Sidebar = ({ onOpenAuth }) => {
                           {link.badge && (
                             <span
                               className={`text-[9px] font-black px-1.5 py-0.5 rounded-md uppercase tracking-wider ${isActive
-                                ? "bg-white/20 text-white"
+                                ? link.isAi
+                                  ? "bg-white/20 text-white"
+                                  : "bg-blue-200/80 dark:bg-blue-900/90 text-blue-800 dark:text-blue-200"
                                 : "bg-blue-100 dark:bg-blue-900/60 text-blue-700 dark:text-blue-300"
                                 }`}
                             >

@@ -300,18 +300,18 @@ const LiveAdminChatWidget = () => {
     return () => clearInterval(interval);
   }, [lastMessageCount, isOpen, isAllowed, userData]);
 
+  const scrollToBottom = () => {
+    if (messagesContainerRef.current) {
+      messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight;
+    }
+  };
+
   useEffect(() => {
     if (isOpen) {
       setUnreadCount(0);
       scrollToBottom();
     }
   }, [isOpen, messages]);
-
-  const scrollToBottom = () => {
-    if (messagesContainerRef.current) {
-      messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight;
-    }
-  };
 
   const handleSendMessage = async (e) => {
     e.preventDefault();

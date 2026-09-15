@@ -440,11 +440,20 @@ const CompetencyAssessment = () => {
 
               <div className="flex flex-wrap items-center gap-2">
                 <button
+                  onClick={() => navigate("/skill-gaps")}
+                  className="px-4 py-2 rounded-xl bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-xs shadow-md transition-all flex items-center gap-1.5 cursor-pointer"
+                >
+                  <BsBarChartSteps size={12} />
+                  <span>Deep Skill Gap Analysis</span>
+                  <FaArrowRight size={10} />
+                </button>
+
+                <button
                   onClick={() => navigate("/dashboard")}
-                  className="px-4 py-2 rounded-xl bg-gradient-to-r from-blue-700 to-indigo-700 hover:from-blue-800 hover:to-indigo-800 text-white font-bold text-xs shadow-md transition-all flex items-center gap-1.5 cursor-pointer"
+                  className="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-bold text-xs shadow-xs transition-all flex items-center gap-1.5 cursor-pointer"
                 >
                   <FaTachometerAlt size={12} />
-                  <span>View Live Dashboard</span>
+                  <span>Dashboard</span>
                   <FaArrowRight size={10} />
                 </button>
 

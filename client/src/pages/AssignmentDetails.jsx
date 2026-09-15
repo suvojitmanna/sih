@@ -56,83 +56,6 @@ const AssignmentDetails = () => {
 
   const draftKey = `sankhyaiq_case_study_draft_${id}`;
 
-  useEffect(() => {
-    fetchAssignmentDetails();
-  }, [id]);
-
-  useEffect(() => {
-    if (!assignment?.dueDate) {
-      setCountdown({ text: "No Expiration", isExpired: false });
-      return;
-    }
-
-    const updateTimer = () => {
-      const due = new Date(assignment.dueDate);
-      const now = new Date();
-      const diffMs = due.getTime() - now.getTime();
-
-      if (diffMs <= 0) {
-        setCountdown({
-          text: "Deadline Expired",
-          isExpired: true,
-          hours: 0,
-          minutes: 0,
-          seconds: 0,
-        });
-        return;
-      }
-
-      const totalSecs = Math.floor(diffMs / 1000);
-      const days = Math.floor(totalSecs / 86400);
-      const hours = Math.floor((totalSecs % 86400) / 3600);
-      const minutes = Math.floor((totalSecs % 3600) / 60);
-      const seconds = totalSecs % 60;
-
-      let formattedText = "";
-      if (days > 0) {
-        formattedText = `${days}d ${hours}h ${minutes}m ${seconds}s`;
-      } else {
-        formattedText = `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
-      }
-
-      setCountdown({
-        text: formattedText,
-        isExpired: false,
-        hours: days * 24 + hours,
-        minutes,
-        seconds,
-      });
-    };
-
-    updateTimer();
-    const timerInterval = setInterval(updateTimer, 1000);
-    return () => clearInterval(timerInterval);
-  }, [assignment?.dueDate]);
-
-  useEffect(() => {
-    if (!id || loading) return;
-    if (submissionText && submissionText.trim()) {
-      try {
-        localStorage.setItem(draftKey, submissionText);
-      } catch (err) {
-        console.error("Failed to save draft:", err);
-      }
-    }
-  }, [submissionText, id, loading, draftKey]);
-
-  useEffect(() => {
-    const handleBeforeUnload = () => {
-      if (submissionText && submissionText.trim()) {
-        try {
-          localStorage.setItem(draftKey, submissionText);
-        } catch (err) {}
-      }
-    };
-
-    window.addEventListener("beforeunload", handleBeforeUnload);
-    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
-  }, [submissionText, draftKey]);
-
   const fetchAssignmentDetails = async () => {
     try {
       setLoading(true);
@@ -166,6 +89,83 @@ const AssignmentDetails = () => {
     }
   };
 
+  useEffect(() => {
+    fetchAssignmentDetails();
+  }, [id]);
+
+  useEffect(() => {
+    if (!assignment?.dueDate) {
+      setCountdown({ text: "No Expiration", isExpired: false });
+      return;
+    }
+
+    const updateTimer = () => {
+      const due = new Date(assignment.dueDate);
+      const now = new Date();
+      const diffMs = due.getTime() - now.getTime();
+
+      if (diffMs <= 0) {
+        setCountdown({
+          text: "Deadline Expired",
+          isExpired: true,
+          hours: 0,
+          minutes: 0,
+          seconds: 0,
+        });
+        return;
+      }
+
+      const totalSecs = Math.floor(diffMs / 1000);
+      const days = Math.floor(totalSecs / 86400);
+      const hours = Math.floor((totalSecs % 86400) / 3600);
+      const minutes = Math.floor((totalSecs % 3600) / 60);
+      const seconds = totalSecs % 60;
+
+      const formattedText =
+        days > 0
+          ? `${days}d ${hours}h ${minutes}m ${seconds}s`
+          : `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+
+      setCountdown({
+        text: formattedText,
+        isExpired: false,
+        hours: days * 24 + hours,
+        minutes,
+        seconds,
+      });
+    };
+
+    updateTimer();
+    const timerInterval = setInterval(updateTimer, 1000);
+    return () => clearInterval(timerInterval);
+  }, [assignment?.dueDate]);
+
+  useEffect(() => {
+    if (!id || loading) return;
+    if (submissionText && submissionText.trim()) {
+      try {
+        localStorage.setItem(draftKey, submissionText);
+      } catch (err) {
+        console.error("Failed to save draft:", err);
+      }
+    }
+  }, [submissionText, id, loading, draftKey]);
+
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      if (submissionText && submissionText.trim()) {
+        try {
+          localStorage.setItem(draftKey, submissionText);
+        } catch (_err) {
+          /* ignore */
+        }
+      }
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [submissionText, draftKey]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (countdown.isExpired) {
@@ -198,7 +198,9 @@ const AssignmentDetails = () => {
         // Clear local draft upon successful submission
         try {
           localStorage.removeItem(draftKey);
-        } catch (err) {}
+        } catch (_err) {
+          /* ignore */
+        }
       }
     } catch (err) {
       console.error("Error submitting assignment:", err);

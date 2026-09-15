@@ -61,6 +61,7 @@ import {
   BsCheckCircleFill,
   BsClockHistory,
   BsExclamationCircleFill,
+  BsBarChartSteps,
 } from "react-icons/bs";
 import { generateCompetencyPDF } from "../utils/pdfGenerator";
 import PageTransition from "../components/PageTransition";
@@ -392,7 +393,7 @@ const Dashboard = () => {
     const baseHours = profile?.learningHours !== undefined && profile?.learningHours !== null ? profile.learningHours : 0;
     const computedHours = baseHours + completedQuizzes * 0.5 + completedInterviews * 0.75 + completedAssignments * 1.5;
 
-    let overallLevel = "Novice";
+    let overallLevel;
     if (!hasAnyAttempts) {
       overallLevel = "Novice (Baseline Pending)";
     } else if (overallScore >= 80) overallLevel = "Expert (ISS)";
@@ -487,7 +488,7 @@ const Dashboard = () => {
           : `Practice diagnostic assessment and drills in ${comp.competencyName}.`,
       };
     });
-  }, [profile?.skillGaps, synthesizedCompetencies]);
+  }, [profile, synthesizedCompetencies]);
 
   const filteredSkillGaps = useMemo(() => {
     if (skillGapFilter === "all") return allPossibleSkillGaps;
@@ -576,7 +577,7 @@ const Dashboard = () => {
       }
       sc = Math.min(100, Math.max(0, Number(sc) || 0));
       events.push({
-        date: q.createdAt ? new Date(q.createdAt) : new Date(Date.now() - ((quizAttempts?.length || 1) - idx) * 86400000 * 2),
+        date: q.createdAt ? new Date(q.createdAt) : new Date(1735689600000 + idx * 86400000 * 2),
         score: sc,
         type: "Quiz Test",
         title: q.quizId?.title || q.quizTitle || q.title || `Quiz Evaluation #${idx + 1}`,
@@ -589,7 +590,7 @@ const Dashboard = () => {
       const sc = raw !== null ? (raw <= 10 ? raw * 10 : raw) : 75;
       const normalizedScore = Math.min(100, Math.max(0, Math.round(sc)));
       events.push({
-        date: i.createdAt ? new Date(i.createdAt) : new Date(Date.now() - ((interviews?.length || 1) - idx) * 86400000 * 3),
+        date: i.createdAt ? new Date(i.createdAt) : new Date(1735689600000 + idx * 86400000 * 3),
         score: normalizedScore,
         type: "Viva Voce",
         title: i.role || i.jobRole || i.title || `Cadre Board Viva #${idx + 1}`,
@@ -605,7 +606,7 @@ const Dashboard = () => {
         }
         const normalizedScore = Math.min(100, Math.max(0, Math.round(sc)));
         events.push({
-          date: a.createdAt ? new Date(a.createdAt) : new Date(Date.now() - ((assignmentSubmissions?.length || 1) - idx) * 86400000 * 2.5),
+          date: a.createdAt ? new Date(a.createdAt) : new Date(1735689600000 + idx * 86400000 * 2.5),
           score: normalizedScore,
           type: "Practicum",
           title: a.assignmentId?.title || a.assignmentTitle || a.title || `Practicum Case #${idx + 1}`,
@@ -1123,13 +1124,24 @@ const Dashboard = () => {
                     ))}
                   </div>
 
-                  <button
-                    onClick={() => navigate("/competencies")}
-                    className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs transition-colors flex items-center gap-1.5 cursor-pointer shadow-xs"
-                  >
-                    <span>Assess Skills</span>
-                    <FaArrowRight size={10} />
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => navigate("/skill-gaps")}
+                      className="px-4 py-2 rounded-xl bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-xs shadow-md transition-all flex items-center gap-1.5 cursor-pointer"
+                    >
+                      <BsBarChartSteps size={12} />
+                      <span>Skill Gap Analysis</span>
+                      <FaArrowRight size={10} />
+                    </button>
+
+                    <button
+                      onClick={() => navigate("/competencies")}
+                      className="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-bold text-xs transition-colors flex items-center gap-1.5 cursor-pointer shadow-xs"
+                    >
+                      <span>Assess Skills</span>
+                      <FaArrowRight size={10} />
+                    </button>
+                  </div>
                 </div>
               </div>
 

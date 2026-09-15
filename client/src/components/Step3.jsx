@@ -56,19 +56,19 @@ const Step3 = ({ report }) => {
     { label: "Correctness", value: correctness },
   ];
 
-  let performanceText = "";
-  let shortTagline = "";
+  const performanceText =
+    finalScore >= 8
+      ? "Ready for job opportunities."
+      : finalScore >= 5
+      ? "Needs minor improvement before interviews."
+      : "Significant improvement required.";
 
-  if (finalScore >= 8) {
-    performanceText = "Ready for job opportunities.";
-    shortTagline = "Excellent clarity and structured response.";
-  } else if (finalScore >= 5) {
-    performanceText = "Needs minor improvement before interviews.";
-    shortTagline = "Good foundation, refine articulation.";
-  } else {
-    performanceText = "Significant improvement required.";
-    shortTagline = "Work on clarity and confidence.";
-  }
+  const shortTagline =
+    finalScore >= 8
+      ? "Excellent clarity and structured response."
+      : finalScore >= 5
+      ? "Good foundation, refine articulation."
+      : "Work on clarity and confidence.";
 
   const score = finalScore;
   const percentage = (score / 10) * 100;

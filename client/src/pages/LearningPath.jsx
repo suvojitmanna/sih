@@ -48,6 +48,20 @@ const LearningPath = () => {
 
   useEffect(() => {
     fetchProfileAndCourses();
+
+    const handleRealtimeSync = () => {
+      fetchProfileAndCourses();
+    };
+
+    window.addEventListener("assessmentCompleted", handleRealtimeSync);
+    window.addEventListener("storage", handleRealtimeSync);
+    window.addEventListener("focus", handleRealtimeSync);
+
+    return () => {
+      window.removeEventListener("assessmentCompleted", handleRealtimeSync);
+      window.removeEventListener("storage", handleRealtimeSync);
+      window.removeEventListener("focus", handleRealtimeSync);
+    };
   }, []);
 
   const handleUpdateStatus = async (stepIndex, status) => {

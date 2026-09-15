@@ -85,7 +85,7 @@ export const YEAR_RANGE_OPTIONS = [
 const Settings = () => {
   const dispatch = useDispatch();
   const { userData } = useSelector((state) => state.user);
-  const { navMode, setNavMode } = useNavigation();
+  const { navMode, setNavMode, isCollapsed } = useNavigation();
   const { theme, setTheme } = useTheme();
 
   // URL Tab Query Sync ("profile" | "layout" | "security")
@@ -367,6 +367,7 @@ const Settings = () => {
     setSavingProfile(true);
     try {
       const payload = {
+        userId: userData?._id,
         name: profileForm.name.trim(),
         image: profileForm.image || "",
         jobRole: profileForm.jobRole,
@@ -499,11 +500,16 @@ const Settings = () => {
     <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-300">
       {navMode === "sidebar" ? <Sidebar /> : <Navbar />}
 
-      <main
-        className={`flex-1 transition-all duration-300 ${
-          navMode === "sidebar" ? "lg:pl-64" : ""
-        } p-3 sm:p-6 lg:p-8 max-w-6xl mx-auto w-full space-y-6`}
+      <div
+        className={`flex-1 flex flex-col transition-all duration-300 ${
+          navMode === "sidebar"
+            ? isCollapsed
+              ? "md:pl-[76px]"
+              : "md:pl-[260px]"
+            : ""
+        }`}
       >
+        <main className="flex-1 w-full px-4 sm:px-6 lg:px-8 xl:px-10 2xl:px-12 py-6 sm:py-8 space-y-6">
         {/* ========================================================= */}
         {/* 1. EXECUTIVE HEADER BANNER WITH TRICOLOR RIBBON          */}
         {/* ========================================================= */}
@@ -964,6 +970,11 @@ const Settings = () => {
                           {c}
                         </option>
                       ))}
+                      {!CADRE_OPTIONS.includes(profileForm.jobRole) && profileForm.jobRole && (
+                        <option value={profileForm.jobRole}>
+                          {profileForm.jobRole}
+                        </option>
+                      )}
                     </select>
                   </div>
 
@@ -1084,6 +1095,11 @@ const Settings = () => {
                                 {deg}
                               </option>
                             ))}
+                            {!EDUCATION_OPTIONS.includes(item.degree) && item.degree && (
+                              <option value={item.degree}>
+                                {item.degree}
+                              </option>
+                            )}
                           </select>
                         </div>
 
@@ -1144,6 +1160,11 @@ const Settings = () => {
                                 {yr}
                               </option>
                             ))}
+                            {!YEAR_RANGE_OPTIONS.includes(item.passOutYearRange) && item.passOutYearRange && (
+                              <option value={item.passOutYearRange}>
+                                {item.passOutYearRange}
+                              </option>
+                            )}
                           </select>
                         </div>
 
@@ -1477,9 +1498,10 @@ const Settings = () => {
             </div>
           </motion.div>
         )}
-      </main>
+        </main>
 
-      <Footer />
+        <Footer />
+      </div>
     </div>
   );
 };

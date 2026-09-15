@@ -71,7 +71,9 @@ const ChatBox = ({
       if (recognitionRef.current) {
         try {
           recognitionRef.current.stop();
-        } catch { }
+        } catch (_err) {
+          /* ignore */
+        }
       }
       return;
     }

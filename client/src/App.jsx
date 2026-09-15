@@ -3,6 +3,8 @@ import { Route, Routes, Navigate } from "react-router-dom";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import CompetencyAssessment from "./pages/CompetencyAssessment";
+import SkillGapAnalysis from "./pages/SkillGapAnalysis";
+import JobReadinessReport from "./pages/JobReadinessReport";
 import LearningPath from "./pages/LearningPath";
 import Quizzes from "./pages/Quizzes";
 import QuizPage from "./pages/QuizPage";
@@ -159,6 +161,30 @@ const App = () => {
           element={
             <ProtectedRoute loading={loading}>
               <CompetencyAssessment />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/skill-gaps"
+          element={
+            <ProtectedRoute loading={loading}>
+              <SkillGapAnalysis />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/skill-gap-analysis"
+          element={
+            <ProtectedRoute loading={loading}>
+              <SkillGapAnalysis />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/job-readiness"
+          element={
+            <ProtectedRoute loading={loading}>
+              <JobReadinessReport />
             </ProtectedRoute>
           }
         />

@@ -23,6 +23,7 @@ import {
 const QuizPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const [quiz, setQuiz] = useState(null);
   const [currentIdx, setCurrentIdx] = useState(0);
@@ -56,30 +57,7 @@ const QuizPage = () => {
       }
     };
     fetchQuiz();
-  }, [id]);
-
-  // Timer Tick
-  useEffect(() => {
-    if (!submitted && timeLeft > 0 && !loading) {
-      const interval = setInterval(() => {
-        setTimeLeft((prev) => {
-          if (prev <= 1) {
-            clearInterval(interval);
-            handleSubmitQuiz();
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
-      return () => clearInterval(interval);
-    }
-  }, [submitted, timeLeft, loading]);
-
-  const handleSelectOption = (opt) => {
-    const updated = [...userAnswers];
-    updated[currentIdx] = opt;
-    setUserAnswers(updated);
-  };
+  }, [id, navigate]);
 
   const handleSubmitQuiz = async () => {
     if (submitted) return;
@@ -115,6 +93,29 @@ const QuizPage = () => {
     } finally {
       setSubmitting(false);
     }
+  };
+
+  // Timer Tick
+  useEffect(() => {
+    if (!submitted && timeLeft > 0 && !loading) {
+      const interval = setInterval(() => {
+        setTimeLeft((prev) => {
+          if (prev <= 1) {
+            clearInterval(interval);
+            handleSubmitQuiz();
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+      return () => clearInterval(interval);
+    }
+  }, [submitted, timeLeft, loading]);
+
+  const handleSelectOption = (opt) => {
+    const updated = [...userAnswers];
+    updated[currentIdx] = opt;
+    setUserAnswers(updated);
   };
 
   const formatTime = (secs) => {

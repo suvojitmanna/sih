@@ -6,6 +6,8 @@ import {
   updateLearnerProfile,
   runAiAssessment,
   getSkillGaps,
+  getDetailedSkillGapAnalysis,
+  getTargetJobReadinessReport,
   generatePathway,
   updatePathwayProgress,
   getDiagnosticStatus,
@@ -22,6 +24,8 @@ competencyRouter.get("/diagnostic-status", isAuth, getDiagnosticStatus);
 competencyRouter.put("/update-profile", isAuth, updateLearnerProfile);
 competencyRouter.post("/assess", isAuth, runAiAssessment);
 competencyRouter.get("/skill-gaps", isAuth, getSkillGaps);
+competencyRouter.get("/skill-gap-analysis", isAuth, getDetailedSkillGapAnalysis);
+competencyRouter.get("/job-readiness", isAuth, getTargetJobReadinessReport);
 competencyRouter.post("/generate-pathway", isAuth, generatePathway);
 competencyRouter.put("/pathway-progress", isAuth, updatePathwayProgress);
 
