@@ -65,7 +65,7 @@ const Navbar = () => {
     closeSettings,
   } = useNavigation();
 
-  const { isPathLocked, triggerLockedError } = useDiagnostic();
+  const { isPathLocked, triggerLockedError, isIntakePending } = useDiagnostic();
 
   const [showUserPopup, setShowUserPopup] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -111,6 +111,10 @@ const Navbar = () => {
   const handleDownloadDossier = () => {
     if (!userData) {
       setShowAuth(true);
+      return;
+    }
+    if (isIntakePending) {
+      triggerLockedError("Official Dossier PDF Export");
       return;
     }
     toast.success("Preparing Official Performance Dossier (PDF)... 📄");
@@ -759,10 +763,24 @@ const Navbar = () => {
                               setShowUserPopup(false);
                               handleDownloadDossier();
                             }}
-                            className="w-full text-left px-3.5 py-2.5 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-800 text-xs font-bold text-slate-700 dark:text-slate-200 flex items-center gap-2.5 transition-colors cursor-pointer"
+                            className={`w-full text-left px-3.5 py-2.5 rounded-2xl text-xs font-bold flex items-center justify-between transition-colors cursor-pointer ${
+                              isIntakePending
+                                ? "hover:bg-amber-500/5 text-slate-500 dark:text-slate-400"
+                                : "hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200"
+                            }`}
                           >
-                            <FaFilePdf size={14} className="text-rose-600" />
-                            <span>Export Official Dossier (PDF)</span>
+                            <div className="flex items-center gap-2.5">
+                              <FaFilePdf size={14} className={isIntakePending ? "text-slate-400" : "text-rose-600"} />
+                              <span>Export Official Dossier (PDF)</span>
+                            </div>
+                            {isIntakePending ? (
+                              <span className="flex items-center gap-1 text-[9px] font-black px-1.5 py-0.5 rounded-md bg-amber-500/10 dark:bg-amber-500/20 text-amber-600 dark:text-amber-400 border border-amber-500/20 shrink-0 ml-1.5 shadow-2xs">
+                                <FaLock size={8} />
+                                <span>LOCKED</span>
+                              </span>
+                            ) : (
+                              <span className="text-[10px] text-slate-400 font-semibold">PDF</span>
+                            )}
                           </button>
                         )}
 

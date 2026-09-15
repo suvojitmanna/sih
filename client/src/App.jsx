@@ -62,7 +62,6 @@ const ProtectedRoute = ({ children, loading, requireAdmin = false }) => {
     return <Navigate to="/" replace />;
   }
 
-  // Mandatory Cadre Intake Guard: if intake viva & quiz are pending, block direct URL access to other modules
   if (!isAssessmentAllowed(location.pathname)) {
     triggerLockedError();
     return <Navigate to="/" replace />;

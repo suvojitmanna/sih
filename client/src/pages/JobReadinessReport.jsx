@@ -25,6 +25,7 @@ import {
   FaBookOpen,
   FaBriefcase,
   FaRegCheckCircle,
+  FaLock,
 } from "react-icons/fa";
 import {
   BsShieldCheck,
@@ -37,11 +38,13 @@ import {
 import { HiSparkles } from "react-icons/hi";
 import { generateCompetencyPDF } from "../utils/pdfGenerator";
 import PageTransition from "../components/PageTransition";
+import { useDiagnostic } from "../context/DiagnosticContext";
 
 const JobReadinessReport = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { userData } = useSelector((state) => state.user);
+  const { isIntakePending, triggerLockedError } = useDiagnostic();
 
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState(false);
@@ -101,6 +104,10 @@ const JobReadinessReport = () => {
   };
 
   const handleDownloadDossier = () => {
+    if (isIntakePending) {
+      triggerLockedError("Target Job Readiness Dossier Export");
+      return;
+    }
     if (!report || !userData) {
       toast.error("No readiness data available to export.");
       return;
@@ -223,10 +230,19 @@ const JobReadinessReport = () => {
 
                   <button
                     onClick={handleDownloadDossier}
-                    className="px-4 py-3 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-md hover:shadow-emerald-600/30 transition-all flex items-center gap-2 cursor-pointer"
+                    className={`px-4 py-3 rounded-2xl text-xs font-bold shadow-md transition-all flex items-center gap-2 cursor-pointer ${
+                      isIntakePending
+                        ? "bg-slate-200 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border border-slate-300 dark:border-slate-700"
+                        : "bg-emerald-600 hover:bg-emerald-700 text-white hover:shadow-emerald-600/30"
+                    }`}
                   >
-                    <FaFilePdf size={13} />
+                    <FaFilePdf size={13} className={isIntakePending ? "text-slate-400" : "text-white"} />
                     <span>Export Readiness Dossier</span>
+                    {isIntakePending && (
+                      <span className="flex items-center gap-1 text-[9px] font-black px-1.5 py-0.5 rounded-md bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
+                        <FaLock size={8} /> LOCKED
+                      </span>
+                    )}
                   </button>
                 </div>
               </div>
