@@ -121,11 +121,10 @@ const SettingsModal = ({ isOpen, onClose }) => {
                 <button
                   type="button"
                   onClick={() => setActiveTab("profile")}
-                  className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-xl font-black text-xs transition-all cursor-pointer ${
-                    activeTab === "profile"
+                  className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-xl font-black text-xs transition-all cursor-pointer ${activeTab === "profile"
                       ? "bg-blue-600 text-white shadow-md"
                       : "text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white"
-                  }`}
+                    }`}
                 >
                   <FaUserTie size={12} />
                   <span>Profile Option</span>
@@ -134,11 +133,10 @@ const SettingsModal = ({ isOpen, onClose }) => {
                 <button
                   type="button"
                   onClick={() => setActiveTab("layout")}
-                  className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-xl font-black text-xs transition-all cursor-pointer ${
-                    activeTab === "layout"
+                  className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-xl font-black text-xs transition-all cursor-pointer ${activeTab === "layout"
                       ? "bg-blue-600 text-white shadow-md"
                       : "text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white"
-                  }`}
+                    }`}
                 >
                   <BsSliders size={12} />
                   <span>Layout Setting</span>
@@ -284,11 +282,10 @@ const SettingsModal = ({ isOpen, onClose }) => {
                       {/* Option 1: Sidebar */}
                       <div
                         onClick={() => handleSelectNavMode("sidebar")}
-                        className={`relative p-4 rounded-2xl border-2 transition-all cursor-pointer flex flex-col justify-between group ${
-                          navMode === "sidebar"
+                        className={`relative p-4 rounded-2xl border-2 transition-all cursor-pointer flex flex-col justify-between group ${navMode === "sidebar"
                             ? "border-blue-600 dark:border-blue-500 bg-blue-50/50 dark:bg-blue-950/30 shadow-md ring-2 ring-blue-500/20"
                             : "border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 bg-white dark:bg-slate-800/40"
-                        }`}
+                          }`}
                       >
                         {navMode === "sidebar" && (
                           <div className="absolute top-3 right-3 text-blue-600 dark:text-blue-400">
@@ -332,11 +329,10 @@ const SettingsModal = ({ isOpen, onClose }) => {
                       {/* Option 2: Top Navbar */}
                       <div
                         onClick={() => handleSelectNavMode("topbar")}
-                        className={`relative p-4 rounded-2xl border-2 transition-all cursor-pointer flex flex-col justify-between group ${
-                          navMode === "topbar"
+                        className={`relative p-4 rounded-2xl border-2 transition-all cursor-pointer flex flex-col justify-between group ${navMode === "topbar"
                             ? "border-blue-600 dark:border-blue-500 bg-blue-50/50 dark:bg-blue-950/30 shadow-md ring-2 ring-blue-500/20"
                             : "border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 bg-white dark:bg-slate-800/40"
-                        }`}
+                          }`}
                       >
                         {navMode === "topbar" && (
                           <div className="absolute top-3 right-3 text-blue-600 dark:text-blue-400">
@@ -409,11 +405,10 @@ const SettingsModal = ({ isOpen, onClose }) => {
                       <button
                         type="button"
                         onClick={() => handleSelectTheme("light")}
-                        className={`relative p-3 rounded-2xl border-2 transition-all cursor-pointer flex flex-col items-center gap-2 text-center ${
-                          theme === "light"
+                        className={`relative p-3 rounded-2xl border-2 transition-all cursor-pointer flex flex-col items-center gap-2 text-center ${theme === "light"
                             ? "border-amber-500 bg-amber-50/50 dark:bg-amber-950/20 shadow-sm ring-2 ring-amber-500/20"
                             : "border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 bg-white dark:bg-slate-800/40"
-                        }`}
+                          }`}
                       >
                         {theme === "light" && (
                           <div className="absolute top-2 right-2 text-amber-500">
@@ -433,11 +428,10 @@ const SettingsModal = ({ isOpen, onClose }) => {
                       <button
                         type="button"
                         onClick={() => handleSelectTheme("dark")}
-                        className={`relative p-3 rounded-2xl border-2 transition-all cursor-pointer flex flex-col items-center gap-2 text-center ${
-                          theme === "dark"
+                        className={`relative p-3 rounded-2xl border-2 transition-all cursor-pointer flex flex-col items-center gap-2 text-center ${theme === "dark"
                             ? "border-indigo-500 bg-indigo-50/50 dark:bg-indigo-950/20 shadow-sm ring-2 ring-indigo-500/20"
                             : "border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 bg-white dark:bg-slate-800/40"
-                        }`}
+                          }`}
                       >
                         {theme === "dark" && (
                           <div className="absolute top-2 right-2 text-indigo-400">
@@ -457,11 +451,10 @@ const SettingsModal = ({ isOpen, onClose }) => {
                       <button
                         type="button"
                         onClick={() => handleSelectTheme("system")}
-                        className={`relative p-3 rounded-2xl border-2 transition-all cursor-pointer flex flex-col items-center gap-2 text-center ${
-                          theme === "system"
+                        className={`relative p-3 rounded-2xl border-2 transition-all cursor-pointer flex flex-col items-center gap-2 text-center ${theme === "system"
                             ? "border-blue-600 dark:border-blue-500 bg-blue-50/50 dark:bg-blue-950/20 shadow-sm ring-2 ring-blue-500/20"
                             : "border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 bg-white dark:bg-slate-800/40"
-                        }`}
+                          }`}
                       >
                         {theme === "system" && (
                           <div className="absolute top-2 right-2 text-blue-600 dark:text-blue-400">

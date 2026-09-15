@@ -32,6 +32,7 @@ import {
   FaUsers,
   FaMicrophone,
   FaUserTie,
+  FaLock,
 } from "react-icons/fa";
 import {
   HiSparkles,
@@ -45,6 +46,7 @@ import { setUserData } from "../redux/userSlice";
 import { generateCompetencyPDF } from "../utils/pdfGenerator";
 import { useTheme } from "../context/ThemeContext";
 import { useNavigation } from "../context/NavigationContext";
+import { useDiagnostic } from "../context/DiagnosticContext";
 import { useOutsideClick } from "../utils/outsideClick";
 import toast from "react-hot-toast";
 
@@ -65,6 +67,7 @@ const Sidebar = ({ onOpenAuth }) => {
   const location = useLocation();
   const dispatch = useDispatch();
   const { theme, setTheme } = useTheme();
+  const { isPathLocked, triggerLockedError } = useDiagnostic();
 
   const [hoveredLink, setHoveredLink] = useState(null);
   const [showUserDropdown, setShowUserDropdown] = useState(false);
@@ -102,9 +105,13 @@ const Sidebar = ({ onOpenAuth }) => {
     });
   };
 
-  const handleNavigate = (path, isPublic = false) => {
+  const handleNavigate = (path, isPublic = false, label = "") => {
     if (!userData && !isPublic) {
       if (onOpenAuth) onOpenAuth();
+      return;
+    }
+    if (isPathLocked(path)) {
+      triggerLockedError(label);
       return;
     }
     navigate(path);
@@ -296,6 +303,7 @@ const Sidebar = ({ onOpenAuth }) => {
               {section.links.map((link) => {
                 const Icon = link.icon;
                 const isActive = isLinkActive(link.path);
+                const isLocked = isPathLocked(link.path);
 
                 return (
                   <div
@@ -305,37 +313,55 @@ const Sidebar = ({ onOpenAuth }) => {
                     onMouseLeave={() => setHoveredLink(null)}
                   >
                     <button
-                      onClick={() => handleNavigate(link.path, link.isPublic)}
-                      className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-2xl text-xs font-bold transition-all cursor-pointer group ${isActive
-                        ? link.isAi
-                          ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md font-black"
-                          : "bg-blue-50 dark:bg-blue-950/70 text-blue-700 dark:text-blue-300 font-black shadow-xs border border-blue-200/50 dark:border-blue-800/50"
-                        : link.isAi
-                          ? "text-blue-600 dark:text-blue-400 hover:bg-blue-50/60 dark:hover:bg-blue-950/40"
-                          : "text-slate-600 dark:text-slate-300 hover:bg-slate-100/80 dark:hover:bg-slate-800/80 hover:text-slate-900 dark:hover:text-white"
+                      onClick={() => handleNavigate(link.path, link.isPublic, link.label)}
+                      title={isLocked ? `Locked: Complete Intake Viva Voce & Diagnostic Quiz first` : link.label}
+                      className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-2xl text-xs font-bold transition-all cursor-pointer group ${
+                        isLocked
+                          ? "text-slate-400 dark:text-slate-500 hover:bg-amber-50/50 dark:hover:bg-amber-950/30 hover:text-amber-600 dark:hover:text-amber-400 border border-transparent hover:border-amber-400/30"
+                          : isActive
+                          ? link.isAi
+                            ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md font-black"
+                            : "bg-blue-50 dark:bg-blue-950/70 text-blue-700 dark:text-blue-300 font-black shadow-xs border border-blue-200/50 dark:border-blue-800/50"
+                          : link.isAi
+                            ? "text-blue-600 dark:text-blue-400 hover:bg-blue-50/60 dark:hover:bg-blue-950/40"
+                            : "text-slate-600 dark:text-slate-300 hover:bg-slate-100/80 dark:hover:bg-slate-800/80 hover:text-slate-900 dark:hover:text-white"
                         } ${isCollapsed && !mobileOpen ? "justify-center px-0" : ""}`}
                     >
                       <div className="relative shrink-0">
                         <Icon
                           size={17}
-                          className={`${isActive
-                            ? link.isAi
-                              ? "text-amber-300"
-                              : "text-blue-600 dark:text-blue-400"
-                            : link.isAi
-                              ? "text-blue-500 group-hover:scale-110 transition-transform"
-                              : "text-slate-400 group-hover:text-slate-700 dark:group-hover:text-slate-200"
+                          className={`${
+                            isLocked
+                              ? "text-slate-400 dark:text-slate-500 group-hover:text-amber-500 transition-colors"
+                              : isActive
+                              ? link.isAi
+                                ? "text-amber-300"
+                                : "text-blue-600 dark:text-blue-400"
+                              : link.isAi
+                                ? "text-blue-500 group-hover:scale-110 transition-transform"
+                                : "text-slate-400 group-hover:text-slate-700 dark:group-hover:text-slate-200"
                             }`}
                         />
-                        {link.isAi && (
+                        {isLocked ? (
+                          <span className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-amber-500 text-white flex items-center justify-center shadow-xs">
+                            <FaLock size={7} />
+                          </span>
+                        ) : link.isAi ? (
                           <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-amber-400 animate-ping" />
-                        )}
+                        ) : null}
                       </div>
 
                       {(!isCollapsed || mobileOpen) && (
                         <div className="flex items-center justify-between flex-1 min-w-0">
-                          <span className="truncate">{link.label}</span>
-                          {link.badge && (
+                          <span className={`truncate ${isLocked ? "text-slate-400 dark:text-slate-500 group-hover:text-amber-600 dark:group-hover:text-amber-400" : ""}`}>
+                            {link.label}
+                          </span>
+                          {isLocked ? (
+                            <span className="flex items-center gap-1 text-[9px] font-black px-1.5 py-0.5 rounded-md bg-amber-500/10 dark:bg-amber-500/20 text-amber-600 dark:text-amber-400 border border-amber-500/20 shrink-0 ml-1.5 shadow-2xs">
+                              <FaLock size={8} />
+                              <span>LOCKED</span>
+                            </span>
+                          ) : link.badge ? (
                             <span
                               className={`text-[9px] font-black px-1.5 py-0.5 rounded-md uppercase tracking-wider ${isActive
                                 ? link.isAi
@@ -346,7 +372,7 @@ const Sidebar = ({ onOpenAuth }) => {
                             >
                               {link.badge}
                             </span>
-                          )}
+                          ) : null}
                         </div>
                       )}
                     </button>
@@ -355,11 +381,15 @@ const Sidebar = ({ onOpenAuth }) => {
                     {isCollapsed && !mobileOpen && hoveredLink === link.path && (
                       <div className="fixed left-[84px] z-[130] -translate-y-9 px-2.5 py-1.5 bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 text-xs font-bold rounded-xl shadow-xl whitespace-nowrap pointer-events-none flex items-center gap-1.5 animate-fadeIn">
                         <span>{link.label}</span>
-                        {link.badge && (
+                        {isLocked ? (
+                          <span className="text-[9px] font-extrabold px-1.5 py-0.5 rounded bg-amber-500 text-white flex items-center gap-1 uppercase">
+                            <FaLock size={7} /> Locked
+                          </span>
+                        ) : link.badge ? (
                           <span className="text-[9px] font-extrabold px-1 rounded bg-blue-500 text-white uppercase">
                             {link.badge}
                           </span>
-                        )}
+                        ) : null}
                       </div>
                     )}
                   </div>
@@ -524,12 +554,19 @@ const Sidebar = ({ onOpenAuth }) => {
                       <button
                         onClick={() => {
                           setShowUserDropdown(false);
+                          if (isPathLocked("/ai-models")) {
+                            triggerLockedError("AI Models Hub");
+                            return;
+                          }
                           navigate("/ai-models");
                         }}
-                        className="w-full text-left px-3 py-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 text-xs font-bold text-slate-700 dark:text-slate-200 flex items-center gap-2.5 transition-colors cursor-pointer"
+                        className="w-full text-left px-3 py-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 text-xs font-bold text-slate-700 dark:text-slate-200 flex items-center justify-between transition-colors cursor-pointer"
                       >
-                        <HiSparkles size={13} className="text-amber-500" />
-                        <span>AI Models & Workflows Hub</span>
+                        <div className="flex items-center gap-2.5">
+                          <HiSparkles size={13} className="text-amber-500" />
+                          <span>AI Models & Workflows Hub</span>
+                        </div>
+                        {isPathLocked("/ai-models") && <FaLock size={10} className="text-amber-500" />}
                       </button>
 
                       {userData?.role !== "admin" && (
@@ -549,12 +586,19 @@ const Sidebar = ({ onOpenAuth }) => {
                         <button
                           onClick={() => {
                             setShowUserDropdown(false);
+                            if (isPathLocked("/history")) {
+                              triggerLockedError("Interview History");
+                              return;
+                            }
                             navigate("/history");
                           }}
-                          className="w-full text-left px-3 py-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 text-xs font-bold text-slate-700 dark:text-slate-200 flex items-center gap-2.5 transition-colors cursor-pointer"
+                          className="w-full text-left px-3 py-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 text-xs font-bold text-slate-700 dark:text-slate-200 flex items-center justify-between transition-colors cursor-pointer"
                         >
-                          <FaHistory size={13} className="text-indigo-600" />
-                          <span>Interview History & Scorecards</span>
+                          <div className="flex items-center gap-2.5">
+                            <FaHistory size={13} className="text-indigo-600" />
+                            <span>Interview History & Scorecards</span>
+                          </div>
+                          {isPathLocked("/history") && <FaLock size={10} className="text-amber-500" />}
                         </button>
                       )}
 

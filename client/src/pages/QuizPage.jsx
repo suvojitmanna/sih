@@ -84,6 +84,7 @@ const QuizPage = () => {
           dispatch(setUserData(data.user));
         }
         window.dispatchEvent(new CustomEvent("assessmentCompleted", { detail: data }));
+        window.dispatchEvent(new CustomEvent("diagnostic-updated", { detail: data }));
         localStorage.setItem("lastAssessmentUpdate", Date.now().toString());
       }
     } catch (error) {

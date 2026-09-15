@@ -27,6 +27,7 @@ import {
   FaBookOpen,
   FaMicrophone,
   FaUserTie,
+  FaLock,
 } from "react-icons/fa";
 import {
   HiOutlineLogout,
@@ -43,6 +44,7 @@ import { useOutsideClick } from "../utils/outsideClick";
 import { generateCompetencyPDF } from "../utils/pdfGenerator";
 import { useTheme } from "../context/ThemeContext";
 import { useNavigation } from "../context/NavigationContext";
+import { useDiagnostic } from "../context/DiagnosticContext";
 import Sidebar from "./Sidebar";
 import AuthModel from "./AuthModel";
 import SettingsModal from "./SettingsModal";
@@ -62,6 +64,8 @@ const Navbar = () => {
     openSettings,
     closeSettings,
   } = useNavigation();
+
+  const { isPathLocked, triggerLockedError } = useDiagnostic();
 
   const [showUserPopup, setShowUserPopup] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -165,14 +169,14 @@ const Navbar = () => {
     },
     ...(userData?.role === "admin"
       ? [
-          {
-            title: "Governance",
-            align: "right",
-            links: [
-              { label: "Admin Portal", path: "/admin", icon: BsShieldLock, badge: "Officer", desc: "Executive Analytics & Cadre Management" },
-            ],
-          },
-        ]
+        {
+          title: "Governance",
+          align: "right",
+          links: [
+            { label: "Admin Portal", path: "/admin", icon: BsShieldLock, badge: "Officer", desc: "Executive Analytics & Cadre Management" },
+          ],
+        },
+      ]
       : []),
   ];
 
@@ -215,9 +219,8 @@ const Navbar = () => {
 
         {/* Companion Top Utility Header in Sidebar Mode */}
         <header
-          className={`fixed top-0 right-0 z-[90] h-14 bg-white/85 dark:bg-slate-950/85 backdrop-blur-xl border-b border-slate-200/80 dark:border-slate-800/80 transition-all duration-300 left-0 ${
-            isCollapsed ? "md:left-[76px]" : "md:left-[260px]"
-          } flex items-center justify-between px-3 sm:px-6 select-none`}
+          className={`fixed top-0 right-0 z-[90] h-14 bg-white/85 dark:bg-slate-950/85 backdrop-blur-xl border-b border-slate-200/80 dark:border-slate-800/80 transition-all duration-300 left-0 ${isCollapsed ? "md:left-[76px]" : "md:left-[260px]"
+            } flex items-center justify-between px-3 sm:px-6 select-none`}
         >
           {/* Mobile: Hamburger Drawer Toggle & Logo */}
           <div className="flex items-center gap-2.5 md:hidden">
@@ -260,14 +263,28 @@ const Navbar = () => {
           <div className="flex items-center gap-2 sm:gap-3">
             {/* AI Copilot Quick Button */}
             <button
-              onClick={() => navigate("/chat")}
+              onClick={() => {
+                if (isPathLocked("/chat")) {
+                  triggerLockedError("AI Copilot");
+                  return;
+                }
+                navigate("/chat");
+              }}
               className="relative p-2 sm:px-3 sm:py-1.5 rounded-2xl bg-gradient-to-r from-blue-600/10 via-indigo-600/10 to-purple-600/10 hover:from-blue-600/20 hover:to-indigo-600/20 border border-blue-400/30 dark:border-blue-500/30 text-blue-600 dark:text-blue-400 flex items-center gap-2 transition-all shadow-xs cursor-pointer group"
-              title="Open AI Copilot & Statistical Assistant"
+              title={isPathLocked("/chat") ? "Locked: Complete Mandatory Intake Viva & Quiz first" : "Open AI Copilot & Statistical Assistant"}
             >
               <div className="relative flex items-center justify-center">
                 <BsRobot size={17} className="text-blue-600 dark:text-blue-400 group-hover:scale-110 transition-transform" />
-                <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-amber-400 animate-ping" />
-                <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-amber-400" />
+                {isPathLocked("/chat") ? (
+                  <span className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-amber-500 text-white flex items-center justify-center shadow-xs">
+                    <FaLock size={7} />
+                  </span>
+                ) : (
+                  <>
+                    <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-amber-400 animate-ping" />
+                    <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-amber-400" />
+                  </>
+                )}
               </div>
               <div className="hidden sm:flex flex-col text-left">
                 <span className="text-[10px] font-black tracking-wider uppercase text-blue-600 dark:text-blue-300 leading-none">
@@ -394,20 +411,18 @@ const Navbar = () => {
                     <button
                       type="button"
                       onClick={() => setActiveDropdown(isOpen ? null : section.title)}
-                      className={`relative flex items-center gap-1.5 px-3.5 py-2 rounded-xl transition-all cursor-pointer select-none text-xs font-bold ${
-                        isSectionActive
+                      className={`relative flex items-center gap-1.5 px-3.5 py-2 rounded-xl transition-all cursor-pointer select-none text-xs font-bold ${isSectionActive
                           ? "bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 shadow-xs font-black border border-slate-200/60 dark:border-slate-700/60"
                           : isOpen
-                          ? "bg-white/80 dark:bg-slate-800/80 text-slate-900 dark:text-white"
-                          : "hover:bg-white/60 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-white"
-                      }`}
+                            ? "bg-white/80 dark:bg-slate-800/80 text-slate-900 dark:text-white"
+                            : "hover:bg-white/60 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-white"
+                        }`}
                     >
                       <span>{section.title}</span>
                       <BsChevronDown
                         size={10}
-                        className={`transition-transform duration-200 text-slate-400 ${
-                          isOpen ? "rotate-180 text-blue-600 dark:text-blue-400" : ""
-                        }`}
+                        className={`transition-transform duration-200 text-slate-400 ${isOpen ? "rotate-180 text-blue-600 dark:text-blue-400" : ""
+                          }`}
                       />
                     </button>
 
@@ -419,9 +434,8 @@ const Navbar = () => {
                           animate={{ opacity: 1, y: 0, scale: 1 }}
                           exit={{ opacity: 0, y: 6, scale: 0.96 }}
                           transition={{ duration: 0.15, ease: "easeOut" }}
-                          className={`absolute top-full pt-2 z-[110] ${
-                            section.align === "right" ? "right-0" : "left-0"
-                          }`}
+                          className={`absolute top-full pt-2 z-[110] ${section.align === "right" ? "right-0" : "left-0"
+                            }`}
                         >
                           <div className="w-72 bg-white/95 dark:bg-slate-900/95 backdrop-blur-2xl rounded-2xl shadow-2xl border border-slate-200/90 dark:border-slate-800/90 p-2 overflow-hidden ring-1 ring-black/5">
                             <div className="px-3 py-1.5 mb-1.5 text-[10px] font-black uppercase tracking-wider text-slate-400 dark:text-slate-500 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
@@ -437,6 +451,7 @@ const Navbar = () => {
                                 const isLinkActive = link.path === "/skill-gaps"
                                   ? (location.pathname === "/skill-gaps" || location.pathname === "/skill-gap-analysis")
                                   : location.pathname === link.path;
+                                const isLocked = isPathLocked(link.path);
 
                                 return (
                                   <button
@@ -447,25 +462,39 @@ const Navbar = () => {
                                         setShowAuth(true);
                                         return;
                                       }
+                                      if (isLocked) {
+                                        triggerLockedError(link.label);
+                                        return;
+                                      }
                                       navigate(link.path);
                                     }}
+                                    title={isLocked ? `Locked: Complete Intake Viva & Quiz first` : link.label}
                                     className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-left transition-all cursor-pointer group/sub ${
-                                      isLinkActive
+                                      isLocked
+                                        ? "text-slate-400 dark:text-slate-500 hover:bg-amber-50/50 dark:hover:bg-amber-950/20 hover:text-amber-600 dark:hover:text-amber-400"
+                                        : isLinkActive
                                         ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-black shadow-sm"
                                         : "hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200"
-                                    }`}
+                                      }`}
                                   >
                                     <div className="flex items-center gap-2.5 min-w-0">
                                       <div
-                                        className={`p-1.5 rounded-lg shrink-0 transition-colors ${
-                                          isLinkActive
+                                        className={`p-1.5 rounded-lg shrink-0 transition-colors relative ${
+                                          isLocked
+                                            ? "bg-amber-500/10 text-amber-600 dark:text-amber-400"
+                                            : isLinkActive
                                             ? "bg-white/20 text-white"
                                             : link.isAi
-                                            ? "bg-amber-100 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 group-hover/sub:bg-blue-100 dark:group-hover/sub:bg-blue-950/80"
-                                            : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 group-hover/sub:text-blue-600 dark:group-hover/sub:text-blue-400"
-                                        }`}
+                                              ? "bg-amber-100 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 group-hover/sub:bg-blue-100 dark:group-hover/sub:bg-blue-950/80"
+                                              : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 group-hover/sub:text-blue-600 dark:group-hover/sub:text-blue-400"
+                                          }`}
                                       >
                                         <Icon size={14} />
+                                        {isLocked && (
+                                          <span className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-amber-500 text-white flex items-center justify-center shadow-xs">
+                                            <FaLock size={6} />
+                                          </span>
+                                        )}
                                       </div>
                                       <div className="flex flex-col min-w-0">
                                         <span className="text-xs font-bold truncate block leading-tight">
@@ -477,7 +506,7 @@ const Navbar = () => {
                                               isLinkActive
                                                 ? "text-blue-100"
                                                 : "text-slate-400 dark:text-slate-500 font-medium"
-                                            }`}
+                                              }`}
                                           >
                                             {link.desc}
                                           </span>
@@ -485,19 +514,23 @@ const Navbar = () => {
                                       </div>
                                     </div>
 
-                                    {link.badge && (
+                                    {isLocked ? (
+                                      <span className="flex items-center gap-1 text-[9px] font-black px-1.5 py-0.5 rounded-md bg-amber-500/10 dark:bg-amber-500/20 text-amber-600 dark:text-amber-400 border border-amber-500/20 ml-2 shrink-0">
+                                        <FaLock size={8} />
+                                        <span>LOCKED</span>
+                                      </span>
+                                    ) : link.badge ? (
                                       <span
-                                        className={`text-[9px] font-black uppercase px-1.5 py-0.5 rounded ml-2 shrink-0 ${
-                                          isLinkActive
+                                        className={`text-[9px] font-black uppercase px-1.5 py-0.5 rounded ml-2 shrink-0 ${isLinkActive
                                             ? "bg-white/20 text-white"
                                             : link.isAi
-                                            ? "bg-amber-100 text-amber-700 dark:bg-amber-950/80 dark:text-amber-300 border border-amber-300/40"
-                                            : "bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300 border border-blue-200/50"
-                                        }`}
+                                              ? "bg-amber-100 text-amber-700 dark:bg-amber-950/80 dark:text-amber-300 border border-amber-300/40"
+                                              : "bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300 border border-blue-200/50"
+                                          }`}
                                       >
                                         {link.badge}
                                       </span>
-                                    )}
+                                    ) : null}
                                   </button>
                                 );
                               })}
@@ -514,18 +547,35 @@ const Navbar = () => {
             <div className="flex items-center gap-2 sm:gap-2.5">
               {/* AI Copilot Quick Button in Horizontal Mode */}
               <button
-                onClick={() => navigate("/chat")}
+                onClick={() => {
+                  if (isPathLocked("/chat")) {
+                    triggerLockedError("AI Copilot");
+                    return;
+                  }
+                  navigate("/chat");
+                }}
                 className="relative flex items-center gap-2 px-3 py-1.5 rounded-2xl bg-gradient-to-r from-blue-600/10 via-indigo-600/10 to-purple-600/10 hover:from-blue-600/20 hover:to-indigo-600/20 border border-blue-400/30 dark:border-blue-500/30 text-blue-600 dark:text-blue-400 transition-all shadow-xs cursor-pointer group"
-                title="Open AI Copilot & Statistical Assistant"
+                title={isPathLocked("/chat") ? "Locked: Complete Mandatory Intake Viva & Quiz first" : "Open AI Copilot & Statistical Assistant"}
               >
                 <div className="relative flex items-center justify-center">
                   <BsRobot size={16} className="text-blue-600 dark:text-blue-400 group-hover:scale-110 transition-transform" />
-                  <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-amber-400 animate-ping" />
-                  <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-amber-400" />
+                  {isPathLocked("/chat") ? (
+                    <span className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-amber-500 text-white flex items-center justify-center shadow-xs">
+                      <FaLock size={7} />
+                    </span>
+                  ) : (
+                    <>
+                      <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-amber-400 animate-ping" />
+                      <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-amber-400" />
+                    </>
+                  )}
                 </div>
                 <span className="text-xs font-black text-blue-700 dark:text-blue-300 hidden sm:inline">
                   AI Copilot
                 </span>
+                {isPathLocked("/chat") && (
+                  <FaLock size={9} className="text-amber-500" />
+                )}
               </button>
 
               {/* Cadre Notifications & Mandatory Intake Bell */}
@@ -669,24 +719,38 @@ const Navbar = () => {
                           <button
                             onClick={() => {
                               setShowUserPopup(false);
+                              if (isPathLocked("/dashboard")) {
+                                triggerLockedError("Officer Dashboard");
+                                return;
+                              }
                               navigate("/dashboard");
                             }}
-                            className="w-full text-left px-3.5 py-2.5 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-800 text-xs font-bold text-slate-700 dark:text-slate-200 flex items-center gap-2.5 transition-colors cursor-pointer"
+                            className="w-full text-left px-3.5 py-2.5 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-800 text-xs font-bold text-slate-700 dark:text-slate-200 flex items-center justify-between transition-colors cursor-pointer"
                           >
-                            <BsBarChartLine size={14} className="text-blue-600" />
-                            <span>My Performance Dashboard</span>
+                            <div className="flex items-center gap-2.5">
+                              <BsBarChartLine size={14} className="text-blue-600" />
+                              <span>My Performance Dashboard</span>
+                            </div>
+                            {isPathLocked("/dashboard") && <FaLock size={10} className="text-amber-500" />}
                           </button>
                         )}
 
                         <button
                           onClick={() => {
                             setShowUserPopup(false);
+                            if (isPathLocked("/ai-models")) {
+                              triggerLockedError("AI Models Hub");
+                              return;
+                            }
                             navigate("/ai-models");
                           }}
-                          className="w-full text-left px-3.5 py-2.5 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-800 text-xs font-bold text-slate-700 dark:text-slate-200 flex items-center gap-2.5 transition-colors cursor-pointer"
+                          className="w-full text-left px-3.5 py-2.5 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-800 text-xs font-bold text-slate-700 dark:text-slate-200 flex items-center justify-between transition-colors cursor-pointer"
                         >
-                          <HiSparkles size={14} className="text-amber-500" />
-                          <span>AI Models & Workflows Hub</span>
+                          <div className="flex items-center gap-2.5">
+                            <HiSparkles size={14} className="text-amber-500" />
+                            <span>AI Models & Workflows Hub</span>
+                          </div>
+                          {isPathLocked("/ai-models") && <FaLock size={10} className="text-amber-500" />}
                         </button>
 
                         {userData?.role !== "admin" && (
@@ -706,12 +770,19 @@ const Navbar = () => {
                           <button
                             onClick={() => {
                               setShowUserPopup(false);
+                              if (isPathLocked("/history")) {
+                                triggerLockedError("Interview History");
+                                return;
+                              }
                               navigate("/history");
                             }}
-                            className="w-full text-left px-3.5 py-2.5 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-800 text-xs font-bold text-slate-700 dark:text-slate-200 flex items-center gap-2.5 transition-colors cursor-pointer"
+                            className="w-full text-left px-3.5 py-2.5 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-800 text-xs font-bold text-slate-700 dark:text-slate-200 flex items-center justify-between transition-colors cursor-pointer"
                           >
-                            <FaHistory size={14} className="text-indigo-600" />
-                            <span>Interview History & Scorecards</span>
+                            <div className="flex items-center gap-2.5">
+                              <FaHistory size={14} className="text-indigo-600" />
+                              <span>Interview History & Scorecards</span>
+                            </div>
+                            {isPathLocked("/history") && <FaLock size={10} className="text-amber-500" />}
                           </button>
                         )}
 
@@ -822,6 +893,7 @@ const Navbar = () => {
                       {section.links.map((link) => {
                         const Icon = link.icon;
                         const isActive = location.pathname === link.path;
+                        const isLocked = isPathLocked(link.path);
                         return (
                           <button
                             key={link.path}
@@ -831,16 +903,25 @@ const Navbar = () => {
                                 setShowAuth(true);
                                 return;
                               }
+                              if (isLocked) {
+                                triggerLockedError(link.label);
+                                return;
+                              }
                               navigate(link.path);
                             }}
-                            className={`flex items-center gap-2 p-2.5 rounded-xl text-xs font-bold text-left transition-colors cursor-pointer ${
-                              isActive
+                            className={`flex items-center justify-between p-2.5 rounded-xl text-xs font-bold text-left transition-colors cursor-pointer ${
+                              isLocked
+                                ? "text-slate-400 dark:text-slate-500 hover:bg-amber-50/50 dark:hover:bg-amber-950/30"
+                                : isActive
                                 ? "bg-blue-600 text-white shadow-xs"
                                 : "hover:bg-slate-200/60 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300"
-                            }`}
+                              }`}
                           >
-                            <Icon size={14} className={isActive ? "text-white" : "text-slate-400"} />
-                            <span className="truncate">{link.label}</span>
+                            <div className="flex items-center gap-2 min-w-0">
+                              <Icon size={14} className={isLocked ? "text-amber-500" : isActive ? "text-white" : "text-slate-400"} />
+                              <span className="truncate">{link.label}</span>
+                            </div>
+                            {isLocked && <FaLock size={10} className="text-amber-500 shrink-0" />}
                           </button>
                         );
                       })}
@@ -856,31 +937,28 @@ const Navbar = () => {
                 <div className="grid grid-cols-3 gap-1 bg-slate-200/80 dark:bg-slate-800 p-1 rounded-xl text-xs font-bold">
                   <button
                     onClick={() => setTheme("system")}
-                    className={`py-1.5 rounded-lg text-center ${
-                      theme === "system"
+                    className={`py-1.5 rounded-lg text-center ${theme === "system"
                         ? "bg-white dark:bg-slate-700 text-blue-600 font-black shadow-xs"
                         : "text-slate-600 dark:text-slate-400"
-                    }`}
+                      }`}
                   >
                     System
                   </button>
                   <button
                     onClick={() => setTheme("light")}
-                    className={`py-1.5 rounded-lg text-center ${
-                      theme === "light"
+                    className={`py-1.5 rounded-lg text-center ${theme === "light"
                         ? "bg-white dark:bg-slate-700 text-amber-500 font-black shadow-xs"
                         : "text-slate-600 dark:text-slate-400"
-                    }`}
+                      }`}
                   >
                     Light
                   </button>
                   <button
                     onClick={() => setTheme("dark")}
-                    className={`py-1.5 rounded-lg text-center ${
-                      theme === "dark"
+                    className={`py-1.5 rounded-lg text-center ${theme === "dark"
                         ? "bg-white dark:bg-slate-700 text-indigo-400 font-black shadow-xs"
                         : "text-slate-600 dark:text-slate-400"
-                    }`}
+                      }`}
                   >
                     Dark
                   </button>

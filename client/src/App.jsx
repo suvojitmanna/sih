@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { Route, Routes, Navigate } from "react-router-dom";
+import { Route, Routes, Navigate, useLocation } from "react-router-dom";
+import { useDiagnostic } from "./context/DiagnosticContext";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import CompetencyAssessment from "./pages/CompetencyAssessment";
@@ -34,6 +35,8 @@ export const ServerUrl = import.meta.env.VITE_BASE_URL || "http://localhost:5000
 
 const ProtectedRoute = ({ children, loading, requireAdmin = false }) => {
   const userData = useSelector((state) => state.user.userData);
+  const location = useLocation();
+  const { isAssessmentAllowed, triggerLockedError } = useDiagnostic();
 
   if (loading) {
     return (
@@ -56,6 +59,12 @@ const ProtectedRoute = ({ children, loading, requireAdmin = false }) => {
   }
 
   if (requireAdmin && userData.role !== "admin") {
+    return <Navigate to="/" replace />;
+  }
+
+  // Mandatory Cadre Intake Guard: if intake viva & quiz are pending, block direct URL access to other modules
+  if (!isAssessmentAllowed(location.pathname)) {
+    triggerLockedError();
     return <Navigate to="/" replace />;
   }
 
@@ -87,6 +96,7 @@ const PublicRoute = ({ children, loading }) => {
 // Route Guard for Auth Page
 const AuthRoute = ({ loading }) => {
   const userData = useSelector((state) => state.user.userData);
+  const { isIntakePending } = useDiagnostic();
 
   if (loading) {
     return (
@@ -100,6 +110,9 @@ const AuthRoute = ({ loading }) => {
   }
 
   if (userData && userData.isProfileCompleted) {
+    if (isIntakePending) {
+      return <Navigate to="/" replace />;
+    }
     return <Navigate to="/dashboard" replace />;
   }
 
