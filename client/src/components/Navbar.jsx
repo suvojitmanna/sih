@@ -128,7 +128,7 @@ const Navbar = () => {
     if (path === "/community") return "National Statistical Officer Community";
     if (path === "/interview") return "Cadre Board Oral Viva Simulation";
     if (path === "/history") return "Viva Evaluation Records & History";
-    return "MoSPI SkillIQ • NSSTA";
+    return "SankhyaIQ AI • National Statistical Systems Training Academy";
   };
 
   // ==========================================
@@ -183,17 +183,14 @@ const Navbar = () => {
             </span>
           </div>
 
-          {/* Right Header Actions: Convert to Navbar, Credits, Profile */}
+          {/* Right Header Actions */}
           <div className="flex items-center gap-2 sm:gap-3">
-
-            {/* Profile Dropdown Toggle */}
-            <div ref={userRef} className="relative">
+            {/* Officer Status Chip in Sidebar mode (Dropdown opens from the Sidebar user card) */}
+            <div>
               {userData ? (
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={() => setShowUserPopup(!showUserPopup)}
-                  className="flex items-center gap-2 p-1 pl-2 rounded-2xl bg-slate-100/90 dark:bg-slate-800/90 hover:bg-slate-200/70 border border-slate-200 dark:border-slate-700 transition-all cursor-pointer shadow-xs"
+                <div
+                  className="flex items-center gap-2 p-1 pl-2.5 rounded-2xl bg-slate-100/90 dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700 shadow-xs select-none"
+                  title="Active Officer Session • Manage from the Sidebar User Card"
                 >
                   <div className="flex flex-col text-right hidden sm:block">
                     <span className="text-xs font-black text-slate-900 dark:text-slate-100 leading-tight truncate max-w-[120px]">
@@ -207,8 +204,7 @@ const Navbar = () => {
                   <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-blue-700 to-indigo-700 text-white flex items-center justify-center font-black text-xs shadow-md">
                     {userData.name ? userData.name.charAt(0).toUpperCase() : <FaUserGraduate size={14} />}
                   </div>
-                  <BsChevronDown size={10} className={`text-slate-400 transition-transform ${showUserPopup ? "rotate-180" : ""}`} />
-                </motion.button>
+                </div>
               ) : (
                 <button
                   onClick={() => navigate("/auth")}
@@ -218,105 +214,6 @@ const Navbar = () => {
                   <span>Sign In</span>
                 </button>
               )}
-
-              {/* User Dropdown Menu */}
-              <AnimatePresence>
-                {showUserPopup && userData && (
-                  <motion.div
-                    variants={popupVariants}
-                    initial="hidden"
-                    animate="visible"
-                    exit="exit"
-                    className="absolute right-0 mt-2 w-80 bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden z-50 origin-top-right"
-                  >
-                    <div className="p-4 bg-gradient-to-br from-slate-50 to-blue-50/40 dark:from-slate-800/80 dark:to-blue-950/40 border-b border-slate-100 dark:border-slate-800">
-                      <div className="flex items-center gap-3">
-                        <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-blue-700 to-indigo-700 text-white flex items-center justify-center font-black text-sm shadow-md">
-                          {userData.name ? userData.name.charAt(0).toUpperCase() : "O"}
-                        </div>
-                        <div className="flex flex-col min-w-0">
-                          <span className="font-black text-sm text-slate-900 dark:text-white truncate">
-                            {userData.name}
-                          </span>
-                          <span className="text-xs text-slate-500 dark:text-slate-400 truncate">
-                            {userData.email}
-                          </span>
-                        </div>
-                      </div>
-
-                      <div className="mt-2.5 pt-2 border-t border-slate-200/60 dark:border-slate-700 flex items-center justify-between text-[11px]">
-                        <span className="font-semibold text-slate-600 dark:text-slate-300">Cadre:</span>
-                        <span className="font-bold text-blue-700 dark:text-blue-400 truncate max-w-[180px]">
-                          {userData.jobRole || "ISS Officer"}
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Settings Option Button */}
-                    <div className="p-2 border-b border-slate-100 dark:border-slate-800">
-                      <button
-                        onClick={() => {
-                          setShowUserPopup(false);
-                          openSettings();
-                        }}
-                        className="w-full text-left px-3 py-2 rounded-2xl hover:bg-blue-50/70 dark:hover:bg-blue-950/40 text-xs font-bold text-slate-700 dark:text-slate-200 flex items-center justify-between transition-colors cursor-pointer group"
-                      >
-                        <div className="flex items-center gap-2.5">
-                          <div className="p-1.5 rounded-xl bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 group-hover:rotate-45 transition-transform duration-300">
-                            <BsGearFill size={14} />
-                          </div>
-                          <div>
-                            <span className="block font-black text-slate-900 dark:text-white">Settings</span>
-                            <span className="block text-[10px] text-slate-500 dark:text-slate-400 font-medium">Layout & Theme Preferences</span>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-1.5 text-[10px] font-black px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-blue-600 dark:text-blue-400 border border-slate-200/60 dark:border-slate-700/60">
-                          <span className="capitalize">{navMode}</span>
-                          <span>•</span>
-                          <span className="capitalize">{theme}</span>
-                        </div>
-                      </button>
-                    </div>
-
-                    <div className="p-2 space-y-1">
-
-                      {userData?.role !== "admin" && (
-                        <button
-                          onClick={() => {
-                            setShowUserPopup(false);
-                            handleDownloadDossier();
-                          }}
-                          className="w-full text-left px-3 py-2 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-800 text-xs font-bold text-slate-700 dark:text-slate-200 flex items-center gap-2.5 transition-colors cursor-pointer"
-                        >
-                          <FaFilePdf size={14} className="text-rose-600" />
-                          <span>Export Official Dossier (PDF)</span>
-                        </button>
-                      )}
-
-                      <button
-                        onClick={() => {
-                          setShowUserPopup(false);
-                          window.dispatchEvent(new CustomEvent("open-nssta-helpdesk"));
-                        }}
-                        className="w-full text-left px-3 py-2 rounded-2xl hover:bg-emerald-50/60 dark:hover:bg-emerald-950/40 text-xs font-bold text-slate-700 dark:text-slate-200 flex items-center gap-2.5 transition-colors cursor-pointer"
-                      >
-                        <FaComments size={14} className="text-emerald-500" />
-                        <span>NSSTA Live Chat Helpdesk</span>
-                      </button>
-                    </div>
-
-                    <div className="p-2 border-t border-slate-100 dark:border-slate-800">
-                      <button
-                        onClick={handleLogout}
-                        className="w-full px-3 py-2 rounded-2xl hover:bg-rose-50 dark:hover:bg-rose-950/60 text-xs font-bold text-rose-600 dark:text-rose-400 flex items-center gap-2.5 transition-colors cursor-pointer"
-                      >
-                        <HiOutlineLogout size={16} />
-                        <span>Sign Out</span>
-                      </button>
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
             </div>
           </div>
         </header>

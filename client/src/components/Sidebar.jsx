@@ -12,7 +12,11 @@ import {
   BsRobot,
   BsChevronLeft,
   BsChevronRight,
+  BsChevronUp,
+  BsChevronDown,
   BsGearFill,
+  BsLayoutSidebar,
+  BsLayoutSidebarInsetReverse,
 } from "react-icons/bs";
 import {
   FaHome,
@@ -37,12 +41,14 @@ import { setUserData } from "../redux/userSlice";
 import { generateCompetencyPDF } from "../utils/pdfGenerator";
 import { useTheme } from "../context/ThemeContext";
 import { useNavigation } from "../context/NavigationContext";
+import { useOutsideClick } from "../utils/outsideClick";
 import toast from "react-hot-toast";
 
 const Sidebar = ({ onOpenAuth }) => {
   const { userData } = useSelector((state) => state.user);
   const {
     navMode,
+    setNavMode,
     toggleNavMode,
     isCollapsed,
     toggleCollapse,
@@ -57,6 +63,8 @@ const Sidebar = ({ onOpenAuth }) => {
   const { theme, setTheme } = useTheme();
 
   const [hoveredLink, setHoveredLink] = useState(null);
+  const [showUserDropdown, setShowUserDropdown] = useState(false);
+  const userCardRef = useOutsideClick(() => setShowUserDropdown(false));
 
   const handleLogout = async () => {
     try {
@@ -238,35 +246,6 @@ const Sidebar = ({ onOpenAuth }) => {
           </div>
         </div>
 
-        {/* Quick Conversion Banner: Switch to Topbar */}
-        {(!isCollapsed || mobileOpen) ? (
-          <div className="px-3 pt-2.5 shrink-0">
-            <button
-              onClick={toggleNavMode}
-              className="w-full flex items-center justify-between px-3 py-2 rounded-xl bg-blue-50/80 dark:bg-blue-950/40 hover:bg-blue-100 dark:hover:bg-blue-900/50 border border-blue-200/70 dark:border-blue-800/60 text-blue-700 dark:text-blue-300 text-xs font-bold transition-all cursor-pointer group shadow-2xs"
-              title="Convert this sidebar into a horizontal top navbar"
-            >
-              <div className="flex items-center gap-2">
-                <HiOutlineViewBoards size={15} className="group-hover:rotate-90 transition-transform duration-300 text-blue-600 dark:text-blue-400" />
-                <span className="truncate">Convert to Navbar</span>
-              </div>
-              <span className="text-[9px] font-extrabold uppercase px-1.5 py-0.5 rounded bg-blue-200/60 dark:bg-blue-800/60">
-                Layout
-              </span>
-            </button>
-          </div>
-        ) : (
-          <div className="p-2 flex justify-center shrink-0">
-            <button
-              onClick={toggleNavMode}
-              className="p-2 rounded-xl bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/70 transition-all cursor-pointer"
-              title="Convert to Horizontal Navbar"
-            >
-              <HiOutlineViewBoards size={16} />
-            </button>
-          </div>
-        )}
-
         {/* Navigation Sections & Links */}
         <div className="flex-1 overflow-y-auto custom-scrollbar px-2.5 py-3 space-y-4">
           {navSections.map((section, idx) => (
@@ -374,47 +353,270 @@ const Sidebar = ({ onOpenAuth }) => {
             </button>
           )}
 
-          {/* User Profile Card */}
+          {/* User Profile Card (Click to open dropdown in Sidebar mode) */}
           {userData ? (
-            <div
-              className={`flex items-center gap-2.5 p-2 rounded-2xl bg-white dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/80 shadow-xs ${
-                isCollapsed && !mobileOpen ? "justify-center p-1.5" : ""
-              }`}
-            >
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-blue-700 to-indigo-700 text-white flex items-center justify-center font-black text-xs shadow-sm shrink-0">
-                {userData.name ? userData.name.charAt(0).toUpperCase() : <FaUserGraduate size={14} />}
-              </div>
+            <div ref={userCardRef} className="relative">
+              <button
+                type="button"
+                onClick={() => setShowUserDropdown(!showUserDropdown)}
+                className={`w-full flex items-center gap-2.5 p-2 rounded-2xl bg-white dark:bg-slate-800/90 hover:bg-slate-100/80 dark:hover:bg-slate-800 border border-slate-200/80 dark:border-slate-700/80 shadow-xs transition-all cursor-pointer group text-left ${
+                  isCollapsed && !mobileOpen ? "justify-center p-1.5" : ""
+                }`}
+                title="Officer Account & Session • Click to open settings & options"
+              >
+                <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-blue-700 to-indigo-700 text-white flex items-center justify-center font-black text-xs shadow-sm shrink-0 group-hover:scale-105 transition-transform">
+                  {userData.name ? userData.name.charAt(0).toUpperCase() : <FaUserGraduate size={14} />}
+                </div>
 
-              {(!isCollapsed || mobileOpen) && (
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-black text-slate-900 dark:text-slate-100 truncate">
+                {(!isCollapsed || mobileOpen) && (
+                  <div className="flex-1 min-w-0">
+                    <span className="text-xs font-black text-slate-900 dark:text-slate-100 truncate block">
                       {userData.name}
                     </span>
+                    <span className="text-[10px] text-blue-600 dark:text-blue-400 font-bold truncate block">
+                      {userData.jobRole || userData.role || "Officer"}
+                    </span>
                   </div>
-                  <span className="text-[10px] text-blue-600 dark:text-blue-400 font-bold truncate block">
-                    {userData.jobRole || userData.role || "Officer"}
-                  </span>
-                </div>
-              )}
+                )}
 
-              {(!isCollapsed || mobileOpen) && (
-                <button
-                  onClick={openSettings}
-                  className="p-1.5 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950/50 transition-colors cursor-pointer shrink-0"
-                  title="Settings & Preferences (Layout & Theme)"
-                >
-                  <BsGearFill size={15} />
-                </button>
-              )}
-
-              <button
-                onClick={handleLogout}
-                className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/50 transition-colors cursor-pointer shrink-0"
-                title="Sign Out"
-              >
-                <HiOutlineLogout size={16} />
+                {(!isCollapsed || mobileOpen) && (
+                  <div className="text-slate-400 group-hover:text-slate-700 dark:group-hover:text-slate-200 transition-colors p-1">
+                    <BsChevronUp
+                      size={12}
+                      className={`transition-transform duration-200 ${showUserDropdown ? "rotate-180" : ""}`}
+                    />
+                  </div>
+                )}
               </button>
+
+              {/* User Dropdown Menu from Sidebar User Portion */}
+              <AnimatePresence>
+                {showUserDropdown && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 8, scale: 0.96 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 8, scale: 0.96 }}
+                    transition={{ duration: 0.16 }}
+                    className={`bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden z-[150] ${
+                      isCollapsed && !mobileOpen
+                        ? "fixed left-[84px] bottom-3 w-80 shadow-[0_10px_40px_rgba(0,0,0,0.25)]"
+                        : "absolute bottom-[calc(100%+8px)] left-0 right-0 w-full min-w-[250px] shadow-[0_10px_40px_rgba(0,0,0,0.25)]"
+                    }`}
+                  >
+                    {/* Tricolor Government Ribbon Accent */}
+                    <div className="h-1 w-full bg-gradient-to-r from-[#FF9933] via-white to-[#138808]" />
+
+                    {/* Officer Details Header */}
+                    <div className="p-3.5 bg-gradient-to-br from-slate-50 to-blue-50/40 dark:from-slate-800/80 dark:to-blue-950/40 border-b border-slate-100 dark:border-slate-800">
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-blue-700 to-indigo-700 text-white flex items-center justify-center font-black text-sm shadow-md shrink-0">
+                          {userData.name ? userData.name.charAt(0).toUpperCase() : "O"}
+                        </div>
+                        <div className="flex flex-col min-w-0">
+                          <span className="font-black text-xs sm:text-sm text-slate-900 dark:text-white truncate">
+                            {userData.name}
+                          </span>
+                          <span className="text-[10px] text-slate-500 dark:text-slate-400 truncate">
+                            {userData.email}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="mt-2.5 pt-2 border-t border-slate-200/60 dark:border-slate-700/60 flex items-center justify-between text-[10.5px]">
+                        <span className="font-semibold text-slate-600 dark:text-slate-300">Cadre:</span>
+                        <span className="font-bold text-blue-700 dark:text-blue-400 truncate max-w-[150px]">
+                          {userData.jobRole || "ISS Officer"}
+                        </span>
+                      </div>
+
+                      <div className="mt-1 flex items-center justify-between text-[10.5px]">
+                        <span className="font-semibold text-slate-600 dark:text-slate-300">Competency:</span>
+                        <span className="font-black text-emerald-600 dark:text-emerald-400">
+                          {userData.overallCompetencyScore || 65}% ({userData.overallLevel || "Intermediate"})
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Settings Option Button */}
+                    <div className="p-2 border-b border-slate-100 dark:border-slate-800">
+                      <button
+                        onClick={() => {
+                          setShowUserDropdown(false);
+                          openSettings();
+                        }}
+                        className="w-full text-left px-3 py-2 rounded-2xl hover:bg-blue-50/70 dark:hover:bg-blue-950/40 text-xs font-bold text-slate-700 dark:text-slate-200 flex items-center justify-between transition-colors cursor-pointer group"
+                      >
+                        <div className="flex items-center gap-2.5">
+                          <div className="p-1.5 rounded-xl bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 group-hover:rotate-45 transition-transform duration-300">
+                            <BsGearFill size={13} />
+                          </div>
+                          <div>
+                            <span className="block font-black text-slate-900 dark:text-white text-xs">Settings</span>
+                            <span className="block text-[9.5px] text-slate-500 dark:text-slate-400 font-medium">Layout & Theme Preferences</span>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-1 text-[9px] font-black px-1.5 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-blue-600 dark:text-blue-400 border border-slate-200/60 dark:border-slate-700/60">
+                          <span className="capitalize">{navMode}</span>
+                          <span>•</span>
+                          <span className="capitalize">{theme}</span>
+                        </div>
+                      </button>
+                    </div>
+
+                    {/* Quick Settings: Layout & Theme */}
+                    <div className="p-2.5 bg-slate-50/80 dark:bg-slate-800/50 border-b border-slate-100 dark:border-slate-800 space-y-2">
+                      {/* Navigation Layout Switcher */}
+                      <div>
+                        <div className="flex items-center justify-between mb-1 px-0.5">
+                          <span className="text-[9.5px] font-extrabold uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-1">
+                            <BsLayoutSidebar size={10} />
+                            <span>Navigation Layout</span>
+                          </span>
+                        </div>
+                        <div className="grid grid-cols-2 gap-1 bg-slate-200/60 dark:bg-slate-900/80 p-1 rounded-xl text-[11px] font-bold">
+                          <button
+                            onClick={() => {
+                              setShowUserDropdown(false);
+                              setNavMode("topbar");
+                            }}
+                            className="flex items-center justify-center gap-1.5 py-1 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-all cursor-pointer"
+                          >
+                            <BsLayoutSidebarInsetReverse size={11} />
+                            <span>Navbar</span>
+                          </button>
+                          <button
+                            onClick={() => {
+                              setNavMode("sidebar");
+                            }}
+                            className="flex items-center justify-center gap-1.5 py-1 rounded-lg bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 shadow-2xs font-black transition-all cursor-pointer"
+                          >
+                            <BsLayoutSidebar size={11} />
+                            <span>Sidebar</span>
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Theme / Appearance Switcher */}
+                      <div>
+                        <div className="flex items-center justify-between mb-1 px-0.5">
+                          <span className="text-[9.5px] font-extrabold uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-1">
+                            {theme === "dark" ? (
+                              <BsMoonStars size={10} className="text-indigo-400" />
+                            ) : theme === "light" ? (
+                              <BsSun size={10} className="text-amber-500" />
+                            ) : (
+                              <BsDisplay size={10} className="text-blue-500" />
+                            )}
+                            <span>Theme</span>
+                          </span>
+                        </div>
+                        <div className="grid grid-cols-3 gap-1 bg-slate-200/60 dark:bg-slate-900/80 p-1 rounded-xl text-[10.5px] font-bold">
+                          <button
+                            onClick={() => setTheme("light")}
+                            className={`flex items-center justify-center gap-1 py-1 rounded-lg transition-all cursor-pointer ${
+                              theme === "light"
+                                ? "bg-white dark:bg-slate-800 text-amber-600 shadow-2xs font-black"
+                                : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+                            }`}
+                          >
+                            <BsSun size={11} />
+                            <span>Light</span>
+                          </button>
+                          <button
+                            onClick={() => setTheme("dark")}
+                            className={`flex items-center justify-center gap-1 py-1 rounded-lg transition-all cursor-pointer ${
+                              theme === "dark"
+                                ? "bg-white dark:bg-slate-800 text-indigo-400 shadow-2xs font-black"
+                                : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+                            }`}
+                          >
+                            <BsMoonStars size={11} />
+                            <span>Dark</span>
+                          </button>
+                          <button
+                            onClick={() => setTheme("system")}
+                            className={`flex items-center justify-center gap-1 py-1 rounded-lg transition-all cursor-pointer ${
+                              theme === "system"
+                                ? "bg-white dark:bg-slate-800 text-blue-500 shadow-2xs font-black"
+                                : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+                            }`}
+                          >
+                            <BsDisplay size={11} />
+                            <span>Auto</span>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Quick Shortcuts */}
+                    <div className="p-1.5 space-y-0.5">
+                      <button
+                        onClick={() => {
+                          setShowUserDropdown(false);
+                          navigate("/ai-models");
+                        }}
+                        className="w-full text-left px-3 py-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 text-xs font-bold text-slate-700 dark:text-slate-200 flex items-center gap-2.5 transition-colors cursor-pointer"
+                      >
+                        <HiSparkles size={13} className="text-amber-500" />
+                        <span>AI Models & Workflows Hub</span>
+                      </button>
+
+                      {userData?.role !== "admin" && (
+                        <button
+                          onClick={() => {
+                            setShowUserDropdown(false);
+                            handleDownloadDossier();
+                          }}
+                          className="w-full text-left px-3 py-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 text-xs font-bold text-slate-700 dark:text-slate-200 flex items-center gap-2.5 transition-colors cursor-pointer"
+                        >
+                          <FaFilePdf size={13} className="text-rose-600" />
+                          <span>Export Official Dossier (PDF)</span>
+                        </button>
+                      )}
+
+                      {userData?.role !== "admin" && (
+                        <button
+                          onClick={() => {
+                            setShowUserDropdown(false);
+                            navigate("/history");
+                          }}
+                          className="w-full text-left px-3 py-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 text-xs font-bold text-slate-700 dark:text-slate-200 flex items-center gap-2.5 transition-colors cursor-pointer"
+                        >
+                          <FaHistory size={13} className="text-indigo-600" />
+                          <span>Interview History & Scorecards</span>
+                        </button>
+                      )}
+
+                      {userData?.role === "admin" && (
+                        <button
+                          onClick={() => {
+                            setShowUserDropdown(false);
+                            navigate("/admin");
+                          }}
+                          className="w-full text-left px-3 py-2 rounded-xl hover:bg-blue-50/60 dark:hover:bg-blue-950/40 text-xs font-bold text-blue-700 dark:text-blue-300 flex items-center gap-2.5 transition-colors cursor-pointer"
+                        >
+                          <BsShieldLock size={13} className="text-blue-600" />
+                          <span>Executive Admin Portal</span>
+                        </button>
+                      )}
+                    </div>
+
+                    {/* Sign Out Button */}
+                    <div className="p-1.5 border-t border-slate-100 dark:border-slate-800">
+                      <button
+                        onClick={() => {
+                          setShowUserDropdown(false);
+                          handleLogout();
+                        }}
+                        className="w-full px-3 py-2 rounded-xl hover:bg-rose-50 dark:hover:bg-rose-950/60 text-xs font-bold text-rose-600 dark:text-rose-400 flex items-center gap-2 transition-colors cursor-pointer"
+                      >
+                        <HiOutlineLogout size={14} />
+                        <span>Sign Out</span>
+                      </button>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           ) : (
             <button

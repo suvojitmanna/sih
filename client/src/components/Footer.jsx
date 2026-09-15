@@ -24,20 +24,21 @@ const Footer = () => {
             {/* Brand Information */}
             <div className="max-w-md space-y-4">
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-slate-950 via-blue-900 to-indigo-900 text-white flex items-center justify-center font-black text-sm shadow-md border border-blue-500/30">
-                  <span>NSSTA</span>
+                {/* Modern & Premium Logo Emblem */}
+                <div className="relative w-11 h-11 rounded-2xl bg-gradient-to-br from-slate-950 via-blue-950 to-indigo-900 text-white flex flex-col items-center justify-center shadow-lg border border-blue-400/30 shrink-0 overflow-hidden">
+                  <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-[#FF9933] via-white to-[#138808]" />
+                  <span className="font-black text-sm tracking-tight text-white drop-shadow-xs">
+                    S
+                  </span>
+                  <span className="text-[7px] font-black tracking-widest text-amber-300 flex items-center gap-0.5">
+                    <HiSparkles size={6} className="text-amber-400 animate-pulse" /> AI
+                  </span>
                 </div>
                 <div>
-                  <div className="flex items-center gap-2">
-                    <h2 className="text-xl font-black text-slate-900 dark:text-white tracking-tight">
-                      MoSPI <span className="text-blue-600 dark:text-blue-400">SkillIQ</span>
-                    </h2>
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-extrabold bg-blue-50 dark:bg-blue-950 text-blue-700 dark:text-blue-300 uppercase tracking-wider border border-blue-200/80 dark:border-blue-800">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                      <span>SankhyaIQ AI</span>
-                    </span>
-                  </div>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 font-semibold">
+                  <h2 className="text-xl font-black text-slate-900 dark:text-white tracking-tight">
+                    SankhyaIQ <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-600 dark:from-blue-400 dark:via-indigo-300 dark:to-violet-400">AI</span>
+                  </h2>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 font-medium mt-0.5">
                     National Statistical Systems Training Academy
                   </p>
                 </div>
