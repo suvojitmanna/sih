@@ -12,6 +12,7 @@ import {
   BsRobot,
   BsChevronLeft,
   BsChevronRight,
+  BsGearFill,
 } from "react-icons/bs";
 import {
   FaHome,
@@ -47,6 +48,7 @@ const Sidebar = ({ onOpenAuth }) => {
     toggleCollapse,
     mobileOpen,
     setMobileOpen,
+    openSettings,
   } = useNavigation();
 
   const navigate = useNavigate();
@@ -161,32 +163,73 @@ const Sidebar = ({ onOpenAuth }) => {
 
       {/* Main Sidebar Component */}
       <aside
-        className={`fixed top-0 bottom-0 left-0 z-[120] bg-white/95 dark:bg-slate-950/95 backdrop-blur-2xl border-r border-slate-200/80 dark:border-slate-800/80 shadow-2xl flex flex-col transition-all duration-300 ease-in-out select-none ${
-          mobileOpen ? "translate-x-0 w-72" : "-translate-x-full md:translate-x-0"
+        className={`fixed top-0 bottom-0 left-0 z-[120] h-[100dvh] bg-white/95 dark:bg-slate-950/95 backdrop-blur-2xl border-r border-slate-200/80 dark:border-slate-800/80 shadow-2xl flex flex-col transition-all duration-300 ease-in-out select-none ${
+          mobileOpen ? "translate-x-0 w-[280px] sm:w-72 max-w-[85vw]" : "-translate-x-full md:translate-x-0"
         } ${isCollapsed ? "md:w-[76px]" : "md:w-[260px]"}`}
       >
         {/* Tricolor Government Ribbon Accent */}
         <div className="h-1 w-full bg-gradient-to-r from-[#FF9933] via-white to-[#138808] shrink-0" />
 
         {/* Sidebar Header: Brand & Conversion Controls */}
-        <div className="p-3.5 flex items-center justify-between border-b border-slate-200/70 dark:border-slate-800/70 shrink-0">
+        <div className="p-3 sm:p-3.5 flex items-center justify-between border-b border-slate-200/70 dark:border-slate-800/70 shrink-0">
           <div
             onClick={() => handleNavigate("/", true)}
-            className="flex items-center gap-2.5 cursor-pointer group min-w-0 overflow-hidden"
+            onMouseEnter={() => setHoveredLink("brand")}
+            onMouseLeave={() => setHoveredLink(null)}
+            className="flex items-center gap-2.5 cursor-pointer group min-w-0 overflow-hidden relative"
           >
-            <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-slate-950 via-blue-900 to-indigo-900 text-white flex items-center justify-center shadow-lg group-hover:scale-105 transition-all duration-300 border border-blue-500/30 shrink-0">
-              <span className="font-black text-xs tracking-wider">NSSTA</span>
+            {/* Modern & Premium Logo Emblem */}
+            <div className="relative w-10 h-10 rounded-2xl bg-gradient-to-br from-slate-950 via-blue-950 to-indigo-900 text-white flex flex-col items-center justify-center shadow-lg group-hover:scale-105 group-hover:shadow-blue-500/20 transition-all duration-300 border border-blue-400/30 shrink-0 overflow-hidden">
+              <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-[#FF9933] via-white to-[#138808]" />
+              <span className="font-black text-[11px] tracking-wider text-white drop-shadow-xs">
+                NSSTA
+              </span>
+              <span className="text-[7px] font-black tracking-widest text-amber-300 flex items-center gap-0.5">
+                <HiSparkles size={6} className="text-amber-400 animate-pulse" /> AI
+              </span>
             </div>
+
+            {/* Brand Names & Subtitle (when expanded or on mobile drawer) */}
             {(!isCollapsed || mobileOpen) && (
-              <div className="flex flex-col min-w-0">
-                <div className="flex items-center gap-1.5">
-                  <span className="font-black text-sm text-slate-900 dark:text-white tracking-tight truncate">
+              <div className="flex flex-col min-w-0 pr-1">
+                {/* Row 1: App Name & NSSTA Badge */}
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  <span className="font-black text-sm text-slate-900 dark:text-white tracking-tight leading-none">
+                    SankhyaIQ <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400">AI</span>
+                  </span>
+                  <span className="inline-flex items-center px-1.5 py-0.2 rounded-md text-[8px] font-black bg-blue-100 dark:bg-blue-900/60 text-blue-700 dark:text-blue-300 uppercase tracking-wide border border-blue-200/60 dark:border-blue-800/60">
+                    NSSTA
+                  </span>
+                </div>
+
+                {/* Row 2: Ministry & Platform Subtitle */}
+                <div className="flex items-center gap-1 mt-1 leading-none">
+                  <span className="text-[11px] font-extrabold text-slate-700 dark:text-slate-300">
                     MoSPI <span className="text-blue-600 dark:text-blue-400">SkillIQ</span>
                   </span>
                 </div>
-                <span className="text-[9px] text-slate-500 dark:text-slate-400 font-semibold truncate">
-                  National Statistical Academy
+
+                {/* Row 3: Apex Academy Official Subtitle */}
+                <span
+                  className="text-[8.5px] text-slate-500 dark:text-slate-400 font-medium tracking-tight leading-tight mt-0.5 truncate"
+                  title="National Statistical Systems Training Academy"
+                >
+                  National Statistical Systems Training Academy
                 </span>
+              </div>
+            )}
+
+            {/* Floating Tooltip for Logo when Collapsed */}
+            {isCollapsed && !mobileOpen && hoveredLink === "brand" && (
+              <div className="fixed left-[84px] top-3 z-[140] p-3 bg-slate-900/95 dark:bg-slate-900/95 backdrop-blur-xl border border-slate-700 text-white rounded-2xl shadow-2xl min-w-[220px] pointer-events-none animate-fadeIn">
+                <div className="flex items-center gap-1.5 mb-0.5">
+                  <span className="font-black text-xs text-white">SankhyaIQ AI</span>
+                  <span className="text-[8px] font-black px-1.5 py-0.2 rounded bg-blue-600 text-white uppercase">NSSTA</span>
+                </div>
+                <div className="text-[10px] font-bold text-blue-400 mb-0.5">MoSPI SkillIQ</div>
+                <div className="text-[9px] text-slate-300 leading-tight">
+                  National Statistical Systems Training Academy
+                </div>
               </div>
             )}
           </div>
@@ -195,7 +238,7 @@ const Sidebar = ({ onOpenAuth }) => {
             {/* Close button on Mobile */}
             <button
               onClick={() => setMobileOpen(false)}
-              className="md:hidden p-1.5 rounded-xl text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+              className="md:hidden p-1.5 rounded-xl text-slate-500 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
               title="Close Menu"
             >
               <HiX size={20} />
@@ -372,6 +415,16 @@ const Sidebar = ({ onOpenAuth }) => {
                 </div>
               )}
 
+              {(!isCollapsed || mobileOpen) && (
+                <button
+                  onClick={openSettings}
+                  className="p-1.5 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950/50 transition-colors cursor-pointer shrink-0"
+                  title="Settings & Preferences (Layout & Theme)"
+                >
+                  <BsGearFill size={15} />
+                </button>
+              )}
+
               <button
                 onClick={handleLogout}
                 className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/50 transition-colors cursor-pointer shrink-0"
@@ -390,52 +443,6 @@ const Sidebar = ({ onOpenAuth }) => {
               <FaUserGraduate size={13} />
               {(!isCollapsed || mobileOpen) && <span>Officer Sign In</span>}
             </button>
-          )}
-
-          {/* Compact Appearance Switcher */}
-          {(!isCollapsed || mobileOpen) ? (
-            <div className="pt-1 flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400 px-1">
-              <span className="font-bold flex items-center gap-1.5">
-                {theme === "dark" ? (
-                  <BsMoonStars className="text-indigo-400" size={11} />
-                ) : theme === "light" ? (
-                  <BsSun className="text-amber-500" size={11} />
-                ) : (
-                  <BsDisplay className="text-blue-500" size={11} />
-                )}
-                <span>Theme</span>
-              </span>
-              <div className="flex bg-slate-200/70 dark:bg-slate-800 p-0.5 rounded-lg text-[10px] font-black">
-                <button
-                  onClick={() => setTheme("light")}
-                  className={`px-2 py-0.5 rounded cursor-pointer ${theme === "light" ? "bg-white dark:bg-slate-700 text-amber-600 shadow-2xs" : ""}`}
-                >
-                  Light
-                </button>
-                <button
-                  onClick={() => setTheme("dark")}
-                  className={`px-2 py-0.5 rounded cursor-pointer ${theme === "dark" ? "bg-white dark:bg-slate-700 text-indigo-400 shadow-2xs" : ""}`}
-                >
-                  Dark
-                </button>
-                <button
-                  onClick={() => setTheme("system")}
-                  className={`px-2 py-0.5 rounded cursor-pointer ${theme === "system" ? "bg-white dark:bg-slate-700 text-blue-600 shadow-2xs" : ""}`}
-                >
-                  OS
-                </button>
-              </div>
-            </div>
-          ) : (
-            <div className="pt-1 flex justify-center">
-              <button
-                onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-                className="p-1.5 rounded-lg text-slate-500 hover:text-slate-900 dark:hover:text-white"
-                title={`Theme: ${theme}`}
-              >
-                {theme === "dark" ? <BsMoonStars size={13} /> : <BsSun size={13} />}
-              </button>
-            </div>
           )}
         </div>
       </aside>

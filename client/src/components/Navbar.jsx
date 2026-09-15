@@ -10,6 +10,7 @@ import {
   BsDisplay,
   BsLayoutSidebar,
   BsLayoutSidebarInsetReverse,
+  BsGearFill,
 } from "react-icons/bs";
 import {
   FaUserGraduate,
@@ -35,6 +36,7 @@ import { useTheme } from "../context/ThemeContext";
 import { useNavigation } from "../context/NavigationContext";
 import Sidebar from "./Sidebar";
 import AuthModel from "./AuthModel";
+import SettingsModal from "./SettingsModal";
 import toast from "react-hot-toast";
 
 const Navbar = () => {
@@ -45,6 +47,9 @@ const Navbar = () => {
     setNavMode,
     isCollapsed,
     setMobileOpen,
+    isSettingsOpen,
+    openSettings,
+    closeSettings,
   } = useNavigation();
 
   const [showUserPopup, setShowUserPopup] = useState(false);
@@ -174,19 +179,6 @@ const Navbar = () => {
 
           {/* Right Header Actions: Convert to Navbar, Credits, Profile */}
           <div className="flex items-center gap-2 sm:gap-3">
-            {/* Quick Button: Convert to Topbar */}
-            <button
-              onClick={toggleNavMode}
-              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold transition-all cursor-pointer shadow-2xs group"
-              title="Convert navigation layout back to horizontal Top Navbar"
-            >
-              <BsLayoutSidebarInsetReverse
-                size={13}
-                className="text-blue-600 dark:text-blue-400 group-hover:scale-110 transition-transform"
-              />
-              <span className="hidden sm:inline">Convert to Navbar</span>
-              <span className="sm:hidden text-[10px]">Topbar</span>
-            </button>
 
             {/* Profile Dropdown Toggle */}
             <div ref={userRef} className="relative">
@@ -254,34 +246,126 @@ const Navbar = () => {
                       </div>
                     </div>
 
-                    {/* Navigation Layout Switcher inside Popup */}
-                    <div className="p-2.5 bg-slate-50/80 dark:bg-slate-800/50 border-b border-slate-100 dark:border-slate-800">
-                      <div className="flex items-center justify-between mb-1.5 px-1">
-                        <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                          Navigation Layout
-                        </span>
-                        <span className="text-[9px] font-black px-1.5 py-0.5 rounded bg-blue-100 dark:bg-blue-900/60 text-blue-700 dark:text-blue-300">
-                          Active: Sidebar
-                        </span>
+                    {/* Settings Option Button */}
+                    <div className="p-2 border-b border-slate-100 dark:border-slate-800">
+                      <button
+                        onClick={() => {
+                          setShowUserPopup(false);
+                          openSettings();
+                        }}
+                        className="w-full text-left px-3 py-2 rounded-2xl hover:bg-blue-50/70 dark:hover:bg-blue-950/40 text-xs font-bold text-slate-700 dark:text-slate-200 flex items-center justify-between transition-colors cursor-pointer group"
+                      >
+                        <div className="flex items-center gap-2.5">
+                          <div className="p-1.5 rounded-xl bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 group-hover:rotate-45 transition-transform duration-300">
+                            <BsGearFill size={14} />
+                          </div>
+                          <div>
+                            <span className="block font-black text-slate-900 dark:text-white">Settings</span>
+                            <span className="block text-[10px] text-slate-500 dark:text-slate-400 font-medium">Layout & Theme Preferences</span>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-1.5 text-[10px] font-black px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-blue-600 dark:text-blue-400 border border-slate-200/60 dark:border-slate-700/60">
+                          <span className="capitalize">{navMode}</span>
+                          <span>•</span>
+                          <span className="capitalize">{theme}</span>
+                        </div>
+                      </button>
+                    </div>
+
+                    {/* Quick Settings: Navigation Layout & Theme */}
+                    <div className="p-3 bg-slate-50/80 dark:bg-slate-800/50 border-b border-slate-100 dark:border-slate-800 space-y-2.5">
+                      {/* Navigation Layout Switcher */}
+                      <div>
+                        <div className="flex items-center justify-between mb-1.5 px-0.5">
+                          <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-1">
+                            <BsLayoutSidebar size={11} />
+                            <span>Navigation Layout</span>
+                          </span>
+                          <span className="text-[9px] font-black px-1.5 py-0.5 rounded bg-blue-100 dark:bg-blue-900/60 text-blue-700 dark:text-blue-300">
+                            Active: {navMode === "sidebar" ? "Sidebar" : "Navbar"}
+                          </span>
+                        </div>
+                        <div className="grid grid-cols-2 gap-1 bg-slate-200/60 dark:bg-slate-900/80 p-1 rounded-xl text-xs font-bold">
+                          <button
+                            onClick={() => setNavMode("sidebar")}
+                            className={`flex items-center justify-center gap-1.5 py-1.5 rounded-lg transition-all cursor-pointer ${
+                              navMode === "sidebar"
+                                ? "bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 shadow-2xs font-black"
+                                : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+                            }`}
+                          >
+                            <BsLayoutSidebar size={12} />
+                            <span>Sidebar</span>
+                          </button>
+                          <button
+                            onClick={() => {
+                              setNavMode("topbar");
+                              setShowUserPopup(false);
+                            }}
+                            className={`flex items-center justify-center gap-1.5 py-1.5 rounded-lg transition-all cursor-pointer ${
+                              navMode === "topbar"
+                                ? "bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 shadow-2xs font-black"
+                                : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+                            }`}
+                          >
+                            <BsLayoutSidebarInsetReverse size={12} />
+                            <span>Navbar</span>
+                          </button>
+                        </div>
                       </div>
-                      <div className="grid grid-cols-2 gap-1 bg-slate-200/60 dark:bg-slate-900/80 p-1 rounded-xl text-xs font-bold">
-                        <button
-                          onClick={() => setNavMode("sidebar")}
-                          className="flex items-center justify-center gap-1.5 py-1.5 rounded-lg bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 shadow-2xs font-black cursor-pointer"
-                        >
-                          <BsLayoutSidebar size={12} />
-                          <span>Sidebar</span>
-                        </button>
-                        <button
-                          onClick={() => {
-                            setNavMode("topbar");
-                            setShowUserPopup(false);
-                          }}
-                          className="flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white cursor-pointer"
-                        >
-                          <BsLayoutSidebarInsetReverse size={12} />
-                          <span>Navbar</span>
-                        </button>
+
+                      {/* Theme / Appearance Switcher */}
+                      <div>
+                        <div className="flex items-center justify-between mb-1.5 px-0.5">
+                          <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-1">
+                            {theme === "dark" ? (
+                              <BsMoonStars size={11} className="text-indigo-400" />
+                            ) : theme === "light" ? (
+                              <BsSun size={11} className="text-amber-500" />
+                            ) : (
+                              <BsDisplay size={11} className="text-blue-500" />
+                            )}
+                            <span>Theme Mode</span>
+                          </span>
+                          <span className="text-[9px] font-black px-1.5 py-0.5 rounded bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 capitalize">
+                            {theme}
+                          </span>
+                        </div>
+                        <div className="grid grid-cols-3 gap-1 bg-slate-200/60 dark:bg-slate-900/80 p-1 rounded-xl text-xs font-bold">
+                          <button
+                            onClick={() => setTheme("system")}
+                            className={`flex items-center justify-center gap-1 py-1.5 rounded-lg transition-all cursor-pointer ${
+                              theme === "system"
+                                ? "bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 shadow-2xs font-black"
+                                : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+                            }`}
+                          >
+                            <BsDisplay size={11} />
+                            <span>System</span>
+                          </button>
+                          <button
+                            onClick={() => setTheme("light")}
+                            className={`flex items-center justify-center gap-1 py-1.5 rounded-lg transition-all cursor-pointer ${
+                              theme === "light"
+                                ? "bg-white dark:bg-slate-800 text-amber-500 shadow-2xs font-black"
+                                : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+                            }`}
+                          >
+                            <BsSun size={11} />
+                            <span>Light</span>
+                          </button>
+                          <button
+                            onClick={() => setTheme("dark")}
+                            className={`flex items-center justify-center gap-1 py-1.5 rounded-lg transition-all cursor-pointer ${
+                              theme === "dark"
+                                ? "bg-white dark:bg-slate-800 text-indigo-400 shadow-2xs font-black"
+                                : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+                            }`}
+                          >
+                            <BsMoonStars size={11} />
+                            <span>Dark</span>
+                          </button>
+                        </div>
                       </div>
                     </div>
 
@@ -329,13 +413,12 @@ const Navbar = () => {
         </header>
 
         {showAuth && <AuthModel onClose={() => setShowAuth(false)} />}
+        <SettingsModal isOpen={isSettingsOpen} onClose={closeSettings} />
       </>
     );
   }
 
-  // ==========================================
   // RENDER: HORIZONTAL TOP NAVBAR MODE
-  // ==========================================
   return (
     <>
       <nav className="fixed top-0 left-0 right-0 z-[100] bg-white/85 dark:bg-slate-950/85 backdrop-blur-2xl border-b border-slate-200/70 dark:border-slate-800/80 shadow-[0_4px_30px_rgba(0,0,0,0.03)] transition-all">
@@ -503,36 +586,128 @@ const Navbar = () => {
                         </div>
                       </div>
 
-                      {/* Navigation Layout Switcher */}
-                      <div className="p-2.5 bg-slate-50/80 dark:bg-slate-800/50 border-b border-slate-100 dark:border-slate-800">
-                        <div className="flex items-center justify-between mb-1.5 px-1">
-                          <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                            Navigation Layout
-                          </span>
-                          <span className="text-[9px] font-black px-1.5 py-0.5 rounded bg-blue-100 dark:bg-blue-900/60 text-blue-700 dark:text-blue-300">
-                            Active: Topbar
-                          </span>
+                      {/* Settings Option Button */}
+                      <div className="p-2 border-b border-slate-100 dark:border-slate-800">
+                        <button
+                          onClick={() => {
+                            setShowUserPopup(false);
+                            openSettings();
+                          }}
+                          className="w-full text-left px-3 py-2 rounded-2xl hover:bg-blue-50/70 dark:hover:bg-blue-950/40 text-xs font-bold text-slate-700 dark:text-slate-200 flex items-center justify-between transition-colors cursor-pointer group"
+                        >
+                          <div className="flex items-center gap-2.5">
+                            <div className="p-1.5 rounded-xl bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 group-hover:rotate-45 transition-transform duration-300">
+                              <BsGearFill size={14} />
+                            </div>
+                            <div>
+                              <span className="block font-black text-slate-900 dark:text-white">Settings</span>
+                              <span className="block text-[10px] text-slate-500 dark:text-slate-400 font-medium">Layout & Theme Preferences</span>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-1.5 text-[10px] font-black px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-blue-600 dark:text-blue-400 border border-slate-200/60 dark:border-slate-700/60">
+                            <span className="capitalize">{navMode}</span>
+                            <span>•</span>
+                            <span className="capitalize">{theme}</span>
+                          </div>
+                        </button>
+                      </div>
+
+                      {/* Quick Settings: Navigation Layout & Theme */}
+                      <div className="p-3 bg-slate-50/80 dark:bg-slate-800/50 border-b border-slate-100 dark:border-slate-800 space-y-2.5">
+                        {/* Navigation Layout Switcher */}
+                        <div>
+                          <div className="flex items-center justify-between mb-1.5 px-0.5">
+                            <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-1">
+                              <BsLayoutSidebar size={11} />
+                              <span>Navigation Layout</span>
+                            </span>
+                            <span className="text-[9px] font-black px-1.5 py-0.5 rounded bg-blue-100 dark:bg-blue-900/60 text-blue-700 dark:text-blue-300">
+                              Active: {navMode === "sidebar" ? "Sidebar" : "Navbar"}
+                            </span>
+                          </div>
+                          <div className="grid grid-cols-2 gap-1 bg-slate-200/60 dark:bg-slate-900/80 p-1 rounded-xl text-xs font-bold">
+                            <button
+                              onClick={() => {
+                                setNavMode("topbar");
+                              }}
+                              className={`flex items-center justify-center gap-1.5 py-1.5 rounded-lg transition-all cursor-pointer ${
+                                navMode === "topbar"
+                                  ? "bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 shadow-2xs font-black"
+                                  : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+                              }`}
+                            >
+                              <BsLayoutSidebarInsetReverse size={12} />
+                              <span>Navbar</span>
+                            </button>
+                            <button
+                              onClick={() => {
+                                setNavMode("sidebar");
+                                setShowUserPopup(false);
+                              }}
+                              className={`flex items-center justify-center gap-1.5 py-1.5 rounded-lg transition-all cursor-pointer ${
+                                navMode === "sidebar"
+                                  ? "bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 shadow-2xs font-black"
+                                  : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+                              }`}
+                            >
+                              <BsLayoutSidebar size={12} />
+                              <span>Sidebar</span>
+                            </button>
+                          </div>
                         </div>
-                        <div className="grid grid-cols-2 gap-1 bg-slate-200/60 dark:bg-slate-900/80 p-1 rounded-xl text-xs font-bold">
-                          <button
-                            onClick={() => {
-                              setNavMode("topbar");
-                            }}
-                            className="flex items-center justify-center gap-1.5 py-1.5 rounded-lg bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 shadow-2xs font-black cursor-pointer"
-                          >
-                            <BsLayoutSidebarInsetReverse size={12} />
-                            <span>Navbar</span>
-                          </button>
-                          <button
-                            onClick={() => {
-                              setNavMode("sidebar");
-                              setShowUserPopup(false);
-                            }}
-                            className="flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white cursor-pointer"
-                          >
-                            <BsLayoutSidebar size={12} />
-                            <span>Sidebar</span>
-                          </button>
+
+                        {/* Theme / Appearance Switcher */}
+                        <div>
+                          <div className="flex items-center justify-between mb-1.5 px-0.5">
+                            <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-1">
+                              {theme === "dark" ? (
+                                <BsMoonStars size={11} className="text-indigo-400" />
+                              ) : theme === "light" ? (
+                                <BsSun size={11} className="text-amber-500" />
+                              ) : (
+                                <BsDisplay size={11} className="text-blue-500" />
+                              )}
+                              <span>Theme Mode</span>
+                            </span>
+                            <span className="text-[9px] font-black px-1.5 py-0.5 rounded bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 capitalize">
+                              {theme}
+                            </span>
+                          </div>
+                          <div className="grid grid-cols-3 gap-1 bg-slate-200/60 dark:bg-slate-900/80 p-1 rounded-xl text-xs font-bold">
+                            <button
+                              onClick={() => setTheme("system")}
+                              className={`flex items-center justify-center gap-1 py-1.5 rounded-lg transition-all cursor-pointer ${
+                                theme === "system"
+                                  ? "bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 shadow-2xs font-black"
+                                  : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+                              }`}
+                            >
+                              <BsDisplay size={11} />
+                              <span>System</span>
+                            </button>
+                            <button
+                              onClick={() => setTheme("light")}
+                              className={`flex items-center justify-center gap-1 py-1.5 rounded-lg transition-all cursor-pointer ${
+                                theme === "light"
+                                  ? "bg-white dark:bg-slate-800 text-amber-500 shadow-2xs font-black"
+                                  : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+                              }`}
+                            >
+                              <BsSun size={11} />
+                              <span>Light</span>
+                            </button>
+                            <button
+                              onClick={() => setTheme("dark")}
+                              className={`flex items-center justify-center gap-1 py-1.5 rounded-lg transition-all cursor-pointer ${
+                                theme === "dark"
+                                  ? "bg-white dark:bg-slate-800 text-indigo-400 shadow-2xs font-black"
+                                  : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+                              }`}
+                            >
+                              <BsMoonStars size={11} />
+                              <span>Dark</span>
+                            </button>
+                          </div>
                         </div>
                       </div>
 
@@ -611,63 +786,6 @@ const Navbar = () => {
                           <FaComments size={14} className="text-emerald-500" />
                           <span>NSSTA Live Chat & Announcements</span>
                         </button>
-                      </div>
-
-                      {/* Appearance Switcher */}
-                      <div className="p-3 bg-slate-50/80 dark:bg-slate-800/60 border-t border-slate-100 dark:border-slate-800 space-y-2">
-                        <div className="flex items-center justify-between px-1">
-                          <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
-                            {theme === "dark" ? (
-                              <BsMoonStars className="text-indigo-400" size={12} />
-                            ) : theme === "light" ? (
-                              <BsSun className="text-amber-500" size={12} />
-                            ) : (
-                              <BsDisplay className="text-blue-500" size={12} />
-                            )}
-                            <span>Appearance</span>
-                          </span>
-                          <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950 text-blue-600 dark:text-blue-400 border border-blue-200/50 dark:border-blue-800/50 capitalize">
-                            {theme === "system" ? "System Default" : `${theme} Mode`}
-                          </span>
-                        </div>
-
-                        <div className="grid grid-cols-3 gap-1 bg-slate-200/70 dark:bg-slate-900/80 p-1 rounded-2xl border border-slate-200/50 dark:border-slate-800 text-xs font-bold">
-                          <button
-                            onClick={() => setTheme("system")}
-                            className={`flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-xl transition-all cursor-pointer ${
-                              theme === "system"
-                                ? "bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 shadow-sm font-black"
-                                : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
-                            }`}
-                          >
-                            <BsDisplay size={12} />
-                            <span>System</span>
-                          </button>
-
-                          <button
-                            onClick={() => setTheme("light")}
-                            className={`flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-xl transition-all cursor-pointer ${
-                              theme === "light"
-                                ? "bg-white dark:bg-slate-800 text-amber-500 shadow-sm font-black"
-                                : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
-                            }`}
-                          >
-                            <BsSun size={12} />
-                            <span>Light</span>
-                          </button>
-
-                          <button
-                            onClick={() => setTheme("dark")}
-                            className={`flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-xl transition-all cursor-pointer ${
-                              theme === "dark"
-                                ? "bg-white dark:bg-slate-800 text-indigo-400 shadow-sm font-black"
-                                : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
-                            }`}
-                          >
-                            <BsMoonStars size={12} />
-                            <span>Dark</span>
-                          </button>
-                        </div>
                       </div>
 
                       <div className="p-2 border-t border-slate-100 dark:border-slate-800">
@@ -809,6 +927,7 @@ const Navbar = () => {
       </nav>
 
       {showAuth && <AuthModel onClose={() => setShowAuth(false)} />}
+      <SettingsModal isOpen={isSettingsOpen} onClose={closeSettings} />
     </>
   );
 };

@@ -21,6 +21,12 @@ export const NavigationProvider = ({ children }) => {
   // Mobile drawer open/close
   const [mobileOpen, setMobileOpen] = useState(false);
 
+  // Settings Modal open/close state
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+
+  const openSettings = () => setIsSettingsOpen(true);
+  const closeSettings = () => setIsSettingsOpen(false);
+
   const setNavMode = (mode) => {
     setNavModeState(mode);
     localStorage.setItem("nav_layout_mode", mode);
@@ -39,6 +45,22 @@ export const NavigationProvider = ({ children }) => {
   const toggleCollapse = () => {
     setIsCollapsed(!isCollapsed);
   };
+
+  // Auto-close mobile drawer on route change
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [location.pathname]);
+
+  // Auto-close mobile drawer when window expands to desktop
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 768) {
+        setMobileOpen(false);
+      }
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   // Synchronize body classes so main page containers adapt automatically (excluding /auth)
   useEffect(() => {
@@ -69,6 +91,10 @@ export const NavigationProvider = ({ children }) => {
         toggleCollapse,
         mobileOpen,
         setMobileOpen,
+        isSettingsOpen,
+        setIsSettingsOpen,
+        openSettings,
+        closeSettings,
       }}
     >
       {children}
