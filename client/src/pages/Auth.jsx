@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { setUserData } from "../redux/userSlice";
 import { ServerUrl } from "../App";
 import axios from "axios";
@@ -20,6 +20,11 @@ import {
   FaTrashAlt,
   FaEye,
   FaEyeSlash,
+  FaCamera,
+  FaUpload,
+  FaCheck,
+  FaLock,
+  FaExclamationCircle,
 } from "react-icons/fa";
 import { BsCheckCircleFill, BsShieldLockFill, BsArrowRepeat } from "react-icons/bs";
 import { HiSparkles } from "react-icons/hi";
@@ -61,6 +66,7 @@ const Auth = ({ isModel = false }) => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const { userData } = useSelector((state) => state.user);
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -101,6 +107,163 @@ const Auth = ({ isModel = false }) => {
   ]);
   const [targetCadre, setTargetCadre] = useState(CADRE_OPTIONS[0]);
   const [experienceYears, setExperienceYears] = useState("");
+  const [profileImage, setProfileImage] = useState("");
+  const fileInputRef = useRef(null);
+
+  // Profile Image Upload & Processing (Canvas-optimized to max 360x360)
+  const handleImageChange = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      toast.error("Please select a valid image file (PNG, JPG, JPEG, WEBP).");
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Image file size must be under 5MB.");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        const MAX = 360;
+        let width = img.width;
+        let height = img.height;
+        if (width > height) {
+          if (width > MAX) {
+            height = Math.round((height * MAX) / width);
+            width = MAX;
+          }
+        } else {
+          if (height > MAX) {
+            width = Math.round((width * MAX) / height);
+            height = MAX;
+          }
+        }
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(img, 0, 0, width, height);
+        const dataUrl = canvas.toDataURL("image/jpeg", 0.85);
+        setProfileImage(dataUrl);
+        toast.success("Profile photo updated!");
+      };
+      img.src = event.target.result;
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleRemoveImage = () => {
+    setProfileImage("");
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+    toast.success("Photo removed. Initial letter avatar will be used.");
+  };
+
+  const getUserInitial = () => {
+    if (name && name.trim()) return name.trim().charAt(0).toUpperCase();
+    if (email && email.trim()) return email.trim().charAt(0).toUpperCase();
+    return "O";
+  };
+
+  // Comprehensive Step 3 Validation: All inputs must be completed for button to be clickable
+  const isFormCompleted = Boolean(
+    name && name.trim().length >= 2 &&
+    targetCadre && targetCadre.trim().length > 0 &&
+    accountRole &&
+    (accountRole !== "trainer" || (experienceYears !== "" && Number(experienceYears) >= 0 && !isNaN(Number(experienceYears)))) &&
+    educationList && educationList.length > 0 &&
+    educationList.every((item) =>
+      item.degree && item.degree.trim() &&
+      (item.degree !== "Other Higher Education Qualification" || (item.customDegree && item.customDegree.trim().length >= 2)) &&
+      item.collegeName && item.collegeName.trim().length >= 2 &&
+      item.passOutYearRange && item.passOutYearRange.trim() &&
+      (item.passOutYearRange !== "Custom Year Range" || (item.customYearRange && item.customYearRange.trim().length >= 4))
+    )
+  );
+
+  // Return list of pending items to guide the user in real time
+  const getPendingRequirements = () => {
+    const list = [];
+    if (!name || name.trim().length < 2) list.push("Officer Full Name");
+    if (!targetCadre) list.push("Target Cadre");
+    if (accountRole === "trainer" && (experienceYears === "" || Number(experienceYears) < 0 || isNaN(Number(experienceYears)))) {
+      list.push("Years of Training Experience");
+    }
+    educationList.forEach((item, idx) => {
+      const qNum = idx + 1;
+      if (!item.collegeName || item.collegeName.trim().length < 2) {
+        list.push(`College / University (Qual #${qNum})`);
+      }
+      if (item.degree === "Other Higher Education Qualification" && (!item.customDegree || item.customDegree.trim().length < 2)) {
+        list.push(`Degree Name (Qual #${qNum})`);
+      }
+      if (item.passOutYearRange === "Custom Year Range" && (!item.customYearRange || item.customYearRange.trim().length < 4)) {
+        list.push(`Pass-out Year (Qual #${qNum})`);
+      }
+    });
+    return list;
+  };
+
+  // Calculate completion percentage for progress indicator
+  const getCompletionPercentage = () => {
+    let score = 0;
+    const total = 4;
+    if (name && name.trim().length >= 2) score += 1;
+    if (targetCadre && targetCadre.trim()) score += 1;
+    if (accountRole && (accountRole !== "trainer" || (experienceYears !== "" && Number(experienceYears) >= 0))) score += 1;
+    const allEduValid = educationList && educationList.length > 0 && educationList.every((item) =>
+      item.collegeName && item.collegeName.trim().length >= 2 &&
+      (item.degree !== "Other Higher Education Qualification" || (item.customDegree && item.customDegree.trim().length >= 2)) &&
+      (item.passOutYearRange !== "Custom Year Range" || (item.customYearRange && item.customYearRange.trim().length >= 4))
+    );
+    if (allEduValid) score += 1;
+    return Math.round((score / total) * 100);
+  };
+
+  // Lock user to Profile Setup (Step 3) if authenticated but profile incomplete
+  // Prevents showing Home or any other screen on page refresh or reopening tab
+  useEffect(() => {
+    if (userData) {
+      if (!userData.isProfileCompleted) {
+        setStep(3);
+        setAuthenticatedUser(userData);
+        if (userData.name) setName(userData.name);
+        if (userData.email) setEmail(userData.email);
+        if (userData.role) setAccountRole(userData.role);
+        if (userData.targetCadre || userData.jobRole) {
+          setTargetCadre(userData.targetCadre || userData.jobRole);
+        }
+        if (userData.image || userData.picture) {
+          setProfileImage(userData.image || userData.picture);
+        }
+      } else if (!isModel) {
+        navigate("/dashboard", { replace: true });
+      }
+    }
+  }, [userData, isModel, navigate]);
+
+  // Sign out / Switch account handler for profile lock screen
+  const handleLogout = async () => {
+    try {
+      await axios.get(`${ServerUrl}/api/auth/logout`, { withCredentials: true });
+    } catch (e) {
+      console.error("Logout error:", e);
+    } finally {
+      localStorage.removeItem("token");
+      dispatch(setUserData(null));
+      setAuthenticatedUser(null);
+      setProfileImage("");
+      setStep(1);
+      setIsLogin(true);
+      toast.success("Signed out successfully.");
+    }
+  };
 
   // Countdown for Login/Signup OTP
   useEffect(() => {
@@ -244,6 +407,9 @@ const Auth = ({ isModel = false }) => {
       if (loggedUser.name) setName(loggedUser.name);
       if (loggedUser.email) setEmail(loggedUser.email);
       if (loggedUser.role) setAccountRole(loggedUser.role);
+      if (loggedUser.image || loggedUser.picture || googleUser.image) {
+        setProfileImage(loggedUser.image || loggedUser.picture || googleUser.image);
+      }
 
       // Check if profile details need completion
       if (!loggedUser.isProfileCompleted) {
@@ -340,6 +506,9 @@ const Auth = ({ isModel = false }) => {
           if (data.token) localStorage.setItem("token", data.token);
           setAuthenticatedUser(data.user);
           if (data.user?.role) setAccountRole(data.user.role);
+          if (data.user?.image || data.user?.picture) {
+            setProfileImage(data.user.image || data.user.picture);
+          }
 
           if (!data.user.isProfileCompleted) {
             toast.success("Signed in! Please finish your official profile.");
@@ -361,6 +530,9 @@ const Auth = ({ isModel = false }) => {
           if (data.token) localStorage.setItem("token", data.token);
           setAuthenticatedUser(data.user);
           if (data.user?.role) setAccountRole(data.user.role);
+          if (data.user?.image || data.user?.picture) {
+            setProfileImage(data.user.image || data.user.picture);
+          }
           toast.success("Account activated! Now set up your statistical profile. 🎓");
           setStep(3);
         }
@@ -528,10 +700,18 @@ const Auth = ({ isModel = false }) => {
       };
     });
 
+    const targetUserId = authenticatedUser?._id || userData?._id;
+    if (!targetUserId) {
+      toast.error("User session expired or not found. Please sign in again.");
+      return;
+    }
+
     setLoading(true);
     try {
       const payload = {
-        userId: authenticatedUser?._id,
+        userId: targetUserId,
+        name: name.trim(),
+        image: profileImage || "",
         education: formattedEducation,
         educationalQualification: formattedEducation.map((e) => e.degree).join(", "),
         collegeName: formattedEducation[0]?.institution || "",
@@ -572,7 +752,13 @@ const Auth = ({ isModel = false }) => {
       {/* Brand Header */}
       <div className="max-w-md w-full mx-auto text-center z-10">
         <div
-          onClick={() => navigate("/")}
+          onClick={() => {
+            if (userData && !userData.isProfileCompleted) {
+              toast.error("Please complete your profile setup first to access the academy.");
+              return;
+            }
+            navigate("/");
+          }}
           className="inline-flex items-center gap-3 cursor-pointer group mb-2 select-none"
         >
           <div className="relative w-11 h-11 rounded-2xl bg-gradient-to-br from-slate-950 via-blue-950 to-indigo-900 text-white flex flex-col items-center justify-center shadow-xl border border-blue-400/30 overflow-hidden shrink-0 group-hover:scale-105 transition-transform">
@@ -600,7 +786,7 @@ const Auth = ({ isModel = false }) => {
 
       {/* Main Authentication Card */}
       <div
-        className={`w-full mx-auto z-10 my-auto transition-all duration-300 ${step === 3 ? "max-w-2xl" : "max-w-md"
+        className={`w-full mx-auto z-10 my-auto transition-all duration-300 ${step === 3 ? "max-w-3xl" : "max-w-md"
           }`}
       >
         <div className="bg-slate-900/80 backdrop-blur-2xl border border-slate-700/80 rounded-3xl p-6 sm:p-8 shadow-2xl">
@@ -1207,28 +1393,327 @@ const Auth = ({ isModel = false }) => {
           {/* ========================================================= */}
           {step === 3 && (
             <form onSubmit={handleCompleteProfile} className="space-y-5">
+              {/* Mandatory Requirement Alert */}
+              {userData && !userData.isProfileCompleted && (
+                <div className="p-3.5 rounded-2xl bg-amber-500/15 border border-amber-500/30 text-amber-300 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-1">
+                  <div className="flex items-center gap-2.5">
+                    <span className="text-lg shrink-0">⚠️</span>
+                    <span className="leading-relaxed">
+                      <strong>Mandatory Setup:</strong> Please configure your official cadre profile below to unlock your dashboard and AI training academy.
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleLogout}
+                    className="self-start sm:self-auto shrink-0 px-3 py-1.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 text-amber-200 text-xs font-bold transition-all cursor-pointer hover:scale-102"
+                  >
+                    Sign Out / Switch
+                  </button>
+                </div>
+              )}
+
+              {/* Modern Header */}
               <div>
                 <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-blue-500/10 border border-blue-500/30 text-blue-400 text-[10px] font-bold uppercase tracking-wider mb-2">
                   <FaUserGraduate size={11} />
-                  <span>Cadre Onboarding Profile</span>
+                  <span>Official MoSPI NSSTA Onboarding</span>
                 </div>
-                <h2 className="text-xl font-bold text-white tracking-tight">
-                  Configure Your Professional Profile
+                <h2 className="text-xl sm:text-2xl font-black text-white tracking-tight">
+                  Statistical Officer Profile Setup
                 </h2>
                 <p className="text-xs text-slate-400 mt-1">
-                  Add one or more educational qualifications and confirm your role for MoSPI NSSTA competency benchmarks.
+                  Configure your verified identity, educational credentials, and cadre specialization to unlock customized competency pathways.
                 </p>
               </div>
 
-              {/* DYNAMIC MULTI-EDUCATION QUALIFICATIONS MANAGER */}
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <label className="text-xs font-bold text-slate-200 flex items-center gap-2">
-                    <span>Educational Qualifications</span>
-                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300 font-medium">
+              {/* ========================================================= */}
+              {/* 1. HERO AVATAR & IDENTITY PHOTO CARD                      */}
+              {/* ========================================================= */}
+              <div className="p-4 sm:p-5 rounded-2xl bg-slate-800/70 border border-slate-700/80 shadow-md">
+                <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-5">
+                  {/* Circular Avatar Container */}
+                  <div className="relative shrink-0 group">
+                    <div className="w-20 h-20 sm:w-22 sm:h-22 rounded-full p-1 bg-gradient-to-tr from-blue-500 via-indigo-500 to-emerald-400 shadow-xl shadow-blue-500/20 flex items-center justify-center">
+                      <div className="w-full h-full rounded-full overflow-hidden bg-slate-900 flex items-center justify-center relative">
+                        {profileImage ? (
+                          <img
+                            src={profileImage}
+                            alt={name || "Officer"}
+                            className="w-full h-full object-cover rounded-full group-hover:scale-105 transition-transform duration-200"
+                            onError={() => setProfileImage("")}
+                          />
+                        ) : (
+                          <div className="w-full h-full rounded-full bg-gradient-to-tr from-blue-600 via-indigo-600 to-purple-600 text-white flex items-center justify-center font-black text-3xl shadow-inner select-none uppercase tracking-wider">
+                            {getUserInitial()}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Camera Badge Button Overlay */}
+                    <button
+                      type="button"
+                      onClick={() => fileInputRef.current?.click()}
+                      className="absolute bottom-0 right-0 w-7 h-7 rounded-full bg-blue-600 hover:bg-blue-500 text-white flex items-center justify-center shadow-lg border-2 border-slate-900 cursor-pointer transition-all hover:scale-110"
+                      title={profileImage ? "Change Photo" : "Upload Photo"}
+                    >
+                      <FaCamera size={11} />
+                    </button>
+
+                    {/* Hidden Native File Input */}
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/png, image/jpeg, image/jpg, image/webp"
+                      onChange={handleImageChange}
+                      className="hidden"
+                    />
+                  </div>
+
+                  {/* Photo Info & Actions */}
+                  <div className="flex-1 text-center sm:text-left">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-1.5">
+                      <div>
+                        <h3 className="text-sm font-bold text-white flex items-center justify-center sm:justify-start gap-1.5">
+                          <span>Officer Profile Photo</span>
+                          {profileImage ? (
+                            <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-bold flex items-center gap-1">
+                              <FaCheck size={8} /> Custom Photo
+                            </span>
+                          ) : (
+                            <span className="text-[10px] px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300 font-bold">
+                              Default Initial Avatar
+                            </span>
+                          )}
+                        </h3>
+                        <p className="text-[11px] text-slate-400 mt-0.5">
+                          Shown on your academy certificates, peer cohort forums, and assessment scorecards.
+                        </p>
+                      </div>
+
+                      {/* Photo Action Buttons */}
+                      <div className="flex items-center justify-center sm:justify-end gap-2 shrink-0">
+                        <button
+                          type="button"
+                          onClick={() => fileInputRef.current?.click()}
+                          className="px-3 py-1.5 rounded-xl bg-blue-600/20 hover:bg-blue-600/30 border border-blue-500/40 text-blue-300 text-xs font-bold transition-all cursor-pointer inline-flex items-center gap-1.5 hover:scale-[1.02] active:scale-[0.98]"
+                        >
+                          <FaUpload size={10} />
+                          <span>{profileImage ? "Change Photo" : "Upload Photo"}</span>
+                        </button>
+                        {profileImage && (
+                          <button
+                            type="button"
+                            onClick={handleRemoveImage}
+                            className="px-2.5 py-1.5 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 text-rose-300 text-xs font-bold transition-all cursor-pointer inline-flex items-center gap-1 hover:scale-[1.02] active:scale-[0.98]"
+                            title="Remove custom photo and use first letter"
+                          >
+                            <FaTrashAlt size={10} />
+                            <span>Remove</span>
+                          </button>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="text-[10px] text-slate-500 mt-1">
+                      Supported: JPG, PNG, WEBP (Max 5MB • Automatically scaled & optimized)
+                    </div>
+                  </div>
+                </div>
+
+                {/* Name & Registered Email Inputs */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 pt-4 mt-4 border-t border-slate-700/60">
+                  {/* Full Name Input */}
+                  <div>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <label className="text-xs font-semibold text-slate-300">
+                        Officer Full Name <span className="text-rose-400">*</span>
+                      </label>
+                      {name && name.trim().length >= 2 ? (
+                        <span className="text-[10px] text-emerald-400 font-bold flex items-center gap-1">
+                          <FaCheck size={9} /> Valid
+                        </span>
+                      ) : (
+                        <span className="text-[10px] text-amber-400 font-medium">Required (min 2 chars)</span>
+                      )}
+                    </div>
+                    <div className="relative">
+                      <FaUserTie className="absolute left-3.5 top-3.5 text-slate-500" size={13} />
+                      <input
+                        type="text"
+                        required
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        placeholder="e.g. Dr. Rajesh Kumar / Ananya Sharma"
+                        className="w-full bg-slate-900/90 border border-slate-700 rounded-xl pl-10 pr-4 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-hidden focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Registered Email (Verified) */}
+                  <div>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <label className="text-xs font-semibold text-slate-300">
+                        Registered Email
+                      </label>
+                      <span className="text-[10px] text-emerald-400 font-bold flex items-center gap-1">
+                        <FaCheck size={9} /> Verified Account
+                      </span>
+                    </div>
+                    <div className="relative">
+                      <FaEnvelope className="absolute left-3.5 top-3.5 text-slate-500" size={13} />
+                      <input
+                        type="email"
+                        disabled
+                        readOnly
+                        value={email || authenticatedUser?.email || userData?.email || ""}
+                        className="w-full bg-slate-900/50 border border-slate-700/60 rounded-xl pl-10 pr-4 py-2.5 text-xs text-slate-400 cursor-not-allowed select-none"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* ========================================================= */}
+              {/* 2. CADRE DESIGNATION & CAPACITY TRACK                     */}
+              {/* ========================================================= */}
+              <div className="p-4 sm:p-5 rounded-2xl bg-slate-800/70 border border-slate-700/80 shadow-md space-y-4">
+                {/* Target Cadre / Specialization */}
+                <div>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label className="text-xs font-semibold text-slate-300">
+                      Target Cadre / Specialization Track <span className="text-rose-400">*</span>
+                    </label>
+                    <span className="text-[10px] text-blue-400 font-medium">MoSPI Official Cadres</span>
+                  </div>
+                  <div className="relative">
+                    <FaBriefcase className="absolute left-3.5 top-3.5 text-slate-500" size={13} />
+                    <select
+                      value={targetCadre}
+                      onChange={(e) => setTargetCadre(e.target.value)}
+                      className="w-full bg-slate-900/90 border border-slate-700 rounded-xl pl-10 pr-4 py-2.5 text-xs text-white focus:outline-hidden focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all cursor-pointer"
+                    >
+                      {CADRE_OPTIONS.map((cadre) => (
+                        <option key={cadre} value={cadre}>
+                          {cadre}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                {/* Account Role Selector Cards (Learner vs Trainer) */}
+                <div>
+                  <label className="block text-xs font-semibold text-slate-300 mb-2">
+                    Academy Operating Role <span className="text-rose-400">*</span>
+                  </label>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {/* Learner Card */}
+                    <div
+                      onClick={() => setAccountRole("learner")}
+                      className={`p-3.5 rounded-xl border transition-all cursor-pointer flex items-start gap-3 select-none ${
+                        accountRole === "learner"
+                          ? "bg-blue-600/15 border-blue-500 shadow-md shadow-blue-500/10 ring-1 ring-blue-500"
+                          : "bg-slate-900/60 border-slate-700/80 hover:border-slate-600"
+                      }`}
+                    >
+                      <div
+                        className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${
+                          accountRole === "learner"
+                            ? "bg-blue-600 text-white shadow-sm"
+                            : "bg-slate-800 text-slate-400"
+                        }`}
+                      >
+                        <FaUserTie size={15} />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-bold text-white">Statistical Learner</span>
+                          {accountRole === "learner" && (
+                            <span className="w-2 h-2 rounded-full bg-blue-400 animate-pulse" />
+                          )}
+                        </div>
+                        <p className="text-[11px] text-slate-400 mt-0.5 leading-snug">
+                          Officer undergoing capacity building, competency assessments, and AI practice.
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Trainer Card */}
+                    <div
+                      onClick={() => setAccountRole("trainer")}
+                      className={`p-3.5 rounded-xl border transition-all cursor-pointer flex items-start gap-3 select-none ${
+                        accountRole === "trainer"
+                          ? "bg-emerald-600/15 border-emerald-500 shadow-md shadow-emerald-500/10 ring-1 ring-emerald-500"
+                          : "bg-slate-900/60 border-slate-700/80 hover:border-slate-600"
+                      }`}
+                    >
+                      <div
+                        className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${
+                          accountRole === "trainer"
+                            ? "bg-emerald-600 text-white shadow-sm"
+                            : "bg-slate-800 text-slate-400"
+                        }`}
+                      >
+                        <FaChalkboardTeacher size={16} />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-bold text-white">Statistical Trainer</span>
+                          {accountRole === "trainer" && (
+                            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                          )}
+                        </div>
+                        <p className="text-[11px] text-slate-400 mt-0.5 leading-snug">
+                          Academy faculty creating modules, rubrics, and supervising trainee cohorts.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Conditional Trainer Experience Field */}
+                {accountRole === "trainer" && (
+                  <div className="p-3.5 rounded-xl bg-emerald-950/25 border border-emerald-500/40">
+                    <div className="flex items-center justify-between mb-1.5">
+                      <label className="text-xs font-semibold text-emerald-300">
+                        Years of Training / Domain Experience <span className="text-rose-400">*</span>
+                      </label>
+                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-bold">
+                        Faculty Credential
+                      </span>
+                    </div>
+                    <div className="relative">
+                      <FaCalendarAlt className="absolute left-3.5 top-3 text-emerald-400" size={13} />
+                      <input
+                        type="number"
+                        min="0"
+                        max="50"
+                        required
+                        value={experienceYears}
+                        onChange={(e) => setExperienceYears(e.target.value)}
+                        placeholder="e.g. 5"
+                        className="w-full bg-slate-900/90 border border-emerald-500/50 rounded-xl pl-10 pr-4 py-2 text-xs text-white placeholder-slate-500 focus:outline-hidden focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400 transition-all"
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* ========================================================= */}
+              {/* 3. DYNAMIC MULTI-EDUCATION QUALIFICATIONS MANAGER         */}
+              {/* ========================================================= */}
+              <div className="p-4 sm:p-5 rounded-2xl bg-slate-800/70 border border-slate-700/80 shadow-md space-y-3.5">
+                <div className="flex items-center justify-between border-b border-slate-700/60 pb-3">
+                  <div className="flex items-center gap-2">
+                    <FaUniversity className="text-blue-400" size={14} />
+                    <span className="text-xs sm:text-sm font-bold text-white">
+                      Educational Qualifications <span className="text-rose-400">*</span>
+                    </span>
+                    <span className="text-[10px] px-2.5 py-0.5 rounded-full bg-blue-500/20 text-blue-300 font-semibold">
                       {educationList.length} Added
                     </span>
-                  </label>
+                  </div>
                   <button
                     type="button"
                     onClick={handleAddEducation}
@@ -1239,20 +1724,20 @@ const Auth = ({ isModel = false }) => {
                   </button>
                 </div>
 
-                <div className="space-y-3 max-h-[340px] overflow-y-auto pr-1">
+                <div className="space-y-3 max-h-[380px] overflow-y-auto pr-1">
                   {educationList.map((item, index) => (
                     <div
                       key={item.id}
-                      className="p-3.5 rounded-2xl bg-slate-800/70 border border-slate-700/80 space-y-3 relative group"
+                      className="p-3.5 rounded-2xl bg-slate-900/80 border border-slate-700/80 space-y-3 relative group"
                     >
-                      <div className="flex items-center justify-between border-b border-slate-700/60 pb-2">
+                      <div className="flex items-center justify-between border-b border-slate-800 pb-2">
                         <span className="text-[11px] font-bold text-blue-400 flex items-center gap-1.5">
-                          <FaUniversity size={11} />
+                          <FaUserGraduate size={11} />
                           <span>
                             Qualification #{index + 1}{" "}
                             {index === 0 && (
-                              <span className="text-[9px] text-slate-400 font-normal">
-                                (Primary Degree)
+                              <span className="text-[9px] px-1.5 py-0.5 rounded-md bg-blue-500/20 text-blue-300 font-normal">
+                                Primary Degree
                               </span>
                             )}
                           </span>
@@ -1286,7 +1771,7 @@ const Auth = ({ isModel = false }) => {
                               onChange={(e) =>
                                 handleEducationChange(item.id, "degree", e.target.value)
                               }
-                              className="w-full bg-slate-900/80 border border-slate-700 rounded-xl pl-9 pr-4 py-2 text-xs text-white focus:outline-hidden focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all cursor-pointer"
+                              className="w-full bg-slate-800/90 border border-slate-700 rounded-xl pl-9 pr-4 py-2 text-xs text-white focus:outline-hidden focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all cursor-pointer"
                             >
                               {EDUCATION_OPTIONS.map((opt) => (
                                 <option key={opt} value={opt}>
@@ -1305,16 +1790,23 @@ const Auth = ({ isModel = false }) => {
                                 handleEducationChange(item.id, "customDegree", e.target.value)
                               }
                               placeholder="Specify your degree / qualification name..."
-                              className="w-full mt-2 bg-slate-900/80 border border-slate-700 rounded-xl px-3.5 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-hidden focus:border-blue-500"
+                              className="w-full mt-2 bg-slate-800/90 border border-slate-700 rounded-xl px-3.5 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-hidden focus:border-blue-500"
                             />
                           )}
                         </div>
 
                         {/* College / Institution Name */}
                         <div>
-                          <label className="block text-[11px] font-semibold text-slate-300 mb-1">
-                            College / University Name <span className="text-rose-400">*</span>
-                          </label>
+                          <div className="flex items-center justify-between mb-1">
+                            <label className="text-[11px] font-semibold text-slate-300">
+                              College / University Name <span className="text-rose-400">*</span>
+                            </label>
+                            {item.collegeName && item.collegeName.trim().length >= 2 && (
+                              <span className="text-[9px] text-emerald-400 font-bold flex items-center gap-0.5">
+                                <FaCheck size={7} /> Done
+                              </span>
+                            )}
+                          </div>
                           <div className="relative">
                             <FaUniversity
                               className="absolute left-3 top-3 text-slate-500"
@@ -1328,7 +1820,7 @@ const Auth = ({ isModel = false }) => {
                                 handleEducationChange(item.id, "collegeName", e.target.value)
                               }
                               placeholder="e.g. ISI Kolkata / Delhi University / IIT"
-                              className="w-full bg-slate-900/80 border border-slate-700 rounded-xl pl-9 pr-4 py-2 text-xs text-white placeholder-slate-500 focus:outline-hidden focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
+                              className="w-full bg-slate-800/90 border border-slate-700 rounded-xl pl-9 pr-4 py-2 text-xs text-white placeholder-slate-500 focus:outline-hidden focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
                             />
                           </div>
                         </div>
@@ -1348,7 +1840,7 @@ const Auth = ({ isModel = false }) => {
                               onChange={(e) =>
                                 handleEducationChange(item.id, "passOutYearRange", e.target.value)
                               }
-                              className="w-full bg-slate-900/80 border border-slate-700 rounded-xl pl-9 pr-4 py-2 text-xs text-white focus:outline-hidden focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all cursor-pointer"
+                              className="w-full bg-slate-800/90 border border-slate-700 rounded-xl pl-9 pr-4 py-2 text-xs text-white focus:outline-hidden focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all cursor-pointer"
                             >
                               {YEAR_RANGE_OPTIONS.map((yr) => (
                                 <option key={yr} value={yr}>
@@ -1367,7 +1859,7 @@ const Auth = ({ isModel = false }) => {
                                 handleEducationChange(item.id, "customYearRange", e.target.value)
                               }
                               placeholder="e.g. 2017 - 2021"
-                              className="w-full mt-2 bg-slate-900/80 border border-slate-700 rounded-xl px-3.5 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-hidden focus:border-blue-500"
+                              className="w-full mt-2 bg-slate-800/90 border border-slate-700 rounded-xl px-3.5 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-hidden focus:border-blue-500"
                             />
                           )}
                         </div>
@@ -1377,122 +1869,100 @@ const Auth = ({ isModel = false }) => {
                 </div>
               </div>
 
-              {/* TARGET CADRE & ACCOUNT ROLE */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t border-slate-700/60">
-                {/* Target Cadre / Job Role */}
+              {/* ========================================================= */}
+              {/* 4. COMPLETION READINESS & CONDITIONAL SUBMIT BUTTON        */}
+              {/* ========================================================= */}
+              <div className="p-4 sm:p-5 rounded-2xl bg-slate-800/90 border border-slate-700/90 shadow-xl space-y-3.5">
+                {/* Readiness Meter */}
                 <div>
-                  <label className="block text-xs font-semibold text-slate-300 mb-1.5">
-                    Target Cadre / Job Role <span className="text-rose-400">*</span>
-                  </label>
-                  <div className="relative">
-                    <FaBriefcase
-                      className="absolute left-3.5 top-3.5 text-slate-500"
-                      size={13}
+                  <div className="flex items-center justify-between text-xs mb-1.5">
+                    <span className="font-bold text-slate-300 flex items-center gap-1.5">
+                      <span>Profile Setup Readiness</span>
+                    </span>
+                    <span
+                      className={`text-[11px] font-black px-2 py-0.5 rounded-full ${
+                        isFormCompleted
+                          ? "bg-emerald-500/20 text-emerald-300"
+                          : "bg-amber-500/20 text-amber-300"
+                      }`}
+                    >
+                      {isFormCompleted ? "100% Ready" : `${getCompletionPercentage()}% Complete`}
+                    </span>
+                  </div>
+
+                  {/* Progress Bar Track */}
+                  <div className="w-full h-2 rounded-full bg-slate-950 overflow-hidden border border-slate-800">
+                    <div
+                      className={`h-full rounded-full transition-all duration-300 ${
+                        isFormCompleted
+                          ? "bg-gradient-to-r from-blue-500 via-emerald-400 to-teal-400"
+                          : "bg-gradient-to-r from-blue-500 to-amber-400"
+                      }`}
+                      style={{ width: `${getCompletionPercentage()}%` }}
                     />
-                    <select
-                      value={targetCadre}
-                      onChange={(e) => setTargetCadre(e.target.value)}
-                      className="w-full bg-slate-800/90 border border-slate-700 rounded-xl pl-10 pr-4 py-2.5 text-xs text-white focus:outline-hidden focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all cursor-pointer"
-                    >
-                      {CADRE_OPTIONS.map((cadre) => (
-                        <option key={cadre} value={cadre}>
-                          {cadre}
-                        </option>
+                  </div>
+                </div>
+
+                {/* Validation Status Indicator */}
+                {!isFormCompleted ? (
+                  <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-[11px] text-amber-300 leading-relaxed">
+                    <div className="font-bold flex items-center gap-1.5 mb-1">
+                      <FaExclamationCircle size={12} className="text-amber-400 shrink-0" />
+                      <span>Action Required to Unlock Launch:</span>
+                    </div>
+                    <div className="flex flex-wrap gap-1.5 mt-1">
+                      {getPendingRequirements().map((req, idx) => (
+                        <span
+                          key={idx}
+                          className="px-2 py-0.5 rounded-md bg-amber-500/20 border border-amber-500/30 text-amber-200 text-[10px] font-medium"
+                        >
+                          • {req}
+                        </span>
                       ))}
-                    </select>
-                  </div>
-                </div>
-
-                {/* Account Role Selector */}
-                <div>
-                  <label className="block text-xs font-semibold text-slate-300 mb-1.5">
-                    Account Role <span className="text-rose-400">*</span>
-                  </label>
-                  <div className="relative">
-                    {accountRole === "trainer" ? (
-                      <FaChalkboardTeacher
-                        className="absolute left-3.5 top-3.5 text-emerald-400"
-                        size={14}
-                      />
-                    ) : (
-                      <FaUserTie
-                        className="absolute left-3.5 top-3.5 text-blue-400"
-                        size={14}
-                      />
-                    )}
-                    <select
-                      value={accountRole}
-                      onChange={(e) => setAccountRole(e.target.value)}
-                      className="w-full bg-slate-800/90 border border-slate-700 rounded-xl pl-10 pr-4 py-2.5 text-xs text-white focus:outline-hidden focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all cursor-pointer"
-                    >
-                      <option value="learner">Statistical Learner / Officer</option>
-                      <option value="trainer">Statistical Trainer / Domain Faculty</option>
-                    </select>
-                  </div>
-                </div>
-
-                {/* Conditional Trainer Experience Field */}
-                {accountRole === "trainer" && (
-                  <div className="sm:col-span-2">
-                    <label className="block text-xs font-semibold text-emerald-400 mb-1.5 flex items-center justify-between">
-                      <span>Years of Training / Domain Experience *</span>
-                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-bold">
-                        Faculty Credential
-                      </span>
-                    </label>
-                    <div className="relative">
-                      <FaChalkboardTeacher
-                        className="absolute left-3.5 top-3.5 text-emerald-400"
-                        size={14}
-                      />
-                      <input
-                        type="number"
-                        min="0"
-                        max="50"
-                        required
-                        value={experienceYears}
-                        onChange={(e) => setExperienceYears(e.target.value)}
-                        placeholder="e.g. 5"
-                        className="w-full bg-slate-800/90 border-2 border-emerald-500/50 rounded-xl pl-10 pr-4 py-2 text-xs text-white placeholder-slate-500 focus:outline-hidden focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400 transition-all"
-                      />
                     </div>
                   </div>
-                )}
-              </div>
-
-              {/* Account Role Summary Callout */}
-              <div className="p-3 rounded-xl bg-slate-800/50 border border-slate-700/60 text-[11px] text-slate-400 leading-relaxed">
-                {accountRole === "learner" && (
-                  <span>
-                    💡 <strong>Learner Mode:</strong> Personalized capacity building pathways, practice quizzes, and viva assessments tailored to {targetCadre}.
-                  </span>
-                )}
-                {accountRole === "trainer" && (
-                  <span>
-                    🎓 <strong>Trainer Mode:</strong> Verified faculty access to curriculum modules, evaluation rubrics, and trainee analytics based on your {experienceYears || 0} years experience.
-                  </span>
-                )}
-                {accountRole === "admin" && (
-                  <span>
-                    🏛️ <strong>Administrator Mode:</strong> Academy-level oversight across MoSPI divisions, batch tracking, and TPAC analytics.
-                  </span>
-                )}
-              </div>
-
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-600 hover:from-blue-700 hover:to-indigo-700 text-white py-3.5 rounded-xl font-bold text-xs shadow-xl hover:shadow-blue-500/30 active:scale-98 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
-              >
-                {loading ? (
-                  <span className="inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                 ) : (
-                  <>
-                    <BsCheckCircleFill size={14} />
-                    <span>Complete Profile & Launch Platform 🚀</span>
-                  </>
+                  <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-[11px] text-emerald-300 flex items-center gap-2">
+                    <BsCheckCircleFill size={14} className="text-emerald-400 shrink-0" />
+                    <span>
+                      All required fields verified! Click below to save your official profile and access the platform.
+                    </span>
+                  </div>
                 )}
-              </button>
+
+                {/* SUBMIT BUTTON: Strictly clickable ONLY when isFormCompleted is true */}
+                <button
+                  type="submit"
+                  disabled={!isFormCompleted || loading}
+                  className={`w-full py-4 rounded-xl font-bold text-xs sm:text-sm transition-all flex items-center justify-center gap-2.5 ${
+                    isFormCompleted && !loading
+                      ? "bg-gradient-to-r from-blue-600 via-indigo-600 to-emerald-600 hover:from-blue-500 hover:via-indigo-500 hover:to-emerald-500 text-white shadow-xl shadow-blue-500/30 cursor-pointer active:scale-[0.99]"
+                      : "bg-slate-800/80 text-slate-500 border border-slate-700/80 cursor-not-allowed select-none opacity-60"
+                  }`}
+                  title={
+                    !isFormCompleted
+                      ? "Please complete all required fields above to enable this button"
+                      : "Click to complete profile setup and launch your dashboard"
+                  }
+                >
+                  {loading ? (
+                    <>
+                      <span className="inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      <span>Saving Profile Configuration...</span>
+                    </>
+                  ) : !isFormCompleted ? (
+                    <>
+                      <FaLock size={12} className="text-slate-500" />
+                      <span>Complete All Fields Above to Activate Launch</span>
+                    </>
+                  ) : (
+                    <>
+                      <BsCheckCircleFill size={15} className="text-emerald-300 animate-pulse" />
+                      <span>Complete Profile & Launch Platform 🚀</span>
+                    </>
+                  )}
+                </button>
+              </div>
             </form>
           )}
         </div>

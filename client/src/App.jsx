@@ -47,11 +47,60 @@ const ProtectedRoute = ({ children, loading, requireAdmin = false }) => {
     return <Navigate to="/auth" replace />;
   }
 
+  // Mandatory Profile Completion Guard: must complete profile setup first
+  if (!userData.isProfileCompleted) {
+    return <Navigate to="/auth" replace />;
+  }
+
   if (requireAdmin && userData.role !== "admin") {
     return <Navigate to="/" replace />;
   }
 
   return children;
+};
+
+// Guard for Public Routes: never show home page or any page if profile is incomplete
+const PublicRoute = ({ children, loading }) => {
+  const userData = useSelector((state) => state.user.userData);
+
+  if (loading) {
+    return (
+      <div className="h-screen flex items-center justify-center bg-slate-900 text-white font-bold text-sm">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
+          <span>Authenticating Session...</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (userData && !userData.isProfileCompleted) {
+    return <Navigate to="/auth" replace />;
+  }
+
+  return children;
+};
+
+// Route Guard for Auth Page
+const AuthRoute = ({ loading }) => {
+  const userData = useSelector((state) => state.user.userData);
+
+  if (loading) {
+    return (
+      <div className="h-screen flex items-center justify-center bg-slate-900 text-white font-bold text-sm">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
+          <span>Authenticating Session...</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (userData && userData.isProfileCompleted) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  return <Auth />;
 };
 
 const App = () => {
@@ -84,8 +133,15 @@ const App = () => {
       <Toaster position="top-center" reverseOrder={false} />
       <ScrollProgressBar />
       <Routes>
-        {/* Public SaaS Landing Page */}
-        <Route path="/" element={<Home />} />
+        {/* Public Landing Page */}
+        <Route
+          path="/"
+          element={
+            <PublicRoute loading={loading}>
+              <Home />
+            </PublicRoute>
+          }
+        />
 
         {/* Protected Dashboard */}
         <Route
@@ -183,10 +239,17 @@ const App = () => {
             </ProtectedRoute>
           }
         />
-        <Route path="/community" element={<Community />} />
+        <Route
+          path="/community"
+          element={
+            <PublicRoute loading={loading}>
+              <Community />
+            </PublicRoute>
+          }
+        />
 
         {/* Authentication */}
-        <Route path="/auth" element={<Auth />} />
+        <Route path="/auth" element={<AuthRoute loading={loading} />} />
 
         {/* Preserved Mock Interview Features */}
         <Route
@@ -215,11 +278,41 @@ const App = () => {
         />
 
         {/* Legal & Static Pages */}
-        <Route path="/terms" element={<TermsOfService />} />
-        <Route path="/privacy" element={<PrivacyPolicy />} />
-        <Route path="/welcome" element={<Home />} />
+        <Route
+          path="/terms"
+          element={
+            <PublicRoute loading={loading}>
+              <TermsOfService />
+            </PublicRoute>
+          }
+        />
+        <Route
+          path="/privacy"
+          element={
+            <PublicRoute loading={loading}>
+              <PrivacyPolicy />
+            </PublicRoute>
+          }
+        />
+        <Route
+          path="/welcome"
+          element={
+            <PublicRoute loading={loading}>
+              <Home />
+            </PublicRoute>
+          }
+        />
+        {/* Wildcard Fallback Route */}
+        <Route
+          path="*"
+          element={
+            <PublicRoute loading={loading}>
+              <Navigate to="/" replace />
+            </PublicRoute>
+          }
+        />
       </Routes>
-      {userData && <LiveAdminChatWidget />}
+      {userData && userData.isProfileCompleted && <LiveAdminChatWidget />}
     </>
   );
 };

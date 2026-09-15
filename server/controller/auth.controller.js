@@ -619,6 +619,8 @@ export const completeProfile = async (req, res) => {
         }
 
         const {
+            name,
+            image,
             educationalQualification,
             collegeName,
             passOutYearRange,
@@ -632,6 +634,15 @@ export const completeProfile = async (req, res) => {
         const user = await User.findById(userId);
         if (!user) {
             return res.status(404).json({ success: false, message: "User not found." });
+        }
+
+        if (name && name.trim()) {
+            user.name = name.trim();
+        }
+
+        if (image !== undefined) {
+            user.image = image;
+            user.picture = image;
         }
 
         // Support both structured multiple education array and legacy fields
