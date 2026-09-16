@@ -60,6 +60,36 @@ const userSchema = new mongoose.Schema(
             default: null,
         },
 
+        // Alternate Email Verification & Safeguards
+        alternateEmail: {
+            type: String,
+            lowercase: true,
+            trim: true,
+            default: "",
+        },
+        alternateEmailVerified: {
+            type: Boolean,
+            default: false,
+        },
+        pendingAlternateEmail: {
+            type: String,
+            lowercase: true,
+            trim: true,
+            default: "",
+        },
+        alternateOtpHash: {
+            type: String,
+            default: null,
+        },
+        alternateOtpExpiresAt: {
+            type: Date,
+            default: null,
+        },
+        alternateOtpLastSentAt: {
+            type: Date,
+            default: null,
+        },
+
         designation: {
             type: String,
             default: "Statistical Officer",
@@ -208,6 +238,11 @@ userSchema.methods.matchPassword = async function (enteredPassword) {
 userSchema.methods.matchOtp = async function (enteredOtp) {
     if (!this.otpHash) return false;
     return await bcrypt.compare(enteredOtp.toString(), this.otpHash);
+};
+
+userSchema.methods.matchAlternateOtp = async function (enteredOtp) {
+    if (!this.alternateOtpHash) return false;
+    return await bcrypt.compare(enteredOtp.toString(), this.alternateOtpHash);
 };
 
 const User = mongoose.model("User", userSchema);

@@ -8,9 +8,11 @@ export const NavigationProvider = ({ children }) => {
   const location = useLocation();
   const { userData } = useSelector((state) => state.user);
 
+  // navMode: 'sidebar' (default) | 'topbar'
   const [navMode, setNavModeState] = useState(() => {
     const saved = localStorage.getItem("nav_layout_mode");
-    return saved === "topbar" || saved === "sidebar" ? saved : "sidebar";
+    if (saved === "topbar" || saved === "navbar") return "topbar";
+    return "sidebar"; // Default is ALWAYS sidebar
   });
 
   const [isCollapsed, setIsCollapsedState] = useState(() => {
@@ -26,8 +28,9 @@ export const NavigationProvider = ({ children }) => {
   const closeSettings = () => setIsSettingsOpen(false);
 
   const setNavMode = (mode) => {
-    setNavModeState(mode);
-    localStorage.setItem("nav_layout_mode", mode);
+    const normalized = mode === "topbar" || mode === "navbar" ? "topbar" : "sidebar";
+    setNavModeState(normalized);
+    localStorage.setItem("nav_layout_mode", normalized);
   };
 
   const toggleNavMode = () => {
@@ -61,12 +64,11 @@ export const NavigationProvider = ({ children }) => {
   }, []);
 
   // Synchronize body classes so main page containers adapt automatically (excluding /auth)
-  // When user is not signed in, sidebar mode is never applied to the page
   useEffect(() => {
     const root = document.body;
     const isAuthPage = location.pathname === "/auth";
 
-    if (userData && navMode === "sidebar" && !isAuthPage) {
+    if (navMode === "sidebar" && !isAuthPage) {
       root.classList.add("layout-mode-sidebar");
       if (isCollapsed) {
         root.classList.add("sidebar-collapsed");
@@ -77,9 +79,9 @@ export const NavigationProvider = ({ children }) => {
       root.classList.remove("layout-mode-sidebar");
       root.classList.remove("sidebar-collapsed");
     }
-  }, [userData, navMode, isCollapsed, location.pathname]);
+  }, [navMode, isCollapsed, location.pathname]);
 
-  const effectiveNavMode = userData ? navMode : "topbar";
+  const effectiveNavMode = navMode;
 
   return (
     <NavigationContext.Provider

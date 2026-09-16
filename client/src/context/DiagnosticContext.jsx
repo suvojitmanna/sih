@@ -58,6 +58,7 @@ export const DiagnosticProvider = ({ children }) => {
   const isIntakeComplete = Boolean(
     !userData ||
     userData.role === "admin" ||
+    userData.role === "trainer" ||
     (diagnosticStatus?.isDiagnosticFullyCompleted ??
       (diagnosticStatus?.isQuizCompleted &&
         diagnosticStatus?.isInterviewCompleted))
@@ -67,6 +68,7 @@ export const DiagnosticProvider = ({ children }) => {
     userData &&
     userData.isProfileCompleted &&
     userData.role !== "admin" &&
+    userData.role !== "trainer" &&
     !isIntakeComplete
   );
 

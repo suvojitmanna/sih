@@ -301,6 +301,9 @@ const SettingsModal = ({ isOpen, onClose }) => {
                             <div>
                               <div className="font-black text-sm text-slate-900 dark:text-white flex items-center gap-1.5">
                                 Sidebar Dock
+                                <span className="px-1.5 py-0.2 rounded text-[9px] font-black bg-blue-100 dark:bg-blue-900/60 text-blue-700 dark:text-blue-300">
+                                  DEFAULT
+                                </span>
                               </div>
                               <span className="text-[10px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wide">
                                 Modern & Collapsible
@@ -348,6 +351,9 @@ const SettingsModal = ({ isOpen, onClose }) => {
                             <div>
                               <div className="font-black text-sm text-slate-900 dark:text-white flex items-center gap-1.5">
                                 Top Navbar
+                                <span className="px-1.5 py-0.2 rounded text-[9px] font-black bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300">
+                                  ALTERNATE
+                                </span>
                               </div>
                               <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide">
                                 Classic Full-Width

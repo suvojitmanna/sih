@@ -243,7 +243,11 @@ const Auth = ({ isModel = false }) => {
           setProfileImage(userData.image || userData.picture);
         }
       } else if (!isModel) {
-        navigate("/dashboard", { replace: true });
+        if (userData.role === "trainer" || userData.role === "admin") {
+          navigate("/admin", { replace: true });
+        } else {
+          navigate("/dashboard", { replace: true });
+        }
       }
     }
   }, [userData, isModel, navigate]);
@@ -418,7 +422,11 @@ const Auth = ({ isModel = false }) => {
       } else {
         toast.success(`Welcome back, ${loggedUser.name || "Officer"}! Signed in with Google. 🚀`);
         if (!isModel) {
-          navigate("/dashboard");
+          if (loggedUser.role === "trainer" || loggedUser.role === "admin") {
+            navigate("/admin");
+          } else {
+            navigate("/dashboard");
+          }
         }
       }
     } catch (error) {
@@ -515,7 +523,11 @@ const Auth = ({ isModel = false }) => {
             setStep(3);
           } else {
             toast.success("Welcome back! Signed in securely. ✨");
-            navigate("/dashboard");
+            if (data.user?.role === "trainer" || data.user?.role === "admin") {
+              navigate("/admin");
+            } else {
+              navigate("/dashboard");
+            }
           }
         }
       } else {
@@ -733,7 +745,11 @@ const Auth = ({ isModel = false }) => {
         toast.success(
           `Welcome to SankhyaIQ AI, ${data.user.name || "Officer"}! Profile configured successfully. 🚀`
         );
-        navigate("/dashboard");
+        if (data.user?.role === "trainer" || data.user?.role === "admin") {
+          navigate("/admin");
+        } else {
+          navigate("/dashboard");
+        }
       }
     } catch (error) {
       console.error("[PROFILE COMPLETE ERROR]", error);

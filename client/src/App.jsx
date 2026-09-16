@@ -58,8 +58,13 @@ const ProtectedRoute = ({ children, loading, requireAdmin = false }) => {
     return <Navigate to="/auth" replace />;
   }
 
-  if (requireAdmin && userData.role !== "admin") {
+  if (requireAdmin && userData.role !== "admin" && userData.role !== "trainer") {
     return <Navigate to="/" replace />;
+  }
+
+  // Trainer role restriction: if role is trainer, just show admin portal not show any other function
+  if (userData.role === "trainer" && location.pathname !== "/admin" && location.pathname !== "/settings") {
+    return <Navigate to="/admin" replace />;
   }
 
   if (!isAssessmentAllowed(location.pathname)) {
@@ -73,6 +78,7 @@ const ProtectedRoute = ({ children, loading, requireAdmin = false }) => {
 // Guard for Public Routes: never show home page or any page if profile is incomplete
 const PublicRoute = ({ children, loading }) => {
   const userData = useSelector((state) => state.user.userData);
+  const location = useLocation();
 
   if (loading) {
     return (
@@ -87,6 +93,11 @@ const PublicRoute = ({ children, loading }) => {
 
   if (userData && !userData.isProfileCompleted) {
     return <Navigate to="/auth" replace />;
+  }
+
+  // Trainer role: only show Admin Portal, redirect away from public landing pages
+  if (userData?.role === "trainer" && (location.pathname === "/" || location.pathname === "/welcome")) {
+    return <Navigate to="/admin" replace />;
   }
 
   return children;
@@ -109,6 +120,9 @@ const AuthRoute = ({ loading }) => {
   }
 
   if (userData && userData.isProfileCompleted) {
+    if (userData.role === "trainer" || userData.role === "admin") {
+      return <Navigate to="/admin" replace />;
+    }
     if (isIntakePending) {
       return <Navigate to="/" replace />;
     }
@@ -368,7 +382,7 @@ const App = () => {
           }
         />
       </Routes>
-      {userData && userData.isProfileCompleted && <LiveAdminChatWidget />}
+      {userData && userData.isProfileCompleted && userData.role !== "trainer" && <LiveAdminChatWidget />}
     </>
   );
 };

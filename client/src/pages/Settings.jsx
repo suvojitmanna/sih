@@ -9,7 +9,7 @@ import { useTheme } from "../context/ThemeContext";
 import { ServerUrl } from "../App";
 import axios from "axios";
 import toast from "react-hot-toast";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   FaUserTie,
   FaIdCard,
@@ -27,6 +27,11 @@ import {
   FaSave,
   FaUndo,
   FaLock,
+  FaPaperPlane,
+  FaCheck,
+  FaTimes,
+  FaEdit,
+  FaSpinner,
 } from "react-icons/fa";
 import {
   BsLayoutSidebar,
@@ -123,6 +128,27 @@ const Settings = () => {
   const [savingProfile, setSavingProfile] = useState(false);
   const fileInputRef = useRef(null);
 
+  // Alternate Email Verification States (NSSTA MoSPI)
+  const [alternateEmailInput, setAlternateEmailInput] = useState("");
+  const [isEditingAlternate, setIsEditingAlternate] = useState(false);
+  const [showOtpModal, setShowOtpModal] = useState(false);
+  const [otpDigits, setOtpDigits] = useState(["", "", "", "", "", ""]);
+  const [otpLoading, setOtpLoading] = useState(false);
+  const [verifyLoading, setVerifyLoading] = useState(false);
+  const [removeLoading, setRemoveLoading] = useState(false);
+  const [resendCooldown, setResendCooldown] = useState(0);
+
+  // Countdown timer for Resend OTP
+  useEffect(() => {
+    let timer;
+    if (resendCooldown > 0) {
+      timer = setInterval(() => {
+        setResendCooldown((prev) => (prev <= 1 ? 0 : prev - 1));
+      }, 1000);
+    }
+    return () => clearInterval(timer);
+  }, [resendCooldown]);
+
   useEffect(() => {
     if (userData) {
       setProfileForm({
@@ -184,6 +210,14 @@ const Settings = () => {
             customYearRange: isStandardYr ? "" : userData.passOutYearRange || "",
           },
         ]);
+      }
+
+      if (userData.alternateEmail) {
+        setAlternateEmailInput(userData.alternateEmail);
+        setIsEditingAlternate(false);
+      } else {
+        setAlternateEmailInput("");
+        setIsEditingAlternate(true);
       }
     }
   }, [userData]);
@@ -291,6 +325,138 @@ const Settings = () => {
     toast.success("Reset to saved profile details.");
   };
 
+  // Alternate Email OTP Handlers (MoSPI-NSSTA Verification)
+  const handleOtpChange = (index, value) => {
+    if (value.length > 1) {
+      const pasted = value.replace(/\D/g, "").slice(0, 6);
+      if (pasted.length > 0) {
+        const newDigits = ["", "", "", "", "", ""];
+        for (let i = 0; i < pasted.length; i++) {
+          newDigits[i] = pasted[i];
+        }
+        setOtpDigits(newDigits);
+        const nextIndex = Math.min(pasted.length, 5);
+        document.getElementById(`otp-input-${nextIndex}`)?.focus();
+        return;
+      }
+    }
+
+    const clean = value.replace(/\D/g, "");
+    const newDigits = [...otpDigits];
+    newDigits[index] = clean;
+    setOtpDigits(newDigits);
+
+    if (clean && index < 5) {
+      document.getElementById(`otp-input-${index + 1}`)?.focus();
+    }
+  };
+
+  const handleOtpKeyDown = (e, index) => {
+    if (e.key === "Backspace" && !otpDigits[index] && index > 0) {
+      document.getElementById(`otp-input-${index - 1}`)?.focus();
+    }
+  };
+
+  const handleSendAlternateOtp = async () => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const cleanEmail = alternateEmailInput.trim().toLowerCase();
+
+    if (!cleanEmail) {
+      toast.error("Please enter an alternate email address.");
+      return;
+    }
+
+    if (!emailRegex.test(cleanEmail)) {
+      toast.error("Please enter a valid email address (e.g. officer@nic.in).");
+      return;
+    }
+
+    if (cleanEmail === userData?.email?.toLowerCase()) {
+      toast.error("Alternate email cannot be the same as your primary account email.");
+      return;
+    }
+
+    setOtpLoading(true);
+    try {
+      const res = await axios.post(
+        `${ServerUrl}/api/user/alternate-email/send-otp`,
+        { alternateEmail: cleanEmail },
+        { withCredentials: true }
+      );
+
+      if (res.data?.success) {
+        toast.success(res.data.message || `Verification code sent to ${cleanEmail}`);
+        setOtpDigits(["", "", "", "", "", ""]);
+        setShowOtpModal(true);
+        setResendCooldown(60);
+        setTimeout(() => {
+          document.getElementById("otp-input-0")?.focus();
+        }, 120);
+      }
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed to send verification code.");
+    } finally {
+      setOtpLoading(false);
+    }
+  };
+
+  const handleVerifyAlternateOtp = async (e) => {
+    e?.preventDefault();
+    const fullOtp = otpDigits.join("");
+    if (fullOtp.length !== 6) {
+      toast.error("Please enter the complete 6-digit verification code.");
+      return;
+    }
+
+    setVerifyLoading(true);
+    try {
+      const res = await axios.post(
+        `${ServerUrl}/api/user/alternate-email/verify-otp`,
+        { otp: fullOtp },
+        { withCredentials: true }
+      );
+
+      if (res.data?.success) {
+        toast.success(res.data.message || "Alternate email verified successfully!");
+        if (res.data.user) {
+          dispatch(setUserData(res.data.user));
+        }
+        setShowOtpModal(false);
+        setIsEditingAlternate(false);
+      }
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Invalid or expired verification code.");
+    } finally {
+      setVerifyLoading(false);
+    }
+  };
+
+  const handleRemoveAlternateEmail = async () => {
+    if (!window.confirm("Are you sure you want to remove your alternate email address?")) {
+      return;
+    }
+    setRemoveLoading(true);
+    try {
+      const res = await axios.delete(
+        `${ServerUrl}/api/user/alternate-email`,
+        { withCredentials: true }
+      );
+
+      if (res.data?.success) {
+        toast.success("Alternate email removed successfully.");
+        if (res.data.user) {
+          dispatch(setUserData(res.data.user));
+        }
+        setAlternateEmailInput("");
+        setIsEditingAlternate(true);
+      }
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed to remove alternate email.");
+    } finally {
+      setRemoveLoading(false);
+    }
+  };
+
   const handleSaveProfile = async (e) => {
     e?.preventDefault();
     if (!profileForm.name || profileForm.name.trim().length < 2) {
@@ -391,10 +557,11 @@ const Settings = () => {
   };
 
   const handleSelectNavMode = (mode) => {
-    if (navMode === mode) return;
-    setNavMode(mode);
+    const target = mode === "navbar" ? "topbar" : mode;
+    if (navMode === target) return;
+    setNavMode(target);
     toast.success(
-      `Navigation set to ${mode === "sidebar" ? "Sidebar" : "Top Navbar"}`
+      `Navigation set to ${target === "sidebar" ? "Sidebar Navigation (Default)" : "Top Navbar (Alternate)"}`
     );
   };
 
@@ -611,6 +778,119 @@ const Settings = () => {
                     className="w-full px-3.5 py-2.5 rounded-xl bg-slate-100/70 dark:bg-slate-800/30 border border-slate-200/60 dark:border-slate-800 text-slate-500 dark:text-slate-400 text-xs font-medium cursor-not-allowed select-none"
                   />
                 </div>
+              </div>
+
+              {/* Alternate Email Address Verification Block (NSSTA-MoSPI) */}
+              <div className="p-4 rounded-xl bg-slate-50/70 dark:bg-slate-800/40 border border-slate-200/80 dark:border-slate-700/70 space-y-3">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+                        <FaEnvelope size={11} className="text-indigo-600 dark:text-indigo-400" />
+                        <span>Alternate Email Address</span>
+                      </span>
+                      {userData?.alternateEmail && userData?.alternateEmailVerified ? (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-800">
+                          <FaCheck size={8} /> Verified
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400 border border-amber-300 dark:border-amber-800">
+                          Optional • Recovery & Alerts
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+                      Used for official communication backup, password recovery, and security alerts. Verified via Email OTP.
+                    </p>
+                  </div>
+
+                  {userData?.alternateEmail && userData?.alternateEmailVerified && !isEditingAlternate && (
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setIsEditingAlternate(true)}
+                        className="px-2.5 py-1 rounded-lg text-xs font-bold text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/50 transition cursor-pointer flex items-center gap-1"
+                      >
+                        <FaEdit size={10} /> Change
+                      </button>
+                      <button
+                        type="button"
+                        disabled={removeLoading}
+                        onClick={handleRemoveAlternateEmail}
+                        className="px-2.5 py-1 rounded-lg text-xs font-bold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/50 transition cursor-pointer flex items-center gap-1"
+                      >
+                        {removeLoading ? <FaSpinner className="animate-spin" size={10} /> : <FaTrashAlt size={10} />}
+                        <span>Remove</span>
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                {/* When verified and not editing, show clean readonly display with badge */}
+                {userData?.alternateEmail && userData?.alternateEmailVerified && !isEditingAlternate ? (
+                  <div className="flex items-center justify-between p-3 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-8 h-8 rounded-lg bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 flex items-center justify-center font-bold">
+                        @
+                      </div>
+                      <div>
+                        <div className="text-xs font-bold text-slate-900 dark:text-white font-mono">
+                          {userData.alternateEmail}
+                        </div>
+                        <div className="text-[10px] text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+                          <BsShieldCheck size={11} /> Verified backup channel for your officer account
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  /* Input form with Send Verification OTP button */
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
+                    <div className="relative flex-1">
+                      <input
+                        type="email"
+                        value={alternateEmailInput}
+                        onChange={(e) => setAlternateEmailInput(e.target.value)}
+                        placeholder="e.g. officer.alternate@nic.in or personal email"
+                        className="w-full px-3.5 py-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white text-xs font-medium focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-mono"
+                      />
+                    </div>
+
+                    <div className="flex items-center gap-2 shrink-0">
+                      <button
+                        type="button"
+                        disabled={otpLoading || !alternateEmailInput.trim()}
+                        onClick={handleSendAlternateOtp}
+                        className="px-4 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 disabled:opacity-50 text-white rounded-xl text-xs font-bold shadow-xs transition-all flex items-center gap-2 cursor-pointer disabled:cursor-not-allowed"
+                      >
+                        {otpLoading ? (
+                          <>
+                            <FaSpinner className="animate-spin" size={12} />
+                            <span>Sending OTP...</span>
+                          </>
+                        ) : (
+                          <>
+                            <FaPaperPlane size={11} />
+                            <span>{userData?.alternateEmail ? "Verify New Email" : "Send Verification OTP"}</span>
+                          </>
+                        )}
+                      </button>
+
+                      {userData?.alternateEmail && isEditingAlternate && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setAlternateEmailInput(userData.alternateEmail || "");
+                            setIsEditingAlternate(false);
+                          }}
+                          className="px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 text-xs font-bold transition cursor-pointer"
+                        >
+                          Cancel
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
             <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 p-5 sm:p-6 shadow-xs space-y-4">
@@ -978,10 +1258,10 @@ const Settings = () => {
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
-                {/* Option: Sidebar */}
+                {/* Option 1: Sidebar (Default) */}
                 <div
                   onClick={() => handleSelectNavMode("sidebar")}
-                  className={`p-4 rounded-xl border-2 transition-all cursor-pointer space-y-3 select-none ${navMode === "sidebar"
+                  className={`p-4 rounded-xl border-2 transition-all cursor-pointer space-y-3 select-none relative ${navMode === "sidebar"
                       ? "border-blue-600 bg-blue-50/30 dark:bg-blue-950/20"
                       : "border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 bg-slate-50/30 dark:bg-slate-800/20"
                     }`}
@@ -992,11 +1272,16 @@ const Settings = () => {
                         <BsLayoutSidebar size={15} />
                       </div>
                       <div>
-                        <div className="text-xs font-bold text-slate-900 dark:text-white">
-                          Sidebar Navigation
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-xs font-bold text-slate-900 dark:text-white">
+                            Sidebar Navigation
+                          </span>
+                          <span className="px-1.5 py-0.2 rounded text-[9px] font-black bg-blue-100 dark:bg-blue-900/60 text-blue-700 dark:text-blue-300">
+                            DEFAULT
+                          </span>
                         </div>
                         <div className="text-[11px] text-slate-500 dark:text-slate-400">
-                          Left docked collapsible rail
+                          Left docked collapsible rail with quick tools
                         </div>
                       </div>
                     </div>
@@ -1011,9 +1296,10 @@ const Settings = () => {
                   </div>
                 </div>
 
+                {/* Option 2: Top Navbar (Alternate) */}
                 <div
-                  onClick={() => handleSelectNavMode("navbar")}
-                  className={`p-4 rounded-xl border-2 transition-all cursor-pointer space-y-3 select-none ${navMode === "navbar"
+                  onClick={() => handleSelectNavMode("topbar")}
+                  className={`p-4 rounded-xl border-2 transition-all cursor-pointer space-y-3 select-none relative ${navMode === "topbar" || navMode === "navbar"
                       ? "border-blue-600 bg-blue-50/30 dark:bg-blue-950/20"
                       : "border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 bg-slate-50/30 dark:bg-slate-800/20"
                     }`}
@@ -1024,15 +1310,20 @@ const Settings = () => {
                         <BsLayoutSidebarInsetReverse size={15} />
                       </div>
                       <div>
-                        <div className="text-xs font-bold text-slate-900 dark:text-white">
-                          Top Navbar
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-xs font-bold text-slate-900 dark:text-white">
+                            Top Navbar
+                          </span>
+                          <span className="px-1.5 py-0.2 rounded text-[9px] font-black bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300">
+                            ALTERNATE
+                          </span>
                         </div>
                         <div className="text-[11px] text-slate-500 dark:text-slate-400">
-                          Horizontal header navigation
+                          Classic horizontal header navigation
                         </div>
                       </div>
                     </div>
-                    {navMode === "navbar" && (
+                    {(navMode === "topbar" || navMode === "navbar") && (
                       <BsCheckCircleFill className="text-blue-600 dark:text-blue-400" size={16} />
                     )}
                   </div>
@@ -1162,11 +1453,158 @@ const Settings = () => {
                     Microdata and personal responses are strictly stored under data privacy guidelines.
                   </p>
                 </div>
+
+                {/* Alternate Email Security Safeguard Card */}
+                <div className="sm:col-span-2 p-4 rounded-xl bg-slate-50/50 dark:bg-slate-800/30 border border-slate-200/70 dark:border-slate-700/60 space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2 text-indigo-600 dark:text-indigo-400">
+                      <FaEnvelope size={14} />
+                      <span className="text-xs font-bold text-slate-900 dark:text-white">
+                        Alternate Recovery & Alert Email
+                      </span>
+                    </div>
+                    {userData?.alternateEmail && userData?.alternateEmailVerified ? (
+                      <span className="px-2 py-0.5 rounded-full text-[9px] font-black bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-800">
+                        ACTIVE & VERIFIED
+                      </span>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => handleTabChange("profile")}
+                        className="px-2 py-0.5 rounded-full text-[9px] font-bold bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400 border border-amber-300 dark:border-amber-800 hover:bg-amber-200 transition cursor-pointer"
+                      >
+                        CONFIGURE IN PROFILE
+                      </button>
+                    )}
+                  </div>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
+                    {userData?.alternateEmail && userData?.alternateEmailVerified
+                      ? `Verified alternate address: ${userData.alternateEmail}. Used for critical security alerts, multi-channel recovery, and official notifications.`
+                      : "No alternate email linked. Configure an alternate email in Profile settings to enable multi-channel authentication and account recovery."}
+                  </p>
+                </div>
               </div>
             </div>
           </motion.div>
         )}
       </main>
+
+      {/* 6-DIGIT EMAIL VERIFICATION OTP MODAL (Nodemailer / NSSTA) */}
+      <AnimatePresence>
+        {showOtpModal && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm animate-fadeIn">
+            <motion.div
+              initial={{ scale: 0.94, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.94, opacity: 0 }}
+              className="w-full max-w-md bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden p-6 sm:p-7 space-y-5 select-none"
+            >
+              {/* Modal Header */}
+              <div className="flex items-start justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-700 text-white flex items-center justify-center shadow-lg shadow-blue-500/20">
+                    <FaEnvelope size={18} />
+                  </div>
+                  <div>
+                    <h3 className="text-base font-black text-slate-900 dark:text-white">
+                      Verify Alternate Email
+                    </h3>
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                      NSSTA • MoSPI Official Mail Verification
+                    </p>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setShowOtpModal(false)}
+                  className="w-8 h-8 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-500 flex items-center justify-center transition cursor-pointer"
+                >
+                  <FaTimes size={12} />
+                </button>
+              </div>
+
+              {/* Sent-to Notification */}
+              <div className="p-3.5 rounded-2xl bg-blue-50/80 dark:bg-blue-950/40 border border-blue-200/80 dark:border-blue-800/60 text-xs text-slate-700 dark:text-slate-300 space-y-1">
+                <div className="font-semibold text-blue-900 dark:text-blue-300">
+                  Verification Code Dispatched Through Mail
+                </div>
+                <div className="text-[11px] text-slate-600 dark:text-slate-400">
+                  We've sent a 6-digit one-time password (OTP) via Nodemailer to:
+                </div>
+                <div className="font-mono font-bold text-blue-700 dark:text-blue-400 break-all text-xs">
+                  {alternateEmailInput}
+                </div>
+              </div>
+
+              {/* 6-Digit OTP Inputs */}
+              <div className="space-y-2.5">
+                <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block text-center">
+                  Enter 6-Digit Verification Code
+                </label>
+                <div className="flex items-center justify-center gap-2 sm:gap-2.5">
+                  {otpDigits.map((digit, idx) => (
+                    <input
+                      key={idx}
+                      id={`otp-input-${idx}`}
+                      type="text"
+                      inputMode="numeric"
+                      maxLength={6}
+                      value={digit}
+                      onChange={(e) => handleOtpChange(idx, e.target.value)}
+                      onKeyDown={(e) => handleOtpKeyDown(e, idx)}
+                      className="w-11 h-13 sm:w-12 sm:h-14 rounded-2xl bg-slate-50 dark:bg-slate-800/80 border-2 border-slate-200 dark:border-slate-700 focus:border-blue-600 dark:focus:border-blue-500 focus:bg-white dark:focus:bg-slate-900 text-center text-xl font-black text-slate-900 dark:text-white transition-all outline-hidden font-mono shadow-xs"
+                    />
+                  ))}
+                </div>
+                <p className="text-[11px] text-center text-slate-400">
+                  Valid for 10 minutes. Please check your inbox and spam folder.
+                </p>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="space-y-2.5 pt-1">
+                <button
+                  type="button"
+                  disabled={verifyLoading || otpDigits.join("").length !== 6}
+                  onClick={handleVerifyAlternateOtp}
+                  className="w-full py-3 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 disabled:opacity-50 text-white text-xs font-bold shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer disabled:cursor-not-allowed"
+                >
+                  {verifyLoading ? (
+                    <>
+                      <FaSpinner className="animate-spin" size={14} />
+                      <span>Verifying Code...</span>
+                    </>
+                  ) : (
+                    <>
+                      <FaCheck size={12} />
+                      <span>Confirm & Link Alternate Email</span>
+                    </>
+                  )}
+                </button>
+
+                <div className="flex items-center justify-between text-xs pt-1">
+                  <span className="text-slate-400">Didn't receive the email?</span>
+                  {resendCooldown > 0 ? (
+                    <span className="font-bold text-slate-400 font-mono">
+                      Resend in {resendCooldown}s
+                    </span>
+                  ) : (
+                    <button
+                      type="button"
+                      disabled={otpLoading}
+                      onClick={handleSendAlternateOtp}
+                      className="font-bold text-blue-600 dark:text-blue-400 hover:underline cursor-pointer"
+                    >
+                      Resend Code
+                    </button>
+                  )}
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
 
       <Footer />
     </div>

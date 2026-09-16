@@ -739,6 +739,8 @@ export const completeProfile = async (req, res) => {
                 credits: user.credits,
                 overallCompetencyScore: user.overallCompetencyScore,
                 overallLevel: user.overallLevel,
+                alternateEmail: user.alternateEmail || "",
+                alternateEmailVerified: user.alternateEmailVerified || false,
             },
         });
     } catch (error) {

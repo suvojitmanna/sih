@@ -123,58 +123,69 @@ const Sidebar = ({ onOpenAuth }) => {
     setMobileOpen(false);
   };
 
-  const navSections = [
-    {
-      title: "Core Portal",
-      links: [
-        { label: "Home", path: "/", icon: FaHome, isPublic: true },
-        ...(userData?.role !== "admin"
-          ? [{ label: "Dashboard", path: "/dashboard", icon: BsBarChartLine }]
-          : []),
-        { label: "Competency", path: "/competencies", icon: FaBrain },
-        { label: "Skill Gaps", path: "/skill-gaps", icon: BsBarChartSteps, badge: "Cadre AI" },
-        { label: "Job Readiness", path: "/job-readiness", icon: FaUserTie, badge: "Report" },
-        { label: "History", path: "/history", icon: FaHistory },
-      ],
-    },
-    {
-      title: "Capacity Building",
-      links: [
-        { label: "Learning Path", path: "/learning-path", icon: BsBookHalf },
-        { label: "Quizzes", path: "/quizzes", icon: FaTasks },
-        { label: "Assignment", path: "/assignments", icon: FaFilePdf },
-        { label: "Material Request", path: "/materials", icon: FaBookOpen },
-        { label: "MCQ Create", path: "/mcq-create", icon: BsStars, isAi: true, badge: "AI Gen" },
-      ],
-    },
-    {
-      title: "Intelligence Board",
-      links: [
-        {
-          label: "Interview Viva",
-          path: "/interview",
-          icon: FaMicrophone,
-          badge: "Oral Board",
-        }, {
-          label: "AI Copilot",
-          path: "/chat",
-          icon: BsRobot,
-          isAi: true,
-          badge: "AI Copilot",
-        },
-      ],
-    },
-    ...(userData?.role === "admin"
-      ? [
+  const isTrainer = userData?.role === "trainer";
+
+  const navSections = isTrainer
+    ? [
         {
           title: "Governance",
           links: [
-            { label: "Admin Portal", path: "/admin", icon: BsShieldLock, badge: "Officer" },
+            { label: "Admin Portal", path: "/admin", icon: BsShieldLock, badge: "Trainer" },
           ],
         },
       ]
-      : []),
-  ];
+    : [
+        {
+          title: "Core Portal",
+          links: [
+            { label: "Home", path: "/", icon: FaHome, isPublic: true },
+            ...(userData?.role !== "admin"
+              ? [{ label: "Dashboard", path: "/dashboard", icon: BsBarChartLine }]
+              : []),
+            { label: "Competency", path: "/competencies", icon: FaBrain },
+            { label: "Skill Gaps", path: "/skill-gaps", icon: BsBarChartSteps, badge: "Cadre AI" },
+            { label: "Job Readiness", path: "/job-readiness", icon: FaUserTie, badge: "Report" },
+            { label: "History", path: "/history", icon: FaHistory },
+          ],
+        },
+        {
+          title: "Capacity Building",
+          links: [
+            { label: "Learning Path", path: "/learning-path", icon: BsBookHalf },
+            { label: "Quizzes", path: "/quizzes", icon: FaTasks },
+            { label: "Assignment", path: "/assignments", icon: FaFilePdf },
+            { label: "Material Request", path: "/materials", icon: FaBookOpen },
+            { label: "MCQ Create", path: "/mcq-create", icon: BsStars, isAi: true, badge: "AI Gen" },
+          ],
+        },
+        {
+          title: "Intelligence Board",
+          links: [
+            {
+              label: "Interview Viva",
+              path: "/interview",
+              icon: FaMicrophone,
+              badge: "Oral Board",
+            }, {
+              label: "AI Copilot",
+              path: "/chat",
+              icon: BsRobot,
+              isAi: true,
+              badge: "AI Copilot",
+            },
+          ],
+        },
+        ...(userData?.role === "admin"
+          ? [
+            {
+              title: "Governance",
+              links: [
+                { label: "Admin Portal", path: "/admin", icon: BsShieldLock, badge: "Officer" },
+              ],
+            },
+          ]
+          : []),
+      ];
 
   const isLinkActive = (path) => {
     if (path === "/") return location.pathname === "/";
@@ -405,8 +416,8 @@ const Sidebar = ({ onOpenAuth }) => {
         {/* Sidebar Footer: Officer Profile Card & Controls */}
         <div className="p-3 border-t border-slate-200/80 dark:border-slate-800/80 bg-slate-50/50 dark:bg-slate-900/50 space-y-2 shrink-0">
 
-          {/* Quick Actions: Export Dossier & Portal Difference */}
-          {(!isCollapsed || mobileOpen) ? (
+          {/* Quick Actions: Export Dossier & Portal Difference (Hidden for Trainer) */}
+          {(!isCollapsed || mobileOpen) && !isTrainer ? (
             <div className="space-y-1.5">
               {/* 1. Export Official Dossier PDF */}
               {userData && userData.role !== "admin" && (
@@ -456,7 +467,7 @@ const Sidebar = ({ onOpenAuth }) => {
                 </span>
               </button>
             </div>
-          ) : (
+          ) : !isTrainer ? (
             <div className="flex flex-col items-center gap-2">
               {userData && userData.role !== "admin" && (
                 <div
@@ -519,7 +530,7 @@ const Sidebar = ({ onOpenAuth }) => {
                 )}
               </div>
             </div>
-          )}
+          ) : null}
 
           {/* User Profile Card (Click to open dropdown in Sidebar mode) */}
           {userData ? (
@@ -656,25 +667,27 @@ const Sidebar = ({ onOpenAuth }) => {
 
                     {/* Quick Shortcuts */}
                     <div className="p-1.5 space-y-0.5">
-                      <button
-                        onClick={() => {
-                          setShowUserDropdown(false);
-                          if (isPathLocked("/ai-models")) {
-                            triggerLockedError("AI Models Hub");
-                            return;
-                          }
-                          navigate("/ai-models");
-                        }}
-                        className="w-full text-left px-3 py-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 text-xs font-bold text-slate-700 dark:text-slate-200 flex items-center justify-between transition-colors cursor-pointer"
-                      >
-                        <div className="flex items-center gap-2.5">
-                          <HiSparkles size={13} className="text-amber-500" />
-                          <span>AI Models & Workflows Hub</span>
-                        </div>
-                        {isPathLocked("/ai-models") && <FaLock size={10} className="text-amber-500" />}
-                      </button>
+                      {!isTrainer && (
+                        <button
+                          onClick={() => {
+                            setShowUserDropdown(false);
+                            if (isPathLocked("/ai-models")) {
+                              triggerLockedError("AI Models Hub");
+                              return;
+                            }
+                            navigate("/ai-models");
+                          }}
+                          className="w-full text-left px-3 py-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 text-xs font-bold text-slate-700 dark:text-slate-200 flex items-center justify-between transition-colors cursor-pointer"
+                        >
+                          <div className="flex items-center gap-2.5">
+                            <HiSparkles size={13} className="text-amber-500" />
+                            <span>AI Models & Workflows Hub</span>
+                          </div>
+                          {isPathLocked("/ai-models") && <FaLock size={10} className="text-amber-500" />}
+                        </button>
+                      )}
 
-                      {userData?.role !== "admin" && (
+                      {userData?.role !== "admin" && !isTrainer && (
                         <button
                           onClick={() => {
                             setShowUserDropdown(false);
@@ -700,23 +713,25 @@ const Sidebar = ({ onOpenAuth }) => {
                         </button>
                       )}
 
-                      <button
-                        onClick={() => {
-                          setShowUserDropdown(false);
-                          navigate("/portal-comparison");
-                        }}
-                        className="w-full text-left px-3 py-2 rounded-xl text-xs font-bold flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 transition-colors cursor-pointer"
-                      >
-                        <div className="flex items-center gap-2.5">
-                          <BsShieldCheck size={13} className="text-blue-600 dark:text-blue-400" />
-                          <span>Portal Difference (Legacy vs Ours)</span>
-                        </div>
-                        <span className="text-[9px] font-black px-1.5 py-0.5 rounded-md bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300">
-                          VS
-                        </span>
-                      </button>
+                      {!isTrainer && (
+                        <button
+                          onClick={() => {
+                            setShowUserDropdown(false);
+                            navigate("/portal-comparison");
+                          }}
+                          className="w-full text-left px-3 py-2 rounded-xl text-xs font-bold flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 transition-colors cursor-pointer"
+                        >
+                          <div className="flex items-center gap-2.5">
+                            <BsShieldCheck size={13} className="text-blue-600 dark:text-blue-400" />
+                            <span>Portal Difference (Legacy vs Ours)</span>
+                          </div>
+                          <span className="text-[9px] font-black px-1.5 py-0.5 rounded-md bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300">
+                            VS
+                          </span>
+                        </button>
+                      )}
 
-                      {userData?.role !== "admin" && (
+                      {userData?.role !== "admin" && !isTrainer && (
                         <button
                           onClick={() => {
                             setShowUserDropdown(false);
@@ -736,7 +751,7 @@ const Sidebar = ({ onOpenAuth }) => {
                         </button>
                       )}
 
-                      {userData?.role === "admin" && (
+                      {(userData?.role === "admin" || isTrainer) && (
                         <button
                           onClick={() => {
                             setShowUserDropdown(false);
@@ -745,7 +760,7 @@ const Sidebar = ({ onOpenAuth }) => {
                           className="w-full text-left px-3 py-2 rounded-xl hover:bg-blue-50/60 dark:hover:bg-blue-950/40 text-xs font-bold text-blue-700 dark:text-blue-300 flex items-center gap-2.5 transition-colors cursor-pointer"
                         >
                           <BsShieldLock size={13} className="text-blue-600" />
-                          <span>Executive Admin Portal</span>
+                          <span>{isTrainer ? "Admin Portal" : "Executive Admin Portal"}</span>
                         </button>
                       )}
                     </div>

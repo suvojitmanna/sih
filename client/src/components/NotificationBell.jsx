@@ -120,7 +120,7 @@ const NotificationBell = () => {
     let isMounted = true;
 
     const fetchNotificationsData = async () => {
-      if (!userData) return;
+      if (!userData || userData.role === "trainer") return;
       try {
         setLoading(true);
         const [broadcastRes, diagnosticRes] = await Promise.allSettled([
@@ -203,6 +203,10 @@ const NotificationBell = () => {
 
   // Show tabs only when both intake AND broadcast messages exist
   const showTabs = isIntakePending && broadcasts.length > 0;
+
+  if (!userData || userData.role === "trainer") {
+    return null;
+  }
 
   return (
     <div ref={dropdownRef} className="relative select-none">

@@ -175,10 +175,40 @@ export const sendPasswordResetOtp = async (email, name, otp) => {
     }
 };
 
+// Send Alternate Email Verification OTP
+export const sendAlternateEmailOtp = async (email, name, otp) => {
+    try {
+        const transporter = createTransporter();
+        const mailOptions = {
+            from: `"${process.env.EMAIL_FROM_NAME || 'MoSPI-NSSTA Skill Intelligence'}" <${process.env.EMAIL_FROM || process.env.EMAIL_USER || 'no-reply@mospi.gov.in'}>`,
+            to: email,
+            subject: `[NSSTA-MoSPI] Your Alternate Email Verification Code: ${otp}`,
+            html: getEmailHtmlTemplate({
+                title: "Verify Alternate Email - NSSTA MoSPI",
+                preheader: `Your verification code is ${otp}`,
+                name,
+                otp,
+                purposeText: "You have initiated a request to link or update this email address as your <strong>Alternate Recovery & Notification Email</strong> on the NSSTA-MoSPI Platform. Please enter the verification code below to confirm this address.",
+            }),
+        };
+
+        if (transporter) {
+            const info = await transporter.sendMail(mailOptions);
+            return { success: true, messageId: info.messageId };
+        } else {
+            return { success: true, simulated: true };
+        }
+    } catch (error) {
+        console.error(`[EMAIL ERROR] Failed to send alternate email OTP to ${email}:`, error.message);
+        return { success: true, fallback: true, error: error.message };
+    }
+};
+
 export default {
     generateSecureOtp,
     sendSignupOtp,
     sendLoginOtp,
     sendPasswordResetOtp,
+    sendAlternateEmailOtp,
 };
 

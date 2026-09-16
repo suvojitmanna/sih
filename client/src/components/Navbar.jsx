@@ -53,6 +53,7 @@ import toast from "react-hot-toast";
 
 const Navbar = () => {
   const { userData } = useSelector((state) => state.user);
+  const isTrainer = userData?.role === "trainer";
   const userPhoto = userData?.image || userData?.picture || userData?.avatar || userData?.photoUrl || userData?.avatarUrl || userData?.profilePicture;
   const {
     navMode,
@@ -127,62 +128,71 @@ const Navbar = () => {
     });
   };
 
-  const navSections = [
-    {
-      title: "Core Portal",
-      links: [
-        { label: "Home", path: "/", icon: FaHome, isPublic: true, desc: "National Statistical Portal Overview" },
-        ...(userData?.role !== "admin"
-          ? [{ label: "Dashboard", path: "/dashboard", icon: BsBarChartLine, desc: "Performance & Gap Analytics" }]
-          : []),
-        { label: "Competency", path: "/competencies", icon: FaBrain, desc: "Statistical Competency Framework" },
-        { label: "Skill Gaps", path: "/skill-gaps", icon: BsBarChartSteps, badge: "Cadre AI", desc: "Cadre Benchmark & Gap Analysis" },
-        { label: "Job Readiness", path: "/job-readiness", icon: FaUserTie, badge: "Report", desc: "Target Cadre Readiness & Deployment Audit" },
-        { label: "History", path: "/history", icon: FaHistory, desc: "Viva Records & Evaluation Logs" },
-      ],
-    },
-    {
-      title: "Capacity Building",
-      links: [
-        { label: "Learning Path", path: "/learning-path", icon: BsBookHalf, desc: "Adaptive Statistical Curriculum" },
-        { label: "Quizzes", path: "/quizzes", icon: FaTasks, desc: "Cadre Knowledge Practice" },
-        { label: "Assignment", path: "/assignments", icon: FaFilePdf, desc: "Survey & Data Practicum Tasks" },
-        { label: "Material Request", path: "/materials", icon: FaBookOpen, desc: "NSSTA Study Material Requisitions" },
-        { label: "MCQ Create", path: "/mcq-create", icon: BsStars, isAi: true, badge: "AI Gen", desc: "Diagnostic MCQ Studio" },
-      ],
-    },
-    {
-      title: "Intelligence Board",
-      links: [
-        {
-          label: "AI Copilot",
-          path: "/chat",
-          icon: BsRobot,
-          isAi: true,
-          badge: "AI Copilot",
-          desc: "Statistical Copilot & Assistant",
-        },
-        {
-          label: "Interview Viva",
-          path: "/interview",
-          icon: FaMicrophone,
-          badge: "Oral Board",
-          desc: "AI Cadre Oral Examination",
-        },
-      ],
-    },
-    ...(userData?.role === "admin"
-      ? [
+  const navSections = isTrainer
+    ? [
         {
           title: "Governance",
-          align: "right",
           links: [
-            { label: "Admin Portal", path: "/admin", icon: BsShieldLock, badge: "Officer", desc: "Executive Analytics & Cadre Management" },
+            { label: "Admin Portal", path: "/admin", icon: BsShieldLock, badge: "Trainer", desc: "Executive Analytics, Study Material Dispatch & Learner Oversight" },
           ],
         },
       ]
-      : []),
-  ];
+    : [
+        {
+          title: "Core Portal",
+          links: [
+            { label: "Home", path: "/", icon: FaHome, isPublic: true, desc: "National Statistical Portal Overview" },
+            ...(userData?.role !== "admin"
+              ? [{ label: "Dashboard", path: "/dashboard", icon: BsBarChartLine, desc: "Performance & Gap Analytics" }]
+              : []),
+            { label: "Competency", path: "/competencies", icon: FaBrain, desc: "Statistical Competency Framework" },
+            { label: "Skill Gaps", path: "/skill-gaps", icon: BsBarChartSteps, badge: "Cadre AI", desc: "Cadre Benchmark & Gap Analysis" },
+            { label: "Job Readiness", path: "/job-readiness", icon: FaUserTie, badge: "Report", desc: "Target Cadre Readiness & Deployment Audit" },
+            { label: "History", path: "/history", icon: FaHistory, desc: "Viva Records & Evaluation Logs" },
+          ],
+        },
+        {
+          title: "Capacity Building",
+          links: [
+            { label: "Learning Path", path: "/learning-path", icon: BsBookHalf, desc: "Adaptive Statistical Curriculum" },
+            { label: "Quizzes", path: "/quizzes", icon: FaTasks, desc: "Cadre Knowledge Practice" },
+            { label: "Assignment", path: "/assignments", icon: FaFilePdf, desc: "Survey & Data Practicum Tasks" },
+            { label: "Material Request", path: "/materials", icon: FaBookOpen, desc: "NSSTA Study Material Requisitions" },
+            { label: "MCQ Create", path: "/mcq-create", icon: BsStars, isAi: true, badge: "AI Gen", desc: "Diagnostic MCQ Studio" },
+          ],
+        },
+        {
+          title: "Intelligence Board",
+          links: [
+            {
+              label: "AI Copilot",
+              path: "/chat",
+              icon: BsRobot,
+              isAi: true,
+              badge: "AI Copilot",
+              desc: "Statistical Copilot & Assistant",
+            },
+            {
+              label: "Interview Viva",
+              path: "/interview",
+              icon: FaMicrophone,
+              badge: "Oral Board",
+              desc: "AI Cadre Oral Examination",
+            },
+          ],
+        },
+        ...(userData?.role === "admin"
+          ? [
+            {
+              title: "Governance",
+              align: "right",
+              links: [
+                { label: "Admin Portal", path: "/admin", icon: BsShieldLock, badge: "Officer", desc: "Executive Analytics & Cadre Management" },
+              ],
+            },
+          ]
+          : []),
+      ];
 
   const popupVariants = {
     hidden: { opacity: 0, y: 10, scale: 0.95 },
@@ -213,9 +223,9 @@ const Navbar = () => {
   };
 
   // ==========================================
-  // RENDER: SIDEBAR NAVIGATION MODE (Only when user is signed in)
+  // RENDER: SIDEBAR NAVIGATION MODE (Default)
   // ==========================================
-  if (navMode === "sidebar" && userData) {
+  if (navMode === "sidebar") {
     return (
       <>
         {/* Render the Sidebar component */}
@@ -266,42 +276,44 @@ const Navbar = () => {
           {/* Right Header Actions */}
           <div className="flex items-center gap-2 sm:gap-3">
             {/* AI Copilot Quick Button */}
-            <button
-              onClick={() => {
-                if (isPathLocked("/chat")) {
-                  triggerLockedError("AI Copilot");
-                  return;
-                }
-                navigate("/chat");
-              }}
-              className="relative p-2 sm:px-3 sm:py-1.5 rounded-2xl bg-gradient-to-r from-blue-600/10 via-indigo-600/10 to-purple-600/10 hover:from-blue-600/20 hover:to-indigo-600/20 border border-blue-400/30 dark:border-blue-500/30 text-blue-600 dark:text-blue-400 flex items-center gap-2 transition-all shadow-xs cursor-pointer group"
-              title={isPathLocked("/chat") ? "Locked: Complete Mandatory Intake Viva & Quiz first" : "Open AI Copilot & Statistical Assistant"}
-            >
-              <div className="relative flex items-center justify-center">
-                <BsRobot size={17} className="text-blue-600 dark:text-blue-400 group-hover:scale-110 transition-transform" />
-                {isPathLocked("/chat") ? (
-                  <span className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-amber-500 text-white flex items-center justify-center shadow-xs">
-                    <FaLock size={7} />
+            {!isTrainer && (
+              <button
+                onClick={() => {
+                  if (isPathLocked("/chat")) {
+                    triggerLockedError("AI Copilot");
+                    return;
+                  }
+                  navigate("/chat");
+                }}
+                className="relative p-2 sm:px-3 sm:py-1.5 rounded-2xl bg-gradient-to-r from-blue-600/10 via-indigo-600/10 to-purple-600/10 hover:from-blue-600/20 hover:to-indigo-600/20 border border-blue-400/30 dark:border-blue-500/30 text-blue-600 dark:text-blue-400 flex items-center gap-2 transition-all shadow-xs cursor-pointer group"
+                title={isPathLocked("/chat") ? "Locked: Complete Mandatory Intake Viva & Quiz first" : "Open AI Copilot & Statistical Assistant"}
+              >
+                <div className="relative flex items-center justify-center">
+                  <BsRobot size={17} className="text-blue-600 dark:text-blue-400 group-hover:scale-110 transition-transform" />
+                  {isPathLocked("/chat") ? (
+                    <span className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-amber-500 text-white flex items-center justify-center shadow-xs">
+                      <FaLock size={7} />
+                    </span>
+                  ) : (
+                    <>
+                      <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-amber-400 animate-ping" />
+                      <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-amber-400" />
+                    </>
+                  )}
+                </div>
+                <div className="hidden sm:flex flex-col text-left">
+                  <span className="text-[10px] font-black tracking-wider uppercase text-blue-600 dark:text-blue-300 leading-none">
+                    AI Copilot
                   </span>
-                ) : (
-                  <>
-                    <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-amber-400 animate-ping" />
-                    <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-amber-400" />
-                  </>
-                )}
-              </div>
-              <div className="hidden sm:flex flex-col text-left">
-                <span className="text-[10px] font-black tracking-wider uppercase text-blue-600 dark:text-blue-300 leading-none">
-                  AI Copilot
-                </span>
-                <span className="text-[8px] text-slate-400 font-bold leading-none mt-0.5">
-                  Assistant
-                </span>
-              </div>
-            </button>
+                  <span className="text-[8px] text-slate-400 font-bold leading-none mt-0.5">
+                    Assistant
+                  </span>
+                </div>
+              </button>
+            )}
 
             {/* Cadre Notifications & Mandatory Intake Bell */}
-            <NotificationBell />
+            {userData && !isTrainer && <NotificationBell />}
 
             {/* Officer Status Chip in Sidebar mode (Dropdown opens from the Sidebar user card) */}
             <div>
@@ -547,40 +559,42 @@ const Navbar = () => {
 
             <div className="flex items-center gap-2 sm:gap-2.5">
               {/* AI Copilot Quick Button in Horizontal Mode */}
-              <button
-                onClick={() => {
-                  if (isPathLocked("/chat")) {
-                    triggerLockedError("AI Copilot");
-                    return;
-                  }
-                  navigate("/chat");
-                }}
-                className="relative flex items-center gap-2 px-3 py-1.5 rounded-2xl bg-gradient-to-r from-blue-600/10 via-indigo-600/10 to-purple-600/10 hover:from-blue-600/20 hover:to-indigo-600/20 border border-blue-400/30 dark:border-blue-500/30 text-blue-600 dark:text-blue-400 transition-all shadow-xs cursor-pointer group"
-                title={isPathLocked("/chat") ? "Locked: Complete Mandatory Intake Viva & Quiz first" : "Open AI Copilot & Statistical Assistant"}
-              >
-                <div className="relative flex items-center justify-center">
-                  <BsRobot size={16} className="text-blue-600 dark:text-blue-400 group-hover:scale-110 transition-transform" />
-                  {isPathLocked("/chat") ? (
-                    <span className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-amber-500 text-white flex items-center justify-center shadow-xs">
-                      <FaLock size={7} />
-                    </span>
-                  ) : (
-                    <>
-                      <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-amber-400 animate-ping" />
-                      <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-amber-400" />
-                    </>
+              {!isTrainer && (
+                <button
+                  onClick={() => {
+                    if (isPathLocked("/chat")) {
+                      triggerLockedError("AI Copilot");
+                      return;
+                    }
+                    navigate("/chat");
+                  }}
+                  className="relative flex items-center gap-2 px-3 py-1.5 rounded-2xl bg-gradient-to-r from-blue-600/10 via-indigo-600/10 to-purple-600/10 hover:from-blue-600/20 hover:to-indigo-600/20 border border-blue-400/30 dark:border-blue-500/30 text-blue-600 dark:text-blue-400 transition-all shadow-xs cursor-pointer group"
+                  title={isPathLocked("/chat") ? "Locked: Complete Mandatory Intake Viva & Quiz first" : "Open AI Copilot & Statistical Assistant"}
+                >
+                  <div className="relative flex items-center justify-center">
+                    <BsRobot size={16} className="text-blue-600 dark:text-blue-400 group-hover:scale-110 transition-transform" />
+                    {isPathLocked("/chat") ? (
+                      <span className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-amber-500 text-white flex items-center justify-center shadow-xs">
+                        <FaLock size={7} />
+                      </span>
+                    ) : (
+                      <>
+                        <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-amber-400 animate-ping" />
+                        <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-amber-400" />
+                      </>
+                    )}
+                  </div>
+                  <span className="text-xs font-black text-blue-700 dark:text-blue-300 hidden sm:inline">
+                    AI Copilot
+                  </span>
+                  {isPathLocked("/chat") && (
+                    <FaLock size={9} className="text-amber-500" />
                   )}
-                </div>
-                <span className="text-xs font-black text-blue-700 dark:text-blue-300 hidden sm:inline">
-                  AI Copilot
-                </span>
-                {isPathLocked("/chat") && (
-                  <FaLock size={9} className="text-amber-500" />
-                )}
-              </button>
+                </button>
+              )}
 
               {/* Cadre Notifications & Mandatory Intake Bell */}
-              <NotificationBell />
+              {userData && !isTrainer && <NotificationBell />}
 
               {/* User Avatar & Popup */}
               <div ref={userRef} className="relative">
@@ -716,7 +730,7 @@ const Navbar = () => {
 
                       <div className="p-2 space-y-1">
 
-                        {userData?.role !== "admin" && (
+                        {userData?.role !== "admin" && !isTrainer && (
                           <button
                             onClick={() => {
                               setShowUserPopup(false);
@@ -736,25 +750,27 @@ const Navbar = () => {
                           </button>
                         )}
 
-                        <button
-                          onClick={() => {
-                            setShowUserPopup(false);
-                            if (isPathLocked("/ai-models")) {
-                              triggerLockedError("AI Models Hub");
-                              return;
-                            }
-                            navigate("/ai-models");
-                          }}
-                          className="w-full text-left px-3.5 py-2.5 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-800 text-xs font-bold text-slate-700 dark:text-slate-200 flex items-center justify-between transition-colors cursor-pointer"
-                        >
-                          <div className="flex items-center gap-2.5">
-                            <HiSparkles size={14} className="text-amber-500" />
-                            <span>AI Models & Workflows Hub</span>
-                          </div>
-                          {isPathLocked("/ai-models") && <FaLock size={10} className="text-amber-500" />}
-                        </button>
+                        {!isTrainer && (
+                          <button
+                            onClick={() => {
+                              setShowUserPopup(false);
+                              if (isPathLocked("/ai-models")) {
+                                triggerLockedError("AI Models Hub");
+                                return;
+                              }
+                              navigate("/ai-models");
+                            }}
+                            className="w-full text-left px-3.5 py-2.5 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-800 text-xs font-bold text-slate-700 dark:text-slate-200 flex items-center justify-between transition-colors cursor-pointer"
+                          >
+                            <div className="flex items-center gap-2.5">
+                              <HiSparkles size={14} className="text-amber-500" />
+                              <span>AI Models & Workflows Hub</span>
+                            </div>
+                            {isPathLocked("/ai-models") && <FaLock size={10} className="text-amber-500" />}
+                          </button>
+                        )}
 
-                        {userData?.role !== "admin" && (
+                        {userData?.role !== "admin" && !isTrainer && (
                           <button
                             onClick={() => {
                               setShowUserPopup(false);
@@ -780,7 +796,7 @@ const Navbar = () => {
                           </button>
                         )}
 
-                        {userData?.role !== "admin" && (
+                        {userData?.role !== "admin" && !isTrainer && (
                           <button
                             onClick={() => {
                               setShowUserPopup(false);
@@ -800,7 +816,7 @@ const Navbar = () => {
                           </button>
                         )}
 
-                        {userData?.role === "admin" && (
+                        {(userData?.role === "admin" || isTrainer) && (
                           <button
                             onClick={() => {
                               setShowUserPopup(false);
@@ -809,20 +825,22 @@ const Navbar = () => {
                             className="w-full text-left px-3.5 py-2.5 rounded-2xl hover:bg-blue-50/60 dark:hover:bg-blue-950/40 text-xs font-bold text-blue-700 dark:text-blue-300 flex items-center gap-2.5 transition-colors cursor-pointer"
                           >
                             <BsShieldLock size={14} className="text-blue-600" />
-                            <span>Executive Admin Portal</span>
+                            <span>{isTrainer ? "Admin Portal" : "Executive Admin Portal"}</span>
                           </button>
                         )}
 
-                        <button
-                          onClick={() => {
-                            setShowUserPopup(false);
-                            window.dispatchEvent(new CustomEvent("open-nssta-helpdesk"));
-                          }}
-                          className="w-full text-left px-3.5 py-2.5 rounded-2xl hover:bg-emerald-50/60 dark:hover:bg-emerald-950/40 text-xs font-bold text-slate-700 dark:text-slate-200 flex items-center gap-2.5 transition-colors cursor-pointer"
-                        >
-                          <FaComments size={14} className="text-emerald-500" />
-                          <span>NSSTA Live Chat & Announcements</span>
-                        </button>
+                        {!isTrainer && (
+                          <button
+                            onClick={() => {
+                              setShowUserPopup(false);
+                              window.dispatchEvent(new CustomEvent("open-nssta-helpdesk"));
+                            }}
+                            className="w-full text-left px-3.5 py-2.5 rounded-2xl hover:bg-emerald-50/60 dark:hover:bg-emerald-950/40 text-xs font-bold text-slate-700 dark:text-slate-200 flex items-center gap-2.5 transition-colors cursor-pointer"
+                          >
+                            <FaComments size={14} className="text-emerald-500" />
+                            <span>NSSTA Live Chat & Announcements</span>
+                          </button>
+                        )}
                       </div>
 
                       <div className="p-2 border-t border-slate-100 dark:border-slate-800">
@@ -876,22 +894,24 @@ const Navbar = () => {
                 </span>
               </button>
 
-              <div className="flex items-center justify-between p-3 bg-emerald-50/80 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/80 rounded-2xl">
-                <div className="flex items-center gap-2">
-                  <HiSparkles size={16} className="text-emerald-500 animate-pulse" />
-                  <div>
-                    <span className="text-xs font-bold text-slate-800 dark:text-slate-200 block">
-                      Unlimited AI Access
-                    </span>
-                    <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-extrabold">
-                      All Models Active • No Tokens Required
-                    </span>
+              {!isTrainer && (
+                <div className="flex items-center justify-between p-3 bg-emerald-50/80 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/80 rounded-2xl">
+                  <div className="flex items-center gap-2">
+                    <HiSparkles size={16} className="text-emerald-500 animate-pulse" />
+                    <div>
+                      <span className="text-xs font-bold text-slate-800 dark:text-slate-200 block">
+                        Unlimited AI Access
+                      </span>
+                      <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-extrabold">
+                        All Models Active • No Tokens Required
+                      </span>
+                    </div>
                   </div>
+                  <span className="px-2 py-0.5 rounded-lg bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 font-black text-[10px] uppercase">
+                    Enabled
+                  </span>
                 </div>
-                <span className="px-2 py-0.5 rounded-lg bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 font-black text-[10px] uppercase">
-                  Enabled
-                </span>
-              </div>
+              )}
 
               {/* Categorized Navigation Sections in Mobile Menu */}
               <div className="space-y-3">

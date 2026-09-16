@@ -182,13 +182,13 @@ const Home = () => {
                   <FaUserGraduate size={14} className="text-emerald-400" />
                   <span>Officer Sign Up / Sign In</span>
                 </button>
-              ) : userData.role === "admin" ? (
+              ) : (userData.role === "admin" || userData.role === "trainer") ? (
                 <button
                   onClick={() => navigate("/admin")}
                   className="px-6 py-3.5 rounded-2xl bg-gradient-to-r from-blue-700 via-indigo-700 to-blue-800 hover:from-blue-800 hover:to-indigo-800 text-white font-bold text-xs sm:text-sm shadow-xl shadow-blue-500/25 hover:shadow-blue-500/35 transition-all flex items-center gap-2 cursor-pointer"
                 >
                   <BsShieldLock size={14} className="text-blue-200" />
-                  <span>Open Executive Admin Portal</span>
+                  <span>Open Admin Portal</span>
                 </button>
               ) : isIntakePending ? (
                 <button
