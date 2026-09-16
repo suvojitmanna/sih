@@ -22,7 +22,6 @@ const PrivacyPolicy = () => {
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 selection:bg-blue-100 dark:selection:bg-blue-900 transition-colors duration-300">
       <Navbar />
 
-      {/* Progress Bar */}
       <motion.div
         className="fixed top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-600 to-indigo-600 origin-left z-50"
         style={{ scaleX }}
@@ -30,8 +29,7 @@ const PrivacyPolicy = () => {
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-12 md:py-24 pt-28">
         <div className="flex flex-col lg:flex-row gap-12 lg:gap-16">
-          
-          {/* Left Sidebar - Navigation */}
+
           <aside className="lg:w-1/4 lg:sticky lg:top-24 h-fit">
             <div className="mb-8">
               <BackButton fallbackUrl="/" label="Back to Previous Screen" variant="subtle" />
@@ -52,8 +50,7 @@ const PrivacyPolicy = () => {
             </nav>
           </aside>
 
-          {/* Right Content */}
-          <motion.main 
+          <motion.main
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             className="lg:w-3/4"
@@ -72,7 +69,7 @@ const PrivacyPolicy = () => {
               </header>
 
               <div className="space-y-12 text-slate-600 dark:text-slate-300 text-sm sm:text-base leading-relaxed">
-                
+
                 <section id="collection" className="scroll-mt-24 space-y-4">
                   <h2 className="text-xl font-black text-slate-900 dark:text-white flex items-center gap-3">
                     <span className="w-7 h-7 rounded-xl bg-blue-600 text-white flex items-center justify-center text-xs font-bold">1</span>

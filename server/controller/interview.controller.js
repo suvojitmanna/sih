@@ -324,7 +324,6 @@ export const finishInterview = async (req, res) => {
         interview.finalScore = finalScore;
         await interview.save();
 
-        // Update user learning stats and competency score across 4-Domain taxonomy
         try {
             const user = await User.findById(interview.userId);
             if (user) {
@@ -467,7 +466,6 @@ export const getDiagnosticInterview = async (req, res) => {
             return res.status(404).json({ success: false, message: "Diagnostic viva not found" });
         }
 
-        // Allow resetting an existing diagnostic viva if reset parameter is requested
         if (req.query.reset === "true" || req.query.retake === "true") {
             diagnosticInterview.status = "Incompleted";
             diagnosticInterview.finalScore = 0;

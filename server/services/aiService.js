@@ -52,7 +52,6 @@ export const callGeminiOrFallback = async (
   systemInstruction = "",
   options = {},
 ) => {
-  // 1. Try Primary AI Neural Engine (Gemini)
   if (aiClient) {
     try {
       let contents = prompt;
@@ -90,7 +89,6 @@ export const callGeminiOrFallback = async (
     }
   }
 
-  // 2. Try OpenRouter Fallback
   if (process.env.OPENROUTER_API_KEY) {
     try {
       const res = await axios.post(
@@ -243,8 +241,6 @@ Return STRICTLY a JSON object with this exact schema:
   };
 };
 
-// 2. SKILL GAP ANALYSIS ENGINE
-
 export const analyzeSkillGaps = async ({
   currentCompetencies = [],
   targetRole = "Indian Statistical Service (ISS) Officer",
@@ -330,7 +326,6 @@ Return STRICTLY a JSON object with this exact schema:
   };
 };
 
-// 3. PERSONALIZED LEARNING PATHWAY
 
 export const generateLearningPath = async ({
   competencyGaps = [],
@@ -434,8 +429,6 @@ Return STRICTLY a JSON object with this exact schema:
     learningPath: path,
   };
 };
-
-// 4. COMPREHENSIVE MCQ GENERATION FROM UPLOADED MATERIAL (PDF, PPT, DOCX, TXT, IMAGES)
 
 const buildMcqPrompt = ({
   textChunk,
@@ -549,14 +542,13 @@ export const generateMCQsFromText = async (
   textOrOptions = {},
   maybeOptions = {},
 ) => {
-  // 1. Resolve arguments (support both (optionsObject) and (textContent, optionsObject))
   let textContent = "";
   let documentTitle = "Official Training Manual";
   let domain = "Statistical Competencies";
   let topic = "Survey Methodologies";
   let numQuestions = "all";
   let difficulty = "Medium";
-  let mode = "all"; // "all" for exhaustive, or "fixed"
+  let mode = "all"; 
   let fileData = "";
   let fileType = "";
 
@@ -588,7 +580,6 @@ export const generateMCQsFromText = async (
     mode === "all" || numQuestions === "all" || Number(numQuestions) >= 15;
   const cleanText = (textContent || "").trim();
 
-  // Check for image multimodal processing if text is minimal but image data exists
   let imageInlineData = null;
   if (fileData && fileData.startsWith("data:image/")) {
     const match = fileData.match(/^data:(image\/[a-zA-Z0-9+.-]+);base64,(.+)$/);
@@ -600,7 +591,6 @@ export const generateMCQsFromText = async (
     }
   }
 
-  // 2. Multi-chunking logic for very large documents / presentations
   const chunks = [];
   const MAX_CHUNK_SIZE = 25000;
 
@@ -695,7 +685,6 @@ export const generateMCQsFromText = async (
     console.error("[MCQ GENERATION ERROR]", err.message);
   }
 
-  // High quality pedagogical fallback if model fails
   return [
     {
       question: `In official statistical methodology based on ${documentTitle}, what constitutes the fundamental unit for primary sampling verification?`,
@@ -745,7 +734,6 @@ export const generateMCQsFromText = async (
   ];
 };
 
-// 5. ON-DEMAND STATISTICAL QUIZ GENERATOR
 
 export const generateQuiz = async ({
   topic = "Sampling Techniques & Estimation",
@@ -1052,8 +1040,6 @@ Learner Profile Context:
 
   return "Namaste. In official statistics, ensure you verify the sampling frame and apply the appropriate design weights. For further guidance, explore our NSSTA modules or specify your inquiry on survey methodology, GDP estimation, or statistical computing.";
 };
-
-// 8. ADAPTIVE RECOMMENDATIONS
 
 export const generateAdaptiveRecommendations = async ({
   weakTopics = [],

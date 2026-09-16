@@ -73,18 +73,15 @@ const Auth = ({ isModel = false }) => {
   const [password, setPassword] = useState("");
   const [authenticatedUser, setAuthenticatedUser] = useState(null);
 
-  // Account Role (Learner vs Trainer)
-  const [accountRole, setAccountRole] = useState("learner"); // "learner" or "trainer" (or "admin")
+  const [accountRole, setAccountRole] = useState("learner");
 
-  // OTP State (Step 2)
   const [otpDigits, setOtpDigits] = useState(["", "", "", "", "", ""]);
   const [countdown, setCountdown] = useState(60);
   const [canResend, setCanResend] = useState(false);
   const inputRefs = useRef([]);
 
-  // Forgot Password Flow States
   const [isForgotPassword, setIsForgotPassword] = useState(false);
-  const [forgotStep, setForgotStep] = useState(1); // 1: Email, 2: OTP + New Password
+  const [forgotStep, setForgotStep] = useState(1);
   const [forgotEmail, setForgotEmail] = useState("");
   const [forgotOtpDigits, setForgotOtpDigits] = useState(["", "", "", "", "", ""]);
   const [newPassword, setNewPassword] = useState("");
@@ -94,7 +91,6 @@ const Auth = ({ isModel = false }) => {
   const [canResendForgot, setCanResendForgot] = useState(false);
   const forgotInputRefs = useRef([]);
 
-  // Profile Setup State (Step 3) - Multi-Education List
   const [educationList, setEducationList] = useState([
     {
       id: 1,
@@ -110,7 +106,6 @@ const Auth = ({ isModel = false }) => {
   const [profileImage, setProfileImage] = useState("");
   const fileInputRef = useRef(null);
 
-  // Profile Image Upload & Processing (Canvas-optimized to max 360x360)
   const handleImageChange = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -171,7 +166,6 @@ const Auth = ({ isModel = false }) => {
     return "O";
   };
 
-  // Comprehensive Step 3 Validation: All inputs must be completed for button to be clickable
   const isFormCompleted = Boolean(
     name && name.trim().length >= 2 &&
     targetCadre && targetCadre.trim().length > 0 &&
@@ -187,7 +181,6 @@ const Auth = ({ isModel = false }) => {
     )
   );
 
-  // Return list of pending items to guide the user in real time
   const getPendingRequirements = () => {
     const list = [];
     if (!name || name.trim().length < 2) list.push("Officer Full Name");
@@ -210,7 +203,6 @@ const Auth = ({ isModel = false }) => {
     return list;
   };
 
-  // Calculate completion percentage for progress indicator
   const getCompletionPercentage = () => {
     let score = 0;
     const total = 4;
@@ -226,8 +218,6 @@ const Auth = ({ isModel = false }) => {
     return Math.round((score / total) * 100);
   };
 
-  // Lock user to Profile Setup (Step 3) if authenticated but profile incomplete
-  // Prevents showing Home or any other screen on page refresh or reopening tab
   useEffect(() => {
     if (userData) {
       if (!userData.isProfileCompleted) {
@@ -252,7 +242,6 @@ const Auth = ({ isModel = false }) => {
     }
   }, [userData, isModel, navigate]);
 
-  // Sign out / Switch account handler for profile lock screen
   const handleLogout = async () => {
     try {
       await axios.get(`${ServerUrl}/api/auth/logout`, { withCredentials: true });
@@ -269,7 +258,6 @@ const Auth = ({ isModel = false }) => {
     }
   };
 
-  // Countdown for Login/Signup OTP
   useEffect(() => {
     let timer;
     if (step === 2 && countdown > 0) {
@@ -282,7 +270,6 @@ const Auth = ({ isModel = false }) => {
     return () => clearInterval(timer);
   }, [step, countdown]);
 
-  // Countdown for Forgot Password OTP
   useEffect(() => {
     let timer;
     if (isForgotPassword && forgotStep === 2 && forgotCountdown > 0) {
@@ -295,7 +282,6 @@ const Auth = ({ isModel = false }) => {
     return () => clearInterval(timer);
   }, [isForgotPassword, forgotStep, forgotCountdown]);
 
-  // OTP Handlers (Signup/Login)
   const handleOtpChange = (index, value) => {
     if (value.length > 1) {
       const pasted = value.replace(/\D/g, "").slice(0, 6).split("");
@@ -325,7 +311,6 @@ const Auth = ({ isModel = false }) => {
     }
   };
 
-  // OTP Handlers (Forgot Password)
   const handleForgotOtpChange = (index, value) => {
     if (value.length > 1) {
       const pasted = value.replace(/\D/g, "").slice(0, 6).split("");
@@ -355,7 +340,6 @@ const Auth = ({ isModel = false }) => {
     }
   };
 
-  // Multi-Education List Handlers
   const handleAddEducation = () => {
     setEducationList((prev) => [
       ...prev,
@@ -384,7 +368,6 @@ const Auth = ({ isModel = false }) => {
     );
   };
 
-  // Google Authentication
   const handleGoogleAuth = async () => {
     setLoading(true);
     try {
@@ -415,7 +398,6 @@ const Auth = ({ isModel = false }) => {
         setProfileImage(loggedUser.image || loggedUser.picture || googleUser.image);
       }
 
-      // Check if profile details need completion
       if (!loggedUser.isProfileCompleted) {
         setStep(3);
         toast.success(`Google authentication verified! Please configure your official profile.`);
@@ -441,7 +423,6 @@ const Auth = ({ isModel = false }) => {
     }
   };
 
-  // STEP 1: Submit Credentials & Request OTP
   const handleInitiateAuth = async (e) => {
     e.preventDefault();
     if (!email || !password) {
@@ -456,7 +437,6 @@ const Auth = ({ isModel = false }) => {
     setLoading(true);
     try {
       if (isLogin) {
-        // Login Initiate
         const { data } = await axios.post(
           `${ServerUrl}/api/auth/login-initiate`,
           { email, password },
@@ -470,7 +450,6 @@ const Auth = ({ isModel = false }) => {
           setOtpDigits(["", "", "", "", "", ""]);
         }
       } else {
-        // Signup Initiate with Role (Learner or Trainer)
         const { data } = await axios.post(
           `${ServerUrl}/api/auth/signup-initiate`,
           { name, email, password, role: accountRole },
@@ -491,7 +470,6 @@ const Auth = ({ isModel = false }) => {
     }
   };
 
-  // STEP 2: Submit 6-Digit OTP & Verify
   const handleVerifyOtp = async (e) => {
     e.preventDefault();
     const fullOtp = otpDigits.join("");
@@ -503,7 +481,6 @@ const Auth = ({ isModel = false }) => {
     setLoading(true);
     try {
       if (isLogin) {
-        // Login Verify
         const { data } = await axios.post(
           `${ServerUrl}/api/auth/login-verify`,
           { email, otp: fullOtp },
@@ -531,7 +508,6 @@ const Auth = ({ isModel = false }) => {
           }
         }
       } else {
-        // Signup Verify
         const { data } = await axios.post(
           `${ServerUrl}/api/auth/signup-verify`,
           { email, otp: fullOtp },
@@ -556,7 +532,6 @@ const Auth = ({ isModel = false }) => {
     }
   };
 
-  // Resend OTP for Login / Signup
   const handleResendOtp = async () => {
     if (!canResend) return;
     setLoading(true);
@@ -579,9 +554,6 @@ const Auth = ({ isModel = false }) => {
     }
   };
 
-  // ==========================================
-  // FORGOT PASSWORD HANDLERS
-  // ==========================================
   const handleInitiateForgotPassword = async (e) => {
     e.preventDefault();
     if (!forgotEmail) {
@@ -674,11 +646,9 @@ const Auth = ({ isModel = false }) => {
     }
   };
 
-  // STEP 3: Complete User Profile Onboarding with Multiple Qualifications
   const handleCompleteProfile = async (e) => {
     e.preventDefault();
 
-    // Validate all qualifications in list
     for (let i = 0; i < educationList.length; i++) {
       const item = educationList[i];
       if (!item.collegeName.trim()) {
@@ -761,11 +731,9 @@ const Auth = ({ isModel = false }) => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-950 to-slate-900 text-white flex flex-col justify-between py-8 px-4 sm:px-6 relative overflow-hidden">
-      {/* Background Glows */}
       <div className="absolute -top-40 -left-40 w-96 h-96 bg-blue-600/20 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute -bottom-40 -right-40 w-96 h-96 bg-indigo-600/20 rounded-full blur-3xl pointer-events-none" />
 
-      {/* Brand Header */}
       <div className="max-w-md w-full mx-auto text-center z-10">
         <div
           onClick={() => {
@@ -800,16 +768,13 @@ const Auth = ({ isModel = false }) => {
         </div>
       </div>
 
-      {/* Main Authentication Card */}
       <div
         className={`w-full mx-auto z-10 my-auto transition-all duration-300 ${step === 3 ? "max-w-3xl" : "max-w-md"
           }`}
       >
         <div className="bg-slate-900/80 backdrop-blur-2xl border border-slate-700/80 rounded-3xl p-6 sm:p-8 shadow-2xl">
-          {/* Tricolor Accent Line */}
           <div className="h-1 w-full bg-gradient-to-r from-[#FF9933] via-white to-[#138808] rounded-full mb-6" />
 
-          {/* Stepper Progress Bar (hidden during Forgot Password) */}
           {!isForgotPassword && (
             <div className="flex items-center justify-between mb-6 px-2">
               <div className="flex items-center gap-2">
@@ -879,7 +844,6 @@ const Auth = ({ isModel = false }) => {
             </div>
           )}
 
-          {/* Mode Selector for Step 1 (Hidden during Forgot Password) */}
           {step === 1 && !isForgotPassword && (
             <div className="grid grid-cols-2 p-1 bg-slate-800/80 rounded-2xl border border-slate-700 mb-6 text-xs font-bold">
               <button
@@ -905,9 +869,6 @@ const Auth = ({ isModel = false }) => {
             </div>
           )}
 
-          {/* ========================================================= */}
-          {/* FORGOT PASSWORD VIEW                                      */}
-          {/* ========================================================= */}
           {isForgotPassword && (
             <div className="space-y-5">
               <button
@@ -936,7 +897,6 @@ const Auth = ({ isModel = false }) => {
                 </p>
               </div>
 
-              {/* Forgot Password Sub-step 1: Request OTP */}
               {forgotStep === 1 && (
                 <form onSubmit={handleInitiateForgotPassword} className="space-y-4">
                   <div>
@@ -976,10 +936,8 @@ const Auth = ({ isModel = false }) => {
                 </form>
               )}
 
-              {/* Forgot Password Sub-step 2: Verify OTP & Set New Password */}
               {forgotStep === 2 && (
                 <form onSubmit={handleVerifyForgotPassword} className="space-y-4">
-                  {/* 6-Digit OTP Box */}
                   <div>
                     <label className="block text-center text-xs font-semibold text-slate-300 mb-2">
                       Enter 6-Digit Security Code
@@ -1023,7 +981,6 @@ const Auth = ({ isModel = false }) => {
                     </div>
                   </div>
 
-                  {/* New Password */}
                   <div>
                     <label className="block text-xs font-semibold text-slate-300 mb-1.5">
                       New Password (min. 6 characters)
@@ -1052,7 +1009,6 @@ const Auth = ({ isModel = false }) => {
                     </div>
                   </div>
 
-                  {/* Confirm New Password */}
                   <div>
                     <label className="block text-xs font-semibold text-slate-300 mb-1.5">
                       Confirm New Password
@@ -1098,9 +1054,6 @@ const Auth = ({ isModel = false }) => {
             </div>
           )}
 
-          {/* ========================================================= */}
-          {/* STEP 1: CREDENTIALS (NAME, EMAIL, PASSWORD, ROLE)          */}
-          {/* ========================================================= */}
           {step === 1 && !isForgotPassword && (
             <div className="space-y-4">
               <div>
@@ -1114,7 +1067,6 @@ const Auth = ({ isModel = false }) => {
                 </p>
               </div>
 
-              {/* Google Sign In Button */}
               <button
                 type="button"
                 disabled={loading}
@@ -1151,14 +1103,12 @@ const Auth = ({ isModel = false }) => {
               </div>
 
               <form onSubmit={handleInitiateAuth} className="space-y-4">
-                {/* ROLE SELECTION CARDS (LEARNER vs TRAINER) FOR SIGNUP */}
                 {!isLogin && (
                   <div>
                     <label className="block text-xs font-semibold text-slate-300 mb-2">
                       Select Your Role <span className="text-rose-400">*</span>
                     </label>
                     <div className="grid grid-cols-2 gap-3 mb-3">
-                      {/* Learner Option Card */}
                       <button
                         type="button"
                         onClick={() => setAccountRole("learner")}
@@ -1188,7 +1138,6 @@ const Auth = ({ isModel = false }) => {
                         </div>
                       </button>
 
-                      {/* Trainer Option Card */}
                       <button
                         type="button"
                         onClick={() => setAccountRole("trainer")}
@@ -1320,9 +1269,6 @@ const Auth = ({ isModel = false }) => {
             </div>
           )}
 
-          {/* ========================================================= */}
-          {/* STEP 2: 6-DIGIT EMAIL OTP VERIFICATION                    */}
-          {/* ========================================================= */}
           {step === 2 && !isForgotPassword && (
             <form onSubmit={handleVerifyOtp} className="space-y-6">
               <div className="text-center">
@@ -1404,12 +1350,8 @@ const Auth = ({ isModel = false }) => {
             </form>
           )}
 
-          {/* ========================================================= */}
-          {/* STEP 3: USER PROFILE SETUP (MULTIPLE QUALIFICATIONS & ROLE) */}
-          {/* ========================================================= */}
           {step === 3 && (
             <form onSubmit={handleCompleteProfile} className="space-y-5">
-              {/* Mandatory Requirement Alert */}
               {userData && !userData.isProfileCompleted && (
                 <div className="p-3.5 rounded-2xl bg-amber-500/15 border border-amber-500/30 text-amber-300 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-1">
                   <div className="flex items-center gap-2.5">
@@ -1428,7 +1370,6 @@ const Auth = ({ isModel = false }) => {
                 </div>
               )}
 
-              {/* Modern Header */}
               <div>
                 <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-blue-500/10 border border-blue-500/30 text-blue-400 text-[10px] font-bold uppercase tracking-wider mb-2">
                   <FaUserGraduate size={11} />
@@ -1442,12 +1383,8 @@ const Auth = ({ isModel = false }) => {
                 </p>
               </div>
 
-              {/* ========================================================= */}
-              {/* 1. HERO AVATAR & IDENTITY PHOTO CARD                      */}
-              {/* ========================================================= */}
               <div className="p-4 sm:p-5 rounded-2xl bg-slate-800/70 border border-slate-700/80 shadow-md">
                 <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-5">
-                  {/* Circular Avatar Container */}
                   <div className="relative shrink-0 group">
                     <div className="w-20 h-20 sm:w-22 sm:h-22 rounded-full p-1 bg-gradient-to-tr from-blue-500 via-indigo-500 to-emerald-400 shadow-xl shadow-blue-500/20 flex items-center justify-center">
                       <div className="w-full h-full rounded-full overflow-hidden bg-slate-900 flex items-center justify-center relative">
@@ -1466,7 +1403,6 @@ const Auth = ({ isModel = false }) => {
                       </div>
                     </div>
 
-                    {/* Camera Badge Button Overlay */}
                     <button
                       type="button"
                       onClick={() => fileInputRef.current?.click()}
@@ -1476,7 +1412,6 @@ const Auth = ({ isModel = false }) => {
                       <FaCamera size={11} />
                     </button>
 
-                    {/* Hidden Native File Input */}
                     <input
                       ref={fileInputRef}
                       type="file"
@@ -1486,7 +1421,6 @@ const Auth = ({ isModel = false }) => {
                     />
                   </div>
 
-                  {/* Photo Info & Actions */}
                   <div className="flex-1 text-center sm:text-left">
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-1.5">
                       <div>
@@ -1507,7 +1441,6 @@ const Auth = ({ isModel = false }) => {
                         </p>
                       </div>
 
-                      {/* Photo Action Buttons */}
                       <div className="flex items-center justify-center sm:justify-end gap-2 shrink-0">
                         <button
                           type="button"
@@ -1537,9 +1470,7 @@ const Auth = ({ isModel = false }) => {
                   </div>
                 </div>
 
-                {/* Name & Registered Email Inputs */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 pt-4 mt-4 border-t border-slate-700/60">
-                  {/* Full Name Input */}
                   <div>
                     <div className="flex items-center justify-between mb-1.5">
                       <label className="text-xs font-semibold text-slate-300">
@@ -1566,7 +1497,6 @@ const Auth = ({ isModel = false }) => {
                     </div>
                   </div>
 
-                  {/* Registered Email (Verified) */}
                   <div>
                     <div className="flex items-center justify-between mb-1.5">
                       <label className="text-xs font-semibold text-slate-300">
@@ -1590,11 +1520,7 @@ const Auth = ({ isModel = false }) => {
                 </div>
               </div>
 
-              {/* ========================================================= */}
-              {/* 2. CADRE DESIGNATION & CAPACITY TRACK                     */}
-              {/* ========================================================= */}
               <div className="p-4 sm:p-5 rounded-2xl bg-slate-800/70 border border-slate-700/80 shadow-md space-y-4">
-                {/* Target Cadre / Specialization */}
                 <div>
                   <div className="flex items-center justify-between mb-1.5">
                     <label className="text-xs font-semibold text-slate-300">
@@ -1618,13 +1544,11 @@ const Auth = ({ isModel = false }) => {
                   </div>
                 </div>
 
-                {/* Account Role Selector Cards (Learner vs Trainer) */}
                 <div>
                   <label className="block text-xs font-semibold text-slate-300 mb-2">
                     Academy Operating Role <span className="text-rose-400">*</span>
                   </label>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    {/* Learner Card */}
                     <div
                       onClick={() => setAccountRole("learner")}
                       className={`p-3.5 rounded-xl border transition-all cursor-pointer flex items-start gap-3 select-none ${
@@ -1655,7 +1579,6 @@ const Auth = ({ isModel = false }) => {
                       </div>
                     </div>
 
-                    {/* Trainer Card */}
                     <div
                       onClick={() => setAccountRole("trainer")}
                       className={`p-3.5 rounded-xl border transition-all cursor-pointer flex items-start gap-3 select-none ${
@@ -1688,7 +1611,6 @@ const Auth = ({ isModel = false }) => {
                   </div>
                 </div>
 
-                {/* Conditional Trainer Experience Field */}
                 {accountRole === "trainer" && (
                   <div className="p-3.5 rounded-xl bg-emerald-950/25 border border-emerald-500/40">
                     <div className="flex items-center justify-between mb-1.5">
@@ -1716,9 +1638,6 @@ const Auth = ({ isModel = false }) => {
                 )}
               </div>
 
-              {/* ========================================================= */}
-              {/* 3. DYNAMIC MULTI-EDUCATION QUALIFICATIONS MANAGER         */}
-              {/* ========================================================= */}
               <div className="p-4 sm:p-5 rounded-2xl bg-slate-800/70 border border-slate-700/80 shadow-md space-y-3.5">
                 <div className="flex items-center justify-between border-b border-slate-700/60 pb-3">
                   <div className="flex items-center gap-2">
@@ -1772,7 +1691,6 @@ const Auth = ({ isModel = false }) => {
                       </div>
 
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        {/* Degree Dropdown */}
                         <div className="sm:col-span-2">
                           <label className="block text-[11px] font-semibold text-slate-300 mb-1">
                             Degree / Qualification <span className="text-rose-400">*</span>
@@ -1811,7 +1729,6 @@ const Auth = ({ isModel = false }) => {
                           )}
                         </div>
 
-                        {/* College / Institution Name */}
                         <div>
                           <div className="flex items-center justify-between mb-1">
                             <label className="text-[11px] font-semibold text-slate-300">
@@ -1841,7 +1758,6 @@ const Auth = ({ isModel = false }) => {
                           </div>
                         </div>
 
-                        {/* Pass Out Year Range */}
                         <div>
                           <label className="block text-[11px] font-semibold text-slate-300 mb-1">
                             Pass Out Year Range <span className="text-rose-400">*</span>
@@ -1885,11 +1801,7 @@ const Auth = ({ isModel = false }) => {
                 </div>
               </div>
 
-              {/* ========================================================= */}
-              {/* 4. COMPLETION READINESS & CONDITIONAL SUBMIT BUTTON        */}
-              {/* ========================================================= */}
               <div className="p-4 sm:p-5 rounded-2xl bg-slate-800/90 border border-slate-700/90 shadow-xl space-y-3.5">
-                {/* Readiness Meter */}
                 <div>
                   <div className="flex items-center justify-between text-xs mb-1.5">
                     <span className="font-bold text-slate-300 flex items-center gap-1.5">
@@ -1906,7 +1818,6 @@ const Auth = ({ isModel = false }) => {
                     </span>
                   </div>
 
-                  {/* Progress Bar Track */}
                   <div className="w-full h-2 rounded-full bg-slate-950 overflow-hidden border border-slate-800">
                     <div
                       className={`h-full rounded-full transition-all duration-300 ${
@@ -1919,7 +1830,6 @@ const Auth = ({ isModel = false }) => {
                   </div>
                 </div>
 
-                {/* Validation Status Indicator */}
                 {!isFormCompleted ? (
                   <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-[11px] text-amber-300 leading-relaxed">
                     <div className="font-bold flex items-center gap-1.5 mb-1">
@@ -1946,7 +1856,6 @@ const Auth = ({ isModel = false }) => {
                   </div>
                 )}
 
-                {/* SUBMIT BUTTON: Strictly clickable ONLY when isFormCompleted is true */}
                 <button
                   type="submit"
                   disabled={!isFormCompleted || loading}
@@ -1984,7 +1893,6 @@ const Auth = ({ isModel = false }) => {
         </div>
       </div>
 
-      {/* Modern Footer */}
       <div className="max-w-md w-full mx-auto text-center z-10 text-[11px] text-slate-500">
         © {new Date().getFullYear()} Ministry of Statistics & Programme Implementation (MoSPI).<br />
         Aligned with iGOT Karmayogi & NSSTA TPAC Framework.

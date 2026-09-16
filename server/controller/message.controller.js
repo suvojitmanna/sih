@@ -5,7 +5,6 @@ import Chat from "../models/chatModel.js";
 import User from "../models/userModel.js";
 import axios from "axios";
 
-// TEXT MESSAGE CONTROLLER (Gemini with OpenRouter fallback)
 export const textMessageController = async (req, res) => {
     try {
         const userId = req.userId || req.user?._id;
@@ -95,7 +94,6 @@ Rules:
     }
 };
 
-// IMAGE GENERATION CONTROLLER
 export const imageMessageController = async (req, res) => {
     try {
         const userId = req.userId || req.user?._id;
@@ -199,7 +197,6 @@ export const imageMessageController = async (req, res) => {
     }
 };
 
-// PUBLISH IMAGE TOGGLE CONTROLLER
 export const publishImageController = async (req, res) => {
     try {
         const userId = req.userId || req.user?._id;

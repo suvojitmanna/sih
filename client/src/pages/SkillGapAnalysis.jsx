@@ -587,8 +587,8 @@ const SkillGapAnalysis = () => {
                         data.requiredSkills.map((skill, idx) => {
                           const palette = CIRCULAR_PALETTES[idx % CIRCULAR_PALETTES.length];
                           const delta = skill.currentScore - skill.targetScore;
-                          const C_outer = 276.46; // 2 * PI * 44
-                          const C_inner = 207.35; // 2 * PI * 33
+                          const C_outer = 276.46;
+                          const C_inner = 207.35;
                           const currentClamped = Math.min(Math.max(skill.currentScore || 0, 0), 100);
                           const targetClamped = Math.min(Math.max(skill.targetScore || 0, 0), 100);
 

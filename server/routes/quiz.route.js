@@ -1,11 +1,11 @@
 import express from "express";
-import isAuth  from "../middleware/isAuth.js";
+import isAuth from "../middleware/isAuth.js";
 import {
-    generateAiQuiz,
-    getQuizzes,
-    getQuizById,
-    submitQuizAttempt,
-    getMyQuizAttempts,
+  generateAiQuiz,
+  getQuizzes,
+  getQuizById,
+  submitQuizAttempt,
+  getMyQuizAttempts,
 } from "../controller/quiz.controller.js";
 
 const quizRouter = express.Router();

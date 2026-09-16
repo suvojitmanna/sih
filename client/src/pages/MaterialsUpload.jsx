@@ -109,7 +109,6 @@ const MaterialsUpload = ({ initialTab = "material-request" }) => {
   const location = useLocation();
   const [searchParams] = useSearchParams();
 
-  // Determine active tab ("material-request" vs "mcq-create")
   const getInitialActiveTab = () => {
     const tabParam = searchParams.get("tab");
     if (tabParam === "mcq-create") return "mcq-create";
@@ -142,11 +141,9 @@ const MaterialsUpload = ({ initialTab = "material-request" }) => {
     }
   };
 
-  // Shared Data
   const [materials, setMaterials] = useState([]);
   const [myRequests, setMyRequests] = useState([]);
 
-  // Part 1: Material Request State
   const [requestForm, setRequestForm] = useState({
     topic: "",
     domain: DOMAINS[0],
@@ -155,12 +152,11 @@ const MaterialsUpload = ({ initialTab = "material-request" }) => {
   });
   const [requestAttachment, setRequestAttachment] = useState(null);
   const [requestSubmitting, setRequestSubmitting] = useState(false);
-  const [requestFilter, setRequestFilter] = useState("all"); // "all" | "pending" | "fulfilled"
+  const [requestFilter, setRequestFilter] = useState("all");
   const [requestSearch, setRequestSearch] = useState("");
   const [previewFile, setPreviewFile] = useState(null);
 
-  // Part 2: MCQ Create State
-  const [mcqSourceMode, setMcqSourceMode] = useState("direct"); // "direct" | "repository" | "dispatched"
+  const [mcqSourceMode, setMcqSourceMode] = useState("direct");
   const [selectedMaterial, setSelectedMaterial] = useState(null);
   const [directFile, setDirectFile] = useState(null);
   const [directTitle, setDirectTitle] = useState("");
@@ -176,7 +172,6 @@ const MaterialsUpload = ({ initialTab = "material-request" }) => {
 
   const prevFulfilledCountRef = useRef(null);
 
-  // Fetch materials and user requests
   const fetchMaterials = async (isBackground = false) => {
     try {
       const [matRes, reqRes] = await Promise.all([
@@ -221,7 +216,6 @@ const MaterialsUpload = ({ initialTab = "material-request" }) => {
     return () => clearInterval(interval);
   }, []);
 
-  // Submit Requisition Form (Part 1)
   const handleRequestSubmit = async (e) => {
     e.preventDefault();
     if (!requestForm.topic.trim() || !requestForm.description.trim()) {
@@ -262,7 +256,6 @@ const MaterialsUpload = ({ initialTab = "material-request" }) => {
     }
   };
 
-  // Switch to Part 2 with a dispatched material loaded
   const handleCreateMcqFromDispatched = (req) => {
     setMcqSourceMode("direct");
     setDirectTitle(req.dispatchedMaterialTitle || req.topic);
@@ -272,7 +265,6 @@ const MaterialsUpload = ({ initialTab = "material-request" }) => {
     toast.success(`Loaded "${req.topic}" for MCQ Question Studio! ⚡`);
   };
 
-  // Generate MCQs from direct file (Part 2)
   const handleDirectFileMcqGenerate = async (e) => {
     if (e) e.preventDefault();
     if (!directFile && !directTitle) {
@@ -319,7 +311,6 @@ const MaterialsUpload = ({ initialTab = "material-request" }) => {
     }
   };
 
-  // Generate MCQs from existing repository document (Part 2)
   const handleGenerateFromExisting = async (material = selectedMaterial) => {
     if (!material) {
       toast.error("Please select a document from the repository.");
@@ -354,7 +345,6 @@ const MaterialsUpload = ({ initialTab = "material-request" }) => {
     }
   };
 
-  // Copy questions & answers
   const handleCopyAll = () => {
     if (!generatedMcqs || generatedMcqs.length === 0) return;
     const formatted = generatedMcqs
@@ -370,7 +360,6 @@ const MaterialsUpload = ({ initialTab = "material-request" }) => {
     setTimeout(() => setCopied(false), 3000);
   };
 
-  // Request filtering
   const pendingCount = myRequests.filter((r) => r.status !== "fulfilled" && !r.dispatchedMaterialUrl).length;
   const fulfilledCount = myRequests.filter((r) => r.status === "fulfilled" || r.dispatchedMaterialUrl).length;
 
@@ -394,7 +383,7 @@ const MaterialsUpload = ({ initialTab = "material-request" }) => {
       <Navbar />
 
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 pt-19 pb-16 space-y-6">
-        {/* Navigation Breadcrumb */}
+
         <div className="flex items-center justify-between">
           <BackButton fallbackUrl="/dashboard" label="Back to Dashboard" />
           <span className="text-xs font-bold text-slate-500 dark:text-slate-400">
@@ -403,10 +392,8 @@ const MaterialsUpload = ({ initialTab = "material-request" }) => {
         </div>
 
 
-        {/* BRAND NEW UI: PART 1 - MATERIAL REQUEST & DISPATCHES         */}
         {activeTab === "material-request" && (
           <div className="space-y-6 animate-fadeIn">
-            {/* Clean Executive Header Bar - Only in Part 1 */}
             <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-sm flex flex-col md:flex-row md:items-center md:justify-between gap-4 relative overflow-hidden">
               <div className="space-y-1">
                 <div className="inline-flex items-center gap-2 px-3 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950/80 text-blue-700 dark:text-blue-300 border border-blue-200/80 dark:border-blue-800/80 text-[11px] font-black uppercase tracking-wider">
@@ -421,7 +408,6 @@ const MaterialsUpload = ({ initialTab = "material-request" }) => {
                 </p>
               </div>
 
-              {/* Quick Metrics */}
               <div className="flex items-center gap-3 shrink-0">
                 <div className="px-3.5 py-2 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200/80 dark:border-amber-800/80 text-center">
                   <span className="text-[10px] font-bold text-amber-700 dark:text-amber-300 block uppercase">In Review</span>
@@ -433,9 +419,7 @@ const MaterialsUpload = ({ initialTab = "material-request" }) => {
                 </div>
               </div>
             </div>
-            {/* Main Grid: Requisition Form (Left) & Request Tracking Dashboard (Right) */}
             <div className="grid lg:grid-cols-12 gap-6 items-start">
-              {/* Left Column: Direct In-Page Requisition Form */}
               <div className="lg:col-span-5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-7 shadow-xs space-y-5">
                 <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
                   <h2 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
@@ -447,7 +431,6 @@ const MaterialsUpload = ({ initialTab = "material-request" }) => {
                   </span>
                 </div>
 
-                {/* Quick Suggestion Chips */}
                 <div className="space-y-1.5">
                   <label className="text-[11px] font-bold text-slate-500 dark:text-slate-400 block">
                     Frequently Requisitioned Topics:
@@ -467,7 +450,7 @@ const MaterialsUpload = ({ initialTab = "material-request" }) => {
                 </div>
 
                 <form onSubmit={handleRequestSubmit} className="space-y-4 text-xs">
-                  {/* Topic */}
+
                   <div>
                     <label className="font-bold text-slate-700 dark:text-slate-300 block mb-1">
                       Requested Topic / Curriculum Framework *
@@ -482,7 +465,6 @@ const MaterialsUpload = ({ initialTab = "material-request" }) => {
                     />
                   </div>
 
-                  {/* Domain & Urgency */}
                   <div className="grid grid-cols-2 gap-3">
                     <div>
                       <label className="font-bold text-slate-700 dark:text-slate-300 block mb-1">
@@ -517,7 +499,6 @@ const MaterialsUpload = ({ initialTab = "material-request" }) => {
                     </div>
                   </div>
 
-                  {/* Detailed Requirements */}
                   <div>
                     <label className="font-bold text-slate-700 dark:text-slate-300 block mb-1">
                       Detailed Learning Requirement & Scope *
@@ -532,7 +513,6 @@ const MaterialsUpload = ({ initialTab = "material-request" }) => {
                     />
                   </div>
 
-                  {/* Supporting Document / Specimen */}
                   <div>
                     <label className="font-bold text-slate-700 dark:text-slate-300 block mb-1">
                       Attach Reference Specimen or Circular (Optional)
@@ -567,7 +547,6 @@ const MaterialsUpload = ({ initialTab = "material-request" }) => {
                     </div>
                   </div>
 
-                  {/* Submission Button */}
                   <button
                     type="submit"
                     disabled={requestSubmitting}
@@ -588,7 +567,6 @@ const MaterialsUpload = ({ initialTab = "material-request" }) => {
                 </form>
               </div>
 
-              {/* Right Column: Requisition Tracking & Dispatches Board */}
               <div className="lg:col-span-7 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-7 shadow-xs space-y-4">
                 <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-800 pb-3">
                   <div>
@@ -601,7 +579,6 @@ const MaterialsUpload = ({ initialTab = "material-request" }) => {
                     </p>
                   </div>
 
-                  {/* Status Filters & Search */}
                   <div className="flex flex-wrap items-center gap-2">
                     <div className="flex rounded-xl bg-slate-100 dark:bg-slate-800 p-0.5 text-[11px] font-bold">
                       <button
@@ -646,7 +623,6 @@ const MaterialsUpload = ({ initialTab = "material-request" }) => {
                   </div>
                 </div>
 
-                {/* Requisitions List */}
                 {filteredRequests.length === 0 ? (
                   <div className="text-center py-14 text-slate-400 space-y-3">
                     <BsInboxFill size={40} className="mx-auto opacity-30 text-blue-500" />
@@ -727,7 +703,6 @@ const MaterialsUpload = ({ initialTab = "material-request" }) => {
                             )}
                           </div>
 
-                          {/* Reference Attachment Preview */}
                           {req.attachmentData && (
                             <div className="flex items-center gap-2 text-[11px] text-blue-600 dark:text-blue-400">
                               <span>Attached: {req.attachmentName || "Reference Document"}</span>
@@ -740,7 +715,6 @@ const MaterialsUpload = ({ initialTab = "material-request" }) => {
                             </div>
                           )}
 
-                          {/* Secretariat Fulfilled Dispatch Card */}
                           {isFulfilled && (
                             <div className="p-4 rounded-2xl bg-emerald-50/90 dark:bg-emerald-950/50 border border-emerald-200 dark:border-emerald-800 space-y-3 text-xs">
                               <div className="flex flex-wrap items-center justify-between gap-2">
@@ -779,7 +753,6 @@ const MaterialsUpload = ({ initialTab = "material-request" }) => {
                                   </a>
                                 )}
 
-                                {/* Quick bridge to Part 2 */}
                                 <button
                                   onClick={() => handleCreateMcqFromDispatched(req)}
                                   className="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 text-white font-bold text-xs inline-flex items-center gap-1.5 shadow-xs transition cursor-pointer"
@@ -801,13 +774,9 @@ const MaterialsUpload = ({ initialTab = "material-request" }) => {
           </div>
         )}
 
-        {/* ============================================================ */}
-        {/* PART 2: MCQ CREATE STUDIO VIEW                               */}
-        {/* ============================================================ */}
         {activeTab === "mcq-create" && (
           <div className="space-y-6 animate-fadeIn">
             <div className="grid lg:grid-cols-12 gap-6 items-start">
-              {/* Left Column: Generation Setup */}
               <div className="lg:col-span-5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-7 shadow-xs space-y-5">
                 <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
                   <h2 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
@@ -819,7 +788,6 @@ const MaterialsUpload = ({ initialTab = "material-request" }) => {
                   </span>
                 </div>
 
-                {/* Choose Source Mode */}
                 <div>
                   <label className="font-bold text-slate-700 dark:text-slate-300 block mb-2 text-xs">
                     Step 1: Choose Source Material
@@ -861,7 +829,6 @@ const MaterialsUpload = ({ initialTab = "material-request" }) => {
                   </div>
                 </div>
 
-                {/* Direct File Dropzone */}
                 {mcqSourceMode === "direct" && (
                   <div className="space-y-3">
                     <div className="border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-2xl p-4 text-center hover:border-emerald-500 transition-colors bg-slate-50/70 dark:bg-slate-800/40 group cursor-pointer">
@@ -945,7 +912,6 @@ const MaterialsUpload = ({ initialTab = "material-request" }) => {
                   </div>
                 )}
 
-                {/* Repository Document Selector */}
                 {mcqSourceMode === "repository" && (
                   <div className="space-y-3">
                     <label className="font-bold text-slate-700 dark:text-slate-300 block text-xs">
@@ -990,7 +956,6 @@ const MaterialsUpload = ({ initialTab = "material-request" }) => {
                   </div>
                 )}
 
-                {/* Scope & Difficulty */}
                 <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 space-y-3">
                   <div className="flex items-center justify-between border-b border-slate-200/60 dark:border-slate-700/60 pb-2">
                     <span className="font-black text-xs text-slate-900 dark:text-white flex items-center gap-1.5">
@@ -1096,7 +1061,6 @@ const MaterialsUpload = ({ initialTab = "material-request" }) => {
                   </div>
                 </div>
 
-                {/* Generate Button */}
                 <button
                   type="button"
                   onClick={
@@ -1125,7 +1089,6 @@ const MaterialsUpload = ({ initialTab = "material-request" }) => {
                 </button>
               </div>
 
-              {/* Right Column: Question Bank Display */}
               <div className="lg:col-span-7 space-y-6">
                 {generatedMcqs.length > 0 ? (
                   <div className="bg-white dark:bg-slate-900 border-2 border-emerald-400/80 dark:border-emerald-600/60 rounded-3xl p-6 sm:p-7 shadow-xl space-y-5 animate-fadeIn">
@@ -1196,7 +1159,6 @@ const MaterialsUpload = ({ initialTab = "material-request" }) => {
                             </div>
                           </div>
 
-                          {/* Options */}
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs pt-1">
                             {(q.options || []).map((opt, oIdx) => {
                               const isCorrect =
@@ -1222,7 +1184,6 @@ const MaterialsUpload = ({ initialTab = "material-request" }) => {
                             })}
                           </div>
 
-                          {/* Rationale */}
                           <div className="p-3 rounded-xl bg-blue-50/70 dark:bg-blue-950/40 border border-blue-100 dark:border-blue-900/50 text-[11px] text-slate-700 dark:text-slate-300 leading-relaxed">
                             <strong className="text-blue-700 dark:text-blue-300 flex items-center gap-1.5 mb-1">
                               <FaInfoCircle size={11} />
@@ -1288,7 +1249,6 @@ const MaterialsUpload = ({ initialTab = "material-request" }) => {
         )}
       </main>
 
-      {/* Preview Modal */}
       {previewFile && (
         <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="bg-white dark:bg-slate-900 rounded-3xl max-w-2xl w-full p-6 shadow-2xl border border-slate-200 dark:border-slate-800 space-y-4">

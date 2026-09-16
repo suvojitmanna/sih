@@ -73,7 +73,6 @@ const Community = () => {
           </div>
         </div>
 
-        {/* Gallery Content */}
         {loading ? (
           <div className="grid gap-5 grid-cols-2 sm:grid-cols-3 lg:grid-cols-4">
             {[1, 2, 3, 4, 5, 6, 7, 8].map((n) => (

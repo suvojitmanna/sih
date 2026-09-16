@@ -41,7 +41,7 @@ const NotificationBell = () => {
   const location = useLocation();
 
   const [isOpen, setIsOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState("all"); // "all" | "intake" | "broadcasts"
+  const [activeTab, setActiveTab] = useState("all"); 
   const [broadcasts, setBroadcasts] = useState([]);
   const [diagnosticStatus, setDiagnosticStatus] = useState(null);
   const [readNotifications, setReadNotifications] = useState(() => {
@@ -60,23 +60,18 @@ const NotificationBell = () => {
     userData?.targetCadre ||
     "Indian Statistical Service (ISS) Officer";
 
-  // Exact completion checks:
-  // If Quiz is completed -> do NOT show Quiz
   const isQuizCompleted = Boolean(
     diagnosticStatus?.isQuizCompleted ||
     (userData?.quizzesCompleted && userData.quizzesCompleted > 0)
   );
 
-  // If Oral Viva is completed -> do NOT show Viva
   const isInterviewCompleted = Boolean(
     diagnosticStatus?.isInterviewCompleted ||
     diagnosticStatus?.diagnosticInterview?.status === "completed"
   );
 
-  // If both are completed, Intake count is 0 -> do NOT show Intake
   const isIntakePending = !isQuizCompleted || !isInterviewCompleted;
 
-  // Auto-reset tab if intake or broadcasts become 0
   useEffect(() => {
     if (!isIntakePending && activeTab === "intake") {
       setActiveTab("all");
@@ -86,7 +81,6 @@ const NotificationBell = () => {
     }
   }, [isIntakePending, broadcasts.length, activeTab]);
 
-  // Dynamic directive body copy tailored to what is still pending
   const directiveMessageText = useMemo(() => {
     if (!isQuizCompleted && !isInterviewCompleted) {
       return "New officer profiles are initialized at a 0% baseline. Complete your AI-generated role diagnostic quiz and mock oral viva below to calculate your verified 4-Domain Knowledge Taxonomy, establish Cadre Skill Gaps, and activate your personalized training roadmap.";
@@ -113,7 +107,6 @@ const NotificationBell = () => {
     return "Mandatory Assessment";
   }, [isQuizCompleted, isInterviewCompleted]);
 
-  // Fetch admin broadcasts and diagnostic intake status
   useEffect(() => {
     let isMounted = true;
 
@@ -149,7 +142,7 @@ const NotificationBell = () => {
     };
 
     fetchNotificationsData();
-    const interval = setInterval(fetchNotificationsData, 30000); // 30-sec refresh
+    const interval = setInterval(fetchNotificationsData, 30000);
 
     const handleRefetch = () => {
       fetchNotificationsData();
@@ -167,15 +160,12 @@ const NotificationBell = () => {
     };
   }, [userData, location.pathname]);
 
-  // Compute unread count based on remaining intake tasks + unread broadcasts
   const unreadCount = useMemo(() => {
     let count = 0;
 
-    // Count remaining intake items (quiz remaining + viva remaining)
     if (!isQuizCompleted) count += 1;
     if (!isInterviewCompleted) count += 1;
 
-    // Unread broadcast announcements
     broadcasts.forEach((b) => {
       if (!readNotifications.includes(b._id)) count += 1;
     });
@@ -196,7 +186,6 @@ const NotificationBell = () => {
     }
   };
 
-  // Show tabs only when both intake AND broadcast messages exist
   const showTabs = isIntakePending && broadcasts.length > 0;
 
   if (!userData || userData.role === "trainer") {
@@ -205,18 +194,17 @@ const NotificationBell = () => {
 
   return (
     <div ref={dropdownRef} className="relative select-none">
-      {/* Bell Trigger Button */}
+
       <motion.button
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
         onClick={() => setIsOpen(!isOpen)}
-        className={`relative p-2 sm:px-2.5 sm:py-2 rounded-2xl border transition-all cursor-pointer flex items-center justify-center ${
-          isOpen
+        className={`relative p-2 sm:px-2.5 sm:py-2 rounded-2xl border transition-all cursor-pointer flex items-center justify-center ${isOpen
             ? "bg-blue-600 text-white border-blue-600 shadow-md shadow-blue-500/20"
             : unreadCount > 0
-            ? "bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 border-amber-300/60 dark:border-amber-700/60 hover:bg-amber-100 dark:hover:bg-amber-900/50 shadow-xs"
-            : "bg-slate-100/90 dark:bg-slate-800/90 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-200/80 dark:hover:bg-slate-700/80 shadow-xs"
-        }`}
+              ? "bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 border-amber-300/60 dark:border-amber-700/60 hover:bg-amber-100 dark:hover:bg-amber-900/50 shadow-xs"
+              : "bg-slate-100/90 dark:bg-slate-800/90 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-200/80 dark:hover:bg-slate-700/80 shadow-xs"
+          }`}
         title="Cadre Directives & Official Academy Announcements"
         aria-label="Cadre Notifications"
       >
@@ -230,7 +218,6 @@ const NotificationBell = () => {
             />
           )}
 
-          {/* Glowing Ping indicator for Unread Directives */}
           {unreadCount > 0 && (
             <>
               <span className="absolute -top-1 -right-1.5 w-2.5 h-2.5 rounded-full bg-rose-500 animate-ping" />
@@ -242,7 +229,6 @@ const NotificationBell = () => {
         </div>
       </motion.button>
 
-      {/* Interactive Notification Center Popover */}
       <AnimatePresence>
         {isOpen && (
           <motion.div
@@ -252,10 +238,8 @@ const NotificationBell = () => {
             transition={{ duration: 0.16, ease: "easeOut" }}
             className="absolute right-0 mt-2.5 w-[360px] sm:w-[460px] max-w-[calc(100vw-24px)] bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-200/90 dark:border-slate-800/90 overflow-hidden z-[120] origin-top-right ring-1 ring-black/5"
           >
-            {/* Tricolor Government Ribbon Accent */}
             <div className="h-1 w-full bg-gradient-to-r from-[#FF9933] via-white to-[#138808]" />
 
-            {/* Header */}
             <div className="p-4 sm:p-5 bg-gradient-to-br from-slate-50 to-blue-50/50 dark:from-slate-800/90 dark:to-blue-950/40 border-b border-slate-100 dark:border-slate-800">
               <div className="flex items-center justify-between gap-3">
                 <div className="flex items-center gap-2.5">
@@ -297,37 +281,33 @@ const NotificationBell = () => {
                 </div>
               </div>
 
-              {/* Tabs: Only show if both intake directive and broadcasts exist */}
               {showTabs && (
                 <div className="flex items-center gap-1 mt-3 bg-slate-200/70 dark:bg-slate-800/80 p-1 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-300">
                   <button
                     onClick={() => setActiveTab("all")}
-                    className={`flex-1 py-1.5 px-2 rounded-lg text-center transition-all cursor-pointer ${
-                      activeTab === "all"
+                    className={`flex-1 py-1.5 px-2 rounded-lg text-center transition-all cursor-pointer ${activeTab === "all"
                         ? "bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 shadow-xs font-black"
                         : "hover:text-slate-900 dark:hover:text-white"
-                    }`}
+                      }`}
                   >
                     All Notices
                   </button>
                   <button
                     onClick={() => setActiveTab("intake")}
-                    className={`flex-1 py-1.5 px-2 rounded-lg text-center transition-all cursor-pointer relative ${
-                      activeTab === "intake"
+                    className={`flex-1 py-1.5 px-2 rounded-lg text-center transition-all cursor-pointer relative ${activeTab === "intake"
                         ? "bg-white dark:bg-slate-700 text-amber-600 dark:text-amber-400 shadow-xs font-black"
                         : "hover:text-slate-900 dark:hover:text-white"
-                    }`}
+                      }`}
                   >
                     <span>Intake Directive</span>
                     <span className="inline-block w-1.5 h-1.5 rounded-full bg-rose-500 ml-1.5 align-middle" />
                   </button>
                   <button
                     onClick={() => setActiveTab("broadcasts")}
-                    className={`flex-1 py-1.5 px-2 rounded-lg text-center transition-all cursor-pointer ${
-                      activeTab === "broadcasts"
+                    className={`flex-1 py-1.5 px-2 rounded-lg text-center transition-all cursor-pointer ${activeTab === "broadcasts"
                         ? "bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 shadow-xs font-black"
                         : "hover:text-slate-900 dark:hover:text-white"
-                    }`}
+                      }`}
                   >
                     Broadcasts ({broadcasts.length})
                   </button>
@@ -335,13 +315,10 @@ const NotificationBell = () => {
               )}
             </div>
 
-            {/* Scrollable Notifications Feed */}
             <div className="max-h-[380px] overflow-y-auto p-4 space-y-3.5 divide-y divide-slate-100 dark:divide-slate-800/80">
-              {/* 1. MANDATORY CADRE DIAGNOSTIC BASELINE INTAKE (ONLY SHOWN IF INTAKE NOT COMPLETED) */}
               {isIntakePending && (activeTab === "all" || activeTab === "intake") && (
                 <div className="pt-2 first:pt-0">
                   <div className="p-4 rounded-2xl bg-gradient-to-br from-amber-500/10 via-orange-500/5 to-rose-500/10 border-2 border-amber-400/50 dark:border-amber-500/40 shadow-xs space-y-3 relative overflow-hidden">
-                    {/* Top Ribbon & Priority Tag */}
                     <div className="flex items-center justify-between gap-2 flex-wrap">
                       <div className="flex items-center gap-1.5">
                         <span className="px-2 py-0.5 rounded-md text-[9.5px] font-black uppercase tracking-wider bg-rose-600 text-white shadow-xs">
@@ -356,7 +333,6 @@ const NotificationBell = () => {
                       </span>
                     </div>
 
-                    {/* Headline */}
                     <div>
                       <h4 className="text-xs sm:text-sm font-black text-slate-900 dark:text-white leading-snug">
                         Mandatory Cadre Diagnostic Baseline Intake
@@ -370,12 +346,10 @@ const NotificationBell = () => {
                       </p>
                     </div>
 
-                    {/* Official Directive Body */}
                     <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed bg-white/70 dark:bg-slate-900/70 p-3 rounded-xl border border-amber-200/50 dark:border-amber-800/40">
                       {directiveMessageText}
                     </p>
 
-                    {/* Status Breakdown: ONLY show what is still pending (if quiz complete not show quiz, vice versa viva) */}
                     <div className="flex items-center justify-between pt-1 text-[11px] flex-wrap gap-2">
                       <div className="flex items-center gap-2">
                         {!isQuizCompleted && (
@@ -398,9 +372,7 @@ const NotificationBell = () => {
                       </span>
                     </div>
 
-                    {/* Action CTAs: if quiz complete not show quiz, vice-versa viva */}
                     <div className="flex flex-col sm:flex-row gap-2 pt-1">
-                      {/* Diagnostic Quiz Button - HIDDEN IF QUIZ IS COMPLETE */}
                       {!isQuizCompleted && (
                         <button
                           onClick={() => {
@@ -422,7 +394,6 @@ const NotificationBell = () => {
                         </button>
                       )}
 
-                      {/* Oral Viva Button - HIDDEN IF VIVA IS COMPLETE */}
                       {!isInterviewCompleted && (
                         <button
                           onClick={() => {
@@ -444,7 +415,6 @@ const NotificationBell = () => {
                 </div>
               )}
 
-              {/* 2. ADMIN BROADCAST MESSAGES - ONLY SHOWN IF BROADCASTS > 0 */}
               {broadcasts.length > 0 && (activeTab === "all" || activeTab === "broadcasts") && (
                 <div className="pt-3 space-y-2.5">
                   <div className="flex items-center justify-between">
@@ -481,7 +451,6 @@ const NotificationBell = () => {
                 </div>
               )}
 
-              {/* ALL CLEAR STATE: When Intake is completed (0 remaining) AND Broadcast messages count is 0 */}
               {!isIntakePending && broadcasts.length === 0 && (
                 <div className="p-6 text-center space-y-2.5">
                   <div className="w-12 h-12 rounded-2xl bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mx-auto shadow-xs border border-emerald-200/70 dark:border-emerald-800/70">

@@ -30,10 +30,8 @@ const AuthModel = ({ onClose }) => {
         exit={{ opacity: 0 }}
         className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/40 backdrop-blur-md px-4"
       >
-        {/* Overlay */}
         <div className="absolute inset-0" onClick={handleAttemptClose} />
 
-        {/* Modal */}
         <motion.div
           initial={{ opacity: 0, scale: 0.9, y: 40 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -45,10 +43,8 @@ const AuthModel = ({ onClose }) => {
           }}
           className="relative w-full max-w-md z-10"
         >
-          {/* Glow Effect */}
           <div className="absolute -inset-1 rounded-[2.5rem] bg-gradient-to-r from-indigo-500/30 via-violet-500/30 to-fuchsia-500/30 blur-2xl opacity-70" />
 
-          {/* Close Button */}
           <button
             onClick={handleAttemptClose}
             aria-label="Close modal"
@@ -57,7 +53,6 @@ const AuthModel = ({ onClose }) => {
             <FaTimes size={16} />
           </button>
 
-          {/* Glass Card */}
           <div className="relative rounded-[2.5rem] overflow-hidden border border-white/20 shadow-[0_20px_80px_rgba(0,0,0,0.15)]">
             <Auth isModel={true} />
           </div>

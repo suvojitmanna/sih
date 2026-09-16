@@ -454,7 +454,6 @@ const InterviewHistory = () => {
   const unifiedHistory = useMemo(() => {
     const list = [];
 
-    // 1. SankhyaCopilot Chat Sessions
     (chats || []).forEach((c) => {
       const msgCount = c.messages?.length || 0;
       const lastMsg = msgCount > 0 ? c.messages[msgCount - 1]?.content : "No messages yet";
@@ -482,7 +481,6 @@ const InterviewHistory = () => {
       });
     });
 
-    // 2. Mock Viva Voce Oral Interviews
     (interviews || []).forEach((i) => {
       const sc = i.finalScore || 0;
       const qList = i.question || i.questions || [];
@@ -518,7 +516,6 @@ const InterviewHistory = () => {
       });
     });
 
-    // 3. Case Study Practicums & Assignments (Evaluated Submissions Only)
     (assignmentSubmissions || []).forEach((a) => {
       const overallMarks =
         a.aiEvaluation?.overallScore !== undefined && a.aiEvaluation?.overallScore !== null
@@ -553,7 +550,6 @@ const InterviewHistory = () => {
       });
     });
 
-    // 4. Timed Diagnostic Quizzes (Completed Attempts Only)
     (quizAttempts || []).forEach((q) => {
       const sc = q.score !== undefined && q.score !== null ? q.score : 0;
       const totalQ = q.totalQuestions || 0;
@@ -587,7 +583,6 @@ const InterviewHistory = () => {
       });
     });
 
-    // 5. Cadre Competency Profile & Skill Gap Matrix (If assessed)
     if (userData?.competencies && userData.competencies.length > 0) {
       const compScore = userData.overallCompetencyScore || 0;
       const grade = getGradeFromScore(compScore);
@@ -925,9 +920,7 @@ const InterviewHistory = () => {
           </div>
 
           <div className="space-y-4 pt-1">
-            {/* Search, Status/Score Filters, Sort, and Reset Bar */}
             <div className="relative z-30 flex flex-col xl:flex-row items-stretch xl:items-center justify-between gap-3.5 bg-slate-50/90 dark:bg-slate-800/60 backdrop-blur-md p-3.5 sm:p-4 rounded-3xl border border-slate-200/80 dark:border-slate-700/80 shadow-xs">
-              {/* Search input */}
               <div className="relative flex-1 min-w-[260px]">
                 <FaSearch className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 text-xs" />
                 <input
@@ -948,9 +941,7 @@ const InterviewHistory = () => {
                 )}
               </div>
 
-              {/* Status & Score Filters + Sort + Reset */}
               <div className="flex flex-wrap items-center gap-2.5">
-                {/* 3 Core Status Filters (No duplicate score filters) */}
                 <div className="flex flex-wrap items-center gap-1 bg-white/90 dark:bg-slate-900/90 border border-slate-200 dark:border-slate-700/80 p-1 rounded-2xl shadow-2xs">
                   <button
                     onClick={() => setStatusFilter("all")}
@@ -1013,7 +1004,6 @@ const InterviewHistory = () => {
                   </button>
                 </div>
 
-                {/* Custom Interactive Sort & Score Dropdown with Icons and Separate Colors */}
                 <div className="relative z-50" ref={sortDropdownRef}>
                   <button
                     type="button"
@@ -1091,7 +1081,6 @@ const InterviewHistory = () => {
                   </AnimatePresence>
                 </div>
 
-                {/* Reset button */}
                 {(searchQuery || statusFilter !== "all" || sortBy !== "newest") && (
                   <button
                     onClick={() => {
@@ -1107,14 +1096,12 @@ const InterviewHistory = () => {
                   </button>
                 )}
 
-                {/* Counter Badge */}
                 <span className="px-3.5 py-2 rounded-2xl bg-slate-100 dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700/80 text-slate-700 dark:text-slate-300 text-[11px] font-black whitespace-nowrap shadow-2xs">
                   {filteredHistory.length} Sessions
                 </span>
               </div>
             </div>
 
-            {/* AI Models category selection carousel */}
             <div className="relative z-10 flex items-center gap-2">
               <AnimatePresence>
                 {canScrollLeft && (
@@ -1271,7 +1258,6 @@ const InterviewHistory = () => {
 
                     <div className="relative h-full rounded-[23px] bg-white/95 dark:bg-slate-900/95 backdrop-blur-2xl border border-slate-200/70 dark:border-slate-800 p-5 sm:p-6 transition-all duration-300">
                       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-5">
-                        {/* Left info column */}
                         <div className="flex-1">
                           <div className="flex flex-wrap items-center gap-2.5 mb-3">
                             <div className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wider ${item.iconBg}`}>
@@ -1489,7 +1475,6 @@ const InterviewHistory = () => {
       <AnimatePresence>
         {activeModalItem && (
           <div className="fixed inset-0 z-[200] flex items-center justify-center p-3 sm:p-6 overflow-y-auto">
-            {/* Backdrop */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}

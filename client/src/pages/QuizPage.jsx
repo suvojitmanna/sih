@@ -37,7 +37,6 @@ const QuizPage = () => {
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Anti-Cheating & Proctoring States
   const [tabSwitchCount, setTabSwitchCount] = useState(0);
   const [showTabSwitchModal, setShowTabSwitchModal] = useState(false);
   const tabSwitchCountRef = useRef(0);
@@ -117,7 +116,6 @@ const QuizPage = () => {
         setSubmitted(true);
         setShowTabSwitchModal(false);
 
-        // Safeguard user state: preserve isProfileCompleted: true
         if (data.user) {
           dispatch(
             setUserData({
@@ -146,12 +144,9 @@ const QuizPage = () => {
   const handleSubmitRef = useRef();
   handleSubmitRef.current = handleSubmitQuiz;
 
-  // Anti-Cheating & Proctoring Event Listeners
   useEffect(() => {
-    // Only active during an active, unsubmitted assessment
     if (submitted || loading || !quiz) return;
 
-    // 1. Context Menu (Right Click) Prevention & Error Message
     const handleContextMenu = (e) => {
       e.preventDefault();
       toast.error(
@@ -163,7 +158,6 @@ const QuizPage = () => {
       );
     };
 
-    // 2. Clipboard Protection: Copy, Cut, Paste Prevention & Error Message
     const handleCopy = (e) => {
       e.preventDefault();
       toast.error(
@@ -197,7 +191,6 @@ const QuizPage = () => {
       );
     };
 
-    // 3. Prohibited Keyboard Shortcuts (Ctrl+C, Ctrl+V, Ctrl+X, Ctrl+A, F12, Ctrl+Shift+I, etc.)
     const handleKeyDown = (e) => {
       const isCtrlOrCmd = e.ctrlKey || e.metaKey;
       const key = (e.key || "").toLowerCase();
@@ -250,10 +243,8 @@ const QuizPage = () => {
       }
     };
 
-    // 4. Tab Switch & Focus Change Detection
     const triggerTabSwitchViolation = () => {
       const now = Date.now();
-      // Debounce to prevent dual-firing between blur and visibilitychange
       if (now - lastViolationTimeRef.current < 700) return;
       lastViolationTimeRef.current = now;
 
@@ -413,15 +404,13 @@ const QuizPage = () => {
               </div>
 
               <div className="flex items-center gap-2.5 sm:gap-3">
-                {/* Live Proctoring Status Badge */}
                 <div
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-2xl text-xs font-bold border transition-all ${
-                    tabSwitchCount === 0
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-2xl text-xs font-bold border transition-all ${tabSwitchCount === 0
                       ? "bg-emerald-50 dark:bg-emerald-950/50 border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300"
                       : tabSwitchCount < 3
-                      ? "bg-amber-50 dark:bg-amber-950/50 border-amber-200 dark:border-amber-800 text-amber-700 dark:text-amber-300 animate-pulse"
-                      : "bg-rose-50 dark:bg-rose-950/60 border-rose-200 dark:border-rose-800 text-rose-600 dark:text-rose-400 animate-bounce"
-                  }`}
+                        ? "bg-amber-50 dark:bg-amber-950/50 border-amber-200 dark:border-amber-800 text-amber-700 dark:text-amber-300 animate-pulse"
+                        : "bg-rose-50 dark:bg-rose-950/60 border-rose-200 dark:border-rose-800 text-rose-600 dark:text-rose-400 animate-bounce"
+                    }`}
                   title={`Proctoring Security: ${tabSwitchCount} tab switch violations detected`}
                 >
                   {tabSwitchCount === 0 ? (
@@ -436,8 +425,8 @@ const QuizPage = () => {
 
                 <div
                   className={`flex items-center gap-2 px-4 py-2 rounded-2xl font-mono font-bold text-sm border ${timeLeft < 120
-                      ? "bg-rose-50 border-rose-200 text-rose-600 animate-pulse"
-                      : "bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200"
+                    ? "bg-rose-50 border-rose-200 text-rose-600 animate-pulse"
+                    : "bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200"
                     }`}
                 >
                   <FaClock size={14} />
@@ -454,7 +443,6 @@ const QuizPage = () => {
               </div>
             </div>
 
-            {/* Persistent In-Session Tab Switch Warning Banner */}
             {tabSwitchCount > 0 && (
               <div className="flex items-center justify-between p-3.5 sm:p-4 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-300 dark:border-amber-800 text-amber-900 dark:text-amber-200 text-xs shadow-xs animate-fadeIn">
                 <div className="flex items-center gap-2.5">
@@ -485,10 +473,10 @@ const QuizPage = () => {
                   key={i}
                   onClick={() => setCurrentIdx(i)}
                   className={`w-8 h-8 rounded-xl font-bold text-xs flex items-center justify-center transition-all cursor-pointer shrink-0 ${currentIdx === i
-                      ? "bg-blue-600 text-white shadow-sm ring-2 ring-blue-400"
-                      : userAnswers[i]
-                        ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300"
-                        : "bg-slate-100 dark:bg-slate-800 text-slate-500 hover:bg-slate-200"
+                    ? "bg-blue-600 text-white shadow-sm ring-2 ring-blue-400"
+                    : userAnswers[i]
+                      ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300"
+                      : "bg-slate-100 dark:bg-slate-800 text-slate-500 hover:bg-slate-200"
                     }`}
                 >
                   {i + 1}
@@ -519,8 +507,8 @@ const QuizPage = () => {
                       key={optIdx}
                       onClick={() => handleSelectOption(option)}
                       className={`p-4 rounded-2xl border-2 transition-all cursor-pointer flex items-center justify-between ${isSelected
-                          ? "border-blue-600 bg-blue-50/80 dark:bg-blue-950/60 shadow-xs"
-                          : "border-slate-200 dark:border-slate-800 hover:border-slate-300 bg-slate-50/50 dark:bg-slate-800/40"
+                        ? "border-blue-600 bg-blue-50/80 dark:bg-blue-950/60 shadow-xs"
+                        : "border-slate-200 dark:border-slate-800 hover:border-slate-300 bg-slate-50/50 dark:bg-slate-800/40"
                         }`}
                     >
                       <span className="text-xs sm:text-sm font-medium text-slate-800 dark:text-slate-200">
@@ -528,8 +516,8 @@ const QuizPage = () => {
                       </span>
                       <div
                         className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${isSelected
-                            ? "border-blue-600 bg-blue-600 text-white"
-                            : "border-slate-300 dark:border-slate-600"
+                          ? "border-blue-600 bg-blue-600 text-white"
+                          : "border-slate-300 dark:border-slate-600"
                           }`}
                       >
                         {isSelected && (
@@ -580,8 +568,8 @@ const QuizPage = () => {
             <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-8 shadow-xs text-center space-y-4">
               <div
                 className={`w-16 h-16 rounded-3xl mx-auto flex items-center justify-center font-black text-2xl shadow-lg ${result?.attempt?.passed
-                    ? "bg-emerald-500 text-white"
-                    : "bg-amber-500 text-white"
+                  ? "bg-emerald-500 text-white"
+                  : "bg-amber-500 text-white"
                   }`}
               >
                 {result?.attempt?.score}%
@@ -597,8 +585,8 @@ const QuizPage = () => {
 
                 <span
                   className={`inline-block px-3 py-1 rounded-full text-xs font-extrabold uppercase tracking-wide mb-2 ${result?.attempt?.passed
-                      ? "bg-emerald-100 text-emerald-700"
-                      : "bg-amber-100 text-amber-700"
+                    ? "bg-emerald-100 text-emerald-700"
+                    : "bg-amber-100 text-amber-700"
                     }`}
                 >
                   {result?.attempt?.passed
@@ -650,11 +638,10 @@ const QuizPage = () => {
                     Tab Switches
                   </span>
                   <span
-                    className={`text-base font-black ${
-                      (result?.attempt?.tabSwitchCount ?? tabSwitchCount) === 0
+                    className={`text-base font-black ${(result?.attempt?.tabSwitchCount ?? tabSwitchCount) === 0
                         ? "text-emerald-600"
                         : "text-amber-600"
-                    }`}
+                      }`}
                   >
                     {(result?.attempt?.tabSwitchCount ?? tabSwitchCount) === 0
                       ? "0 (Clean)"
@@ -712,10 +699,10 @@ const QuizPage = () => {
                         </span>
                         <span
                           className={`text-[11px] font-black px-2 py-0.5 rounded-full ${t.status === "Mastered"
-                              ? "bg-emerald-100 text-emerald-700"
-                              : t.status === "Developing"
-                                ? "bg-blue-100 text-blue-700"
-                                : "bg-rose-100 text-rose-700"
+                            ? "bg-emerald-100 text-emerald-700"
+                            : t.status === "Developing"
+                              ? "bg-blue-100 text-blue-700"
+                              : "bg-rose-100 text-rose-700"
                             }`}
                         >
                           {t.status} ({t.score}%)
@@ -736,8 +723,8 @@ const QuizPage = () => {
                   <div
                     key={idx}
                     className={`p-4 rounded-2xl border-2 space-y-2.5 ${ans.isCorrect
-                        ? "border-emerald-200 bg-emerald-50/40 dark:bg-emerald-950/20 dark:border-emerald-900"
-                        : "border-rose-200 bg-rose-50/40 dark:bg-rose-950/20 dark:border-rose-900"
+                      ? "border-emerald-200 bg-emerald-50/40 dark:bg-emerald-950/20 dark:border-emerald-900"
+                      : "border-rose-200 bg-rose-50/40 dark:bg-rose-950/20 dark:border-rose-900"
                       }`}
                   >
                     <div className="flex items-start justify-between gap-3">
@@ -794,7 +781,6 @@ const QuizPage = () => {
         )}
       </main>
 
-      {/* Security Proctoring Alert Modal */}
       <ExamProctoringModal
         isOpen={showTabSwitchModal && !submitted}
         tabSwitchCount={tabSwitchCount}

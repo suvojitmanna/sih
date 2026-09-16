@@ -491,8 +491,8 @@ const Dashboard = () => {
         impact: isCritical
           ? "Critical capability deficit directly affecting official survey operations & macroeconomic compilation."
           : isModerate
-          ? "Moderate operational deficit requiring targeted practicum drills and mock evaluations."
-          : "Proficiency satisfies official cadre operational requirements.",
+            ? "Moderate operational deficit requiring targeted practicum drills and mock evaluations."
+            : "Proficiency satisfies official cadre operational requirements.",
         recommendedAction: isCritical
           ? `Enroll in mandatory iGOT Karmayogi core module for ${comp.competencyName}.`
           : `Practice diagnostic assessment and drills in ${comp.competencyName}.`,
@@ -508,7 +508,6 @@ const Dashboard = () => {
     return allPossibleSkillGaps;
   }, [allPossibleSkillGaps, skillGapFilter]);
 
-  // 3. Radar Chart Data (4 Official MoSPI Domains)
   const radarData = useMemo(() => {
     if (!isSignupAssignmentComplete) {
       return [
@@ -606,7 +605,6 @@ const Dashboard = () => {
     });
   }, [synthesizedCompetencies, domainFilter]);
 
-  // 5. Multi-Model Knowledge Evaluation Score Timeline (Progress Over Sessions)
   const knowledgeTimelineData = useMemo(() => {
     let events = [];
 
@@ -838,7 +836,6 @@ const Dashboard = () => {
             </div>
           </div>
 
-          {/* OFFICIAL CADRE DIAGNOSTIC BASELINE INTAKE BANNER */}
           {(!diagnosticStatus || !diagnosticStatus.isDiagnosticFullyCompleted) && (
             <ScrollReveal direction="up" delay={0.03}>
               <div className="relative rounded-3xl overflow-hidden bg-gradient-to-r from-amber-500/10 via-blue-900/40 to-indigo-950 text-slate-900 dark:text-white p-6 sm:p-7 shadow-xl border-2 border-amber-500/40 dark:border-amber-400/30 backdrop-blur-md">
@@ -880,9 +877,7 @@ const Dashboard = () => {
                     </div>
                   </div>
 
-                  {/* Diagnostic Test Cards */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 shrink-0 lg:w-[480px]">
-                    {/* Card 1: Diagnostic Quiz */}
                     <div className="p-4 rounded-2xl bg-white dark:bg-slate-900/90 border border-amber-400/40 dark:border-amber-500/30 shadow-md flex flex-col justify-between space-y-3">
                       <div className="space-y-1.5">
                         <div className="flex items-center justify-between">
@@ -933,7 +928,6 @@ const Dashboard = () => {
                       )}
                     </div>
 
-                    {/* Card 2: Diagnostic Viva */}
                     <div className="p-4 rounded-2xl bg-white dark:bg-slate-900/90 border border-blue-400/40 dark:border-blue-500/30 shadow-md flex flex-col justify-between space-y-3">
                       <div className="space-y-1.5">
                         <div className="flex items-center justify-between">
@@ -1280,7 +1274,6 @@ const Dashboard = () => {
             </div>
           </ScrollReveal>
 
-          {/* 4-Domain Taxonomy Radar & Balance Matrix */}
           <ScrollReveal direction="up" delay={0.1}>
             <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-8 shadow-xs space-y-6">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 dark:border-slate-800 pb-4">
@@ -1318,16 +1311,15 @@ const Dashboard = () => {
                         </span>
                       </div>
                       <p className="text-xs sm:text-sm text-amber-900/90 dark:text-amber-300/90 mt-1 leading-relaxed">
-                        This user has not completed their signup assignment (<strong>Diagnostic Quiz</strong> and <strong>Intake Viva Voce</strong>). 
+                        This user has not completed their signup assignment (<strong>Diagnostic Quiz</strong> and <strong>Intake Viva Voce</strong>).
                         All 4-Domain Competency Radar values will remain at <strong>0%</strong> until both baseline evaluations are successfully completed.
                       </p>
                       <div className="flex flex-wrap items-center gap-2.5 mt-3 text-xs font-semibold">
                         <span
-                          className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-lg border ${
-                            isQuizCompleted
+                          className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-lg border ${isQuizCompleted
                               ? "bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800"
                               : "bg-rose-50 dark:bg-rose-950/50 text-rose-700 dark:text-rose-300 border-rose-200 dark:border-rose-800"
-                          }`}
+                            }`}
                         >
                           {isQuizCompleted ? (
                             <FaCheckCircle size={12} className="text-emerald-500" />
@@ -1339,11 +1331,10 @@ const Dashboard = () => {
                           </span>
                         </span>
                         <span
-                          className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-lg border ${
-                            isInterviewCompleted
+                          className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-lg border ${isInterviewCompleted
                               ? "bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800"
                               : "bg-rose-50 dark:bg-rose-950/50 text-rose-700 dark:text-rose-300 border-rose-200 dark:border-rose-800"
-                          }`}
+                            }`}
                         >
                           {isInterviewCompleted ? (
                             <FaCheckCircle size={12} className="text-emerald-500" />
@@ -1435,8 +1426,7 @@ const Dashboard = () => {
                             {d.domain} Domain
                           </span>
                           <span
-                            className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-md ${
-                              !isSignupAssignmentComplete
+                            className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-md ${!isSignupAssignmentComplete
                                 ? "bg-rose-100 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400"
                                 : d.score >= 75
                                   ? "bg-emerald-100 dark:bg-emerald-950 text-emerald-600"
@@ -1448,10 +1438,10 @@ const Dashboard = () => {
                             {!isSignupAssignmentComplete
                               ? "Assignment Pending"
                               : d.score >= 75
-                              ? "Benchmark Met"
-                              : d.score >= 50
-                              ? "Developing"
-                              : "Deficit"}
+                                ? "Benchmark Met"
+                                : d.score >= 50
+                                  ? "Developing"
+                                  : "Deficit"}
                           </span>
                         </div>
 
@@ -1460,7 +1450,6 @@ const Dashboard = () => {
                             {Math.round(d.score)}%
                           </div>
 
-                          {/* Dynamic Trend Indicator */}
                           {trend.direction === "up" ? (
                             <span className="inline-flex items-center gap-1 text-[11px] font-black px-2 py-0.5 rounded-lg bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300">
                               <FaArrowUp size={9} />
@@ -1480,15 +1469,14 @@ const Dashboard = () => {
 
                         <div className="w-full bg-slate-200 dark:bg-slate-700 h-2 rounded-full overflow-hidden">
                           <div
-                            className={`h-full rounded-full transition-all ${
-                              !isSignupAssignmentComplete
+                            className={`h-full rounded-full transition-all ${!isSignupAssignmentComplete
                                 ? "bg-rose-400"
                                 : d.score >= 75
-                                ? "bg-emerald-500"
-                                : d.score >= 50
-                                ? "bg-blue-500"
-                                : "bg-rose-500"
-                            }`}
+                                  ? "bg-emerald-500"
+                                  : d.score >= 50
+                                    ? "bg-blue-500"
+                                    : "bg-rose-500"
+                              }`}
                             style={{ width: `${Math.max(0, d.score)}%` }}
                           />
                         </div>
@@ -1500,15 +1488,15 @@ const Dashboard = () => {
                               !isSignupAssignmentComplete
                                 ? "text-rose-600 dark:text-rose-400 font-bold"
                                 : d.score >= 75
-                                ? "text-emerald-600 dark:text-emerald-400"
-                                : "text-amber-600 dark:text-amber-400"
+                                  ? "text-emerald-600 dark:text-emerald-400"
+                                  : "text-amber-600 dark:text-amber-400"
                             }
                           >
                             {!isSignupAssignmentComplete
                               ? "Unassessed (0%)"
                               : d.score >= 75
-                              ? "Target Exceeded"
-                              : `Gap: -${Math.max(0, 75 - Math.round(d.score))}%`}
+                                ? "Target Exceeded"
+                                : `Gap: -${Math.max(0, 75 - Math.round(d.score))}%`}
                           </span>
                         </div>
                       </div>
@@ -1617,7 +1605,6 @@ const Dashboard = () => {
             </div>
           </ScrollReveal>
 
-          {/* Competency Columns & Action Targets */}
           <ScrollReveal direction="up" delay={0.1}>
             <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-8 shadow-xs space-y-4">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 dark:border-slate-800 pb-3">
@@ -1722,7 +1709,6 @@ const Dashboard = () => {
             </div>
           </ScrollReveal>
 
-          {/* ALL POSSIBLE SKILL GAP ANALYSIS VS. CADRE BENCHMARK */}
           <ScrollReveal direction="up" delay={0.1}>
             <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-8 shadow-xs space-y-6">
               <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-slate-100 dark:border-slate-800 pb-4">
@@ -1781,7 +1767,6 @@ const Dashboard = () => {
                 </div>
               </div>
 
-              {/* Summary Stats Strip */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/80">
                   <span className="text-[10px] font-bold text-slate-500 uppercase">Total Tracked Gaps</span>
@@ -1809,7 +1794,6 @@ const Dashboard = () => {
                 </div>
               </div>
 
-              {/* Gap Cards Grid */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {filteredSkillGaps.map((gap, idx) => {
                   const isCritical = gap.priority === "High";
@@ -1818,13 +1802,12 @@ const Dashboard = () => {
                   return (
                     <div
                       key={idx}
-                      className={`p-5 rounded-2xl border transition-all flex flex-col justify-between space-y-3.5 ${
-                        isCritical
+                      className={`p-5 rounded-2xl border transition-all flex flex-col justify-between space-y-3.5 ${isCritical
                           ? "bg-rose-50/40 dark:bg-rose-950/20 border-rose-200 dark:border-rose-900/60 hover:border-rose-400"
                           : isModerate
-                          ? "bg-amber-50/40 dark:bg-amber-950/20 border-amber-200 dark:border-amber-900/60 hover:border-amber-400"
-                          : "bg-emerald-50/40 dark:bg-emerald-950/20 border-emerald-200 dark:border-emerald-900/60 hover:border-emerald-400"
-                      }`}
+                            ? "bg-amber-50/40 dark:bg-amber-950/20 border-amber-200 dark:border-amber-900/60 hover:border-amber-400"
+                            : "bg-emerald-50/40 dark:bg-emerald-950/20 border-emerald-200 dark:border-emerald-900/60 hover:border-emerald-400"
+                        }`}
                     >
                       <div className="space-y-2">
                         <div className="flex items-center justify-between">
@@ -1832,13 +1815,12 @@ const Dashboard = () => {
                             {gap.domain || "Statistical"}
                           </span>
                           <span
-                            className={`text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full ${
-                              isCritical
+                            className={`text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full ${isCritical
                                 ? "bg-rose-100 dark:bg-rose-950 text-rose-700 dark:text-rose-300"
                                 : isModerate
-                                ? "bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-300"
-                                : "bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300"
-                            }`}
+                                  ? "bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-300"
+                                  : "bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300"
+                              }`}
                           >
                             {isCritical ? "Critical Gap" : isModerate ? "Moderate Deficit" : "Benchmark Satisfied"}
                           </span>
@@ -1908,8 +1890,6 @@ const Dashboard = () => {
               </div>
             </div>
           </ScrollReveal>
-
-          {/* Weakness-Driven AI Curriculum Engine */}
           <ScrollReveal direction="up" delay={0.1}>
             <div className="bg-white dark:bg-slate-900 border-2 border-blue-100 dark:border-blue-900/60 rounded-3xl p-6 sm:p-8 shadow-lg space-y-6">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -2054,8 +2034,6 @@ const Dashboard = () => {
               </div>
             </div>
           </ScrollReveal>
-
-          {/* AI Copilot Knowledge Recommendation Card */}
           <ScrollReveal direction="scale" delay={0.1}>
             <div className="p-6 sm:p-8 rounded-3xl bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 dark:from-slate-900 dark:via-blue-950/40 dark:to-slate-900 border border-blue-200/80 dark:border-blue-900/60 shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
               <div className="flex items-start gap-4">

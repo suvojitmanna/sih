@@ -52,7 +52,6 @@ const formatDateTime = (dateStr) => {
   });
 };
 
-// Core Portal Pages: Home (/), Dashboard (/dashboard), Competency (/competencies), History (/history)
 const CORE_PORTAL_PAGES = [
   "/",
   "/welcome",
@@ -107,7 +106,6 @@ const LiveAdminChatWidget = () => {
     return () => window.removeEventListener("open-nssta-helpdesk", handleOpenHelpdesk);
   }, []);
 
-  // Minimize chat box when clicking anywhere outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (
@@ -358,7 +356,6 @@ const LiveAdminChatWidget = () => {
     setInputText(prompt);
   };
 
-  // Do not show widget if user is not signed in or route is not allowed
   if (!userData || !isAllowed) {
     return null;
   }

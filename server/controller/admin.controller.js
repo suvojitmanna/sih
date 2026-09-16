@@ -127,7 +127,6 @@ export const getLearnersDirectory = async (req, res) => {
             const hasCompletedViva = completedVivaUserIds.has(l._id.toString());
             lObj.hasCompletedViva = hasCompletedViva;
 
-            // When new user not complete ai viva this time admin page show score 0
             if (!hasCompletedViva) {
                 lObj.overallCompetencyScore = 0;
                 lObj.overallLevel = "Novice (Viva Pending)";
@@ -169,7 +168,6 @@ export const getLearnerDetail = async (req, res) => {
         const isDiagnosticCompleted = hasCompletedQuiz && hasCompletedInterview;
 
         const learnerObj = learner.toObject();
-        // When new user not complete ai viva this time admin page show score 0
         if (!hasCompletedInterview) {
             learnerObj.overallCompetencyScore = 0;
             learnerObj.overallLevel = "Novice (Viva Pending)";
@@ -257,7 +255,6 @@ export const fulfillMaterialRequest = async (req, res) => {
 
         await request.save();
 
-        // Create direct notification message to requester
         try {
             if (request.requesterId) {
                 const reqUser = await User.findById(request.requesterId);
@@ -356,7 +353,6 @@ export const dispatchMaterial = async (req, res) => {
             uploadedBy: req.user._id,
         });
 
-        // Create direct or broadcast notification message for officers
         try {
             if (targetUserId && directTargetUser) {
                 await SupportMessage.create({
@@ -458,7 +454,6 @@ export const dispatchAssignment = async (req, res) => {
             adminNotes,
         });
 
-        // Create direct or broadcast notification message for officers
         try {
             const formattedDueDate = dueDate
                 ? new Date(dueDate).toLocaleString("en-IN", {

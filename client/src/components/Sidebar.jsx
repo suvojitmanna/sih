@@ -112,65 +112,65 @@ const Sidebar = ({ onOpenAuth }) => {
 
   const navSections = isTrainer
     ? [
-        {
-          title: "Governance",
-          links: [
-            { label: "Admin Portal", path: "/admin", icon: BsShieldLock, badge: "Trainer" },
-          ],
-        },
-      ]
+      {
+        title: "Governance",
+        links: [
+          { label: "Admin Portal", path: "/admin", icon: BsShieldLock, badge: "Trainer" },
+        ],
+      },
+    ]
     : [
-        {
-          title: "Core Portal",
-          links: [
-            { label: "Home", path: "/", icon: FaHome, isPublic: true },
-            ...(userData?.role !== "admin"
-              ? [{ label: "Dashboard", path: "/dashboard", icon: BsBarChartLine }]
-              : []),
-            { label: "Competency", path: "/competencies", icon: FaBrain },
-            { label: "Skill Gaps", path: "/skill-gaps", icon: BsBarChartSteps, badge: "Cadre AI" },
-            { label: "Job Readiness", path: "/job-readiness", icon: FaUserTie, badge: "Report" },
-            { label: "History", path: "/history", icon: FaHistory },
-          ],
-        },
-        {
-          title: "Capacity Building",
-          links: [
-            { label: "Learning Path", path: "/learning-path", icon: BsBookHalf },
-            { label: "Quizzes", path: "/quizzes", icon: FaTasks },
-            { label: "Assignment", path: "/assignments", icon: FaFilePdf },
-            { label: "Material Request", path: "/materials", icon: FaBookOpen },
-            { label: "MCQ Create", path: "/mcq-create", icon: BsStars, isAi: true, badge: "AI Gen" },
-          ],
-        },
-        {
-          title: "Intelligence Board",
-          links: [
-            {
-              label: "Interview Viva",
-              path: "/interview",
-              icon: FaMicrophone,
-              badge: "Oral Board",
-            }, {
-              label: "AI Copilot",
-              path: "/chat",
-              icon: BsRobot,
-              isAi: true,
-              badge: "AI Copilot",
-            },
-          ],
-        },
-        ...(userData?.role === "admin"
-          ? [
-            {
-              title: "Governance",
-              links: [
-                { label: "Admin Portal", path: "/admin", icon: BsShieldLock, badge: "Officer" },
-              ],
-            },
-          ]
-          : []),
-      ];
+      {
+        title: "Core Portal",
+        links: [
+          { label: "Home", path: "/", icon: FaHome, isPublic: true },
+          ...(userData?.role !== "admin"
+            ? [{ label: "Dashboard", path: "/dashboard", icon: BsBarChartLine }]
+            : []),
+          { label: "Competency", path: "/competencies", icon: FaBrain },
+          { label: "Skill Gaps", path: "/skill-gaps", icon: BsBarChartSteps, badge: "Cadre AI" },
+          { label: "Job Readiness", path: "/job-readiness", icon: FaUserTie, badge: "Report" },
+          { label: "History", path: "/history", icon: FaHistory },
+        ],
+      },
+      {
+        title: "Capacity Building",
+        links: [
+          { label: "Learning Path", path: "/learning-path", icon: BsBookHalf },
+          { label: "Quizzes", path: "/quizzes", icon: FaTasks },
+          { label: "Assignment", path: "/assignments", icon: FaFilePdf },
+          { label: "Material Request", path: "/materials", icon: FaBookOpen },
+          { label: "MCQ Create", path: "/mcq-create", icon: BsStars, isAi: true, badge: "AI Gen" },
+        ],
+      },
+      {
+        title: "Intelligence Board",
+        links: [
+          {
+            label: "Interview Viva",
+            path: "/interview",
+            icon: FaMicrophone,
+            badge: "Oral Board",
+          }, {
+            label: "AI Copilot",
+            path: "/chat",
+            icon: BsRobot,
+            isAi: true,
+            badge: "AI Copilot",
+          },
+        ],
+      },
+      ...(userData?.role === "admin"
+        ? [
+          {
+            title: "Governance",
+            links: [
+              { label: "Admin Portal", path: "/admin", icon: BsShieldLock, badge: "Officer" },
+            ],
+          },
+        ]
+        : []),
+    ];
 
   const isLinkActive = (path) => {
     if (path === "/") return location.pathname === "/";
@@ -188,7 +188,6 @@ const Sidebar = ({ onOpenAuth }) => {
 
   return (
     <>
-      {/* Mobile Backdrop Overlay */}
       <AnimatePresence>
         {mobileOpen && (
           <motion.div
@@ -201,15 +200,12 @@ const Sidebar = ({ onOpenAuth }) => {
         )}
       </AnimatePresence>
 
-      {/* Main Sidebar Component */}
       <aside
         className={`fixed top-0 bottom-0 left-0 z-[120] h-[100dvh] bg-white/95 dark:bg-slate-950/95 backdrop-blur-2xl border-r border-slate-200/80 dark:border-slate-800/80 shadow-2xl flex flex-col transition-all duration-300 ease-in-out select-none ${mobileOpen ? "translate-x-0 w-[280px] sm:w-72 max-w-[85vw]" : "-translate-x-full md:translate-x-0"
           } ${isCollapsed ? "md:w-[76px]" : "md:w-[260px]"}`}
       >
-        {/* Tricolor Government Ribbon Accent */}
         <div className="h-1 w-full bg-gradient-to-r from-[#FF9933] via-white to-[#138808]" />
 
-        {/* Sidebar Header: Collapsed Rail vs Expanded View */}
         {isCollapsed && !mobileOpen ? (
           <div className="p-3 flex items-center justify-center border-b border-slate-200/70 dark:border-slate-800/70 shrink-0 relative group/logo">
             <button
@@ -217,7 +213,6 @@ const Sidebar = ({ onOpenAuth }) => {
               className="relative w-11 h-11 rounded-2xl flex items-center justify-center cursor-pointer transition-all duration-300 focus:outline-none"
               title="Expand Sidebar (260px)"
             >
-              {/* Default State: Sleek Logo Emblem */}
               <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-slate-950 via-blue-950 to-indigo-900 text-white flex flex-col items-center justify-center shadow-lg border border-blue-400/30 overflow-hidden transition-all duration-300 group-hover/logo:opacity-0 group-hover/logo:scale-90 group-hover/logo:pointer-events-none">
                 <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-[#FF9933] via-white to-[#138808]" />
                 <span className="font-black text-sm tracking-tight text-white drop-shadow-xs">
@@ -228,7 +223,6 @@ const Sidebar = ({ onOpenAuth }) => {
                 </span>
               </div>
 
-              {/* Hover State: Expanded Arrow (Centered, smooth transition, ZERO overlap!) */}
               <div className="absolute inset-0 rounded-2xl bg-blue-600 dark:bg-blue-600 text-white flex flex-col items-center justify-center shadow-xl shadow-blue-500/30 border border-blue-400/50 transition-all duration-300 opacity-0 scale-90 pointer-events-none group-hover/logo:opacity-100 group-hover/logo:scale-100 group-hover/logo:pointer-events-auto">
                 <BsChevronRight size={18} className="text-white" />
                 <span className="text-[7px] font-black tracking-wider uppercase text-blue-100 mt-0.5">Expand</span>
@@ -241,7 +235,6 @@ const Sidebar = ({ onOpenAuth }) => {
               onClick={() => handleNavigate("/", true)}
               className="flex items-center gap-2.5 cursor-pointer group min-w-0 overflow-hidden relative"
             >
-              {/* Modern & Premium Logo Emblem */}
               <div className="relative w-10 h-10 rounded-2xl bg-gradient-to-br from-slate-950 via-blue-950 to-indigo-900 text-white flex flex-col items-center justify-center shadow-lg group-hover:scale-105 group-hover:shadow-blue-500/25 transition-all duration-300 border border-blue-400/30 shrink-0 overflow-hidden">
                 <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-[#FF9933] via-white to-[#138808]" />
                 <span className="font-black text-sm tracking-tight text-white drop-shadow-xs">
@@ -252,7 +245,6 @@ const Sidebar = ({ onOpenAuth }) => {
                 </span>
               </div>
 
-              {/* Brand Title & Subtitle */}
               <div className="flex flex-col min-w-0 pr-1">
                 <span className="font-black text-base text-slate-900 dark:text-white tracking-tight leading-tight">
                   SankhyaIQ <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400">AI</span>
@@ -267,7 +259,6 @@ const Sidebar = ({ onOpenAuth }) => {
             </div>
 
             <div className="flex items-center gap-1">
-              {/* Close button on Mobile */}
               <button
                 onClick={() => setMobileOpen(false)}
                 className="md:hidden p-1.5 rounded-xl text-slate-500 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
@@ -276,7 +267,6 @@ const Sidebar = ({ onOpenAuth }) => {
                 <HiX size={20} />
               </button>
 
-              {/* Desktop Collapse / Expand Rail Toggle */}
               <button
                 onClick={toggleCollapse}
                 className="hidden md:flex p-1.5 rounded-xl text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-all cursor-pointer"
@@ -288,7 +278,6 @@ const Sidebar = ({ onOpenAuth }) => {
           </div>
         )}
 
-        {/* Navigation Sections & Links */}
         <div className="flex-1 overflow-y-auto custom-scrollbar px-2.5 py-3 space-y-4">
           {navSections.map((section, idx) => (
             <div key={idx} className="space-y-1">
@@ -317,28 +306,28 @@ const Sidebar = ({ onOpenAuth }) => {
                       onClick={() => handleNavigate(link.path, link.isPublic, link.label)}
                       title={isLocked ? `Locked: Complete Intake Viva Voce & Diagnostic Quiz first` : link.label}
                       className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-2xl text-xs font-bold transition-all cursor-pointer group ${isLocked
-                          ? "text-slate-400 dark:text-slate-500 hover:bg-amber-50/50 dark:hover:bg-amber-950/30 hover:text-amber-600 dark:hover:text-amber-400 border border-transparent hover:border-amber-400/30"
-                          : isActive
-                            ? link.isAi
-                              ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md font-black"
-                              : "bg-blue-50 dark:bg-blue-950/70 text-blue-700 dark:text-blue-300 font-black shadow-xs border border-blue-200/50 dark:border-blue-800/50"
-                            : link.isAi
-                              ? "text-blue-600 dark:text-blue-400 hover:bg-blue-50/60 dark:hover:bg-blue-950/40"
-                              : "text-slate-600 dark:text-slate-300 hover:bg-slate-100/80 dark:hover:bg-slate-800/80 hover:text-slate-900 dark:hover:text-white"
+                        ? "text-slate-400 dark:text-slate-500 hover:bg-amber-50/50 dark:hover:bg-amber-950/30 hover:text-amber-600 dark:hover:text-amber-400 border border-transparent hover:border-amber-400/30"
+                        : isActive
+                          ? link.isAi
+                            ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md font-black"
+                            : "bg-blue-50 dark:bg-blue-950/70 text-blue-700 dark:text-blue-300 font-black shadow-xs border border-blue-200/50 dark:border-blue-800/50"
+                          : link.isAi
+                            ? "text-blue-600 dark:text-blue-400 hover:bg-blue-50/60 dark:hover:bg-blue-950/40"
+                            : "text-slate-600 dark:text-slate-300 hover:bg-slate-100/80 dark:hover:bg-slate-800/80 hover:text-slate-900 dark:hover:text-white"
                         } ${isCollapsed && !mobileOpen ? "justify-center px-0" : ""}`}
                     >
                       <div className="relative shrink-0">
                         <Icon
                           size={17}
                           className={`${isLocked
-                              ? "text-slate-400 dark:text-slate-500 group-hover:text-amber-500 transition-colors"
-                              : isActive
-                                ? link.isAi
-                                  ? "text-amber-300"
-                                  : "text-blue-600 dark:text-blue-400"
-                                : link.isAi
-                                  ? "text-blue-500 group-hover:scale-110 transition-transform"
-                                  : "text-slate-400 group-hover:text-slate-700 dark:group-hover:text-slate-200"
+                            ? "text-slate-400 dark:text-slate-500 group-hover:text-amber-500 transition-colors"
+                            : isActive
+                              ? link.isAi
+                                ? "text-amber-300"
+                                : "text-blue-600 dark:text-blue-400"
+                              : link.isAi
+                                ? "text-blue-500 group-hover:scale-110 transition-transform"
+                                : "text-slate-400 group-hover:text-slate-700 dark:group-hover:text-slate-200"
                             }`}
                         />
                         {isLocked ? (
@@ -376,7 +365,6 @@ const Sidebar = ({ onOpenAuth }) => {
                       )}
                     </button>
 
-                    {/* Floating Tooltip when Collapsed */}
                     {isCollapsed && !mobileOpen && hoveredLink === link.path && (
                       <div className="fixed left-[84px] z-[130] -translate-y-9 px-2.5 py-1.5 bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 text-xs font-bold rounded-xl shadow-xl whitespace-nowrap pointer-events-none flex items-center gap-1.5 animate-fadeIn">
                         <span>{link.label}</span>
@@ -398,19 +386,16 @@ const Sidebar = ({ onOpenAuth }) => {
           ))}
         </div>
 
-        {/* Sidebar Footer: Officer Profile Card & Controls */}
         <div className="p-3 border-t border-slate-200/80 dark:border-slate-800/80 bg-slate-50/50 dark:bg-slate-900/50 space-y-2 shrink-0">
 
-          {/* Quick Actions: Export Dossier & Portal Difference (Hidden for Trainer) */}
           {(!isCollapsed || mobileOpen) && !isTrainer ? (
             <div className="space-y-1.5">
-              {/* 1. Export Official Dossier PDF */}
               {userData && userData.role !== "admin" && (
                 <button
                   onClick={handleDownloadDossier}
                   className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${isIntakePending
-                      ? "bg-slate-100/70 dark:bg-slate-800/50 text-slate-400 dark:text-slate-500 hover:bg-amber-500/10 hover:text-amber-600 dark:hover:text-amber-400 border border-slate-200/50 dark:border-slate-700/50"
-                      : "bg-white dark:bg-slate-800/90 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200/80 dark:border-slate-700/80 shadow-2xs"
+                    ? "bg-slate-100/70 dark:bg-slate-800/50 text-slate-400 dark:text-slate-500 hover:bg-amber-500/10 hover:text-amber-600 dark:hover:text-amber-400 border border-slate-200/50 dark:border-slate-700/50"
+                    : "bg-white dark:bg-slate-800/90 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200/80 dark:border-slate-700/80 shadow-2xs"
                     }`}
                   title={isIntakePending ? "Export Dossier (Locked: Complete Intake Viva & Quiz first)" : "Export Performance Dossier (PDF)"}
                 >
@@ -431,12 +416,11 @@ const Sidebar = ({ onOpenAuth }) => {
                 </button>
               )}
 
-              {/* 2. Portal Difference (Directly DOWN from Export Dossier) */}
               <button
                 onClick={() => handleNavigate("/portal-comparison", true, "Portal Difference")}
                 className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${location.pathname === "/portal-comparison"
-                    ? "bg-blue-600 text-white shadow-xs font-black"
-                    : "bg-white dark:bg-slate-800/90 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200/80 dark:border-slate-700/80 shadow-2xs"
+                  ? "bg-blue-600 text-white shadow-xs font-black"
+                  : "bg-white dark:bg-slate-800/90 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200/80 dark:border-slate-700/80 shadow-2xs"
                   }`}
                 title="Compare Legacy Portals vs SankhyaIQ AI Platform"
               >
@@ -445,8 +429,8 @@ const Sidebar = ({ onOpenAuth }) => {
                   <span className="truncate">Portal Difference</span>
                 </div>
                 <span className={`text-[9px] font-black px-1.5 py-0.5 rounded uppercase tracking-wider ${location.pathname === "/portal-comparison"
-                    ? "bg-white/20 text-white"
-                    : "bg-blue-50 dark:bg-blue-950/80 text-blue-700 dark:text-blue-300 border border-blue-200/50"
+                  ? "bg-white/20 text-white"
+                  : "bg-blue-50 dark:bg-blue-950/80 text-blue-700 dark:text-blue-300 border border-blue-200/50"
                   }`}>
                   VS
                 </span>
@@ -463,8 +447,8 @@ const Sidebar = ({ onOpenAuth }) => {
                   <button
                     onClick={handleDownloadDossier}
                     className={`w-9 h-9 flex items-center justify-center rounded-xl transition-all cursor-pointer ${isIntakePending
-                        ? "bg-slate-100/60 dark:bg-slate-800/40 text-slate-400 hover:bg-slate-200/60 dark:hover:bg-slate-800/80"
-                        : "hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300"
+                      ? "bg-slate-100/60 dark:bg-slate-800/40 text-slate-400 hover:bg-slate-200/60 dark:hover:bg-slate-800/80"
+                      : "hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300"
                       }`}
                   >
                     <div className="relative">
@@ -498,8 +482,8 @@ const Sidebar = ({ onOpenAuth }) => {
                 <button
                   onClick={() => handleNavigate("/portal-comparison", true, "Portal Difference")}
                   className={`w-9 h-9 flex items-center justify-center rounded-xl transition-all cursor-pointer ${location.pathname === "/portal-comparison"
-                      ? "bg-blue-600 text-white shadow-xs"
-                      : "hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300"
+                    ? "bg-blue-600 text-white shadow-xs"
+                    : "hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300"
                     }`}
                 >
                   <BsShieldCheck size={14} className={location.pathname === "/portal-comparison" ? "text-white" : "text-blue-600 dark:text-blue-400"} />
@@ -517,7 +501,6 @@ const Sidebar = ({ onOpenAuth }) => {
             </div>
           ) : null}
 
-          {/* User Profile Card (Click to open dropdown in Sidebar mode) */}
           {userData ? (
             <div ref={userCardRef} className="relative">
               <button
@@ -567,7 +550,6 @@ const Sidebar = ({ onOpenAuth }) => {
                 )}
               </button>
 
-              {/* User Dropdown Menu from Sidebar User Portion */}
               <AnimatePresence>
                 {showUserDropdown && (
                   <motion.div
@@ -580,10 +562,8 @@ const Sidebar = ({ onOpenAuth }) => {
                       : "absolute bottom-[calc(100%+8px)] left-0 right-0 w-full min-w-[250px] shadow-[0_10px_40px_rgba(0,0,0,0.25)]"
                       }`}
                   >
-                    {/* Tricolor Government Ribbon Accent */}
                     <div className="h-1 w-full bg-gradient-to-r from-[#FF9933] via-white to-[#138808]" />
 
-                    {/* Officer Details Header */}
                     <div className="p-3.5 bg-gradient-to-br from-slate-50 to-blue-50/40 dark:from-slate-800/80 dark:to-blue-950/40 border-b border-slate-100 dark:border-slate-800">
                       <div className="flex items-center gap-2.5">
                         <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-blue-700 to-indigo-700 text-white flex items-center justify-center font-black text-sm shadow-md shrink-0 overflow-hidden relative">
@@ -629,7 +609,6 @@ const Sidebar = ({ onOpenAuth }) => {
                       </div>
                     </div>
 
-                    {/* Settings Option Button */}
                     <div className="p-2 border-b border-slate-100 dark:border-slate-800">
                       <button
                         onClick={() => {
@@ -650,7 +629,6 @@ const Sidebar = ({ onOpenAuth }) => {
                     </div>
 
 
-                    {/* Quick Shortcuts */}
                     <div className="p-1.5 space-y-0.5">
                       {!isTrainer && (
                         <button
@@ -679,8 +657,8 @@ const Sidebar = ({ onOpenAuth }) => {
                             handleDownloadDossier();
                           }}
                           className={`w-full text-left px-3 py-2 rounded-xl text-xs font-bold flex items-center justify-between transition-colors cursor-pointer ${isIntakePending
-                              ? "hover:bg-amber-500/5 text-slate-500 dark:text-slate-400"
-                              : "hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200"
+                            ? "hover:bg-amber-500/5 text-slate-500 dark:text-slate-400"
+                            : "hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200"
                             }`}
                         >
                           <div className="flex items-center gap-2.5">
@@ -750,7 +728,6 @@ const Sidebar = ({ onOpenAuth }) => {
                       )}
                     </div>
 
-                    {/* Sign Out Button */}
                     <div className="p-1.5 border-t border-slate-100 dark:border-slate-800">
                       <button
                         onClick={() => {

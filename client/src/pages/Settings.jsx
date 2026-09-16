@@ -128,7 +128,6 @@ const Settings = () => {
   const [savingProfile, setSavingProfile] = useState(false);
   const fileInputRef = useRef(null);
 
-  // Alternate Email Verification States (NSSTA MoSPI)
   const [alternateEmailInput, setAlternateEmailInput] = useState("");
   const [isEditingAlternate, setIsEditingAlternate] = useState(false);
   const [showOtpModal, setShowOtpModal] = useState(false);
@@ -138,7 +137,6 @@ const Settings = () => {
   const [removeLoading, setRemoveLoading] = useState(false);
   const [resendCooldown, setResendCooldown] = useState(0);
 
-  // Countdown timer for Resend OTP
   useEffect(() => {
     let timer;
     if (resendCooldown > 0) {
@@ -325,7 +323,6 @@ const Settings = () => {
     toast.success("Reset to saved profile details.");
   };
 
-  // Alternate Email OTP Handlers (MoSPI-NSSTA Verification)
   const handleOtpChange = (index, value) => {
     if (value.length > 1) {
       const pasted = value.replace(/\D/g, "").slice(0, 6);
@@ -628,8 +625,8 @@ const Settings = () => {
               type="button"
               onClick={() => handleTabChange("profile")}
               className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${activeTab === "profile"
-                  ? "bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs"
-                  : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+                ? "bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs"
+                : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
                 }`}
             >
               <FaUserTie size={12} />
@@ -640,8 +637,8 @@ const Settings = () => {
               type="button"
               onClick={() => handleTabChange("layout")}
               className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${activeTab === "layout"
-                  ? "bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs"
-                  : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+                ? "bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs"
+                : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
                 }`}
             >
               <BsSliders size={12} />
@@ -652,8 +649,8 @@ const Settings = () => {
               type="button"
               onClick={() => handleTabChange("security")}
               className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${activeTab === "security"
-                  ? "bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs"
-                  : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+                ? "bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs"
+                : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
                 }`}
             >
               <FaShieldAlt size={12} />
@@ -662,7 +659,6 @@ const Settings = () => {
           </div>
         </div>
 
-        {/* TAB 1: PROFILE*/}
         {activeTab === "profile" && (
           <motion.form
             initial={{ opacity: 0, y: 6 }}
@@ -780,7 +776,6 @@ const Settings = () => {
                 </div>
               </div>
 
-              {/* Alternate Email Address Verification Block (NSSTA-MoSPI) */}
               <div className="p-4 rounded-xl bg-slate-50/70 dark:bg-slate-800/40 border border-slate-200/80 dark:border-slate-700/70 space-y-3">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                   <div>
@@ -826,7 +821,6 @@ const Settings = () => {
                   )}
                 </div>
 
-                {/* When verified and not editing, show clean readonly display with badge */}
                 {userData?.alternateEmail && userData?.alternateEmailVerified && !isEditingAlternate ? (
                   <div className="flex items-center justify-between p-3 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
                     <div className="flex items-center gap-2.5">
@@ -844,7 +838,6 @@ const Settings = () => {
                     </div>
                   </div>
                 ) : (
-                  /* Input form with Send Verification OTP button */
                   <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
                     <div className="relative flex-1">
                       <input
@@ -905,21 +898,21 @@ const Settings = () => {
 
               <div
                 className={`grid gap-3.5 ${profileForm.accountRole !== "learner" && userData?.role !== "learner"
-                    ? "grid-cols-1 sm:grid-cols-2"
-                    : "grid-cols-1"
+                  ? "grid-cols-1 sm:grid-cols-2"
+                  : "grid-cols-1"
                   }`}
               >
                 <div
                   onClick={() => setProfileForm((p) => ({ ...p, accountRole: "learner" }))}
                   className={`p-4 rounded-xl border transition-all cursor-pointer flex items-start gap-3.5 select-none ${profileForm.accountRole === "learner"
-                      ? "border-blue-600 bg-blue-50/40 dark:bg-blue-950/20 ring-1 ring-blue-500"
-                      : "border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 bg-slate-50/30 dark:bg-slate-800/20"
+                    ? "border-blue-600 bg-blue-50/40 dark:bg-blue-950/20 ring-1 ring-blue-500"
+                    : "border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 bg-slate-50/30 dark:bg-slate-800/20"
                     }`}
                 >
                   <div
                     className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${profileForm.accountRole === "learner"
-                        ? "bg-blue-600 text-white"
-                        : "bg-slate-100 dark:bg-slate-800 text-slate-500"
+                      ? "bg-blue-600 text-white"
+                      : "bg-slate-100 dark:bg-slate-800 text-slate-500"
                       }`}
                   >
                     <FaUserTie size={14} />
@@ -942,14 +935,14 @@ const Settings = () => {
                   <div
                     onClick={() => setProfileForm((p) => ({ ...p, accountRole: "trainer" }))}
                     className={`p-4 rounded-xl border transition-all cursor-pointer flex items-start gap-3.5 select-none ${profileForm.accountRole === "trainer"
-                        ? "border-emerald-600 bg-emerald-50/40 dark:bg-emerald-950/20 ring-1 ring-emerald-500"
-                        : "border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 bg-slate-50/30 dark:bg-slate-800/20"
+                      ? "border-emerald-600 bg-emerald-50/40 dark:bg-emerald-950/20 ring-1 ring-emerald-500"
+                      : "border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 bg-slate-50/30 dark:bg-slate-800/20"
                       }`}
                   >
                     <div
                       className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${profileForm.accountRole === "trainer"
-                          ? "bg-emerald-600 text-white"
-                          : "bg-slate-100 dark:bg-slate-800 text-slate-500"
+                        ? "bg-emerald-600 text-white"
+                        : "bg-slate-100 dark:bg-slate-800 text-slate-500"
                         }`}
                     >
                       <FaChalkboardTeacher size={15} />
@@ -1239,7 +1232,6 @@ const Settings = () => {
           </motion.form>
         )}
 
-        {/* TAB 2: WORKSPACE & LAYOUT*/}
         {activeTab === "layout" && (
           <motion.div
             initial={{ opacity: 0, y: 6 }}
@@ -1258,12 +1250,11 @@ const Settings = () => {
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
-                {/* Option 1: Sidebar (Default) */}
                 <div
                   onClick={() => handleSelectNavMode("sidebar")}
                   className={`p-4 rounded-xl border-2 transition-all cursor-pointer space-y-3 select-none relative ${navMode === "sidebar"
-                      ? "border-blue-600 bg-blue-50/30 dark:bg-blue-950/20"
-                      : "border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 bg-slate-50/30 dark:bg-slate-800/20"
+                    ? "border-blue-600 bg-blue-50/30 dark:bg-blue-950/20"
+                    : "border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 bg-slate-50/30 dark:bg-slate-800/20"
                     }`}
                 >
                   <div className="flex items-center justify-between">
@@ -1296,12 +1287,11 @@ const Settings = () => {
                   </div>
                 </div>
 
-                {/* Option 2: Top Navbar (Alternate) */}
                 <div
                   onClick={() => handleSelectNavMode("topbar")}
                   className={`p-4 rounded-xl border-2 transition-all cursor-pointer space-y-3 select-none relative ${navMode === "topbar" || navMode === "navbar"
-                      ? "border-blue-600 bg-blue-50/30 dark:bg-blue-950/20"
-                      : "border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 bg-slate-50/30 dark:bg-slate-800/20"
+                    ? "border-blue-600 bg-blue-50/30 dark:bg-blue-950/20"
+                    : "border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 bg-slate-50/30 dark:bg-slate-800/20"
                     }`}
                 >
                   <div className="flex items-center justify-between">
@@ -1336,7 +1326,6 @@ const Settings = () => {
               </div>
             </div>
 
-            {/* Theme Preferences */}
             <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 p-5 sm:p-6 shadow-xs space-y-4">
               <div>
                 <h3 className="text-base font-semibold text-slate-900 dark:text-white">
@@ -1352,8 +1341,8 @@ const Settings = () => {
                   type="button"
                   onClick={() => handleSelectTheme("light")}
                   className={`p-3.5 rounded-xl border-2 flex items-center gap-3 transition-all cursor-pointer text-left ${theme === "light"
-                      ? "border-blue-600 bg-blue-50/40 dark:bg-blue-950/20"
-                      : "border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 bg-slate-50/30 dark:bg-slate-800/20"
+                    ? "border-blue-600 bg-blue-50/40 dark:bg-blue-950/20"
+                    : "border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 bg-slate-50/30 dark:bg-slate-800/20"
                     }`}
                 >
                   <div className="w-8 h-8 rounded-lg bg-amber-100 text-amber-600 flex items-center justify-center shrink-0">
@@ -1371,8 +1360,8 @@ const Settings = () => {
                   type="button"
                   onClick={() => handleSelectTheme("dark")}
                   className={`p-3.5 rounded-xl border-2 flex items-center gap-3 transition-all cursor-pointer text-left ${theme === "dark"
-                      ? "border-blue-600 bg-blue-50/40 dark:bg-blue-950/20"
-                      : "border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 bg-slate-50/30 dark:bg-slate-800/20"
+                    ? "border-blue-600 bg-blue-50/40 dark:bg-blue-950/20"
+                    : "border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 bg-slate-50/30 dark:bg-slate-800/20"
                     }`}
                 >
                   <div className="w-8 h-8 rounded-lg bg-slate-800 text-indigo-400 flex items-center justify-center shrink-0">
@@ -1390,8 +1379,8 @@ const Settings = () => {
                   type="button"
                   onClick={() => handleSelectTheme("system")}
                   className={`p-3.5 rounded-xl border-2 flex items-center gap-3 transition-all cursor-pointer text-left ${theme === "system"
-                      ? "border-blue-600 bg-blue-50/40 dark:bg-blue-950/20"
-                      : "border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 bg-slate-50/30 dark:bg-slate-800/20"
+                    ? "border-blue-600 bg-blue-50/40 dark:bg-blue-950/20"
+                    : "border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 bg-slate-50/30 dark:bg-slate-800/20"
                     }`}
                 >
                   <div className="w-8 h-8 rounded-lg bg-blue-100 dark:bg-blue-900/40 text-blue-600 flex items-center justify-center shrink-0">
@@ -1409,9 +1398,6 @@ const Settings = () => {
           </motion.div>
         )}
 
-        {/* ========================================================= */}
-        {/* TAB 3: SECURITY & COMPLIANCE                              */}
-        {/* ========================================================= */}
         {activeTab === "security" && (
           <motion.div
             initial={{ opacity: 0, y: 6 }}
@@ -1454,7 +1440,6 @@ const Settings = () => {
                   </p>
                 </div>
 
-                {/* Alternate Email Security Safeguard Card */}
                 <div className="sm:col-span-2 p-4 rounded-xl bg-slate-50/50 dark:bg-slate-800/30 border border-slate-200/70 dark:border-slate-700/60 space-y-1.5">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2 text-indigo-600 dark:text-indigo-400">
@@ -1489,7 +1474,6 @@ const Settings = () => {
         )}
       </main>
 
-      {/* 6-DIGIT EMAIL VERIFICATION OTP MODAL (Nodemailer / NSSTA) */}
       <AnimatePresence>
         {showOtpModal && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm animate-fadeIn">
@@ -1499,7 +1483,6 @@ const Settings = () => {
               exit={{ scale: 0.94, opacity: 0 }}
               className="w-full max-w-md bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden p-6 sm:p-7 space-y-5 select-none"
             >
-              {/* Modal Header */}
               <div className="flex items-start justify-between">
                 <div className="flex items-center gap-3">
                   <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-700 text-white flex items-center justify-center shadow-lg shadow-blue-500/20">
@@ -1524,7 +1507,6 @@ const Settings = () => {
                 </button>
               </div>
 
-              {/* Sent-to Notification */}
               <div className="p-3.5 rounded-2xl bg-blue-50/80 dark:bg-blue-950/40 border border-blue-200/80 dark:border-blue-800/60 text-xs text-slate-700 dark:text-slate-300 space-y-1">
                 <div className="font-semibold text-blue-900 dark:text-blue-300">
                   Verification Code Dispatched Through Mail
@@ -1537,7 +1519,6 @@ const Settings = () => {
                 </div>
               </div>
 
-              {/* 6-Digit OTP Inputs */}
               <div className="space-y-2.5">
                 <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block text-center">
                   Enter 6-Digit Verification Code
@@ -1562,7 +1543,6 @@ const Settings = () => {
                 </p>
               </div>
 
-              {/* Action Buttons */}
               <div className="space-y-2.5 pt-1">
                 <button
                   type="button"

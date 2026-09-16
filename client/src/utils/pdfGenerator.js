@@ -1110,16 +1110,16 @@ export const generateCompetencyPDF = ({
     currentY + 19.5,
   );
   doc.text(
-  `AI Analysis: Multi-Domain Competency Assessment`,
-  margin + 5,
-  currentY + 25.5,
-);
+    `AI Analysis: Multi-Domain Competency Assessment`,
+    margin + 5,
+    currentY + 25.5,
+  );
 
-doc.text(
-  `Recommended Pathway: ${learningPath.length} Learning models`,
-  margin + 72,
-  currentY + 25.5,
-);
+  doc.text(
+    `Recommended Pathway: ${learningPath.length} Learning models`,
+    margin + 72,
+    currentY + 25.5,
+  );
 
   const badgeX = pageWidth - margin - 34;
   const badgeW = 30;
@@ -1450,7 +1450,7 @@ export const generatePortalComparisonPDF = ({ user: _user } = {}) => {
     doc,
     "ARCHITECTURAL COMPARISON: LEGACY VS SANKHYAIQ AI",
     "Comparative Audit & Operational Differentiators • MoSPI & NSSTA",
-    "NSSTA-COMP-2026"
+    "NSSTA-COMP-2026",
   );
 
   let currentY = 46;
@@ -1475,50 +1475,50 @@ export const generatePortalComparisonPDF = ({ user: _user } = {}) => {
       "Cadre Competency Mapping",
       "Generic non-cadre catalogs, one-size-fits-all",
       "4-Domain MoSPI Framework across ISS, SSS, FOD, DES",
-      "+100% Cadre Specificity"
+      "+100% Cadre Specificity",
     ],
     [
       "Skill Gap Diagnostics",
       "Subjective annual ACR/APAR, no automated gap metric",
       "SankhyaIQ AI Neural Engine real-time gap calculation (<75%)",
-      "Instant Gap Remediation"
+      "Instant Gap Remediation",
     ],
     [
       "Adaptive Learning Pathways",
       "Passive video catalogs with manual keyword search",
       "AI-curated sequential iGOT digital & NSSTA in-service roadmaps",
-      "95% Faster Skill Mastery"
+      "95% Faster Skill Mastery",
     ],
     [
       "Oral Viva Voce & Interview",
       "Non-existent; requires manual in-person boards",
       "Real-time voice speech-to-text oral examination with Gemini AI",
-      "Continuous Board Prep"
+      "Continuous Board Prep",
     ],
     [
       "Training Manual MCQ Studio",
       "Months of manual committee authoring",
       "Upload survey manuals (PDF/TXT) to author MCQs in 30 seconds",
-      "Instant Syllabus Updates"
+      "Instant Syllabus Updates",
     ],
     [
       "Official Performance Dossier",
       "Basic unverified attendance certificate",
       "MoSPI verifiable competency dossier with QR and national seal",
-      "Career Progression Record"
+      "Career Progression Record",
     ],
     [
       "24/7 Contextual Assistant",
       "Static FAQ page or email helpdesk",
       "SankhyaCopilot AI trained in official statistical methodologies",
-      "Instant Methodology Guidance"
+      "Instant Methodology Guidance",
     ],
     [
       "Executive Oversight & Chat",
       "Delayed quarterly spreadsheets, fragmented records",
       "Live heatmaps, material dispatch, and real-time officer support chat",
-      "100% Real-Time Visibility"
-    ]
+      "100% Real-Time Visibility",
+    ],
   ];
 
   autoTable(doc, {
@@ -1528,8 +1528,8 @@ export const generatePortalComparisonPDF = ({ user: _user } = {}) => {
         "Capability / Dimension",
         "Legacy Government Portals",
         "SankhyaIQ AI Platform (MoSPI / NSSTA)",
-        "Strategic Impact"
-      ]
+        "Strategic Impact",
+      ],
     ],
     body: comparisonData,
     margin: { left: margin, right: margin },
@@ -1552,7 +1552,12 @@ export const generatePortalComparisonPDF = ({ user: _user } = {}) => {
       0: { fontStyle: "bold", cellWidth: 38 },
       1: { textColor: [185, 28, 28], cellWidth: 50 },
       2: { textColor: [21, 128, 61], fontStyle: "bold", cellWidth: 58 },
-      3: { textColor: [30, 58, 138], fontStyle: "bold", halign: "center", cellWidth: 36 },
+      3: {
+        textColor: [30, 58, 138],
+        fontStyle: "bold",
+        halign: "center",
+        cellWidth: 36,
+      },
     },
     alternateRowStyles: {
       fillColor: [248, 250, 252],
@@ -1573,7 +1578,7 @@ export const generatePortalComparisonPDF = ({ user: _user } = {}) => {
     doc.text(
       "Validated by SankhyaIQ AI Engine • Aligned with UN-NQAF & Digital Personal Data Protection (DPDP) Act 2023.",
       margin,
-      finalY + 5
+      finalY + 5,
     );
   }
 

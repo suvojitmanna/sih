@@ -26,7 +26,6 @@ const InterviewPage = () => {
     let isMounted = true;
 
     const initializeSession = async () => {
-      // If candidate explicitly requests a custom practice session, show Step 1 setup
       if (isPracticeParam) {
         if (isMounted) {
           setLoadingDiagnostic(false);
@@ -36,7 +35,6 @@ const InterviewPage = () => {
       }
 
       try {
-        // Fetch or auto-provision cadre baseline diagnostic viva session
         const { data } = await axios.get(`${ServerUrl}/api/interview/diagnostic`, {
           withCredentials: true,
         });
@@ -48,7 +46,6 @@ const InterviewPage = () => {
           Array.isArray(data.question) &&
           data.question.length > 0
         ) {
-          // Intake viva must NOT show Step 1, it directly shows Step 2
           if (isIntakeParam || data.status !== 'completed') {
             setInterViewData(data);
             setStep(2);
@@ -60,7 +57,6 @@ const InterviewPage = () => {
         console.warn('Could not auto-load diagnostic intake viva:', err.message);
       }
 
-      // If already completed or not in intake mode, default to custom interview Step 1
       if (isMounted) {
         setLoadingDiagnostic(false);
         setStep(1);

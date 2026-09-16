@@ -1,10 +1,10 @@
 import express from "express";
 import isAuth from "../middleware/isAuth.js";
 import {
-    createChat,
-    getChats,
-    getChatById,
-    deleteChat,
+  createChat,
+  getChats,
+  getChatById,
+  deleteChat,
 } from "../controller/chat.controller.js";
 
 const chatRouter = express.Router();

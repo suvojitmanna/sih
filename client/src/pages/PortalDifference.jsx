@@ -418,9 +418,8 @@ const PortalDifference = () => {
     generatePortalComparisonPDF({ user: userData });
   };
 
-  // ROI Calculator Metrics
   const hoursSaved = Math.round(officerCount * 38);
-  const daysReduced = 175; // from 180 days to 5 days
+  const daysReduced = 175;
   const budgetOptimizedLakhs = Math.round((officerCount * 4500) / 100000);
 
   return (
@@ -429,7 +428,6 @@ const PortalDifference = () => {
 
       <PageTransition>
         <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-20 space-y-12">
-          {/* Top Bar Navigation */}
           <div className="flex items-center justify-between gap-4">
             <BackButton to="/" label="Back to Portal Overview" />
             <button
@@ -441,14 +439,9 @@ const PortalDifference = () => {
             </button>
           </div>
 
-          {/* ======================================================== */}
-          {/* 1. HERO HEADER WITH TRICOLOR GOVERNMENT ACCENT           */}
-          {/* ======================================================== */}
           <section className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-blue-950 via-slate-900 to-indigo-950 text-white p-7 sm:p-12 shadow-2xl border border-blue-900/50">
-            {/* Tricolor Government Ribbon */}
             <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-[#FF9933] via-white to-[#138808]" />
 
-            {/* Ambient Background Glows */}
             <div className="absolute top-1/4 -right-16 w-80 h-80 bg-blue-500/15 blur-3xl rounded-full pointer-events-none" />
             <div className="absolute bottom-0 -left-16 w-80 h-80 bg-emerald-500/10 blur-3xl rounded-full pointer-events-none" />
 
@@ -492,9 +485,6 @@ const PortalDifference = () => {
             </div>
           </section>
 
-          {/* ======================================================== */}
-          {/* 2. FAST METRIC HIGHLIGHTS                                */}
-          {/* ======================================================== */}
           <ScrollReveal direction="up" delay={0.05}>
             <section className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-5 text-center shadow-xs">
@@ -547,12 +537,8 @@ const PortalDifference = () => {
             </section>
           </ScrollReveal>
 
-          {/* ======================================================== */}
-          {/* 3. HIGH-LEVEL SIDE-BY-SIDE ARCHITECTURAL COMPARISON      */}
-          {/* ======================================================== */}
           <ScrollReveal direction="up" delay={0.08}>
             <section className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Legacy Portals Card */}
               <div className="rounded-3xl bg-white dark:bg-slate-900 border-2 border-rose-200/80 dark:border-rose-950/60 p-6 sm:p-8 space-y-6 shadow-md relative overflow-hidden">
                 <div className="flex items-center justify-between gap-3 border-b border-rose-100 dark:border-rose-950 pb-4">
                   <div className="flex items-center gap-3">
@@ -605,7 +591,6 @@ const PortalDifference = () => {
                 </div>
               </div>
 
-              {/* SankhyaIQ AI Platform Card */}
               <div className="rounded-3xl bg-gradient-to-br from-blue-900/15 via-white dark:via-slate-900 to-indigo-900/15 border-2 border-blue-500/80 dark:border-blue-500/50 p-6 sm:p-8 space-y-6 shadow-xl relative overflow-hidden">
                 <div className="flex items-center justify-between gap-3 border-b border-blue-100 dark:border-blue-900 pb-4">
                   <div className="flex items-center gap-3">
@@ -660,9 +645,6 @@ const PortalDifference = () => {
             </section>
           </ScrollReveal>
 
-          {/* ======================================================== */}
-          {/* 4. INTERACTIVE WORKFLOW LIFECYCLE COMPARISON              */}
-          {/* ======================================================== */}
           <ScrollReveal direction="up" delay={0.1}>
             <section className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-10 shadow-xs space-y-6">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -676,7 +658,6 @@ const PortalDifference = () => {
                   </h2>
                 </div>
 
-                {/* Workflow Switcher Tabs */}
                 <div className="inline-flex p-1 rounded-2xl bg-slate-100 dark:bg-slate-800 self-start sm:self-auto border border-slate-200 dark:border-slate-700">
                   <button
                     onClick={() => setActiveWorkflowTab("sankhya")}
@@ -805,9 +786,6 @@ const PortalDifference = () => {
             </section>
           </ScrollReveal>
 
-          {/* ======================================================== */}
-          {/* 5. INTERACTIVE FEATURE-BY-FEATURE COMPARISON MATRIX       */}
-          {/* ======================================================== */}
           <section id="comparison-matrix" className="space-y-6">
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
               <div className="space-y-2">
@@ -823,7 +801,6 @@ const PortalDifference = () => {
                 </p>
               </div>
 
-              {/* Category Filter Pills */}
               <div className="flex flex-wrap items-center gap-2">
                 {COMPARISON_CATEGORIES.map((cat) => {
                   const Icon = cat.icon;
@@ -846,7 +823,6 @@ const PortalDifference = () => {
               </div>
             </div>
 
-            {/* Matrix Cards Grid */}
             <div className="space-y-4">
               {filteredItems.map((item, index) => {
                 const isExpanded = Boolean(expandedItems[item.id]);
@@ -855,7 +831,6 @@ const PortalDifference = () => {
                     key={item.id}
                     className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl overflow-hidden shadow-xs hover:border-blue-400 transition-all"
                   >
-                    {/* Header Summary Row */}
                     <div
                       onClick={() => toggleExpand(item.id)}
                       className="p-5 sm:p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 cursor-pointer hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors"
@@ -892,10 +867,8 @@ const PortalDifference = () => {
                       </div>
                     </div>
 
-                    {/* Detailed Comparison Body */}
                     {isExpanded && (
                       <div className="px-5 sm:px-6 pb-6 pt-2 border-t border-slate-100 dark:border-slate-800 grid grid-cols-1 lg:grid-cols-2 gap-5 animate-fadeIn">
-                        {/* Legacy Column */}
                         <div className="p-4 rounded-2xl bg-rose-50/50 dark:bg-rose-950/20 border border-rose-200/60 dark:border-rose-900/40 space-y-2.5">
                           <div className="flex items-center gap-2 text-rose-700 dark:text-rose-400 font-bold text-xs">
                             <FaTimesCircle size={13} />
@@ -914,7 +887,6 @@ const PortalDifference = () => {
                           </div>
                         </div>
 
-                        {/* SankhyaIQ Column */}
                         <div className="p-4 rounded-2xl bg-blue-50/50 dark:bg-blue-950/30 border border-blue-200/60 dark:border-blue-900/50 space-y-2.5">
                           <div className="flex items-center gap-2 text-blue-700 dark:text-blue-400 font-bold text-xs">
                             <FaCheckCircle size={13} className="text-emerald-500" />
@@ -940,9 +912,6 @@ const PortalDifference = () => {
             </div>
           </section>
 
-          {/* ======================================================== */}
-          {/* 6. INTERACTIVE IMPACT & ROI CALCULATOR                     */}
-          {/* ======================================================== */}
           <ScrollReveal direction="up" delay={0.1}>
             <section className="bg-gradient-to-r from-blue-900 via-indigo-950 to-slate-900 text-white rounded-3xl p-6 sm:p-10 shadow-2xl relative overflow-hidden space-y-6 border border-blue-800/40">
               <div className="space-y-2 max-w-3xl">
@@ -958,7 +927,6 @@ const PortalDifference = () => {
                 </p>
               </div>
 
-              {/* Slider Controls */}
               <div className="bg-white/10 backdrop-blur-md rounded-2xl p-5 border border-white/15 space-y-3">
                 <div className="flex items-center justify-between text-xs sm:text-sm font-bold">
                   <span>Selected Cadre Size:</span>
@@ -984,7 +952,6 @@ const PortalDifference = () => {
                 </div>
               </div>
 
-              {/* Real-Time Computed ROI Metrics */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
                 <div className="bg-white/5 border border-white/10 rounded-2xl p-4 text-center">
                   <span className="text-[10px] uppercase font-bold text-slate-400 block mb-1">
@@ -1025,9 +992,6 @@ const PortalDifference = () => {
             </section>
           </ScrollReveal>
 
-          {/* ======================================================== */}
-          {/* 7. DIRECT INTERACTIVE SHOWCASE CTA                        */}
-          {/* ======================================================== */}
           <ScrollReveal direction="scale" delay={0.1}>
             <section className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-7 sm:p-10 shadow-xs space-y-6">
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
@@ -1053,7 +1017,6 @@ const PortalDifference = () => {
                 </button>
               </div>
 
-              {/* 4 Feature Launch Cards */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-2">
                 <div
                   onClick={() => navigate("/competencies")}

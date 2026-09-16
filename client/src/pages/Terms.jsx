@@ -57,7 +57,6 @@ const TermsOfService = () => {
             </nav>
           </aside>
 
-          {/* Main Legal Content */}
           <motion.main
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -78,7 +77,6 @@ const TermsOfService = () => {
               </header>
 
               <div className="space-y-12 text-slate-600 dark:text-slate-300 text-sm sm:text-base leading-relaxed">
-                {/* 1. Acceptance */}
                 <section id="acceptance" className="scroll-mt-24 space-y-4">
                   <h2 className="text-xl font-black text-slate-900 dark:text-white flex items-center gap-3">
                     <span className="w-7 h-7 rounded-xl bg-blue-600 text-white flex items-center justify-center text-xs font-bold">1</span>
@@ -89,7 +87,6 @@ const TermsOfService = () => {
                   </p>
                 </section>
 
-                {/* 2. Cadre Standards */}
                 <section id="cadre-standards" className="scroll-mt-24 space-y-4">
                   <h2 className="text-xl font-black text-slate-900 dark:text-white flex items-center gap-3">
                     <span className="w-7 h-7 rounded-xl bg-blue-600 text-white flex items-center justify-center text-xs font-bold">2</span>

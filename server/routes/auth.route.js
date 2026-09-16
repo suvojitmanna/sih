@@ -1,15 +1,15 @@
 import express from "express";
 import {
-    initiateSignup,
-    verifySignupOtp,
-    initiateLogin,
-    verifyLoginOtp,
-    resendOtp,
-    initiateForgotPassword,
-    verifyForgotPasswordOtp,
-    googleAuth,
-    logout,
-    completeProfile,
+  initiateSignup,
+  verifySignupOtp,
+  initiateLogin,
+  verifyLoginOtp,
+  resendOtp,
+  initiateForgotPassword,
+  verifyForgotPasswordOtp,
+  googleAuth,
+  logout,
+  completeProfile,
 } from "../controller/auth.controller.js";
 
 const authRouter = express.Router();

@@ -4,7 +4,6 @@ import User from "../models/userModel.js";
 import { generateQuiz, evaluateQuizSubmission, generateAdaptiveRecommendations } from "../services/aiService.js";
 import { recalculateUserCompetencyAndGaps } from "../services/competencyCalculationService.js";
 
-// 1. Generate On-Demand AI Quiz
 export const generateAiQuiz = async (req, res) => {
     try {
         const { topic = "Sampling Techniques", domain = "Statistical Competencies", difficulty = "Medium", numQuestions = 5 } = req.body;
@@ -60,7 +59,6 @@ export const generateAiQuiz = async (req, res) => {
     }
 };
 
-// 2. List Available Quizzes
 export const getQuizzes = async (req, res) => {
     try {
         const { domain, difficulty, topic, includeMastered } = req.query;
@@ -74,7 +72,6 @@ export const getQuizzes = async (req, res) => {
                 { isDiagnostic: true, assignedTo: userId },
             ];
 
-            // If user obtained >= 75% marks on any quiz, do not show in available quizzes
             if (includeMastered !== "true") {
                 const highScoringAttempts = await QuizAttempt.find({
                     userId,
@@ -117,7 +114,6 @@ export const getQuizzes = async (req, res) => {
     }
 };
 
-// 3. Get Single Quiz
 export const getQuizById = async (req, res) => {
     try {
         const { id } = req.params;
@@ -135,7 +131,6 @@ export const getQuizById = async (req, res) => {
     }
 };
 
-// 4. Submit Quiz Attempt & Evaluate
 export const submitQuizAttempt = async (req, res) => {
     try {
         const { id } = req.params;
@@ -180,7 +175,6 @@ export const submitQuizAttempt = async (req, res) => {
             user.learningHours = (user.learningHours || 0) + Math.max(0.25, Math.round((timeTakenSeconds / 3600) * 10) / 10);
             await user.save();
 
-            // Run centralized 4-Domain Competency and Skill Gap Recalculation Engine
             try {
                 const recalcResult = await recalculateUserCompetencyAndGaps(userId);
                 if (recalcResult?.user) {
@@ -230,7 +224,6 @@ export const submitQuizAttempt = async (req, res) => {
     }
 };
 
-// 5. Get Learner Quiz History
 export const getMyQuizAttempts = async (req, res) => {
     try {
         const userId = req.userId || req.user?._id;

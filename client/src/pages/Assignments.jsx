@@ -287,20 +287,19 @@ const Assignments = () => {
 
                     <button
                       onClick={() => navigate(`/assignments/${asgn._id}`)}
-                      className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shadow-sm cursor-pointer ${
-                        isSubmitted
+                      className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shadow-sm cursor-pointer ${isSubmitted
                           ? "bg-slate-100 dark:bg-slate-800 hover:bg-blue-50 text-blue-600 dark:text-blue-400"
                           : isExpired
-                          ? "bg-rose-100 dark:bg-rose-950/80 hover:bg-rose-200 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800"
-                          : "bg-blue-600 hover:bg-blue-700 text-white shadow-blue-500/20"
-                      }`}
+                            ? "bg-rose-100 dark:bg-rose-950/80 hover:bg-rose-200 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800"
+                            : "bg-blue-600 hover:bg-blue-700 text-white shadow-blue-500/20"
+                        }`}
                     >
                       <span>
                         {isSubmitted
                           ? "View Evaluation Report"
                           : isExpired
-                          ? "View Closed Case Study"
-                          : "Solve Case Study"}
+                            ? "View Closed Case Study"
+                            : "Solve Case Study"}
                       </span>
                       <FaArrowRight size={10} />
                     </button>

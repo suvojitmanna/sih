@@ -259,7 +259,7 @@ const AdminDashboard = () => {
   const [showDispatchAssignmentModal, setShowDispatchAssignmentModal] =
     useState(false);
   const [dispatchedAssignments, setDispatchedAssignments] = useState([]);
-  const [assignmentSubTab, setAssignmentSubTab] = useState("posted"); // "posted" | "submissions"
+  const [assignmentSubTab, setAssignmentSubTab] = useState("posted");
   const [timerPreset, setTimerPreset] = useState("24h");
   const [customDueDateTime, setCustomDueDateTime] = useState("");
   const [assignmentForm, setAssignmentForm] = useState({
@@ -793,7 +793,6 @@ const AdminDashboard = () => {
   };
 
   const filteredLearners = learners.filter((l) => {
-    // Exclude trainers and admins: the learner directory should strictly show officers/learners, not trainer details!
     if (l.role === "trainer" || l.role === "admin") return false;
     if (userData && l._id === userData._id && userData.role === "trainer") return false;
 
@@ -2297,7 +2296,6 @@ const AdminDashboard = () => {
       {inspectingUser && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
           <div className="bg-white dark:bg-slate-900 rounded-3xl max-w-4xl w-full max-h-[90vh] flex flex-col overflow-hidden shadow-2xl border border-slate-200 dark:border-slate-800">
-            {/* Modal Header */}
             <div className="p-6 bg-gradient-to-r from-slate-900 via-blue-950 to-slate-900 text-white flex items-center justify-between border-b border-slate-800">
               <div className="flex items-center gap-3.5">
                 <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-blue-700 to-indigo-700 text-white flex items-center justify-center font-black text-base shadow-md">
@@ -2498,7 +2496,6 @@ const AdminDashboard = () => {
                         </div>
                       )}
 
-                      {/* Radar & Domain Breakdown */}
                       <div className="grid md:grid-cols-12 gap-4">
                         <div className="md:col-span-5 p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/80 flex flex-col items-center justify-center relative">
                           <span className="text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-2">
@@ -2588,7 +2585,6 @@ const AdminDashboard = () => {
                         </div>
                       </div>
 
-                    {/* Competency Matrix Table */}
                     <div className="space-y-3">
                       <h4 className="font-bold text-slate-900 dark:text-white flex items-center gap-1.5 text-xs">
                         <FaSlidersH className="text-blue-600" />
@@ -2638,7 +2634,6 @@ const AdminDashboard = () => {
                       )}
                     </div>
 
-                    {/* Skill Gaps Section */}
                     <div className="space-y-3">
                       <h4 className="font-bold text-slate-900 dark:text-white flex items-center gap-1.5 text-xs">
                         <FaExclamationTriangle className="text-amber-500" />
@@ -2684,7 +2679,6 @@ const AdminDashboard = () => {
                       )}
                     </div>
 
-                    {/* Learning Pathway */}
                     <div className="space-y-3">
                       <h4 className="font-bold text-slate-900 dark:text-white flex items-center gap-1.5 text-xs">
                         <FaGraduationCap className="text-emerald-600" />
@@ -2800,7 +2794,6 @@ const AdminDashboard = () => {
                   </div>
                 )}
 
-                {/* Tab: Quizzes */}
                 {inspectTab === "quizzes" && (
                   <div className="space-y-3">
                     {userDetailedData?.quizAttempts?.length === 0 ? (
@@ -2838,7 +2831,6 @@ const AdminDashboard = () => {
                   </div>
                 )}
 
-                {/* Tab: Assignments */}
                 {inspectTab === "assignments" && (
                   <div className="space-y-3">
                     {userDetailedData?.submissions?.length === 0 ? (
@@ -2875,7 +2867,6 @@ const AdminDashboard = () => {
                   </div>
                 )}
 
-                {/* Tab: Requests */}
                 {inspectTab === "requests" && (
                   <div className="space-y-3">
                     {userDetailedData?.materialRequests?.length === 0 ? (
@@ -3386,7 +3377,6 @@ const AdminDashboard = () => {
                 </div>
               </div>
 
-              {/* TIMER LIMIT / DUE DATE PICKER */}
               <div className="p-4 rounded-2xl bg-amber-50/60 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/60 space-y-3">
                 <div className="flex items-center justify-between">
                   <label className="font-black text-amber-900 dark:text-amber-200 flex items-center gap-1.5 text-xs">
@@ -3575,7 +3565,6 @@ const AdminDashboard = () => {
                 </div>
               </div>
 
-              {/* AI Evaluation */}
               {viewingSubmission.aiEvaluation && (
                 <div className="p-5 rounded-2xl bg-emerald-50/70 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 space-y-3">
                   <div className="flex items-center justify-between">

@@ -7,21 +7,18 @@ const Footer = () => {
 
   return (
     <footer className="relative bg-slate-100/70 dark:bg-slate-950 border-t border-slate-200/80 dark:border-slate-800/80 pt-16 pb-12 overflow-hidden transition-colors duration-300">
-      {/* Ambient background glow */}
       <div className="absolute top-0 left-1/4 w-96 h-96 bg-blue-500/10 dark:bg-blue-500/5 blur-3xl rounded-full pointer-events-none" />
       <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-emerald-500/10 dark:bg-emerald-500/5 blur-3xl rounded-full pointer-events-none" />
 
-      {/* Tricolor National Government Ribbon */}
       <div className="absolute top-0 left-0 right-0 h-1 w-full bg-gradient-to-r from-[#FF9933] via-white to-[#138808]" />
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="bg-white/80 dark:bg-slate-900/85 backdrop-blur-2xl rounded-3xl border border-slate-200/80 dark:border-slate-800 p-8 sm:p-12 shadow-xl">
-          {/* Top Section */}
+
           <div className="flex flex-col lg:flex-row justify-between gap-10">
-            {/* Brand Information */}
+
             <div className="max-w-md space-y-4">
               <div className="flex items-center gap-3">
-                {/* Modern & Premium Logo Emblem */}
                 <div className="relative w-11 h-11 rounded-2xl bg-gradient-to-br from-slate-950 via-blue-950 to-indigo-900 text-white flex flex-col items-center justify-center shadow-lg border border-blue-400/30 shrink-0 overflow-hidden">
                   <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-[#FF9933] via-white to-[#138808]" />
                   <span className="font-black text-sm tracking-tight text-white drop-shadow-xs">
@@ -51,9 +48,8 @@ const Footer = () => {
               </div>
             </div>
 
-            {/* Quick Navigation Links */}
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-8 text-xs">
-              {/* Statistical Modules */}
+
               <div className="space-y-3">
                 <h3 className="font-extrabold text-slate-900 dark:text-white uppercase tracking-wider">
                   Core Modules
@@ -95,7 +91,6 @@ const Footer = () => {
                 </div>
               </div>
 
-              {/* Official / Policy */}
               <div className="space-y-3 col-span-2 sm:col-span-1">
                 <h3 className="font-extrabold text-slate-900 dark:text-white uppercase tracking-wider">
                   Governance
@@ -119,10 +114,8 @@ const Footer = () => {
             </div>
           </div>
 
-          {/* Divider */}
           <div className="my-8 h-[1px] bg-slate-200/80 dark:bg-slate-800" />
 
-          {/* Bottom Bar */}
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500 dark:text-slate-400">
             <p>
               © {new Date().getFullYear()} Ministry of Statistics and Programme Implementation (MoSPI), Government of India.

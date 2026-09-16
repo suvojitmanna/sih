@@ -28,10 +28,6 @@ export const getUserData = async (req, res) => {
     }
 };
 
-// ========================================================
-// ALTERNATE EMAIL VERIFICATION & MANAGEMENT (NSSTA-MoSPI)
-// ========================================================
-
 export const sendAlternateEmailOtpController = async (req, res) => {
     try {
         const userId = req.userId || req.user?._id;
@@ -53,7 +49,6 @@ export const sendAlternateEmailOtpController = async (req, res) => {
             return res.status(404).json({ success: false, message: "User account not found." });
         }
 
-        // Prevent setting alternate email to same as primary email
         if (user.email && user.email.toLowerCase() === normalizedEmail) {
             return res.status(400).json({
                 success: false,
@@ -61,7 +56,6 @@ export const sendAlternateEmailOtpController = async (req, res) => {
             });
         }
 
-        // Rate limit: 60 seconds cooldown
         if (user.alternateOtpLastSentAt) {
             const timeSinceLast = (Date.now() - new Date(user.alternateOtpLastSentAt).getTime()) / 1000;
             if (timeSinceLast < 60) {
@@ -72,11 +66,10 @@ export const sendAlternateEmailOtpController = async (req, res) => {
             }
         }
 
-        // Generate 6-digit OTP
         const otp = generateSecureOtp();
         const salt = await bcrypt.genSalt(10);
         const otpHash = await bcrypt.hash(otp, salt);
-        const otpExpiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+        const otpExpiresAt = new Date(Date.now() + 10 * 60 * 1000);
 
         user.pendingAlternateEmail = normalizedEmail;
         user.alternateOtpHash = otpHash;
@@ -84,7 +77,6 @@ export const sendAlternateEmailOtpController = async (req, res) => {
         user.alternateOtpLastSentAt = new Date();
         await user.save();
 
-        // Dispatch Email through Nodemailer
         await sendAlternateEmailOtp(normalizedEmail, user.name || "Officer", otp);
 
         return res.status(200).json({
@@ -131,7 +123,6 @@ export const verifyAlternateEmailOtpController = async (req, res) => {
             return res.status(400).json({ success: false, message: "Invalid verification code. Please check and try again." });
         }
 
-        // Mark as verified and apply alternate email
         user.alternateEmail = user.pendingAlternateEmail;
         user.alternateEmailVerified = true;
         user.pendingAlternateEmail = "";

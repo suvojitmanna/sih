@@ -12,7 +12,6 @@ import QuizPage from "./pages/QuizPage";
 import Assignments from "./pages/Assignments";
 import AssignmentDetails from "./pages/AssignmentDetails";
 import MaterialsUpload from "./pages/MaterialsUpload";
-import AiModelsHub from "./pages/AiModelsHub";
 import AdminDashboard from "./pages/AdminDashboard";
 import ChatPage from "./pages/ChatPage";
 import Community from "./pages/Community";
@@ -54,7 +53,6 @@ const ProtectedRoute = ({ children, loading, requireAdmin = false }) => {
     return <Navigate to="/auth" replace />;
   }
 
-  // Mandatory Profile Completion Guard: must complete profile setup first
   if (!userData.isProfileCompleted) {
     return <Navigate to="/auth" replace />;
   }
@@ -63,7 +61,6 @@ const ProtectedRoute = ({ children, loading, requireAdmin = false }) => {
     return <Navigate to="/" replace />;
   }
 
-  // Trainer role restriction: if role is trainer, just show admin portal not show any other function
   if (userData.role === "trainer" && location.pathname !== "/admin" && location.pathname !== "/settings") {
     return <Navigate to="/admin" replace />;
   }
@@ -76,7 +73,6 @@ const ProtectedRoute = ({ children, loading, requireAdmin = false }) => {
   return children;
 };
 
-// Guard for Public Routes: never show home page or any page if profile is incomplete
 const PublicRoute = ({ children, loading }) => {
   const userData = useSelector((state) => state.user.userData);
   const location = useLocation();
@@ -96,7 +92,6 @@ const PublicRoute = ({ children, loading }) => {
     return <Navigate to="/auth" replace />;
   }
 
-  // Trainer role: only show Admin Portal, redirect away from public landing pages
   if (userData?.role === "trainer" && (location.pathname === "/" || location.pathname === "/welcome")) {
     return <Navigate to="/admin" replace />;
   }
@@ -104,7 +99,6 @@ const PublicRoute = ({ children, loading }) => {
   return children;
 };
 
-// Route Guard for Auth Page
 const AuthRoute = ({ loading }) => {
   const userData = useSelector((state) => state.user.userData);
   const { isIntakePending } = useDiagnostic();
@@ -163,7 +157,6 @@ const App = () => {
       <Toaster position="top-center" reverseOrder={false} />
       <ScrollProgressBar />
       <Routes>
-        {/* Public Landing Page */}
         <Route
           path="/"
           element={
@@ -173,7 +166,6 @@ const App = () => {
           }
         />
 
-        {/* Protected Dashboard */}
         <Route
           path="/dashboard"
           element={
@@ -280,7 +272,6 @@ const App = () => {
           }
         />
 
-        {/* Administrator Executive Analytics */}
         <Route
           path="/admin"
           element={
@@ -290,17 +281,6 @@ const App = () => {
           }
         />
 
-        {/* AI Models Workflow Hub */}
-        <Route
-          path="/ai-models"
-          element={
-            <ProtectedRoute loading={loading}>
-              <AiModelsHub />
-            </ProtectedRoute>
-          }
-        />
-
-        {/* AI Copilot & Community */}
         <Route
           path="/chat"
           element={
@@ -318,10 +298,8 @@ const App = () => {
           }
         />
 
-        {/* Authentication */}
         <Route path="/auth" element={<AuthRoute loading={loading} />} />
 
-        {/* Preserved Mock Interview Features */}
         <Route
           path="/interview"
           element={
@@ -346,7 +324,6 @@ const App = () => {
             </ProtectedRoute>
           }
         />
-        {/* System Settings (Profile Option & Layout Setting) */}
         <Route
           path="/settings"
           element={
@@ -356,7 +333,6 @@ const App = () => {
           }
         />
 
-        {/* Legal & Static Pages */}
         <Route
           path="/terms"
           element={
@@ -381,7 +357,6 @@ const App = () => {
             </PublicRoute>
           }
         />
-        {/* Comparative Architectural Audit (Legacy vs SankhyaIQ AI Platform) */}
         <Route
           path="/portal-comparison"
           element={
@@ -399,7 +374,6 @@ const App = () => {
           }
         />
 
-        {/* Wildcard Fallback Route */}
         <Route
           path="*"
           element={

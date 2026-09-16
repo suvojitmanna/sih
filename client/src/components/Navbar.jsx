@@ -124,70 +124,70 @@ const Navbar = () => {
 
   const navSections = isTrainer
     ? [
-        {
-          title: "Governance",
-          links: [
-            { label: "Admin Portal", path: "/admin", icon: BsShieldLock, badge: "Trainer", desc: "Executive Analytics, Study Material Dispatch & Learner Oversight" },
-          ],
-        },
-      ]
+      {
+        title: "Governance",
+        links: [
+          { label: "Admin Portal", path: "/admin", icon: BsShieldLock, badge: "Trainer", desc: "Executive Analytics, Study Material Dispatch & Learner Oversight" },
+        ],
+      },
+    ]
     : [
-        {
-          title: "Core Portal",
-          links: [
-            { label: "Home", path: "/", icon: FaHome, isPublic: true, desc: "National Statistical Portal Overview" },
-            ...(userData?.role !== "admin"
-              ? [{ label: "Dashboard", path: "/dashboard", icon: BsBarChartLine, desc: "Performance & Gap Analytics" }]
-              : []),
-            { label: "Competency", path: "/competencies", icon: FaBrain, desc: "Statistical Competency Framework" },
-            { label: "Skill Gaps", path: "/skill-gaps", icon: BsBarChartSteps, badge: "Cadre AI", desc: "Cadre Benchmark & Gap Analysis" },
-            { label: "Job Readiness", path: "/job-readiness", icon: FaUserTie, badge: "Report", desc: "Target Cadre Readiness & Deployment Audit" },
-            { label: "Portal Difference", path: "/portal-comparison", icon: BsShieldCheck, isPublic: true, badge: "VS", desc: "Compare Legacy Portals vs SankhyaIQ AI Platform" },
-            { label: "History", path: "/history", icon: FaHistory, desc: "Viva Records & Evaluation Logs" },
-          ],
-        },
-        {
-          title: "Capacity Building",
-          links: [
-            { label: "Learning Path", path: "/learning-path", icon: BsBookHalf, desc: "Adaptive Statistical Curriculum" },
-            { label: "Quizzes", path: "/quizzes", icon: FaTasks, desc: "Cadre Knowledge Practice" },
-            { label: "Assignment", path: "/assignments", icon: FaFilePdf, desc: "Survey & Data Practicum Tasks" },
-            { label: "Material Request", path: "/materials", icon: FaBookOpen, desc: "NSSTA Study Material Requisitions" },
-            { label: "MCQ Create", path: "/mcq-create", icon: BsStars, isAi: true, badge: "AI Gen", desc: "Diagnostic MCQ Studio" },
-          ],
-        },
-        {
-          title: "Intelligence Board",
-          links: [
-            {
-              label: "AI Copilot",
-              path: "/chat",
-              icon: BsRobot,
-              isAi: true,
-              badge: "AI Copilot",
-              desc: "Statistical Copilot & Assistant",
-            },
-            {
-              label: "Interview Viva",
-              path: "/interview",
-              icon: FaMicrophone,
-              badge: "Oral Board",
-              desc: "AI Cadre Oral Examination",
-            },
-          ],
-        },
-        ...(userData?.role === "admin"
-          ? [
-            {
-              title: "Governance",
-              align: "right",
-              links: [
-                { label: "Admin Portal", path: "/admin", icon: BsShieldLock, badge: "Officer", desc: "Executive Analytics & Cadre Management" },
-              ],
-            },
-          ]
-          : []),
-      ];
+      {
+        title: "Core Portal",
+        links: [
+          { label: "Home", path: "/", icon: FaHome, isPublic: true, desc: "National Statistical Portal Overview" },
+          ...(userData?.role !== "admin"
+            ? [{ label: "Dashboard", path: "/dashboard", icon: BsBarChartLine, desc: "Performance & Gap Analytics" }]
+            : []),
+          { label: "Competency", path: "/competencies", icon: FaBrain, desc: "Statistical Competency Framework" },
+          { label: "Skill Gaps", path: "/skill-gaps", icon: BsBarChartSteps, badge: "Cadre AI", desc: "Cadre Benchmark & Gap Analysis" },
+          { label: "Job Readiness", path: "/job-readiness", icon: FaUserTie, badge: "Report", desc: "Target Cadre Readiness & Deployment Audit" },
+          { label: "Portal Difference", path: "/portal-comparison", icon: BsShieldCheck, isPublic: true, badge: "VS", desc: "Compare Legacy Portals vs SankhyaIQ AI Platform" },
+          { label: "History", path: "/history", icon: FaHistory, desc: "Viva Records & Evaluation Logs" },
+        ],
+      },
+      {
+        title: "Capacity Building",
+        links: [
+          { label: "Learning Path", path: "/learning-path", icon: BsBookHalf, desc: "Adaptive Statistical Curriculum" },
+          { label: "Quizzes", path: "/quizzes", icon: FaTasks, desc: "Cadre Knowledge Practice" },
+          { label: "Assignment", path: "/assignments", icon: FaFilePdf, desc: "Survey & Data Practicum Tasks" },
+          { label: "Material Request", path: "/materials", icon: FaBookOpen, desc: "NSSTA Study Material Requisitions" },
+          { label: "MCQ Create", path: "/mcq-create", icon: BsStars, isAi: true, badge: "AI Gen", desc: "Diagnostic MCQ Studio" },
+        ],
+      },
+      {
+        title: "Intelligence Board",
+        links: [
+          {
+            label: "AI Copilot",
+            path: "/chat",
+            icon: BsRobot,
+            isAi: true,
+            badge: "AI Copilot",
+            desc: "Statistical Copilot & Assistant",
+          },
+          {
+            label: "Interview Viva",
+            path: "/interview",
+            icon: FaMicrophone,
+            badge: "Oral Board",
+            desc: "AI Cadre Oral Examination",
+          },
+        ],
+      },
+      ...(userData?.role === "admin"
+        ? [
+          {
+            title: "Governance",
+            align: "right",
+            links: [
+              { label: "Admin Portal", path: "/admin", icon: BsShieldLock, badge: "Officer", desc: "Executive Analytics & Cadre Management" },
+            ],
+          },
+        ]
+        : []),
+    ];
 
   const popupVariants = {
     hidden: { opacity: 0, y: 10, scale: 0.95 },
@@ -221,15 +221,12 @@ const Navbar = () => {
   if (navMode === "sidebar") {
     return (
       <>
-        {/* Render the Sidebar component */}
         <Sidebar onOpenAuth={() => setShowAuth(true)} />
 
-        {/* Companion Top Utility Header in Sidebar Mode */}
         <header
           className={`fixed top-0 right-0 z-[90] h-14 bg-white/85 dark:bg-slate-950/85 backdrop-blur-xl border-b border-slate-200/80 dark:border-slate-800/80 transition-all duration-300 left-0 ${isCollapsed ? "md:left-[76px]" : "md:left-[260px]"
             } flex items-center justify-between px-3 sm:px-6 select-none`}
         >
-          {/* Mobile: Hamburger Drawer Toggle & Logo */}
           <div className="flex items-center gap-2.5 md:hidden">
             <button
               onClick={() => setMobileOpen(true)}
@@ -258,7 +255,6 @@ const Navbar = () => {
             </div>
           </div>
 
-          {/* Desktop: Page Title / Breadcrumb */}
           <div className="hidden md:flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-blue-600 dark:bg-blue-400" />
             <span className="text-xs font-black text-slate-800 dark:text-slate-200 truncate">
@@ -266,9 +262,7 @@ const Navbar = () => {
             </span>
           </div>
 
-          {/* Right Header Actions */}
           <div className="flex items-center gap-2 sm:gap-3">
-            {/* AI Copilot Quick Button */}
             {!isTrainer && (
               <button
                 onClick={() => {
@@ -305,10 +299,8 @@ const Navbar = () => {
               </button>
             )}
 
-            {/* Cadre Notifications & Mandatory Intake Bell */}
             {userData && !isTrainer && <NotificationBell />}
 
-            {/* Officer Status Chip in Sidebar mode (Dropdown opens from the Sidebar user card) */}
             <div>
               {userData ? (
                 <div
@@ -366,7 +358,7 @@ const Navbar = () => {
   return (
     <>
       <nav className="fixed top-0 left-0 right-0 z-[100] bg-white/85 dark:bg-slate-950/85 backdrop-blur-2xl border-b border-slate-200/70 dark:border-slate-800/80 shadow-[0_4px_30px_rgba(0,0,0,0.03)] transition-all">
-        {/* Tricolor Government Ribbon Accent */}
+
         <div className="h-1 w-full bg-gradient-to-r from-[#FF9933] via-white to-[#138808]" />
 
         <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
@@ -376,7 +368,6 @@ const Navbar = () => {
                 onClick={() => navigate("/")}
                 className="flex items-center gap-2.5 sm:gap-3 cursor-pointer group select-none"
               >
-                {/* Modern & Premium Logo Emblem */}
                 <div className="relative w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-gradient-to-br from-slate-950 via-blue-950 to-indigo-900 text-white flex flex-col items-center justify-center shadow-lg group-hover:scale-105 group-hover:shadow-blue-500/25 transition-all duration-300 border border-blue-400/30 shrink-0 overflow-hidden">
                   <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-[#FF9933] via-white to-[#138808]" />
                   <span className="font-black text-sm sm:text-base tracking-tight text-white drop-shadow-xs">
@@ -398,7 +389,6 @@ const Navbar = () => {
               </div>
             </div>
 
-            {/* Desktop Navigation: 3 Category Dropdowns (Core Portal, Capacity Building, Intelligence Board) */}
             <div className="hidden md:flex items-center gap-1.5 bg-slate-100/80 dark:bg-slate-900/80 p-1.5 rounded-2xl border border-slate-200/60 dark:border-slate-800 text-xs font-bold text-slate-600 dark:text-slate-300 shadow-inner">
               {navSections.map((section) => {
                 const isSectionActive = section.links.some((l) => {
@@ -434,7 +424,6 @@ const Navbar = () => {
                       />
                     </button>
 
-                    {/* Hover Dropdown Menu with all sub-elements */}
                     <AnimatePresence>
                       {isOpen && (
                         <motion.div
@@ -478,21 +467,21 @@ const Navbar = () => {
                                     }}
                                     title={isLocked ? `Locked: Complete Intake Viva & Quiz first` : link.label}
                                     className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-left transition-all cursor-pointer group/sub ${isLocked
-                                        ? "text-slate-400 dark:text-slate-500 hover:bg-amber-50/50 dark:hover:bg-amber-950/20 hover:text-amber-600 dark:hover:text-amber-400"
-                                        : isLinkActive
-                                          ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-black shadow-sm"
-                                          : "hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200"
+                                      ? "text-slate-400 dark:text-slate-500 hover:bg-amber-50/50 dark:hover:bg-amber-950/20 hover:text-amber-600 dark:hover:text-amber-400"
+                                      : isLinkActive
+                                        ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-black shadow-sm"
+                                        : "hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200"
                                       }`}
                                   >
                                     <div className="flex items-center gap-2.5 min-w-0">
                                       <div
                                         className={`p-1.5 rounded-lg shrink-0 transition-colors relative ${isLocked
-                                            ? "bg-amber-500/10 text-amber-600 dark:text-amber-400"
-                                            : isLinkActive
-                                              ? "bg-white/20 text-white"
-                                              : link.isAi
-                                                ? "bg-amber-100 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 group-hover/sub:bg-blue-100 dark:group-hover/sub:bg-blue-950/80"
-                                                : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 group-hover/sub:text-blue-600 dark:group-hover/sub:text-blue-400"
+                                          ? "bg-amber-500/10 text-amber-600 dark:text-amber-400"
+                                          : isLinkActive
+                                            ? "bg-white/20 text-white"
+                                            : link.isAi
+                                              ? "bg-amber-100 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 group-hover/sub:bg-blue-100 dark:group-hover/sub:bg-blue-950/80"
+                                              : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 group-hover/sub:text-blue-600 dark:group-hover/sub:text-blue-400"
                                           }`}
                                       >
                                         <Icon size={14} />
@@ -509,8 +498,8 @@ const Navbar = () => {
                                         {link.desc && (
                                           <span
                                             className={`text-[9.5px] truncate block leading-tight mt-0.5 ${isLinkActive
-                                                ? "text-blue-100"
-                                                : "text-slate-400 dark:text-slate-500 font-medium"
+                                              ? "text-blue-100"
+                                              : "text-slate-400 dark:text-slate-500 font-medium"
                                               }`}
                                           >
                                             {link.desc}
@@ -550,7 +539,6 @@ const Navbar = () => {
             </div>
 
             <div className="flex items-center gap-2 sm:gap-2.5">
-              {/* AI Copilot Quick Button in Horizontal Mode */}
               {!isTrainer && (
                 <button
                   onClick={() => {
@@ -585,10 +573,8 @@ const Navbar = () => {
                 </button>
               )}
 
-              {/* Cadre Notifications & Mandatory Intake Bell */}
               {userData && !isTrainer && <NotificationBell />}
 
-              {/* User Avatar & Popup */}
               <div ref={userRef} className="relative">
                 {userData ? (
                   <motion.button
@@ -693,7 +679,6 @@ const Navbar = () => {
                         </div>
                       </div>
 
-                      {/* Settings Option Button */}
                       <div className="p-2 border-b border-slate-100 dark:border-slate-800">
                         <button
                           onClick={() => {
@@ -769,8 +754,8 @@ const Navbar = () => {
                               handleDownloadDossier();
                             }}
                             className={`w-full text-left px-3.5 py-2.5 rounded-2xl text-xs font-bold flex items-center justify-between transition-colors cursor-pointer ${isIntakePending
-                                ? "hover:bg-amber-500/5 text-slate-500 dark:text-slate-400"
-                                : "hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200"
+                              ? "hover:bg-amber-500/5 text-slate-500 dark:text-slate-400"
+                              : "hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200"
                               }`}
                           >
                             <div className="flex items-center gap-2.5">
@@ -865,7 +850,6 @@ const Navbar = () => {
                 </AnimatePresence>
               </div>
 
-              {/* Mobile Menu Button */}
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                 className="md:hidden p-2 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
@@ -876,7 +860,6 @@ const Navbar = () => {
           </div>
         </div>
 
-        {/* Mobile Dropdown Menu in Navbar Mode */}
         <AnimatePresence>
           {mobileMenuOpen && (
             <motion.div
@@ -885,7 +868,6 @@ const Navbar = () => {
               exit={{ opacity: 0, height: 0 }}
               className="md:hidden border-t border-slate-200 dark:border-slate-800 bg-white/95 dark:bg-slate-950/95 backdrop-blur-2xl px-4 py-4 space-y-3"
             >
-              {/* Convert to Sidebar option on mobile */}
               <button
                 onClick={() => {
                   setMobileMenuOpen(false);
@@ -921,7 +903,6 @@ const Navbar = () => {
                 </div>
               )}
 
-              {/* Categorized Navigation Sections in Mobile Menu */}
               <div className="space-y-3">
                 {navSections.map((section) => (
                   <div
@@ -952,10 +933,10 @@ const Navbar = () => {
                               navigate(link.path);
                             }}
                             className={`flex items-center justify-between p-2.5 rounded-xl text-xs font-bold text-left transition-colors cursor-pointer ${isLocked
-                                ? "text-slate-400 dark:text-slate-500 hover:bg-amber-50/50 dark:hover:bg-amber-950/30"
-                                : isActive
-                                  ? "bg-blue-600 text-white shadow-xs"
-                                  : "hover:bg-slate-200/60 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300"
+                              ? "text-slate-400 dark:text-slate-500 hover:bg-amber-50/50 dark:hover:bg-amber-950/30"
+                              : isActive
+                                ? "bg-blue-600 text-white shadow-xs"
+                                : "hover:bg-slate-200/60 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300"
                               }`}
                           >
                             <div className="flex items-center gap-2 min-w-0">

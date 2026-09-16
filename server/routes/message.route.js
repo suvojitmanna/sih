@@ -1,9 +1,9 @@
 import express from "express";
 import isAuth from "../middleware/isAuth.js";
 import {
-    textMessageController,
-    imageMessageController,
-    publishImageController,
+  textMessageController,
+  imageMessageController,
+  publishImageController,
 } from "../controller/message.controller.js";
 
 const messageRouter = express.Router();

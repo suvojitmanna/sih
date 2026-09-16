@@ -29,12 +29,11 @@ const SAMPLE_TOPICS = [
 
 const Quizzes = () => {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState("explore"); // "explore" | "history"
+  const [activeTab, setActiveTab] = useState("explore");
   const [quizzes, setQuizzes] = useState([]);
   const [myAttempts, setMyAttempts] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Filter out any quiz where user has obtained >= 75% marks in any attempt
   const isQuizMastered = (quiz) => {
     if (!quiz) return false;
     const targetId = String(quiz._id || "");
@@ -54,11 +53,9 @@ const Quizzes = () => {
     });
   };
 
-  // Only show quizzes where the user has NOT obtained >= 75% marks
   const availableQuizzes = (quizzes || []).filter((quiz) => !isQuizMastered(quiz));
   const masteredQuizzesCount = (quizzes || []).filter((quiz) => isQuizMastered(quiz)).length;
 
-  // Modal State for AI Generator
   const [showGenModal, setShowGenModal] = useState(false);
   const [topic, setTopic] = useState(SAMPLE_TOPICS[0]);
   const [customTopic, setCustomTopic] = useState("");
@@ -146,7 +143,6 @@ const Quizzes = () => {
           </span>
         </div>
 
-        {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-xs">
           <div>
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 dark:bg-blue-950 text-blue-700 dark:text-blue-300 text-xs font-bold uppercase tracking-wider mb-2">
@@ -175,8 +171,8 @@ const Quizzes = () => {
               <button
                 onClick={() => setActiveTab("explore")}
                 className={`px-3.5 py-2 rounded-xl transition-all cursor-pointer ${activeTab === "explore"
-                    ? "bg-white dark:bg-slate-900 text-blue-700 dark:text-blue-400 shadow-xs"
-                    : "text-slate-500 hover:text-slate-900 dark:hover:text-white"
+                  ? "bg-white dark:bg-slate-900 text-blue-700 dark:text-blue-400 shadow-xs"
+                  : "text-slate-500 hover:text-slate-900 dark:hover:text-white"
                   }`}
               >
                 Available Quizzes ({availableQuizzes.length})
@@ -184,8 +180,8 @@ const Quizzes = () => {
               <button
                 onClick={() => setActiveTab("history")}
                 className={`px-3.5 py-2 rounded-xl transition-all cursor-pointer ${activeTab === "history"
-                    ? "bg-white dark:bg-slate-900 text-blue-700 dark:text-blue-400 shadow-xs"
-                    : "text-slate-500 hover:text-slate-900 dark:hover:text-white"
+                  ? "bg-white dark:bg-slate-900 text-blue-700 dark:text-blue-400 shadow-xs"
+                  : "text-slate-500 hover:text-slate-900 dark:hover:text-white"
                   }`}
               >
                 My Past Attempts ({myAttempts.length})
@@ -202,7 +198,6 @@ const Quizzes = () => {
           </div>
         </div>
 
-        {/* TAB 1: EXPLORE QUIZZES (EXCLUDES QUIZZES WITH >= 75% MARKS) */}
         {activeTab === "explore" && (
           <div className="space-y-6">
             {loading ? (
@@ -247,11 +242,10 @@ const Quizzes = () => {
                   return (
                     <div
                       key={quiz._id}
-                      className={`border rounded-3xl p-5 shadow-xs transition-all flex flex-col justify-between ${
-                        isDiag
+                      className={`border rounded-3xl p-5 shadow-xs transition-all flex flex-col justify-between ${isDiag
                           ? "bg-gradient-to-br from-amber-50/60 via-white to-orange-50/40 dark:from-slate-900 dark:via-amber-950/20 dark:to-slate-900 border-2 border-amber-500/80 dark:border-amber-400/70 shadow-lg hover:shadow-xl hover:scale-[1.01]"
                           : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:border-blue-400"
-                      }`}
+                        }`}
                     >
                       <div className="space-y-3">
                         {isDiag && (
@@ -263,22 +257,20 @@ const Quizzes = () => {
 
                         <div className="flex items-center justify-between">
                           <span
-                            className={`text-[10px] font-extrabold px-2.5 py-0.5 rounded-full uppercase ${
-                              isDiag
+                            className={`text-[10px] font-extrabold px-2.5 py-0.5 rounded-full uppercase ${isDiag
                                 ? "text-amber-800 dark:text-amber-300 bg-amber-100 dark:bg-amber-950"
                                 : "text-blue-700 dark:text-blue-400 bg-blue-50 dark:bg-blue-950"
-                            }`}
+                              }`}
                           >
                             {quiz.domain}
                           </span>
                           <span
-                            className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                              quiz.difficulty === "Hard"
+                            className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${quiz.difficulty === "Hard"
                                 ? "bg-rose-100 text-rose-700"
                                 : quiz.difficulty === "Easy"
-                                ? "bg-emerald-100 text-emerald-700"
-                                : "bg-amber-100 text-amber-700"
-                            }`}
+                                  ? "bg-emerald-100 text-emerald-700"
+                                  : "bg-amber-100 text-amber-700"
+                              }`}
                           >
                             {quiz.difficulty}
                           </span>
@@ -310,11 +302,10 @@ const Quizzes = () => {
                         </span>
                         <button
                           onClick={() => navigate(`/quiz/${quiz._id}`)}
-                          className={`px-4 py-2 rounded-xl text-white font-bold text-xs flex items-center gap-1.5 hover:shadow-md transition-all cursor-pointer ${
-                            isDiag
+                          className={`px-4 py-2 rounded-xl text-white font-bold text-xs flex items-center gap-1.5 hover:shadow-md transition-all cursor-pointer ${isDiag
                               ? "bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 shadow-md"
                               : "bg-gradient-to-r from-blue-700 to-indigo-700"
-                          }`}
+                            }`}
                         >
                           <FaPlay size={10} />
                           <span>{isDiag ? "Start Diagnostic Intake" : "Start Assessment"}</span>
@@ -328,7 +319,6 @@ const Quizzes = () => {
           </div>
         )}
 
-        {/* TAB 2: MY PAST ATTEMPTS */}
         {activeTab === "history" && (
           <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-xs space-y-4">
             <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
@@ -376,13 +366,12 @@ const Quizzes = () => {
                           <td className="p-3.5">
                             <div className="flex items-center gap-1.5">
                               <span
-                                className={`px-2.5 py-1 rounded-lg text-[11px] font-black ${
-                                  sc >= 75
+                                className={`px-2.5 py-1 rounded-lg text-[11px] font-black ${sc >= 75
                                     ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 border border-emerald-300/40"
                                     : sc >= 60
-                                    ? "bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300 border border-blue-300/40"
-                                    : "bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300 border border-amber-300/40"
-                                }`}
+                                      ? "bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300 border border-blue-300/40"
+                                      : "bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300 border border-amber-300/40"
+                                  }`}
                               >
                                 Grade {grade}
                               </span>
@@ -405,8 +394,8 @@ const Quizzes = () => {
                           <td className="p-3.5">
                             <span
                               className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${att.passed
-                                  ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300"
-                                  : "bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-300"
+                                ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300"
+                                : "bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-300"
                                 }`}
                             >
                               {att.passed ? "Passed" : "Needs Review"}
@@ -426,7 +415,6 @@ const Quizzes = () => {
         )}
       </main>
 
-      {/* AI QUIZ GENERATOR MODAL */}
       {showGenModal && (
         <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-md flex items-center justify-center p-4">
           <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-2xl space-y-5">

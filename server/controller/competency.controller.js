@@ -21,7 +21,6 @@ import {
 } from "../services/competencyCalculationService.js";
 import { generateDiagnosticAssessmentsForUser } from "../services/diagnosticAssessmentService.js";
 
-// 1. Get Taxonomy Framework
 export const getCompetencyFramework = async (req, res) => {
   try {
     return res.status(200).json({
@@ -34,7 +33,6 @@ export const getCompetencyFramework = async (req, res) => {
   }
 };
 
-// 2. Get Learner Competency Profile
 export const getLearnerProfile = async (req, res) => {
   try {
     const user = await User.findById(req.userId || req.user?._id);
@@ -74,7 +72,6 @@ export const getLearnerProfile = async (req, res) => {
   }
 };
 
-// 3. Update Profile Attributes
 export const updateLearnerProfile = async (req, res) => {
   try {
     const {
@@ -117,7 +114,6 @@ export const updateLearnerProfile = async (req, res) => {
   }
 };
 
-// 4. Run AI Competency Assessment & Auto-Analyze Skill Gaps
 export const runAiAssessment = async (req, res) => {
   try {
     const { selfRatings = {} } = req.body;
@@ -127,7 +123,6 @@ export const runAiAssessment = async (req, res) => {
         .status(404)
         .json({ success: false, message: "User not found" });
 
-    // 1. Run Assessment via Gemini AI
     const assessmentResult = await generateCompetencyAssessment({
       profile: {
         designation: user.designation,
@@ -145,7 +140,6 @@ export const runAiAssessment = async (req, res) => {
     user.overallCompetencyScore = assessmentResult.overallScore;
     user.overallLevel = assessmentResult.overallLevel;
 
-    // 2. Automatically Run Skill Gap Analysis against Target Cadre
     const gapAnalysis = await analyzeSkillGaps({
       currentCompetencies: user.competencies,
       targetRole: user.jobRole,
@@ -154,7 +148,6 @@ export const runAiAssessment = async (req, res) => {
 
     user.skillGaps = gapAnalysis.skillGaps;
 
-    // 3. Construct Initial Learning Path
     const igotCourses = await getIgotCourses();
     const tpacProgrammes = getTpacProgrammes();
     const allAvailable = [
@@ -240,7 +233,6 @@ export const runAiAssessment = async (req, res) => {
   }
 };
 
-// Helper function to match text
 const checkCompetencyMatch = (compName = "", testStr = "") => {
   if (!compName || !testStr) return false;
   const c1 = compName.toLowerCase();
@@ -251,7 +243,6 @@ const checkCompetencyMatch = (compName = "", testStr = "") => {
   return t1.some((tok) => t2.includes(tok));
 };
 
-// 5. Get Detailed Skill Gap Analysis (All 6 Dimensions)
 export const getDetailedSkillGapAnalysis = async (req, res) => {
   try {
     const userId = req.userId || req.user?._id;
@@ -260,7 +251,6 @@ export const getDetailedSkillGapAnalysis = async (req, res) => {
       return res.status(404).json({ success: false, message: "User not found" });
     }
 
-    // Auto-recalculate if user has no competencies yet
     if (!user.competencies || user.competencies.length === 0) {
       try {
         const recalc = await recalculateUserCompetencyAndGaps(userId);
@@ -271,8 +261,6 @@ export const getDetailedSkillGapAnalysis = async (req, res) => {
         console.warn("[SKILL GAP RECALCULATE WARN]", rErr.message);
       }
     }
-
-    // Selected or target Cadre
     const targetCadre =
       req.query.cadre ||
       user.targetCadre ||
@@ -287,22 +275,18 @@ export const getDetailedSkillGapAnalysis = async (req, res) => {
     const requiredLevels = benchmark.requiredLevels || {};
     const availableCadres = Object.keys(ROLE_BENCHMARK_PROFILES);
 
-    // Fetch matching quizzes for quick remediation
     const allQuizzes = await Quiz.find({ isDiagnostic: { $ne: true } })
       .select("_id title topic domain difficulty questions")
       .limit(60);
 
     const igotCourses = await getIgotCourses();
 
-    // Map all required skills from benchmark
     const requiredSkillsList = [];
     const userComps = user.competencies || [];
 
-    // 1. Process all benchmark required competencies
     for (const [reqSkillName, reqLevelStr] of Object.entries(requiredLevels)) {
       const targetScore = levelToScore(reqLevelStr);
 
-      // Find user competency match
       let userComp = userComps.find(
         (c) => c.competencyName.toLowerCase() === reqSkillName.toLowerCase()
       );
@@ -312,7 +296,6 @@ export const getDetailedSkillGapAnalysis = async (req, res) => {
         );
       }
 
-      // Determine domain from framework
       let compDomain = "Statistical Competencies";
       for (const dom of COMPETENCY_DOMAINS) {
         if (
@@ -329,11 +312,10 @@ export const getDetailedSkillGapAnalysis = async (req, res) => {
 
       const currentScore = userComp ? Math.min(100, Math.max(0, userComp.score || 0)) : 0;
       const currentLevel = userComp ? userComp.level || scoreToLevel(currentScore) : "Novice";
-      const deltaScore = currentScore - targetScore; // e.g. +5 or -15
+      const deltaScore = currentScore - targetScore;
       const gapScore = Math.max(0, targetScore - currentScore);
 
-      // Categorization
-      let category = "NEEDS_IMPROVEMENT"; // "ON_TARGET" | "STRONG" | "NEEDS_IMPROVEMENT" | "CRITICAL"
+      let category = "NEEDS_IMPROVEMENT";
       let priority = "Medium";
       let impact = "Capability meets standard operational guidelines.";
       let recommendedAction = `Reinforce practical knowledge in ${reqSkillName}.`;
@@ -357,7 +339,6 @@ export const getDetailedSkillGapAnalysis = async (req, res) => {
 
       const isStrong = currentScore >= 80 || deltaScore >= 5;
 
-      // Find suggested quizzes
       const matchingQuizzes = allQuizzes
         .filter(
           (q) =>
@@ -374,7 +355,6 @@ export const getDetailedSkillGapAnalysis = async (req, res) => {
           questionsCount: q.questions?.length || 5,
         }));
 
-      // Find suggested courses
       const matchingCourses = igotCourses
         .filter(
           (c) =>
@@ -410,7 +390,6 @@ export const getDetailedSkillGapAnalysis = async (req, res) => {
       });
     }
 
-    // Sort by priority and gap
     const priorityOrder = { High: 3, Medium: 2, Low: 1, Satisfied: 0 };
     requiredSkillsList.sort(
       (a, b) =>
@@ -418,30 +397,16 @@ export const getDetailedSkillGapAnalysis = async (req, res) => {
         b.gapScore - a.gapScore
     );
 
-    // Exact 6 Dimensions:
-    // 1. Skills on target (current >= target)
     const skillsOnTarget = requiredSkillsList.filter((s) => s.currentScore >= s.targetScore);
-
-    // 2. Required skills (all benchmark skills)
     const requiredSkills = requiredSkillsList;
-
-    // 3. Skill gaps (all skills with gapScore > 0)
     const skillGaps = requiredSkillsList.filter((s) => s.gapScore > 0);
-
-    // 4. Strong skills (currentScore >= 80 OR deltaScore >= +5)
     const strongSkills = requiredSkillsList.filter((s) => s.isStrong);
-
-    // 5. Needs improvement (moderate deficit: gapScore > 0 && gapScore <= 20 && priority !== "High")
     const needsImprovement = requiredSkillsList.filter(
       (s) => s.category === "NEEDS_IMPROVEMENT"
     );
-
-    // 6. Critical gaps (gapScore > 20 || priority === "High" || currentScore < 45)
     const criticalGaps = requiredSkillsList.filter(
       (s) => s.category === "CRITICAL"
     );
-
-    // Calculate Summary Stats
     const totalRequiredCount = requiredSkillsList.length;
     const onTargetCount = skillsOnTarget.length;
     const cadreComplianceRate =
@@ -479,7 +444,6 @@ export const getDetailedSkillGapAnalysis = async (req, res) => {
         cadreComplianceRate,
         averageGapScore,
       },
-      // 6 Requested Dimensions:
       skillsOnTarget,
       requiredSkills,
       skillGaps,
@@ -493,7 +457,6 @@ export const getDetailedSkillGapAnalysis = async (req, res) => {
   }
 };
 
-// 5. Get Skill Gaps (Legacy + Enriched)
 export const getSkillGaps = async (req, res) => {
   try {
     const user = await User.findById(req.userId || req.user?._id);
@@ -514,7 +477,6 @@ export const getSkillGaps = async (req, res) => {
   }
 };
 
-// 6. Generate or Refresh Learning Pathway
 export const generatePathway = async (req, res) => {
   try {
     const user = await User.findById(req.userId || req.user?._id);
@@ -587,7 +549,6 @@ export const generatePathway = async (req, res) => {
   }
 };
 
-// 7. Update Pathway Step Progress
 export const updatePathwayProgress = async (req, res) => {
   try {
     const { stepIndex, status } = req.body;
@@ -635,7 +596,6 @@ export const updatePathwayProgress = async (req, res) => {
   }
 };
 
-// 8. Get Diagnostic Assessment Status for User
 export const getDiagnosticStatus = async (req, res) => {
   try {
     const userId = req.userId || req.user?._id;
@@ -654,7 +614,6 @@ export const getDiagnosticStatus = async (req, res) => {
       isDiagnostic: true,
     }).select("_id role mode finalScore status createdAt question questions");
 
-    // Auto-provision if missing for completed profile
     if ((!diagnosticQuiz || !diagnosticInterview) && user.isProfileCompleted) {
       try {
         await generateDiagnosticAssessmentsForUser(user);
@@ -721,7 +680,6 @@ export const getDiagnosticStatus = async (req, res) => {
   }
 };
 
-// 9. Get Target Job Readiness Report
 export const getTargetJobReadinessReport = async (req, res) => {
   try {
     const userId = req.userId || req.user?._id;
@@ -730,7 +688,6 @@ export const getTargetJobReadinessReport = async (req, res) => {
       return res.status(404).json({ success: false, message: "User not found" });
     }
 
-    // Auto-recalculate if user has no competencies yet
     if (!user.competencies || user.competencies.length === 0) {
       try {
         const recalc = await recalculateUserCompetencyAndGaps(userId);
@@ -740,7 +697,6 @@ export const getTargetJobReadinessReport = async (req, res) => {
       }
     }
 
-    // Target role to audit
     const targetRole =
       req.query.targetRole ||
       user.targetCadre ||
@@ -755,7 +711,6 @@ export const getTargetJobReadinessReport = async (req, res) => {
     const requiredLevels = benchmark.requiredLevels || {};
     const availableRoles = Object.keys(ROLE_BENCHMARK_PROFILES);
 
-    // Fetch assessment history
     const [quizAttempts, interviews, assignmentSubmissions] = await Promise.all([
       QuizAttempt.find({ userId }).sort({ createdAt: -1 }),
       Interview.find({ userId, status: "completed" }).sort({ createdAt: -1 }),
@@ -764,7 +719,6 @@ export const getTargetJobReadinessReport = async (req, res) => {
 
     const userComps = user.competencies || [];
 
-    // 1. Cadre Competency Match & Detailed Skills
     const requiredSkillsAudited = [];
     let totalTargetScore = 0;
     let totalCurrentAchieved = 0;
@@ -782,7 +736,6 @@ export const getTargetJobReadinessReport = async (req, res) => {
         );
       }
 
-      // Identify domain
       let domain = "Statistical Competencies";
       for (const dom of COMPETENCY_DOMAINS) {
         if (
@@ -829,7 +782,6 @@ export const getTargetJobReadinessReport = async (req, res) => {
         ? Math.min(100, Math.round((totalCurrentAchieved / totalTargetScore) * 100))
         : 0;
 
-    // 2. Evaluation Rigor Score (Quizzes + Oral Vivas + Practicums + Diagnostics)
     const completedQuizzesCount = quizAttempts.length;
     const completedVivasCount = interviews.length;
     const completedAssignmentsCount = assignmentSubmissions.length;
@@ -842,7 +794,6 @@ export const getTargetJobReadinessReport = async (req, res) => {
       quizRigor * 0.30 + vivaRigor * 0.35 + assignmentRigor * 0.20 + diagnosticRigor * 0.15
     );
 
-    // 3. Experience & Tenure Audit
     const tenureRequirements = {
       "Indian Statistical Service (ISS) Officer": 3,
       "Senior Statistical Officer (SSO)": 2,
@@ -861,7 +812,6 @@ export const getTargetJobReadinessReport = async (req, res) => {
       Math.round((officerTenureYears / requiredTenureYears) * 100)
     );
 
-    // 4. Capacity Building Score
     const completedPathSteps = (user.learningPath || []).filter(
       (s) => s.status === "completed"
     ).length;
@@ -872,7 +822,6 @@ export const getTargetJobReadinessReport = async (req, res) => {
       )
     );
 
-    // 5. Total Weighted Readiness Index
     const overallReadinessIndex = Math.min(
       100,
       Math.max(
@@ -886,7 +835,6 @@ export const getTargetJobReadinessReport = async (req, res) => {
       )
     );
 
-    // 6. Classification & Recommendation
     let readinessStatus = "ACTIVE_DEVELOPMENT";
     let readinessTitle = "Under Active Development (Targeted Upskilling)";
     let readinessColor = "amber";
@@ -913,7 +861,6 @@ export const getTargetJobReadinessReport = async (req, res) => {
         "Assessed competencies currently below target role standards. Immediate enrollment in NSSTA Core Curriculum and diagnostic intake is mandated.";
     }
 
-    // 7. Prerequisite Statutory Checklist
     const hasDegree = Boolean(
       user.educationalQualification ||
         (Array.isArray(user.education) && user.education.length > 0)
@@ -970,7 +917,6 @@ export const getTargetJobReadinessReport = async (req, res) => {
       },
     ];
 
-    // 8. 4-Domain Pillar Scores
     const domainPillars = COMPETENCY_DOMAINS.map((dom) => {
       const domComps = userComps.filter(
         (c) =>
@@ -984,7 +930,6 @@ export const getTargetJobReadinessReport = async (req, res) => {
             )
           : 0;
 
-      // Target score for this domain
       const reqInDomain = requiredSkillsAudited.filter(
         (s) =>
           s.domain.toLowerCase().includes(dom.id) ||
@@ -1012,7 +957,6 @@ export const getTargetJobReadinessReport = async (req, res) => {
       };
     });
 
-    // 9. Role Key Strengths & Blockers
     const keyStrengths = requiredSkillsAudited
       .filter((s) => s.isMet && s.currentScore >= 75)
       .slice(0, 4);
@@ -1022,7 +966,6 @@ export const getTargetJobReadinessReport = async (req, res) => {
       .sort((a, b) => b.gap - a.gap)
       .slice(0, 4);
 
-    // 10. Milestone Roadmap to 100% Readiness
     const milestones = [];
     if (completedVivasCount === 0) {
       milestones.push({

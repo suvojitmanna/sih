@@ -3,7 +3,6 @@ import User from "../models/userModel.js";
 import { evaluateAssignmentSubmission } from "../services/aiService.js";
 import { recalculateUserCompetencyAndGaps } from "../services/competencyCalculationService.js";
 
-// Default Curated Official Statistics Assignments
 export const OFFICIAL_ASSIGNMENTS = [
     {
         _id: "asgn-stat-01",
@@ -99,13 +98,11 @@ export const OFFICIAL_ASSIGNMENTS = [
     },
 ];
 
-// GET /api/assignments — Get All Assignments
 export const getAssignments = async (req, res) => {
     try {
         const { domain } = req.query;
         let baseAssignments = [...OFFICIAL_ASSIGNMENTS];
 
-        // Fetch custom assignments created by Admin from MongoDB
         let dbAssignments = [];
         try {
             const query = {
@@ -127,7 +124,6 @@ export const getAssignments = async (req, res) => {
             combined = combined.filter((a) => a.domain.toLowerCase().includes(domain.toLowerCase()));
         }
 
-        // Fetch user's completed submissions if authenticated
         let userSubmissions = [];
         if (req.user?._id) {
             userSubmissions = await AssignmentSubmission.find({ userId: req.user._id }).lean();
@@ -157,7 +153,6 @@ export const getAssignments = async (req, res) => {
     }
 };
 
-// GET /api/assignments/:id — Get Single Assignment Details
 export const getAssignmentById = async (req, res) => {
     try {
         const { id } = req.params;
@@ -167,7 +162,6 @@ export const getAssignmentById = async (req, res) => {
             try {
                 assignment = await Assignment.findById(id).lean();
             } catch (err) {
-                // Not a mongo object id
             }
         }
 
@@ -199,7 +193,6 @@ export const getAssignmentById = async (req, res) => {
     }
 };
 
-// POST /api/assignments/:id/submit — Submit Assignment for Gemini AI Evaluation
 export const submitAssignment = async (req, res) => {
     try {
         const { id } = req.params;
@@ -227,7 +220,6 @@ export const submitAssignment = async (req, res) => {
             });
         }
 
-        // Enforce timer limit / submission deadline
         if (assignment.dueDate && new Date() > new Date(assignment.dueDate)) {
             return res.status(400).json({
                 success: false,
@@ -239,14 +231,12 @@ export const submitAssignment = async (req, res) => {
 
         const user = await User.findById(userId);
 
-        // Run Gemini AI Evaluation
         const evaluation = await evaluateAssignmentSubmission({
             assignment,
             submissionText,
             learnerProfile: user || {},
         });
 
-        // Save Submission Record
         const submission = await AssignmentSubmission.create({
             userId,
             assignmentId: id,
@@ -257,7 +247,6 @@ export const submitAssignment = async (req, res) => {
             aiEvaluation: evaluation,
         });
 
-        // Dynamically update user's training hours and trigger 4-Domain Competency & Gap recalculation
         if (user) {
             user.learningHours = (user.learningHours || 0) + (assignment.estimatedHours || 3);
             await user.save();
@@ -301,7 +290,6 @@ export const submitAssignment = async (req, res) => {
     }
 };
 
-// GET /api/assignments/my-submissions — Get User's Submission History
 export const getMySubmissions = async (req, res) => {
     try {
         const userId = req.user?._id;

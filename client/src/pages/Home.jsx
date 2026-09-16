@@ -119,14 +119,11 @@ const Home = () => {
 
       <PageTransition>
         <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-20 space-y-24">
-          {/* ======================================================== */}
-          {/* 1. SAAS HERO SECTION                                     */}
-          {/* ======================================================== */}
+          {/* 1. SAAS HERO SECTION*/}
           <section className="relative overflow-hidden pt-8 pb-14 text-center space-y-8">
-            {/* Background Ambient Glows */}
+
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] sm:w-[850px] h-[300px] sm:h-[500px] bg-gradient-to-r from-blue-500/15 via-indigo-500/10 to-teal-500/15 blur-3xl rounded-full pointer-events-none -z-10" />
 
-            {/* Announcement Top Ribbon */}
             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-md shadow-slate-200/50 dark:shadow-none cursor-pointer hover:border-blue-300 transition-all">
               <span className="flex h-2 w-2 relative">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
@@ -137,7 +134,6 @@ const Home = () => {
               </span>
             </div>
 
-            {/* Main SaaS Headline */}
             <div className="max-w-4xl mx-auto space-y-5">
               <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight text-slate-900 dark:text-white leading-[1.12]">
                 The AI Skill Intelligence &{" "}
@@ -152,7 +148,6 @@ const Home = () => {
               </p>
             </div>
 
-            {/* Primary Action Buttons */}
             <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4 pt-3">
               <button
                 onClick={() => handleProtectedAction("/learning-path", "Learning Path")}
@@ -208,7 +203,6 @@ const Home = () => {
               )}
             </div>
 
-            {/* MANDATORY CADRE DIAGNOSTIC INTAKE ASSESSMENT HERO BANNER */}
             {userData && isIntakePending && (
               <motion.div
                 initial={{ opacity: 0, y: 15 }}
@@ -216,7 +210,6 @@ const Home = () => {
                 transition={{ duration: 0.3 }}
                 className="mt-8 text-left relative overflow-hidden rounded-3xl bg-gradient-to-br from-amber-500/10 via-slate-900/5 to-blue-500/10 dark:from-amber-950/40 dark:via-slate-900/80 dark:to-blue-950/40 border-2 border-amber-400/60 dark:border-amber-500/50 shadow-2xl p-5 sm:p-7"
               >
-                {/* Tricolor Government Ribbon Accent */}
                 <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#FF9933] via-white to-[#138808]" />
 
                 <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
@@ -235,7 +228,6 @@ const Home = () => {
                     </p>
                   </div>
 
-                  {/* Progress Indicator */}
                   <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-sm min-w-[210px] text-center shrink-0 w-full lg:w-auto">
                     <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 dark:text-slate-500 block mb-1">
                       Intake Status
@@ -254,24 +246,20 @@ const Home = () => {
                   </div>
                 </div>
 
-                {/* Direct Action Cards */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-5">
-                  {/* Card 1: Diagnostic Quiz */}
                   <div
-                    className={`p-4 sm:p-5 rounded-2xl border transition-all ${
-                      diagnosticStatus?.isQuizCompleted
-                        ? "bg-emerald-50/70 dark:bg-emerald-950/30 border-emerald-300/80 dark:border-emerald-800/80"
-                        : "bg-white dark:bg-slate-900 border-amber-300/80 dark:border-amber-700/80 shadow-md"
-                    }`}
+                    className={`p-4 sm:p-5 rounded-2xl border transition-all ${diagnosticStatus?.isQuizCompleted
+                      ? "bg-emerald-50/70 dark:bg-emerald-950/30 border-emerald-300/80 dark:border-emerald-800/80"
+                      : "bg-white dark:bg-slate-900 border-amber-300/80 dark:border-amber-700/80 shadow-md"
+                      }`}
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex items-center gap-3">
                         <div
-                          className={`p-3 rounded-2xl ${
-                            diagnosticStatus?.isQuizCompleted
-                              ? "bg-emerald-100 dark:bg-emerald-900/60 text-emerald-600 dark:text-emerald-400"
-                              : "bg-blue-100 dark:bg-blue-900/60 text-blue-600 dark:text-blue-400"
-                          }`}
+                          className={`p-3 rounded-2xl ${diagnosticStatus?.isQuizCompleted
+                            ? "bg-emerald-100 dark:bg-emerald-900/60 text-emerald-600 dark:text-emerald-400"
+                            : "bg-blue-100 dark:bg-blue-900/60 text-blue-600 dark:text-blue-400"
+                            }`}
                         >
                           <FaTasks size={20} />
                         </div>
@@ -331,22 +319,19 @@ const Home = () => {
                     </div>
                   </div>
 
-                  {/* Card 2: Intake Viva Voce */}
                   <div
-                    className={`p-4 sm:p-5 rounded-2xl border transition-all ${
-                      diagnosticStatus?.isInterviewCompleted
-                        ? "bg-emerald-50/70 dark:bg-emerald-950/30 border-emerald-300/80 dark:border-emerald-800/80"
-                        : "bg-white dark:bg-slate-900 border-amber-300/80 dark:border-amber-700/80 shadow-md"
-                    }`}
+                    className={`p-4 sm:p-5 rounded-2xl border transition-all ${diagnosticStatus?.isInterviewCompleted
+                      ? "bg-emerald-50/70 dark:bg-emerald-950/30 border-emerald-300/80 dark:border-emerald-800/80"
+                      : "bg-white dark:bg-slate-900 border-amber-300/80 dark:border-amber-700/80 shadow-md"
+                      }`}
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex items-center gap-3">
                         <div
-                          className={`p-3 rounded-2xl ${
-                            diagnosticStatus?.isInterviewCompleted
-                              ? "bg-emerald-100 dark:bg-emerald-900/60 text-emerald-600 dark:text-emerald-400"
-                              : "bg-indigo-100 dark:bg-indigo-900/60 text-indigo-600 dark:text-indigo-400"
-                          }`}
+                          className={`p-3 rounded-2xl ${diagnosticStatus?.isInterviewCompleted
+                            ? "bg-emerald-100 dark:bg-emerald-900/60 text-emerald-600 dark:text-emerald-400"
+                            : "bg-indigo-100 dark:bg-indigo-900/60 text-indigo-600 dark:text-indigo-400"
+                            }`}
                         >
                           <FaMicrophone size={20} />
                         </div>
@@ -403,7 +388,6 @@ const Home = () => {
               </motion.div>
             )}
 
-            {/* Quick Pillar Ribbon */}
             <div className="pt-8 flex flex-wrap items-center justify-center gap-6 text-xs font-semibold text-slate-500 dark:text-slate-400">
               <span className="flex items-center gap-1.5">
                 <FaCheckCircle className="text-emerald-500" size={13} />
@@ -479,7 +463,6 @@ const Home = () => {
                 </p>
               </div>
 
-              {/* 6 Lifecycle Steps Grid */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
                 <div className="p-5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/70 dark:border-slate-700 space-y-2.5">
                   <div className="w-8 h-8 rounded-xl bg-blue-600 text-white flex items-center justify-center font-black text-xs shadow-md">
@@ -572,7 +555,7 @@ const Home = () => {
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Domain 1 */}
+
                 <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-7 shadow-xs space-y-4">
                   <div className="flex items-center gap-3">
                     <div className="p-3 rounded-2xl bg-blue-50 dark:bg-blue-950/60 text-blue-600">
@@ -620,7 +603,6 @@ const Home = () => {
                   </div>
                 </div>
 
-                {/* Domain 2 */}
                 <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-7 shadow-xs space-y-4">
                   <div className="flex items-center gap-3">
                     <div className="p-3 rounded-2xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600">
@@ -668,7 +650,6 @@ const Home = () => {
                   </div>
                 </div>
 
-                {/* Domain 3 */}
                 <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-7 shadow-xs space-y-4">
                   <div className="flex items-center gap-3">
                     <div className="p-3 rounded-2xl bg-teal-50 dark:bg-teal-950/60 text-teal-600">
@@ -716,7 +697,6 @@ const Home = () => {
                   </div>
                 </div>
 
-                {/* Domain 4 */}
                 <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-7 shadow-xs space-y-4">
                   <div className="flex items-center gap-3">
                     <div className="p-3 rounded-2xl bg-amber-50 dark:bg-amber-950/60 text-amber-600">
@@ -783,7 +763,6 @@ const Home = () => {
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {/* Pillar 1: Quizzes */}
                 <div
                   onClick={() => handleProtectedAction("/quizzes")}
                   className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-xs hover:shadow-xl hover:border-emerald-400 transition-all space-y-4 cursor-pointer group flex flex-col justify-between"
@@ -987,9 +966,7 @@ const Home = () => {
             </section>
           </ScrollReveal>
 
-          {/* ======================================================== */}
           {/* PORTAL DIFFERENCE: LEGACY VS SANKHYAIQ AI SHOWCASE       */}
-          {/* ======================================================== */}
           <ScrollReveal direction="up" delay={0.1}>
             <section className="bg-gradient-to-br from-slate-900 via-blue-950 to-slate-900 text-white rounded-3xl p-6 sm:p-10 shadow-2xl border border-blue-900/60 relative overflow-hidden space-y-8">
               <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#FF9933] via-white to-[#138808]" />
@@ -1034,7 +1011,6 @@ const Home = () => {
                 </div>
               </div>
 
-              {/* Fast 3-Pillar Comparison Grid */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-5 pt-2">
                 <div className="bg-white/5 border border-white/10 rounded-2xl p-5 space-y-3">
                   <span className="text-[10px] font-black uppercase tracking-wider text-amber-300 block">

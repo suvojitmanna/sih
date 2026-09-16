@@ -59,7 +59,7 @@ const ChatBox = ({
       if (recognitionRef.current) {
         try {
           recognitionRef.current.stop();
-        } catch {}
+        } catch { }
       }
       if (controllerRef.current) {
         controllerRef.current.abort();
@@ -82,7 +82,7 @@ const ChatBox = ({
       if (recognitionRef.current) {
         try {
           recognitionRef.current.stop();
-        } catch {}
+        } catch { }
       }
       return;
     }
@@ -103,7 +103,7 @@ const ChatBox = ({
       if (recognitionRef.current) {
         try {
           recognitionRef.current.stop();
-        } catch {}
+        } catch { }
       }
 
       const recognition = new SpeechRecognition();
@@ -220,13 +220,13 @@ const ChatBox = ({
           prevChats.map((c) =>
             c._id === selectedChat._id
               ? {
-                  ...c,
-                  messages: (c.messages || []).map((m) =>
-                    m._id === message._id || m.content === message.content
-                      ? { ...m, isPublished: targetState }
-                      : m
-                  ),
-                }
+                ...c,
+                messages: (c.messages || []).map((m) =>
+                  m._id === message._id || m.content === message.content
+                    ? { ...m, isPublished: targetState }
+                    : m
+                ),
+              }
               : c
           )
         );
@@ -265,20 +265,20 @@ const ChatBox = ({
       setSelectedChat((prev) =>
         prev
           ? {
-              ...prev,
-              messages: [...(prev.messages || []), userMessage],
-              updatedAt: new Date(),
-            }
+            ...prev,
+            messages: [...(prev.messages || []), userMessage],
+            updatedAt: new Date(),
+          }
           : prev
       );
       setChats((prevChats) =>
         prevChats.map((c) =>
           c._id === chatId
             ? {
-                ...c,
-                messages: [...(c.messages || []), userMessage],
-                updatedAt: new Date(),
-              }
+              ...c,
+              messages: [...(c.messages || []), userMessage],
+              updatedAt: new Date(),
+            }
             : c
         )
       );
@@ -531,8 +531,8 @@ const ChatBox = ({
               type="button"
               onClick={handleVoiceInput}
               className={`p-2 sm:p-2.5 rounded-full transition-all cursor-pointer ${isListening
-                  ? "bg-red-500 text-white animate-pulse"
-                  : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
+                ? "bg-red-500 text-white animate-pulse"
+                : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
                 }`}
               title={isListening ? "Listening..." : "Speak message"}
             >

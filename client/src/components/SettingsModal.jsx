@@ -31,10 +31,8 @@ const SettingsModal = ({ isOpen, onClose }) => {
   const { theme, setTheme, resolvedTheme } = useTheme();
   const { userData } = useSelector((state) => state.user);
 
-  // 2 Options: "profile" | "layout"
   const [activeTab, setActiveTab] = useState("profile");
 
-  // Close on Escape key
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.key === "Escape" && isOpen) {
@@ -69,7 +67,7 @@ const SettingsModal = ({ isOpen, onClose }) => {
     <AnimatePresence>
       {isOpen && (
         <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
-          {/* Backdrop */}
+
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -79,7 +77,6 @@ const SettingsModal = ({ isOpen, onClose }) => {
             className="fixed inset-0 bg-slate-950/70 backdrop-blur-md"
           />
 
-          {/* Modal Container */}
           <motion.div
             initial={{ opacity: 0, scale: 0.94, y: 16 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -87,10 +84,8 @@ const SettingsModal = ({ isOpen, onClose }) => {
             transition={{ type: "spring", damping: 26, stiffness: 320 }}
             className="relative w-full max-w-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl shadow-2xl overflow-hidden z-10 my-auto"
           >
-            {/* Top Tricolor Accent Line */}
             <div className="h-1.5 w-full bg-gradient-to-r from-[#FF9933] via-white to-[#138808]" />
 
-            {/* Header */}
             <div className="p-5 sm:p-6 pb-4 border-b border-slate-100 dark:border-slate-800/80">
               <div className="flex items-start justify-between gap-3">
                 <div className="flex items-center gap-3">
@@ -116,14 +111,13 @@ const SettingsModal = ({ isOpen, onClose }) => {
                 </button>
               </div>
 
-              {/* 2 Options Switcher Tabs */}
               <div className="flex items-center mt-4 bg-slate-100 dark:bg-slate-800/80 p-1 rounded-2xl border border-slate-200/80 dark:border-slate-700/80">
                 <button
                   type="button"
                   onClick={() => setActiveTab("profile")}
                   className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-xl font-black text-xs transition-all cursor-pointer ${activeTab === "profile"
-                      ? "bg-blue-600 text-white shadow-md"
-                      : "text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white"
+                    ? "bg-blue-600 text-white shadow-md"
+                    : "text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white"
                     }`}
                 >
                   <FaUserTie size={12} />
@@ -134,8 +128,8 @@ const SettingsModal = ({ isOpen, onClose }) => {
                   type="button"
                   onClick={() => setActiveTab("layout")}
                   className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-xl font-black text-xs transition-all cursor-pointer ${activeTab === "layout"
-                      ? "bg-blue-600 text-white shadow-md"
-                      : "text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white"
+                    ? "bg-blue-600 text-white shadow-md"
+                    : "text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white"
                     }`}
                 >
                   <BsSliders size={12} />
@@ -144,9 +138,7 @@ const SettingsModal = ({ isOpen, onClose }) => {
               </div>
             </div>
 
-            {/* Content Body */}
             <div className="p-5 sm:p-6 space-y-6 max-h-[65vh] overflow-y-auto custom-scrollbar">
-              {/* OPTION 1: PROFILE OPTION */}
               {activeTab === "profile" && (
                 <motion.div
                   initial={{ opacity: 0, y: 8 }}
@@ -156,7 +148,6 @@ const SettingsModal = ({ isOpen, onClose }) => {
                 >
                   {userData ? (
                     <div className="space-y-4">
-                      {/* Officer Card Header */}
                       <div className="p-4 rounded-2xl bg-gradient-to-br from-slate-50 to-blue-50/50 dark:from-slate-800/60 dark:to-blue-950/30 border border-slate-200/80 dark:border-slate-700/80 flex flex-col sm:flex-row items-center sm:items-start gap-4 text-center sm:text-left">
                         <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-blue-700 to-indigo-700 text-white flex items-center justify-center font-black text-2xl shadow-md shrink-0 overflow-hidden relative border-2 border-white dark:border-slate-800">
                           {userPhoto ? (
@@ -196,7 +187,6 @@ const SettingsModal = ({ isOpen, onClose }) => {
                         </div>
                       </div>
 
-                      {/* Details Grid */}
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200/60 dark:border-slate-800 space-y-1">
                           <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block flex items-center gap-1">
@@ -235,7 +225,6 @@ const SettingsModal = ({ isOpen, onClose }) => {
                         </div>
                       </div>
 
-                      {/* Go to full profile editor button */}
                       <button
                         type="button"
                         onClick={() => handleOpenSettingsPage("profile")}
@@ -253,7 +242,6 @@ const SettingsModal = ({ isOpen, onClose }) => {
                 </motion.div>
               )}
 
-              {/* OPTION 2: LAYOUT SETTING */}
               {activeTab === "layout" && (
                 <motion.div
                   initial={{ opacity: 0, y: 8 }}
@@ -261,7 +249,6 @@ const SettingsModal = ({ isOpen, onClose }) => {
                   transition={{ duration: 0.2 }}
                   className="space-y-5"
                 >
-                  {/* Navigation Layout */}
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
                       <div>
@@ -279,12 +266,11 @@ const SettingsModal = ({ isOpen, onClose }) => {
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      {/* Option 1: Sidebar */}
                       <div
                         onClick={() => handleSelectNavMode("sidebar")}
                         className={`relative p-4 rounded-2xl border-2 transition-all cursor-pointer flex flex-col justify-between group ${navMode === "sidebar"
-                            ? "border-blue-600 dark:border-blue-500 bg-blue-50/50 dark:bg-blue-950/30 shadow-md ring-2 ring-blue-500/20"
-                            : "border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 bg-white dark:bg-slate-800/40"
+                          ? "border-blue-600 dark:border-blue-500 bg-blue-50/50 dark:bg-blue-950/30 shadow-md ring-2 ring-blue-500/20"
+                          : "border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 bg-white dark:bg-slate-800/40"
                           }`}
                       >
                         {navMode === "sidebar" && (
@@ -329,12 +315,11 @@ const SettingsModal = ({ isOpen, onClose }) => {
                         </div>
                       </div>
 
-                      {/* Option 2: Top Navbar */}
                       <div
                         onClick={() => handleSelectNavMode("topbar")}
                         className={`relative p-4 rounded-2xl border-2 transition-all cursor-pointer flex flex-col justify-between group ${navMode === "topbar"
-                            ? "border-blue-600 dark:border-blue-500 bg-blue-50/50 dark:bg-blue-950/30 shadow-md ring-2 ring-blue-500/20"
-                            : "border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 bg-white dark:bg-slate-800/40"
+                          ? "border-blue-600 dark:border-blue-500 bg-blue-50/50 dark:bg-blue-950/30 shadow-md ring-2 ring-blue-500/20"
+                          : "border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 bg-white dark:bg-slate-800/40"
                           }`}
                       >
                         {navMode === "topbar" && (
@@ -383,7 +368,6 @@ const SettingsModal = ({ isOpen, onClose }) => {
                     </div>
                   </div>
 
-                  {/* Theme & Appearance */}
                   <div className="space-y-3 pt-4 border-t border-slate-100 dark:border-slate-800/80">
                     <div className="flex items-center justify-between">
                       <div>
@@ -407,13 +391,12 @@ const SettingsModal = ({ isOpen, onClose }) => {
                     </div>
 
                     <div className="grid grid-cols-3 gap-2.5">
-                      {/* Light Mode */}
                       <button
                         type="button"
                         onClick={() => handleSelectTheme("light")}
                         className={`relative p-3 rounded-2xl border-2 transition-all cursor-pointer flex flex-col items-center gap-2 text-center ${theme === "light"
-                            ? "border-amber-500 bg-amber-50/50 dark:bg-amber-950/20 shadow-sm ring-2 ring-amber-500/20"
-                            : "border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 bg-white dark:bg-slate-800/40"
+                          ? "border-amber-500 bg-amber-50/50 dark:bg-amber-950/20 shadow-sm ring-2 ring-amber-500/20"
+                          : "border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 bg-white dark:bg-slate-800/40"
                           }`}
                       >
                         {theme === "light" && (
@@ -430,13 +413,12 @@ const SettingsModal = ({ isOpen, onClose }) => {
                         </div>
                       </button>
 
-                      {/* Dark Mode */}
                       <button
                         type="button"
                         onClick={() => handleSelectTheme("dark")}
                         className={`relative p-3 rounded-2xl border-2 transition-all cursor-pointer flex flex-col items-center gap-2 text-center ${theme === "dark"
-                            ? "border-indigo-500 bg-indigo-50/50 dark:bg-indigo-950/20 shadow-sm ring-2 ring-indigo-500/20"
-                            : "border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 bg-white dark:bg-slate-800/40"
+                          ? "border-indigo-500 bg-indigo-50/50 dark:bg-indigo-950/20 shadow-sm ring-2 ring-indigo-500/20"
+                          : "border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 bg-white dark:bg-slate-800/40"
                           }`}
                       >
                         {theme === "dark" && (
@@ -453,13 +435,12 @@ const SettingsModal = ({ isOpen, onClose }) => {
                         </div>
                       </button>
 
-                      {/* System Default */}
                       <button
                         type="button"
                         onClick={() => handleSelectTheme("system")}
                         className={`relative p-3 rounded-2xl border-2 transition-all cursor-pointer flex flex-col items-center gap-2 text-center ${theme === "system"
-                            ? "border-blue-600 dark:border-blue-500 bg-blue-50/50 dark:bg-blue-950/20 shadow-sm ring-2 ring-blue-500/20"
-                            : "border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 bg-white dark:bg-slate-800/40"
+                          ? "border-blue-600 dark:border-blue-500 bg-blue-50/50 dark:bg-blue-950/20 shadow-sm ring-2 ring-blue-500/20"
+                          : "border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 bg-white dark:bg-slate-800/40"
                           }`}
                       >
                         {theme === "system" && (
@@ -481,7 +462,6 @@ const SettingsModal = ({ isOpen, onClose }) => {
               )}
             </div>
 
-            {/* Footer */}
             <div className="p-4 sm:p-5 bg-slate-50/80 dark:bg-slate-900/80 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
               <button
                 type="button"

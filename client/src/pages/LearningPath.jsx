@@ -19,7 +19,7 @@ import { BsShieldCheck, BsJournalBookmarkFill } from "react-icons/bs";
 import { CardGridSkeleton } from "../components/SkeletonLoader";
 
 const LearningPath = () => {
-  const [activeTab, setActiveTab] = useState("personalized"); // "personalized" | "igot" | "tpac"
+  const [activeTab, setActiveTab] = useState("personalized");
   const [profile, setProfile] = useState(null);
   const [igotCourses, setIgotCourses] = useState([]);
   const [tpacProgrammes, setTpacProgrammes] = useState([]);
@@ -111,7 +111,7 @@ const LearningPath = () => {
       <Navbar />
 
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 pt-19 pb-16 space-y-3">
-        {/* Back Navigation Bar */}
+
         <div className="flex items-center justify-between">
           <BackButton fallbackUrl="/ai-models" label="Back to AI Models" />
           <span className="text-xs font-bold text-slate-500 dark:text-slate-400">
@@ -119,7 +119,6 @@ const LearningPath = () => {
           </span>
         </div>
 
-        {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-xs">
           <div>
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 dark:bg-blue-950 text-blue-700 dark:text-blue-300 text-xs font-bold uppercase tracking-wider mb-2">
@@ -168,7 +167,6 @@ const LearningPath = () => {
           </div>
         </div>
 
-        {/* TAB 1: PERSONALIZED ROADMAP */}
         {activeTab === "personalized" && (
           <div className="space-y-6">
             <div className="flex items-center justify-between">
@@ -263,10 +261,8 @@ const LearningPath = () => {
           </div>
         )}
 
-        {/* TAB 2: iGOT KARMAYOGI CATALOGUE */}
         {activeTab === "igot" && (
           <div className="space-y-6">
-            {/* Search & Domain Filter Bar */}
             <div className="flex flex-col sm:flex-row gap-3 bg-white dark:bg-slate-900 p-4 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xs">
               <div className="relative flex-1">
                 <FaSearch className="absolute left-3.5 top-3.5 text-slate-400" size={13} />
@@ -292,7 +288,6 @@ const LearningPath = () => {
               </select>
             </div>
 
-            {/* Course Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
               {filteredIgot.map((course) => (
                 <div
@@ -349,7 +344,6 @@ const LearningPath = () => {
           </div>
         )}
 
-        {/* TAB 3: NSSTA TPAC IN-SERVICE PROGRAMMES */}
         {activeTab === "tpac" && (
           <div className="space-y-6">
             <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-xs">

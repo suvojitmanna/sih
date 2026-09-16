@@ -159,7 +159,6 @@ const JobReadinessReport = () => {
 
       <PageTransition>
         <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 pt-20 sm:pt-24 pb-20 space-y-6">
-          {/* Breadcrumb / Top Bar */}
           <div className="flex items-center justify-between">
             <BackButton fallbackUrl="/dashboard" label="Back to Dashboard" />
             <div className="flex items-center gap-2 text-xs font-bold text-slate-500 dark:text-slate-400">
@@ -168,9 +167,7 @@ const JobReadinessReport = () => {
             </div>
           </div>
 
-          {/* Executive Header Card */}
           <div className="relative overflow-hidden bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-3xl p-6 sm:p-8 shadow-xs">
-            {/* Tricolor Ribbon Top Accent */}
             <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-[#FF9933] via-white to-[#138808]" />
 
             <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
@@ -187,7 +184,6 @@ const JobReadinessReport = () => {
                 </p>
               </div>
 
-              {/* Cadre Role Switcher & Action Buttons */}
               <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 shrink-0">
                 <div className="bg-slate-50 dark:bg-slate-800/90 p-2 rounded-2xl border border-slate-200 dark:border-slate-700 flex flex-col gap-1">
                   <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 px-1">
@@ -247,15 +243,12 @@ const JobReadinessReport = () => {
             </div>
           ) : (
             <>
-              {/* Top Readiness Index & Classification Banner */}
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-                {/* Left: Animated Readiness Gauge & Seal */}
                 <div className="lg:col-span-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-7 shadow-xs flex flex-col items-center justify-center text-center space-y-4">
                   <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
                     Cadre Deployment Readiness Index
                   </span>
 
-                  {/* Circular Readiness Gauge */}
                   <div className="relative w-40 h-40 flex items-center justify-center">
                     <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
                       <circle
@@ -296,7 +289,6 @@ const JobReadinessReport = () => {
                     </div>
                   </div>
 
-                  {/* Status Seal Badge */}
                   <div
                     className={`inline-flex items-center gap-2 px-4 py-2 rounded-2xl border text-xs font-black uppercase tracking-wider ${statusMeta?.bg}`}
                   >
@@ -309,7 +301,6 @@ const JobReadinessReport = () => {
                   </div>
                 </div>
 
-                {/* Right: Formal Recommendation & Score Weights */}
                 <div className="lg:col-span-8 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-7 shadow-xs flex flex-col justify-between space-y-5">
                   <div className="space-y-2">
                     <div className="flex items-center gap-2 text-xs font-bold text-blue-600 dark:text-blue-400">
@@ -324,7 +315,6 @@ const JobReadinessReport = () => {
                     </p>
                   </div>
 
-                  {/* 4 Pillars Scoring Breakdown */}
                   <div className="space-y-2">
                     <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
                       Statutory Readiness Weighting Pillars
@@ -374,7 +364,6 @@ const JobReadinessReport = () => {
                 </div>
               </div>
 
-              {/* Statutory Prerequisite Audit Checklist */}
               <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-xs space-y-4">
                 <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
                   <div className="flex items-center gap-2">
@@ -430,7 +419,6 @@ const JobReadinessReport = () => {
                 </div>
               </div>
 
-              {/* 4-Domain Cadre Alignment Bars */}
               <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-xs space-y-4">
                 <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
                   <div className="flex items-center gap-2">
@@ -492,9 +480,7 @@ const JobReadinessReport = () => {
                 </div>
               </div>
 
-              {/* Two Column: Key Strengths vs Deployment Blockers */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Key Strengths */}
                 <div className="bg-white dark:bg-slate-900 border border-emerald-200/80 dark:border-emerald-900/50 rounded-3xl p-6 shadow-xs space-y-4">
                   <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400 font-bold text-base">
                     <FaAward />
@@ -532,7 +518,6 @@ const JobReadinessReport = () => {
                   )}
                 </div>
 
-                {/* Critical Deployment Blockers */}
                 <div className="bg-white dark:bg-slate-900 border border-rose-200/80 dark:border-rose-900/50 rounded-3xl p-6 shadow-xs space-y-4">
                   <div className="flex items-center gap-2 text-rose-600 dark:text-rose-400 font-bold text-base">
                     <FaExclamationTriangle />
@@ -574,7 +559,6 @@ const JobReadinessReport = () => {
                 </div>
               </div>
 
-              {/* Action Milestone Roadmap to 100% Readiness */}
               <div className="bg-gradient-to-r from-blue-900 via-indigo-950 to-slate-900 text-white rounded-3xl p-6 sm:p-8 shadow-xl space-y-6">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                   <div>

@@ -81,14 +81,12 @@ const Step2 = ({ interviewData, onFinish }) => {
 
   const stopRecognitionInstance = () => {
     if (recognitionRef.current) {
-        try {
-          recognitionRef.current.onresult = null;
-          recognitionRef.current.onend = null;
-          recognitionRef.current.onerror = null;
-          recognitionRef.current.stop();
-        } catch {
-          /* ignore */
-        }
+      try {
+        recognitionRef.current.onresult = null;
+        recognitionRef.current.onend = null;
+        recognitionRef.current.onerror = null;
+        recognitionRef.current.stop();
+      } catch {}
       recognitionRef.current = null;
     }
   };

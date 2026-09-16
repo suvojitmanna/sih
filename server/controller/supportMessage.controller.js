@@ -1,7 +1,6 @@
 import SupportMessage from "../models/supportMessageModel.js";
 import User from "../models/userModel.js";
 
-// 1. Officer sends message to Admin / Secretariat
 export const sendOfficerMessage = async (req, res) => {
   try {
     const { message } = req.body;
@@ -46,17 +45,14 @@ export const sendOfficerMessage = async (req, res) => {
   }
 };
 
-// 2. Admin replies to a specific Officer
 export const sendAdminReply = async (req, res) => {
   try {
     const { officerId, message } = req.body;
     if (!officerId || !message || !message.trim()) {
-      return res
-        .status(400)
-        .json({
-          success: false,
-          message: "Recipient and message are required.",
-        });
+      return res.status(400).json({
+        success: false,
+        message: "Recipient and message are required.",
+      });
     }
 
     const targetOfficer = await User.findById(officerId);
@@ -101,12 +97,10 @@ export const sendAdminReply = async (req, res) => {
   }
 };
 
-// 3. Officer fetches their conversation history with Admin
 export const getOfficerMessages = async (req, res) => {
   try {
     const userId = req.user._id;
 
-    // Mark messages sent to this user as read
     await SupportMessage.updateMany(
       { recipientId: userId, isRead: false },
       { $set: { isRead: true } },
@@ -130,7 +124,6 @@ export const getOfficerMessages = async (req, res) => {
   }
 };
 
-// 4. Admin fetches the list of all active Officer conversations
 export const getAdminConversationsList = async (req, res) => {
   try {
     const messages = await SupportMessage.find({ isBroadcast: false })
@@ -199,7 +192,6 @@ export const getAdminConversationsList = async (req, res) => {
   }
 };
 
-// 5. Admin fetches complete thread for a specific Officer
 export const getConversationForOfficer = async (req, res) => {
   try {
     const { officerId } = req.params;
@@ -209,7 +201,6 @@ export const getConversationForOfficer = async (req, res) => {
         .json({ success: false, message: "Officer ID is required." });
     }
 
-    // Mark unread messages from this officer as read
     await SupportMessage.updateMany(
       {
         $or: [
@@ -236,7 +227,6 @@ export const getConversationForOfficer = async (req, res) => {
   }
 };
 
-// 6. Admin broadcasts Academy Announcement
 export const broadcastAnnouncement = async (req, res) => {
   try {
     const { message, title = "Official NSSTA Announcement" } = req.body;
@@ -268,7 +258,6 @@ export const broadcastAnnouncement = async (req, res) => {
   }
 };
 
-// 7. Get Broadcast Announcements
 export const getBroadcastAnnouncements = async (req, res) => {
   try {
     const broadcasts = await SupportMessage.find({ isBroadcast: true })
@@ -284,12 +273,13 @@ export const getBroadcastAnnouncements = async (req, res) => {
   }
 };
 
-// 8. Admin deletes Broadcast Announcement
 export const deleteBroadcastAnnouncement = async (req, res) => {
   try {
     const { id } = req.params;
     if (!id) {
-      return res.status(400).json({ success: false, message: "Announcement ID is required." });
+      return res
+        .status(400)
+        .json({ success: false, message: "Announcement ID is required." });
     }
 
     const broadcast = await SupportMessage.findOneAndDelete({
@@ -298,7 +288,9 @@ export const deleteBroadcastAnnouncement = async (req, res) => {
     });
 
     if (!broadcast) {
-      return res.status(404).json({ success: false, message: "Broadcast announcement not found." });
+      return res
+        .status(404)
+        .json({ success: false, message: "Broadcast announcement not found." });
     }
 
     return res.status(200).json({

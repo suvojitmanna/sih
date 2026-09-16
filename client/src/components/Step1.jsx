@@ -292,11 +292,10 @@ const Step1 = ({ onStart }) => {
                       key={r}
                       type="button"
                       onClick={() => setRole(r)}
-                      className={`px-2 py-0.5 rounded-lg text-[10px] font-bold transition-all cursor-pointer ${
-                        role === r
+                      className={`px-2 py-0.5 rounded-lg text-[10px] font-bold transition-all cursor-pointer ${role === r
                           ? "bg-blue-600 text-white shadow-xs"
                           : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700"
-                      }`}
+                        }`}
                     >
                       {r}
                     </button>

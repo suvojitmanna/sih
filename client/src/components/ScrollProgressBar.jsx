@@ -189,7 +189,6 @@ const ScrollProgressBar = () => {
                 />
               </div>
 
-              {/* Scroll percentage readout */}
               <span className="text-xs font-mono font-black tracking-tight pr-1">
                 {scrollPercent}%
               </span>

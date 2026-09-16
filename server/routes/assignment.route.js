@@ -1,10 +1,10 @@
 import express from "express";
 import isAuth from "../middleware/isAuth.js";
 import {
-    getAssignments,
-    getAssignmentById,
-    submitAssignment,
-    getMySubmissions,
+  getAssignments,
+  getAssignmentById,
+  submitAssignment,
+  getMySubmissions,
 } from "../controller/assignment.controller.js";
 
 const assignmentRouter = express.Router();

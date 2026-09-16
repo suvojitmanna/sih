@@ -15,10 +15,9 @@ const ExamProctoringModal = ({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-fadeIn">
       <div className="relative w-full max-w-lg overflow-hidden rounded-3xl bg-white dark:bg-slate-900 border-2 border-rose-500/80 shadow-2xl shadow-rose-950/40 p-6 sm:p-8 space-y-6 animate-scaleUp">
-        {/* Top Warning Strip */}
+
         <div className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-amber-500 via-rose-500 to-red-600 animate-pulse" />
 
-        {/* Header Icon & Title */}
         <div className="flex items-start gap-4">
           <div className="p-3.5 rounded-2xl bg-rose-100 dark:bg-rose-950/70 border border-rose-300 dark:border-rose-800 text-rose-600 dark:text-rose-400 shrink-0">
             <BsShieldExclamation size={28} className="animate-bounce" />
@@ -38,7 +37,6 @@ const ExamProctoringModal = ({
           </div>
         </div>
 
-        {/* Violation Count Card */}
         <div className="p-4 rounded-2xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/60 flex items-center justify-between">
           <div>
             <span className="text-[11px] font-bold uppercase tracking-wide text-rose-700 dark:text-rose-300">
@@ -71,7 +69,6 @@ const ExamProctoringModal = ({
           </div>
         </div>
 
-        {/* Advisory Message */}
         <div className="text-xs text-slate-600 dark:text-slate-300 space-y-2 bg-slate-50 dark:bg-slate-800/60 p-4 rounded-2xl border border-slate-200 dark:border-slate-800">
           <div className="flex items-start gap-2">
             <BsExclamationTriangleFill
@@ -94,7 +91,6 @@ const ExamProctoringModal = ({
           )}
         </div>
 
-        {/* Actions */}
         <div className="pt-2">
           <button
             type="button"
