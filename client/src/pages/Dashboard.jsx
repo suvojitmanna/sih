@@ -422,9 +422,29 @@ const Dashboard = () => {
     };
   }, [synthesizedCompetencies, quizAttempts, interviews, assignmentSubmissions, chats, profile]);
 
+  const isQuizCompleted = Boolean(
+    diagnosticStatus?.isQuizCompleted ||
+    (quizAttempts && quizAttempts.length > 0) ||
+    (profile?.quizzesCompleted && profile.quizzesCompleted > 0)
+  );
+
+  const isInterviewCompleted = Boolean(
+    diagnosticStatus?.isInterviewCompleted ||
+    (interviews && interviews.some((i) => i.status === "completed" || i.finalScore || i.score))
+  );
+
+  const isSignupAssignmentComplete = Boolean(
+    (userData?.role === "admin" || userData?.role === "trainer") ||
+    (diagnosticStatus?.isDiagnosticFullyCompleted || (isQuizCompleted && isInterviewCompleted))
+  );
+
   // Dynamic Increase / Decrease Trend Badges for 4-Domain Knowledge Taxonomy
   const domainTrends = useMemo(() => {
     const calcTrend = (domainName) => {
+      if (!isSignupAssignmentComplete) {
+        return { delta: "0%", text: "Pending Signup Assignment", isPositive: false, direction: "neutral" };
+      }
+
       const relatedAttempts = (quizAttempts || []).filter((q) => {
         const text = `${q.quizTitle || ""} ${q.topic || ""} ${q.domain || ""}`.toLowerCase();
         return text.includes(domainName.toLowerCase());
@@ -456,7 +476,7 @@ const Dashboard = () => {
       Governance: calcTrend("Governance"),
       Managerial: calcTrend("Managerial"),
     };
-  }, [quizAttempts, knowledgeStats.hasAnyAttempts]);
+  }, [quizAttempts, knowledgeStats.hasAnyAttempts, isSignupAssignmentComplete]);
 
   // All Possible Skill Gap Analysis
   const allPossibleSkillGaps = useMemo(() => {
@@ -500,6 +520,39 @@ const Dashboard = () => {
 
   // 3. Radar Chart Data (4 Official MoSPI Domains)
   const radarData = useMemo(() => {
+    if (!isSignupAssignmentComplete) {
+      return [
+        {
+          domain: "Statistical",
+          fullName: "Statistical Competencies",
+          score: 0,
+          fullMark: 100,
+          benchmark: 75,
+        },
+        {
+          domain: "Technical",
+          fullName: "Technical & Computing",
+          score: 0,
+          fullMark: 100,
+          benchmark: 75,
+        },
+        {
+          domain: "Governance",
+          fullName: "Digital Governance & Privacy",
+          score: 0,
+          fullMark: 100,
+          benchmark: 75,
+        },
+        {
+          domain: "Managerial",
+          fullName: "Behavioural & Leadership",
+          score: 0,
+          fullMark: 100,
+          benchmark: 75,
+        },
+      ];
+    }
+
     const domainCalc = (pattern) => {
       const comps = synthesizedCompetencies.filter((c) =>
         c.domain?.toLowerCase().includes(pattern.toLowerCase())
@@ -538,7 +591,7 @@ const Dashboard = () => {
         benchmark: 75,
       },
     ];
-  }, [synthesizedCompetencies]);
+  }, [synthesizedCompetencies, isSignupAssignmentComplete]);
 
   // 4. Bar Chart Column Data with Domain Filtering
   const columnBarData = useMemo(() => {
@@ -1260,8 +1313,96 @@ const Dashboard = () => {
                 </span>
               </div>
 
+              {!isSignupAssignmentComplete && (
+                <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-amber-500/15 via-rose-500/10 to-amber-500/15 border-2 border-amber-500/40 text-amber-950 dark:text-amber-200 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 shadow-xs">
+                  <div className="flex items-start gap-3.5">
+                    <div className="p-2.5 rounded-xl bg-amber-500/20 text-amber-700 dark:text-amber-400 shrink-0 mt-0.5">
+                      <FaExclamationTriangle size={22} />
+                    </div>
+                    <div>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <h3 className="text-sm sm:text-base font-black text-amber-950 dark:text-amber-100">
+                          Mandatory Signup Assignment Incomplete — 4-Domain Radar Values Set to 0%
+                        </h3>
+                        <span className="px-2 py-0.5 text-[10px] uppercase font-black tracking-wider bg-rose-600 text-white rounded-md">
+                          Action Required
+                        </span>
+                      </div>
+                      <p className="text-xs sm:text-sm text-amber-900/90 dark:text-amber-300/90 mt-1 leading-relaxed">
+                        This user has not completed their signup assignment (<strong>Diagnostic Quiz</strong> and <strong>Intake Viva Voce</strong>). 
+                        All 4-Domain Competency Radar values will remain at <strong>0%</strong> until both baseline evaluations are successfully completed.
+                      </p>
+                      <div className="flex flex-wrap items-center gap-2.5 mt-3 text-xs font-semibold">
+                        <span
+                          className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-lg border ${
+                            isQuizCompleted
+                              ? "bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800"
+                              : "bg-rose-50 dark:bg-rose-950/50 text-rose-700 dark:text-rose-300 border-rose-200 dark:border-rose-800"
+                          }`}
+                        >
+                          {isQuizCompleted ? (
+                            <FaCheckCircle size={12} className="text-emerald-500" />
+                          ) : (
+                            <FaExclamationTriangle size={12} className="text-rose-500" />
+                          )}
+                          <span>
+                            Diagnostic Quiz: <strong>{isQuizCompleted ? "Completed ✓" : "Not Completed ✕"}</strong>
+                          </span>
+                        </span>
+                        <span
+                          className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-lg border ${
+                            isInterviewCompleted
+                              ? "bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800"
+                              : "bg-rose-50 dark:bg-rose-950/50 text-rose-700 dark:text-rose-300 border-rose-200 dark:border-rose-800"
+                          }`}
+                        >
+                          {isInterviewCompleted ? (
+                            <FaCheckCircle size={12} className="text-emerald-500" />
+                          ) : (
+                            <FaExclamationTriangle size={12} className="text-rose-500" />
+                          )}
+                          <span>
+                            Intake Viva Voce: <strong>{isInterviewCompleted ? "Completed ✓" : "Not Completed ✕"}</strong>
+                          </span>
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-wrap sm:flex-nowrap items-center gap-2.5 shrink-0 w-full lg:w-auto">
+                    {!isQuizCompleted && (
+                      <button
+                        onClick={() => {
+                          const quizId = diagnosticStatus?.diagnosticQuiz?._id;
+                          navigate(quizId ? `/quiz/${quizId}` : "/quizzes");
+                        }}
+                        className="flex-1 lg:flex-none px-4 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold shadow-xs transition-all flex items-center justify-center gap-2 cursor-pointer"
+                      >
+                        <FaTasks size={12} />
+                        <span>Take Diagnostic Quiz</span>
+                      </button>
+                    )}
+                    {!isInterviewCompleted && (
+                      <button
+                        onClick={() => navigate("/interview")}
+                        className="flex-1 lg:flex-none px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold shadow-xs transition-all flex items-center justify-center gap-2 cursor-pointer"
+                      >
+                        <FaMicrophone size={12} />
+                        <span>Take Intake Viva</span>
+                      </button>
+                    )}
+                  </div>
+                </div>
+              )}
+
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-                <div className="lg:col-span-6 h-80 w-full flex items-center justify-center">
+                <div className="lg:col-span-6 h-80 w-full flex flex-col items-center justify-center relative">
+                  {!isSignupAssignmentComplete && (
+                    <div className="absolute top-2 px-3 py-1 rounded-full bg-rose-50 dark:bg-rose-950/80 border border-rose-200 dark:border-rose-900 text-rose-600 dark:text-rose-400 text-[11px] font-extrabold flex items-center gap-1.5 z-10 shadow-xs">
+                      <FaExclamationTriangle size={11} />
+                      <span>All Values: 0% • Signup Assignment Incomplete</span>
+                    </div>
+                  )}
                   <ResponsiveContainer width="100%" height="100%">
                     <RadarChart cx="50%" cy="50%" outerRadius="75%" data={radarData}>
                       <PolarGrid stroke="#94a3b8" strokeDasharray="3 3" opacity={0.3} />
@@ -1305,14 +1446,23 @@ const Dashboard = () => {
                             {d.domain} Domain
                           </span>
                           <span
-                            className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-md ${d.score >= 75
-                              ? "bg-emerald-100 dark:bg-emerald-950 text-emerald-600"
-                              : d.score >= 50
-                                ? "bg-blue-100 dark:bg-blue-950 text-blue-600"
-                                : "bg-rose-100 dark:bg-rose-950 text-rose-600"
+                            className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-md ${
+                              !isSignupAssignmentComplete
+                                ? "bg-rose-100 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400"
+                                : d.score >= 75
+                                  ? "bg-emerald-100 dark:bg-emerald-950 text-emerald-600"
+                                  : d.score >= 50
+                                    ? "bg-blue-100 dark:bg-blue-950 text-blue-600"
+                                    : "bg-rose-100 dark:bg-rose-950 text-rose-600"
                               }`}
                           >
-                            {d.score >= 75 ? "Benchmark Met" : d.score >= 50 ? "Developing" : "Deficit"}
+                            {!isSignupAssignmentComplete
+                              ? "Assignment Pending"
+                              : d.score >= 75
+                              ? "Benchmark Met"
+                              : d.score >= 50
+                              ? "Developing"
+                              : "Deficit"}
                           </span>
                         </div>
 
@@ -1341,16 +1491,35 @@ const Dashboard = () => {
 
                         <div className="w-full bg-slate-200 dark:bg-slate-700 h-2 rounded-full overflow-hidden">
                           <div
-                            className={`h-full rounded-full transition-all ${d.score >= 75 ? "bg-emerald-500" : d.score >= 50 ? "bg-blue-500" : "bg-rose-500"
-                              }`}
-                            style={{ width: `${d.score}%` }}
+                            className={`h-full rounded-full transition-all ${
+                              !isSignupAssignmentComplete
+                                ? "bg-rose-400"
+                                : d.score >= 75
+                                ? "bg-emerald-500"
+                                : d.score >= 50
+                                ? "bg-blue-500"
+                                : "bg-rose-500"
+                            }`}
+                            style={{ width: `${Math.max(0, d.score)}%` }}
                           />
                         </div>
 
                         <div className="flex items-center justify-between text-[10px] text-slate-500 dark:text-slate-400 font-semibold pt-0.5">
                           <span>Cadre Target: 75%</span>
-                          <span className={d.score >= 75 ? "text-emerald-600 dark:text-emerald-400" : "text-amber-600 dark:text-amber-400"}>
-                            {d.score >= 75 ? "Target Exceeded" : `Gap: -${Math.max(0, 75 - Math.round(d.score))}%`}
+                          <span
+                            className={
+                              !isSignupAssignmentComplete
+                                ? "text-rose-600 dark:text-rose-400 font-bold"
+                                : d.score >= 75
+                                ? "text-emerald-600 dark:text-emerald-400"
+                                : "text-amber-600 dark:text-amber-400"
+                            }
+                          >
+                            {!isSignupAssignmentComplete
+                              ? "Unassessed (0%)"
+                              : d.score >= 75
+                              ? "Target Exceeded"
+                              : `Gap: -${Math.max(0, 75 - Math.round(d.score))}%`}
                           </span>
                         </div>
                       </div>
