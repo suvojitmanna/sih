@@ -1,18 +1,15 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
+import { createContext, useContext, useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
-import { useSelector } from "react-redux";
 
 const NavigationContext = createContext();
 
 export const NavigationProvider = ({ children }) => {
   const location = useLocation();
-  const { userData } = useSelector((state) => state.user);
 
-  // navMode: 'sidebar' (default) | 'topbar'
   const [navMode, setNavModeState] = useState(() => {
     const saved = localStorage.getItem("nav_layout_mode");
     if (saved === "topbar" || saved === "navbar") return "topbar";
-    return "sidebar"; // Default is ALWAYS sidebar
+    return "sidebar";
   });
 
   const [isCollapsed, setIsCollapsedState] = useState(() => {
@@ -20,8 +17,6 @@ export const NavigationProvider = ({ children }) => {
     return saved === "true";
   });
   const [mobileOpen, setMobileOpen] = useState(false);
-  
-  // Settings Modal open/close state
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   const openSettings = () => setIsSettingsOpen(true);
@@ -47,12 +42,10 @@ export const NavigationProvider = ({ children }) => {
     setIsCollapsed(!isCollapsed);
   };
 
-  // Auto-close mobile drawer on route change
   useEffect(() => {
     setMobileOpen(false);
   }, [location.pathname]);
 
-  // Auto-close mobile drawer when window expands to desktop
   useEffect(() => {
     const handleResize = () => {
       if (window.innerWidth >= 768) {
@@ -63,7 +56,6 @@ export const NavigationProvider = ({ children }) => {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // Synchronize body classes so main page containers adapt automatically (excluding /auth)
   useEffect(() => {
     const root = document.body;
     const isAuthPage = location.pathname === "/auth";

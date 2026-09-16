@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { useSelector } from "react-redux";
 import { motion, AnimatePresence } from "framer-motion";
 import CountUpModule from "react-countup";
@@ -23,7 +23,6 @@ import {
   FaQuestionCircle,
   FaChevronDown,
   FaLock,
-  FaLockOpen,
   FaMicrophone,
 } from "react-icons/fa";
 import {
@@ -39,7 +38,7 @@ import { generateCompetencyPDF } from "../utils/pdfGenerator";
 import { useDiagnostic } from "../context/DiagnosticContext";
 import toast from "react-hot-toast";
 import PageTransition from "../components/PageTransition";
-import { ScrollReveal, ScrollRevealStagger, ScrollRevealItem } from "../components/ScrollReveal";
+import { ScrollReveal } from "../components/ScrollReveal";
 
 const CountUp = CountUpModule.default || CountUpModule;
 
@@ -51,7 +50,6 @@ const Home = () => {
   const {
     diagnosticStatus,
     isIntakePending,
-    isIntakeComplete,
     isPathLocked,
     triggerLockedError,
   } = useDiagnostic();

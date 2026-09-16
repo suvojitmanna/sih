@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef } from "react";
 import moment from "moment";
 import Markdown from "react-markdown";
 import prism from "prismjs";
@@ -47,14 +47,12 @@ const ChatMessage = ({ message, onPublishToggle }) => {
     return () => clearInterval(interval);
   }, [message]);
 
-  /* Prism Highlight */
   useEffect(() => {
     setTimeout(() => {
       prism.highlightAll();
     }, 0);
   }, [displayedText]);
 
-  /* Copy */
   const handleCopy = async () => {
     try {
       await navigator.clipboard.writeText(message.content);
@@ -66,7 +64,6 @@ const ChatMessage = ({ message, onPublishToggle }) => {
     }
   };
 
-  /* Speak / SpeechSynthesis */
   const handleSpeak = (text) => {
     if (!text) return;
 
@@ -138,7 +135,6 @@ const ChatMessage = ({ message, onPublishToggle }) => {
     }
   }, [currentWordIndex, speaking]);
 
-  /* Share */
   const handleShare = async () => {
     try {
       if (message.isImage) {
@@ -210,7 +206,6 @@ const ChatMessage = ({ message, onPublishToggle }) => {
           </div>
 
           <div className="relative flex flex-col gap-2.5 px-5 py-4 pr-16 w-full max-w-full sm:max-w-2xl rounded-[24px] bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl border border-slate-200/80 dark:border-slate-800 shadow-[0_8px_30px_rgba(0,0,0,0.06)] hover:shadow-md transition-all duration-300">
-            {/* Action Buttons Header */}
             <div className="absolute top-3 right-3 flex items-center gap-1.5">
               {!message.isImage && (
                 <button
@@ -260,7 +255,6 @@ const ChatMessage = ({ message, onPublishToggle }) => {
               )}
             </div>
 
-            {/* Content Area */}
             {message.isImage ? (
               <div className="space-y-3 pt-2">
                 <a

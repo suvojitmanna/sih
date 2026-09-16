@@ -5,7 +5,6 @@ import User from "../models/userModel.js";
 
 const tpacRouter = express.Router();
 
-// Get NSSTA TPAC Training Calendar
 tpacRouter.get("/programmes", isAuth, async (req, res) => {
     try {
         const { cadre, competency } = req.query;
@@ -16,7 +15,6 @@ tpacRouter.get("/programmes", isAuth, async (req, res) => {
     }
 });
 
-// Get Cadre & Gap Recommendations
 tpacRouter.get("/recommendations", isAuth, async (req, res) => {
     try {
         const user = await User.findById(req.userId || req.user?._id);

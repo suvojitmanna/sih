@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo } from "react";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import { useSelector, useDispatch } from "react-redux";
@@ -35,7 +35,6 @@ import {
   FaArrowRight,
   FaArrowUp,
   FaArrowDown,
-  FaFilter,
   FaGraduationCap,
   FaExclamationTriangle,
   FaCheckCircle,
@@ -59,8 +58,6 @@ import {
   BsLightningChargeFill,
   BsBookHalf,
   BsCheckCircleFill,
-  BsClockHistory,
-  BsExclamationCircleFill,
   BsBarChartSteps,
 } from "react-icons/bs";
 import { generateCompetencyPDF } from "../utils/pdfGenerator";
@@ -139,7 +136,6 @@ const Dashboard = () => {
   const [diagnosticStatus, setDiagnosticStatus] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isSyncing, setIsSyncing] = useState(false);
-  const [lastSyncedAt, setLastSyncedAt] = useState(new Date());
   const [generatingPath, setGeneratingPath] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
   const [domainFilter, setDomainFilter] = useState("all");
@@ -211,7 +207,6 @@ const Dashboard = () => {
       if (chatRes.status === "fulfilled" && chatRes.value.data?.success) {
         setChats(chatRes.value.data.chats || []);
       }
-      setLastSyncedAt(new Date());
     } catch (error) {
       if (!isBackground) {
         console.error("Dashboard multi-source fetch error:", error);
@@ -227,12 +222,10 @@ const Dashboard = () => {
   useEffect(() => {
     fetchDashboardData(false);
 
-    // Periodic real-time background synchronization (every 3.5s)
     const interval = setInterval(() => {
       fetchDashboardData(true);
     }, 3500);
 
-    // Real-time custom event and focus listeners
     const handleAssessmentCompleted = (e) => {
       console.log("[REALTIME DASHBOARD SYNC] Assessment completed event triggered:", e.detail);
       fetchDashboardData(false);
@@ -338,7 +331,6 @@ const Dashboard = () => {
     });
   }, [profile, quizAttempts, assignmentSubmissions]);
 
-  // 2. Computed Live Knowledge Index & Metric Stats
   const knowledgeStats = useMemo(() => {
     const hasAnyAttempts =
       (quizAttempts && quizAttempts.length > 0) ||
@@ -438,7 +430,6 @@ const Dashboard = () => {
     (diagnosticStatus?.isDiagnosticFullyCompleted || (isQuizCompleted && isInterviewCompleted))
   );
 
-  // Dynamic Increase / Decrease Trend Badges for 4-Domain Knowledge Taxonomy
   const domainTrends = useMemo(() => {
     const calcTrend = (domainName) => {
       if (!isSignupAssignmentComplete) {
@@ -478,7 +469,6 @@ const Dashboard = () => {
     };
   }, [quizAttempts, knowledgeStats.hasAnyAttempts, isSignupAssignmentComplete]);
 
-  // All Possible Skill Gap Analysis
   const allPossibleSkillGaps = useMemo(() => {
     if (profile?.skillGaps && profile.skillGaps.length > 0) {
       return profile.skillGaps;
@@ -593,7 +583,6 @@ const Dashboard = () => {
     ];
   }, [synthesizedCompetencies, isSignupAssignmentComplete]);
 
-  // 4. Bar Chart Column Data with Domain Filtering
   const columnBarData = useMemo(() => {
     let list = synthesizedCompetencies;
     if (domainFilter !== "all") {

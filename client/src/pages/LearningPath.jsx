@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import BackButton from "../components/BackButton";
@@ -7,7 +7,6 @@ import axios from "axios";
 import toast from "react-hot-toast";
 import {
   FaCertificate,
-  FaGraduationCap,
   FaExternalLinkAlt,
   FaCalendarAlt,
   FaCheckCircle,
@@ -75,7 +74,7 @@ const LearningPath = () => {
         toast.success(data.message);
         fetchProfileAndCourses();
       }
-    } catch (error) {
+    } catch {
       toast.error("Failed to update status.");
     }
   };
@@ -92,7 +91,7 @@ const LearningPath = () => {
         toast.success("Learning pathway refreshed using latest skill-gap analysis! ✨");
         fetchProfileAndCourses();
       }
-    } catch (error) {
+    } catch {
       toast.error("Failed to refresh pathway.");
     } finally {
       setLoading(false);

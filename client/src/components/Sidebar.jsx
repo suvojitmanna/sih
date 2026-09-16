@@ -5,18 +5,12 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   BsBarChartLine,
   BsShieldLock,
-  BsSun,
-  BsMoonStars,
-  BsDisplay,
   BsBookHalf,
   BsRobot,
   BsChevronLeft,
   BsChevronRight,
   BsChevronUp,
-  BsChevronDown,
   BsGearFill,
-  BsLayoutSidebar,
-  BsLayoutSidebarInsetReverse,
   BsStars,
   BsBarChartSteps,
   BsShieldCheck,
@@ -28,9 +22,7 @@ import {
   FaHistory,
   FaFilePdf,
   FaUserGraduate,
-  FaUpload,
   FaBookOpen,
-  FaUsers,
   FaMicrophone,
   FaUserTie,
   FaLock,
@@ -39,13 +31,11 @@ import {
   HiSparkles,
   HiOutlineLogout,
   HiX,
-  HiOutlineViewBoards,
 } from "react-icons/hi";
 import axios from "axios";
 import { ServerUrl } from "../App";
 import { setUserData } from "../redux/userSlice";
 import { generateCompetencyPDF } from "../utils/pdfGenerator";
-import { useTheme } from "../context/ThemeContext";
 import { useNavigation } from "../context/NavigationContext";
 import { useDiagnostic } from "../context/DiagnosticContext";
 import { useOutsideClick } from "../utils/outsideClick";
@@ -54,20 +44,15 @@ import toast from "react-hot-toast";
 const Sidebar = ({ onOpenAuth }) => {
   const { userData } = useSelector((state) => state.user);
   const {
-    navMode,
-    setNavMode,
-    toggleNavMode,
     isCollapsed,
     toggleCollapse,
     mobileOpen,
     setMobileOpen,
-    openSettings,
   } = useNavigation();
 
   const navigate = useNavigate();
   const location = useLocation();
   const dispatch = useDispatch();
-  const { theme, setTheme } = useTheme();
   const { isPathLocked, triggerLockedError, isIntakePending } = useDiagnostic();
 
   const [hoveredLink, setHoveredLink] = useState(null);

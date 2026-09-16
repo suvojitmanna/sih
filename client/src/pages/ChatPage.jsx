@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import Navbar from "../components/Navbar";
 import ChatSidebar from "../components/Chat/ChatSidebar";
 import ChatBox from "../components/Chat/ChatBox";
@@ -12,7 +12,7 @@ import { useTheme } from "../context/ThemeContext";
 const ChatPage = () => {
   const dispatch = useDispatch();
   const { userData } = useSelector((state) => state.user);
-  const { theme, setTheme } = useTheme();
+  const { theme } = useTheme();
 
   const [chats, setChats] = useState([]);
   const [selectedChat, setSelectedChat] = useState(null);
@@ -79,7 +79,6 @@ const ChatPage = () => {
       <Navbar />
 
       <div className="flex-1 max-w-7xl w-full mx-auto pt-18 sm:pt-19 pb-2 sm:pb-3 px-2 sm:px-4 flex gap-3 sm:gap-4 overflow-hidden min-h-0">
-        {/* Chat Sidebar */}
         <ChatSidebar
           isMenuOpen={isMenuOpen}
           setIsMenuOpen={setIsMenuOpen}
@@ -88,12 +87,9 @@ const ChatPage = () => {
           setSelectedChat={setSelectedChat}
           createNewChat={handleCreateNewChat}
           deleteChat={handleDeleteChat}
-          userData={userData}
           theme={theme}
-          setTheme={setTheme}
         />
 
-        {/* Chat Box Area */}
         <main className="flex-1 h-full min-h-0 min-w-0 flex flex-col bg-white/80 dark:bg-slate-900/80 backdrop-blur-2xl border border-slate-200/80 dark:border-slate-800 rounded-2xl md:rounded-3xl shadow-xl overflow-hidden">
           <ChatBox
             selectedChat={selectedChat}

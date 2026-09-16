@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from "react";
+import { useEffect, useState } from "react";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import BackButton from "../components/BackButton";
@@ -6,34 +6,24 @@ import { ServerUrl } from "../App";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
-import { useSelector, useDispatch } from "react-redux";
+import { useSelector } from "react-redux";
 import {
-  FaUserTie,
   FaCheckCircle,
   FaTimesCircle,
   FaExclamationTriangle,
   FaAward,
   FaFilePdf,
   FaSyncAlt,
-  FaGraduationCap,
-  FaClock,
-  FaChartLine,
   FaShieldAlt,
   FaArrowRight,
-  FaMicrophone,
-  FaTasks,
-  FaBookOpen,
   FaBriefcase,
-  FaRegCheckCircle,
   FaLock,
 } from "react-icons/fa";
 import {
   BsShieldCheck,
   BsBarChartSteps,
-  BsCheck2Circle,
   BsPatchCheckFill,
   BsArrowUpRight,
-  BsBullseye,
 } from "react-icons/bs";
 import { HiSparkles } from "react-icons/hi";
 import { generateCompetencyPDF } from "../utils/pdfGenerator";
@@ -42,7 +32,6 @@ import { useDiagnostic } from "../context/DiagnosticContext";
 
 const JobReadinessReport = () => {
   const navigate = useNavigate();
-  const dispatch = useDispatch();
   const { userData } = useSelector((state) => state.user);
   const { isIntakePending, triggerLockedError } = useDiagnostic();
 

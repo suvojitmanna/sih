@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Route, Routes, Navigate, useLocation } from "react-router-dom";
 import { useDiagnostic } from "./context/DiagnosticContext";
 import Auth from "./pages/Auth";
@@ -228,6 +228,14 @@ const App = () => {
           element={
             <ProtectedRoute loading={loading}>
               <Quizzes />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/quiz"
+          element={
+            <ProtectedRoute loading={loading}>
+              <Navigate to="/quizzes" replace />
             </ProtectedRoute>
           }
         />

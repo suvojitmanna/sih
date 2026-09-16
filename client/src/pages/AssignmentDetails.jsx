@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { setUserData } from "../redux/userSlice";
@@ -156,7 +156,7 @@ const AssignmentDetails = () => {
       if (submissionText && submissionText.trim()) {
         try {
           localStorage.setItem(draftKey, submissionText);
-        } catch (_err) {
+        } catch {
           /* ignore */
         }
       }
@@ -198,7 +198,7 @@ const AssignmentDetails = () => {
         // Clear local draft upon successful submission
         try {
           localStorage.removeItem(draftKey);
-        } catch (_err) {
+        } catch {
           /* ignore */
         }
       }

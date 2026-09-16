@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
 import femaleVideo from "../assets/Videos/female-ai.mp4";
 import maleVideo from "../assets/Videos/male-ai.mp4";
 import Timer from "./Timer";
@@ -16,7 +16,6 @@ const Step2 = ({ interviewData, onFinish }) => {
     question: questions = [],
     username: userName = "Candidate",
     isDiagnostic = false,
-    role = "",
   } = interviewData || {};
 
   const [isIntroPhase, setIntroPhase] = useState(true);
@@ -87,7 +86,7 @@ const Step2 = ({ interviewData, onFinish }) => {
           recognitionRef.current.onend = null;
           recognitionRef.current.onerror = null;
           recognitionRef.current.stop();
-        } catch (_err) {
+        } catch {
           /* ignore */
         }
       recognitionRef.current = null;
@@ -289,7 +288,6 @@ const Step2 = ({ interviewData, onFinish }) => {
     runIntro();
   }, [selectedVoice, isIntroPhase, currentIndex]);
 
-  // Timer Tick
   useEffect(() => {
     if (isIntroPhase || !currentQuestion || isAIPlaying || isSubmitting || feedback) {
       return;
@@ -380,7 +378,6 @@ const Step2 = ({ interviewData, onFinish }) => {
         { withCredentials: true }
       );
 
-      // Notify dashboard and sync metrics in real-time
       window.dispatchEvent(new CustomEvent("assessmentCompleted", { detail: result.data }));
       window.dispatchEvent(new CustomEvent("diagnostic-updated", { detail: result.data }));
       localStorage.setItem("lastAssessmentUpdate", Date.now().toString());

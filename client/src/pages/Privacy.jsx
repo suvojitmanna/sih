@@ -1,13 +1,10 @@
 import { motion, useScroll, useSpring } from "framer-motion";
-import { useNavigate } from "react-router-dom";
-import { HiArrowLeft, HiOutlineShieldCheck, HiOutlineLockClosed, HiOutlineDatabase } from "react-icons/hi";
-import { useEffect } from "react";
+import { HiOutlineShieldCheck, HiOutlineLockClosed, HiOutlineDatabase } from "react-icons/hi";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import BackButton from "../components/BackButton";
 
 const PrivacyPolicy = () => {
-  const navigate = useNavigate();
   const { scrollYProgress } = useScroll();
   const scaleX = useSpring(scrollYProgress, {
     stiffness: 100,

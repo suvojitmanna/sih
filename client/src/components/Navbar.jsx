@@ -1,15 +1,11 @@
-import React, { useState, useRef } from "react";
+import { useState, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   BsChevronDown,
   BsBarChartLine,
   BsShieldLock,
-  BsSun,
-  BsMoonStars,
-  BsDisplay,
   BsLayoutSidebar,
-  BsLayoutSidebarInsetReverse,
   BsGearFill,
   BsRobot,
   BsBookHalf,
@@ -35,7 +31,6 @@ import {
   HiMenu,
   HiX,
   HiSparkles,
-  HiOutlineViewBoards,
 } from "react-icons/hi";
 import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
@@ -58,12 +53,10 @@ const Navbar = () => {
   const userPhoto = userData?.image || userData?.picture || userData?.avatar || userData?.photoUrl || userData?.avatarUrl || userData?.profilePicture;
   const {
     navMode,
-    toggleNavMode,
     setNavMode,
     isCollapsed,
     setMobileOpen,
     isSettingsOpen,
-    openSettings,
     closeSettings,
   } = useNavigation();
 
@@ -225,9 +218,6 @@ const Navbar = () => {
     return "SankhyaIQ AI • National Statistical Systems Training Academy";
   };
 
-  // ==========================================
-  // RENDER: SIDEBAR NAVIGATION MODE (Default)
-  // ==========================================
   if (navMode === "sidebar") {
     return (
       <>
@@ -373,7 +363,6 @@ const Navbar = () => {
     );
   }
 
-  // RENDER: HORIZONTAL TOP NAVBAR MODE
   return (
     <>
       <nav className="fixed top-0 left-0 right-0 z-[100] bg-white/85 dark:bg-slate-950/85 backdrop-blur-2xl border-b border-slate-200/70 dark:border-slate-800/80 shadow-[0_4px_30px_rgba(0,0,0,0.03)] transition-all">

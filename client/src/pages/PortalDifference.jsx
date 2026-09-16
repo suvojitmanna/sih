@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import { useState, useMemo } from "react";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import BackButton from "../components/BackButton";
@@ -14,28 +14,17 @@ import {
   FaBrain,
   FaArrowRight,
   FaMicrophone,
-  FaTasks,
   FaFileUpload,
   FaShieldAlt,
   FaGraduationCap,
   FaSlidersH,
-  FaUserTie,
   FaSyncAlt,
-  FaBolt,
-  FaRegLightbulb,
-  FaExchangeAlt,
 } from "react-icons/fa";
 import {
   BsShieldCheck,
   BsShieldX,
-  BsLightningChargeFill,
   BsCheck2Circle,
-  BsArrowRightCircleFill,
   BsStars,
-  BsCpuFill,
-  BsFileEarmarkPdf,
-  BsClockHistory,
-  BsBuildingCheck,
   BsBarChartLineFill,
 } from "react-icons/bs";
 import { HiSparkles } from "react-icons/hi";
@@ -210,6 +199,33 @@ const COMPARISON_ITEMS = [
         "Standardized 4-criterion grading: Methodology, Analytical Depth, Policy Context, Precision",
         "Granular constructive feedback highlighting exact calculation adjustments",
         "Real-time update to the officer's verified profile and learning pathway",
+      ],
+    },
+  },
+  {
+    id: "proctoring-guard",
+    category: "assessment",
+    title: "AI Anti-Cheating & Live Proctoring Guard",
+    tag: "Exam Integrity Guard",
+    impact: "100% Tamper-Resistant Assessments",
+    legacy: {
+      headline: "Unmonitored, Cheat-Prone Online Questionnaires",
+      description:
+        "Conventional government learning portals permit unmonitored browser tabs, allowing candidates to freely switch tabs, search answers on external search engines, or copy-paste responses.",
+      flaws: [
+        "Zero tab-change or window unfocus detection",
+        "Unrestricted clipboard copy-paste and inspect-element access",
+        "High prevalence of unverified scores distorting promotion & training audits",
+      ],
+    },
+    sankhya: {
+      headline: "Multi-Layered Proctoring: Tab-Switch Counter & Clipboard Shield",
+      description:
+        "Engineered with statutory assessment integrity: real-time tab switch tracking with violation counters, right-click and clipboard locking, prohibited shortcut interception, and auto-submission safeguards.",
+      benefits: [
+        "Accurate live tab change detection with audio-visual violation counters",
+        "Hardware and browser-level right-click and clipboard copy/paste locking",
+        "Transparent proctoring log embedded directly into verified assessment scorecards",
       ],
     },
   },

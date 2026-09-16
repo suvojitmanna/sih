@@ -1,13 +1,12 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import BackButton from "../components/BackButton";
 import { ServerUrl } from "../App";
 import axios from "axios";
 import toast from "react-hot-toast";
-import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 import { setUserData } from "../redux/userSlice";
 import {
   FaBrain,
@@ -62,13 +61,11 @@ const CORE_EVALUATION_SKILLS = [
 const CompetencyAssessment = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { userData } = useSelector((state) => state.user);
 
   const [loading, setLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState("form"); // "form" | "results"
+  const [activeTab, setActiveTab] = useState("form");
   const [profile, setProfile] = useState(null);
 
-  // Form State
   const [jobRole, setJobRole] = useState(CADRE_LIST[0]);
   const [department, setDepartment] = useState(DEPARTMENT_LIST[0]);
   const [designation, setDesignation] = useState("Statistical Officer");
@@ -76,7 +73,6 @@ const CompetencyAssessment = () => {
   const [educationalQualification, setEducationalQualification] = useState("Master's in Statistics / Economics");
   const [ratings, setRatings] = useState({});
 
-  // Fetch initial profile
   const fetchProfile = async () => {
     try {
       const { data } = await axios.get(`${ServerUrl}/api/competencies/my-profile`, {
@@ -90,7 +86,6 @@ const CompetencyAssessment = () => {
         setWorkExperience(data.profile.workExperience || 3);
         setEducationalQualification(data.profile.educationalQualification || "Master's in Statistics / Economics");
 
-        // Initialize ratings from existing competencies
         const initialRatings = {};
         CORE_EVALUATION_SKILLS.forEach((skill) => {
           const found = (data.profile.competencies || []).find((c) => c.competencyName === skill.id);
@@ -122,7 +117,6 @@ const CompetencyAssessment = () => {
     e.preventDefault();
     setLoading(true);
     try {
-      // 1. Update Profile fields first
       await axios.put(
         `${ServerUrl}/api/competencies/update-profile`,
         {
@@ -135,7 +129,6 @@ const CompetencyAssessment = () => {
         { withCredentials: true }
       );
 
-      // 2. Trigger Gemini AI Assessment
       const { data } = await axios.post(
         `${ServerUrl}/api/competencies/assess`,
         { selfRatings: ratings },
@@ -147,7 +140,6 @@ const CompetencyAssessment = () => {
         if (data.user) {
           dispatch(setUserData(data.user));
         }
-        // Broadcast real-time event
         window.dispatchEvent(new CustomEvent("assessmentCompleted", { detail: data }));
         localStorage.setItem("lastAssessmentUpdate", Date.now().toString());
 

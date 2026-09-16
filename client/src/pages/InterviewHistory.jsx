@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo, useRef } from "react";
+import { useEffect, useState, useMemo, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import axios from "axios";
@@ -58,7 +58,6 @@ import {
   BsArrowRight,
   BsSortDown,
   BsSortUp,
-  BsSliders,
   BsMouse,
 } from "react-icons/bs";
 import { HiSparkles } from "react-icons/hi2";
@@ -268,15 +267,12 @@ const InterviewHistory = () => {
   const [chats, setChats] = useState([]);
   const [interviews, setInterviews] = useState([]);
   const [assignmentSubmissions, setAssignmentSubmissions] = useState([]);
-  const [allAssignments, setAllAssignments] = useState([]);
   const [quizAttempts, setQuizAttempts] = useState([]);
-  const [allQuizzes, setAllQuizzes] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const INITIAL_VISIBLE_COUNT = 6;
   const [visibleCount, setVisibleCount] = useState(INITIAL_VISIBLE_COUNT);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
-  const [showScrollTop, setShowScrollTop] = useState(false);
   const [isMouseScrolling, setIsMouseScrolling] = useState(false);
   const loadMoreTriggerRef = useRef(null);
   const scrollTimeoutRef = useRef(null);
@@ -353,16 +349,12 @@ const InterviewHistory = () => {
           chatRes,
           interviewRes,
           assignmentSubmissionsRes,
-          allAssignmentsRes,
           quizAttemptsRes,
-          allQuizzesRes,
         ] = await Promise.allSettled([
           axios.get(`${ServerUrl}/api/chat/get`, { withCredentials: true }),
           axios.get(`${ServerUrl}/api/interview/get-interview`, { withCredentials: true }),
           axios.get(`${ServerUrl}/api/assignments/history/my-submissions`, { withCredentials: true }),
-          axios.get(`${ServerUrl}/api/assignments/list`, { withCredentials: true }),
           axios.get(`${ServerUrl}/api/quizzes/history/my-attempts`, { withCredentials: true }),
-          axios.get(`${ServerUrl}/api/quizzes/list`, { withCredentials: true }),
         ]);
 
         if (chatRes.status === "fulfilled" && Array.isArray(chatRes.value?.data?.chats)) {
@@ -387,20 +379,10 @@ const InterviewHistory = () => {
         } else {
           setAssignmentSubmissions([]);
         }
-        if (allAssignmentsRes.status === "fulfilled" && Array.isArray(allAssignmentsRes.value?.data?.assignments)) {
-          setAllAssignments(allAssignmentsRes.value.data.assignments);
-        } else {
-          setAllAssignments([]);
-        }
         if (quizAttemptsRes.status === "fulfilled" && Array.isArray(quizAttemptsRes.value?.data?.attempts)) {
           setQuizAttempts(quizAttemptsRes.value.data.attempts);
         } else {
           setQuizAttempts([]);
-        }
-        if (allQuizzesRes.status === "fulfilled" && Array.isArray(allQuizzesRes.value?.data?.quizzes)) {
-          setAllQuizzes(allQuizzesRes.value.data.quizzes);
-        } else {
-          setAllQuizzes([]);
         }
       } catch (err) {
         console.error("Error loading multi-model histories:", err);
@@ -764,7 +746,6 @@ const InterviewHistory = () => {
   useEffect(() => {
     const handleScroll = () => {
       const scrollYVal = window.scrollY || document.documentElement.scrollTop;
-      setShowScrollTop(scrollYVal > 400);
 
       const scrollHeight = document.documentElement.scrollHeight;
       const clientHeight = window.innerHeight;
@@ -817,7 +798,6 @@ const InterviewHistory = () => {
     const pendingCount = scopeItems.filter((i) => i.statusGroup === "pending").length;
 
     if (selectedFilter === "chat") {
-      const totalMessages = chats.reduce((acc, c) => acc + (c.messages?.length || 0), 0);
       return [
         { label: "Total Consultations", value: scopeItems.length, icon: FaComments, color: "text-indigo-600 dark:text-indigo-400", bg: "bg-indigo-100 dark:bg-indigo-950" },
         { label: "Active Dialogues", value: completedCount, icon: FaCheckCircle, color: "text-emerald-600 dark:text-emerald-400", bg: "bg-emerald-100 dark:bg-emerald-950" },

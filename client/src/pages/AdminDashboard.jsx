@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useSelector } from "react-redux";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
@@ -217,7 +217,6 @@ const AdminDashboard = () => {
   const [submissions, setSubmissions] = useState([]);
   const [search, setSearch] = useState("");
   const [selectedCadreFilter, setSelectedCadreFilter] = useState("All");
-  const [loading, setLoading] = useState(true);
 
   const tabContainerRef = useRef(null);
 
@@ -303,7 +302,6 @@ const AdminDashboard = () => {
 
   const fetchAdminData = async (isBackground = false) => {
     try {
-      if (!isBackground) setLoading(true);
       const [
         overviewRes,
         learnersRes,
@@ -422,8 +420,6 @@ const AdminDashboard = () => {
       if (!isBackground) {
         console.error("Admin dashboard fetch error:", error);
       }
-    } finally {
-      if (!isBackground) setLoading(false);
     }
   };
 
@@ -2344,11 +2340,9 @@ const AdminDashboard = () => {
                       Overall Score
                     </span>
                     <span className="text-xl font-black text-blue-900 dark:text-blue-200">
-                      {Boolean(
-                        (userDetailedData?.interviews && userDetailedData.interviews.some((i) => i.status === "completed" || i.finalScore || i.score)) ||
-                        userDetailedData?.hasCompletedInterview ||
-                        userDetailedData?.hasCompletedViva
-                      )
+                      {(userDetailedData?.interviews && userDetailedData.interviews.some((i) => i.status === "completed" || i.finalScore || i.score)) ||
+                      userDetailedData?.hasCompletedInterview ||
+                      userDetailedData?.hasCompletedViva
                         ? (userDetailedData?.learner?.overallCompetencyScore !== undefined && userDetailedData?.learner?.overallCompetencyScore !== null
                           ? userDetailedData.learner.overallCompetencyScore
                           : 0)
@@ -2360,11 +2354,9 @@ const AdminDashboard = () => {
                       Proficiency Level
                     </span>
                     <span className="text-xl font-black text-emerald-900 dark:text-emerald-200">
-                      {Boolean(
-                        (userDetailedData?.interviews && userDetailedData.interviews.some((i) => i.status === "completed" || i.finalScore || i.score)) ||
-                        userDetailedData?.hasCompletedInterview ||
-                        userDetailedData?.hasCompletedViva
-                      )
+                      {(userDetailedData?.interviews && userDetailedData.interviews.some((i) => i.status === "completed" || i.finalScore || i.score)) ||
+                      userDetailedData?.hasCompletedInterview ||
+                      userDetailedData?.hasCompletedViva
                         ? (userDetailedData?.learner?.overallLevel || "Proficient")
                         : "Novice (Viva Pending)"}
                     </span>

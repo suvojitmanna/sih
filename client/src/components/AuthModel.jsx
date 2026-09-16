@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 import { FaTimes } from "react-icons/fa";
 import { useSelector } from "react-redux";
 import { motion, AnimatePresence } from "framer-motion";

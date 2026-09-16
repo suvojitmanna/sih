@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo } from "react";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import BackButton from "../components/BackButton";
@@ -6,7 +6,7 @@ import { ServerUrl } from "../App";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
-import { useSelector, useDispatch } from "react-redux";
+import { useSelector } from "react-redux";
 import {
   ResponsiveContainer,
   BarChart,
@@ -162,7 +162,6 @@ const CIRCULAR_PALETTES = [
 
 const SkillGapAnalysis = () => {
   const navigate = useNavigate();
-  const dispatch = useDispatch();
   const { userData } = useSelector((state) => state.user);
   const { isIntakePending, triggerLockedError } = useDiagnostic();
 

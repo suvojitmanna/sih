@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useSelector } from "react-redux";
 import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
@@ -8,7 +8,6 @@ import { useOutsideClick } from "../utils/outsideClick";
 import {
   BsBellFill,
   BsBell,
-  BsMegaphoneFill,
   BsCheckCircleFill,
   BsExclamationTriangleFill,
   BsArrowRight,
@@ -45,7 +44,6 @@ const NotificationBell = () => {
   const [activeTab, setActiveTab] = useState("all"); // "all" | "intake" | "broadcasts"
   const [broadcasts, setBroadcasts] = useState([]);
   const [diagnosticStatus, setDiagnosticStatus] = useState(null);
-  const [loading, setLoading] = useState(false);
   const [readNotifications, setReadNotifications] = useState(() => {
     try {
       const stored = localStorage.getItem("sankhya_read_notifications");
@@ -122,7 +120,6 @@ const NotificationBell = () => {
     const fetchNotificationsData = async () => {
       if (!userData || userData.role === "trainer") return;
       try {
-        setLoading(true);
         const [broadcastRes, diagnosticRes] = await Promise.allSettled([
           axios.get(`${ServerUrl}/api/support/broadcasts`, {
             withCredentials: true,
@@ -148,8 +145,6 @@ const NotificationBell = () => {
         }
       } catch (err) {
         console.error("Error fetching notification data:", err);
-      } finally {
-        if (isMounted) setLoading(false);
       }
     };
 

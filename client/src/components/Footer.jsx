@@ -1,8 +1,5 @@
-import React from "react";
-import { BsTwitterX, BsGithub, BsLinkedin, BsShieldCheck } from "react-icons/bs";
-import { FaFilePdf, FaBrain, FaGraduationCap, FaAward, FaExternalLinkAlt } from "react-icons/fa";
+import { BsShieldCheck } from "react-icons/bs";
 import { HiSparkles } from "react-icons/hi";
-import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 
 const Footer = () => {

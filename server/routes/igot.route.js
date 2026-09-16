@@ -5,7 +5,6 @@ import User from "../models/userModel.js";
 
 const igotRouter = express.Router();
 
-// Get iGOT Course Catalog
 igotRouter.get("/courses", isAuth, async (req, res) => {
     try {
         const { q, domain } = req.query;
@@ -16,7 +15,6 @@ igotRouter.get("/courses", isAuth, async (req, res) => {
     }
 });
 
-// Get Personalized iGOT Recommendations for Current User
 igotRouter.get("/recommendations", isAuth, async (req, res) => {
     try {
         const user = await User.findById(req.userId || req.user?._id);

@@ -1436,7 +1436,7 @@ doc.text(
   doc.save(filename);
 };
 
-export const generatePortalComparisonPDF = ({ user } = {}) => {
+export const generatePortalComparisonPDF = ({ user: _user } = {}) => {
   const doc = new jsPDF({
     orientation: "portrait",
     unit: "mm",
@@ -1455,7 +1455,6 @@ export const generatePortalComparisonPDF = ({ user } = {}) => {
 
   let currentY = 46;
 
-  // Executive Summary
   doc.setFont("helvetica", "bold");
   doc.setFontSize(13);
   doc.setTextColor(30, 58, 138);
@@ -1471,7 +1470,6 @@ export const generatePortalComparisonPDF = ({ user } = {}) => {
   doc.text(splitSummary, margin, currentY);
   currentY += splitSummary.length * 4.5 + 4;
 
-  // Highlights Table
   const comparisonData = [
     [
       "Cadre Competency Mapping",
@@ -1563,7 +1561,6 @@ export const generatePortalComparisonPDF = ({ user } = {}) => {
 
   const finalY = doc.lastAutoTable.finalY + 8;
 
-  // Footer Note & Verification
   if (finalY < 265) {
     doc.setFont("helvetica", "bold");
     doc.setFontSize(8.5);
@@ -1587,7 +1584,7 @@ export const generateModelHistoryPDF = ({
   type,
   record,
   user,
-  extraData = {},
+  extraData: _extraData = {},
 }) => {
   switch (type) {
     case "chat":

@@ -16,7 +16,6 @@ userRouter.get("/current-user", isAuth, getCurrentUser);
 userRouter.get("/data", isAuth, getUserData);
 userRouter.post("/complete-profile", isAuth, completeProfile);
 
-// Alternate Email routes
 userRouter.post("/alternate-email/send-otp", isAuth, sendAlternateEmailOtpController);
 userRouter.post("/alternate-email/verify-otp", isAuth, verifyAlternateEmailOtpController);
 userRouter.delete("/alternate-email", isAuth, removeAlternateEmailController);

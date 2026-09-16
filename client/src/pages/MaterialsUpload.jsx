@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef } from "react";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import BackButton from "../components/BackButton";
@@ -7,14 +7,11 @@ import axios from "axios";
 import toast from "react-hot-toast";
 import { useNavigate, useLocation, useSearchParams } from "react-router-dom";
 import {
-  FaFileUpload,
   FaFilePdf,
   FaFileAlt,
   FaFileImage,
   FaFileWord,
   FaFilePowerpoint,
-  FaListAlt,
-  FaHandSparkles,
   FaBookOpen,
   FaDownload,
   FaExternalLinkAlt,
@@ -24,20 +21,14 @@ import {
   FaPlay,
   FaCheck,
   FaInfoCircle,
-  FaArrowRight,
   FaSearch,
   FaPaperclip,
-  FaClock,
-  FaExclamationCircle,
-  FaSyncAlt,
 } from "react-icons/fa";
 import {
   BsShieldCheck,
   BsFillSendFill,
   BsStars,
   BsLightningChargeFill,
-  BsCheckCircleFill,
-  BsClockHistory,
   BsInboxFill,
   BsSendCheckFill,
 } from "react-icons/bs";

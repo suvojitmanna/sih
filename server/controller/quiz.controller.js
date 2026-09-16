@@ -139,7 +139,7 @@ export const getQuizById = async (req, res) => {
 export const submitQuizAttempt = async (req, res) => {
     try {
         const { id } = req.params;
-        const { userAnswers = [], timeTakenSeconds = 60 } = req.body;
+        const { userAnswers = [], timeTakenSeconds = 60, tabSwitchCount = 0 } = req.body;
         const userId = req.userId || req.user?._id;
 
         const quiz = await Quiz.findById(id);
@@ -164,6 +164,7 @@ export const submitQuizAttempt = async (req, res) => {
             correctCount: evaluation.correctCount,
             accuracy: evaluation.accuracy,
             timeTakenSeconds,
+            tabSwitchCount: Math.max(0, Number(tabSwitchCount) || 0),
             userAnswers: evaluation.evaluatedQuestions,
             topicAnalysis: evaluation.topicAnalysis,
             passed: evaluation.passed,
@@ -208,6 +209,8 @@ export const submitQuizAttempt = async (req, res) => {
                 name: user.name,
                 email: user.email,
                 role: user.role,
+                isProfileCompleted: Boolean(user.isProfileCompleted),
+                profilePhoto: user.profilePhoto,
                 designation: user.designation,
                 department: user.department,
                 jobRole: user.jobRole,

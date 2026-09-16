@@ -60,6 +60,10 @@ const quizAttemptSchema = new mongoose.Schema(
             type: Number,
             default: 0,
         },
+        tabSwitchCount: {
+            type: Number,
+            default: 0,
+        },
         userAnswers: [userAnswerSchema],
         topicAnalysis: [topicAnalysisSchema],
         aiFeedback: {

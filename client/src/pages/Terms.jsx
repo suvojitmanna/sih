@@ -1,6 +1,4 @@
-import React, { useEffect } from "react";
 import { motion, useScroll, useSpring } from "framer-motion";
-import { useNavigate } from "react-router-dom";
 import {
   HiOutlineScale,
   HiOutlineBookOpen,
@@ -12,7 +10,6 @@ import Footer from "../components/Footer";
 import BackButton from "../components/BackButton";
 
 const TermsOfService = () => {
-  const navigate = useNavigate();
   const { scrollYProgress } = useScroll();
   const scaleX = useSpring(scrollYProgress, {
     stiffness: 100,

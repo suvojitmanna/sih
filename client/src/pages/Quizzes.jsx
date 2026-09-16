@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import BackButton from "../components/BackButton";
@@ -8,15 +8,12 @@ import axios from "axios";
 import toast from "react-hot-toast";
 import {
   FaTasks,
-  FaPlus,
   FaPlay,
   FaHistory,
   FaClock,
-  FaAward,
   FaCheckCircle,
   FaHandSparkles,
 } from "react-icons/fa";
-import { HiSparkles } from "react-icons/hi";
 import { BsShieldCheck } from "react-icons/bs";
 import { CardGridSkeleton } from "../components/SkeletonLoader";
 
@@ -65,7 +62,7 @@ const Quizzes = () => {
   const [showGenModal, setShowGenModal] = useState(false);
   const [topic, setTopic] = useState(SAMPLE_TOPICS[0]);
   const [customTopic, setCustomTopic] = useState("");
-  const [domain, setDomain] = useState("Statistical Competencies");
+  const [domain] = useState("Statistical Competencies");
   const [difficulty, setDifficulty] = useState("Medium");
   const [numQuestions, setNumQuestions] = useState(5);
   const [genLoading, setGenLoading] = useState(false);

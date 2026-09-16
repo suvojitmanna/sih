@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import ChatMessage from "./ChatMessage";
 import toast from "react-hot-toast";
 import {
@@ -24,14 +24,14 @@ const ChatBox = ({
   const containerRef = useRef(null);
   const controllerRef = useRef(null);
   const recognitionRef = useRef(null);
+  const isListeningRef = useRef(false);
+  const activeChatIdRef = useRef(selectedChat?._id || null);
 
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(false);
   const [prompt, setPrompt] = useState("");
   const [mode, setMode] = useState("text");
   const [isListening, setIsListening] = useState(false);
-
-  const activeChatIdRef = useRef(selectedChat?._id || null);
 
   useEffect(() => {
     if (selectedChat) {
@@ -54,7 +54,18 @@ const ChatBox = ({
     });
   }, [messages, loading]);
 
-  const isListeningRef = useRef(false);
+  useEffect(() => {
+    return () => {
+      if (recognitionRef.current) {
+        try {
+          recognitionRef.current.stop();
+        } catch {}
+      }
+      if (controllerRef.current) {
+        controllerRef.current.abort();
+      }
+    };
+  }, []);
 
   const handleVoiceInput = async () => {
     const SpeechRecognition =
@@ -71,9 +82,7 @@ const ChatBox = ({
       if (recognitionRef.current) {
         try {
           recognitionRef.current.stop();
-        } catch (_err) {
-          /* ignore */
-        }
+        } catch {}
       }
       return;
     }
@@ -94,9 +103,7 @@ const ChatBox = ({
       if (recognitionRef.current) {
         try {
           recognitionRef.current.stop();
-        } catch (error) {
-          console.log(error);
-        }
+        } catch {}
       }
 
       const recognition = new SpeechRecognition();
@@ -125,7 +132,6 @@ const ChatBox = ({
       };
 
       recognition.onerror = (event) => {
-        console.warn("Speech error:", event.error);
         isListeningRef.current = false;
         setIsListening(false);
         if (event.error === "not-allowed" || event.error === "service-not-allowed") {
@@ -135,8 +141,7 @@ const ChatBox = ({
 
       recognitionRef.current = recognition;
       recognition.start();
-    } catch (err) {
-      console.error("Speech error:", err);
+    } catch {
       isListeningRef.current = false;
       setIsListening(false);
     }
@@ -200,6 +205,31 @@ const ChatBox = ({
               : m
           )
         );
+        setSelectedChat((prev) => {
+          if (!prev) return prev;
+          return {
+            ...prev,
+            messages: (prev.messages || []).map((m) =>
+              m._id === message._id || m.content === message.content
+                ? { ...m, isPublished: targetState }
+                : m
+            ),
+          };
+        });
+        setChats((prevChats) =>
+          prevChats.map((c) =>
+            c._id === selectedChat._id
+              ? {
+                  ...c,
+                  messages: (c.messages || []).map((m) =>
+                    m._id === message._id || m.content === message.content
+                      ? { ...m, isPublished: targetState }
+                      : m
+                  ),
+                }
+              : c
+          )
+        );
         toast.success(data.message);
       }
     } catch (error) {
@@ -229,6 +259,29 @@ const ChatBox = ({
     if (!chatId) {
       setLoading(false);
       return;
+    }
+
+    if (selectedChat?._id) {
+      setSelectedChat((prev) =>
+        prev
+          ? {
+              ...prev,
+              messages: [...(prev.messages || []), userMessage],
+              updatedAt: new Date(),
+            }
+          : prev
+      );
+      setChats((prevChats) =>
+        prevChats.map((c) =>
+          c._id === chatId
+            ? {
+                ...c,
+                messages: [...(c.messages || []), userMessage],
+                updatedAt: new Date(),
+              }
+            : c
+        )
+      );
     }
 
     try {
@@ -403,7 +456,7 @@ const ChatBox = ({
 
         {messages.map((msg, index) => (
           <ChatMessage
-            key={msg._id || msg.timestamp || index}
+            key={msg._id || `${index}-${msg.role}`}
             message={msg}
             onPublishToggle={handlePublishToggle}
           />

@@ -26,7 +26,6 @@ export const textMessageController = async (req, res) => {
             return res.status(404).json({ success: false, message: "Chat not found" });
         }
 
-        // Save user message
         chat.messages.push({
             role: "user",
             content: prompt,
@@ -34,7 +33,6 @@ export const textMessageController = async (req, res) => {
             isImage: false,
         });
 
-        // Auto name chat from first prompt if default
         if (chat.name === "New Chat" || !chat.name) {
             chat.name = prompt.slice(0, 35);
         }
@@ -47,7 +45,6 @@ Rules:
 
         let replyText = "";
 
-        // Try Gemini first if configured
         if (ai) {
             try {
                 const response = await ai.models.generateContent({
@@ -60,7 +57,6 @@ Rules:
             }
         }
 
-        // Fallback to OpenRouter if Gemini failed or is unconfigured
         if (!replyText) {
             try {
                 const messages = [
@@ -120,7 +116,6 @@ export const imageMessageController = async (req, res) => {
             return res.status(404).json({ success: false, message: "Chat not found" });
         }
 
-        // Save user prompt message
         chat.messages.push({
             role: "user",
             content: prompt,
@@ -130,7 +125,6 @@ export const imageMessageController = async (req, res) => {
 
         let imageUrl = "";
 
-        // Strategy 1: ClipDrop API (if CLIPDROP_API_KEY is available)
         if (process.env.CLIPDROP_API_KEY) {
             try {
                 const clipdropResponse = await axios.post(
@@ -159,7 +153,6 @@ export const imageMessageController = async (req, res) => {
             }
         }
 
-        // Strategy 2: High quality free Pollinations AI fallback
         if (!imageUrl) {
             const seed = Math.floor(Math.random() * 1000000);
             const encodedPrompt = encodeURIComponent(prompt);
@@ -191,7 +184,6 @@ export const imageMessageController = async (req, res) => {
 
         chat.messages.push(reply);
         await chat.save();
-
 
         res.status(200).json({
             success: true,

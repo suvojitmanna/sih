@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import moment from "moment";
 import { useNavigate } from "react-router-dom";
 import {
@@ -6,14 +6,12 @@ import {
   FaSearch,
   FaTrashAlt,
   FaImages,
-  FaCoins,
   FaMoon,
   FaSun,
   FaTimes,
   FaComments,
 } from "react-icons/fa";
 import { BsRobot } from "react-icons/bs";
-import { HiSparkles } from "react-icons/hi";
 import { useTheme } from "../../context/ThemeContext";
 import BackButton from "../BackButton";
 
@@ -25,14 +23,11 @@ const ChatSidebar = ({
   setSelectedChat,
   createNewChat,
   deleteChat,
-  userData,
   theme: propTheme,
-  setTheme: propSetTheme,
 }) => {
   const navigate = useNavigate();
   const themeContext = useTheme();
   const theme = propTheme || themeContext?.theme || "system";
-  const setTheme = propSetTheme || themeContext?.setTheme;
   const resolvedTheme = themeContext?.resolvedTheme || (theme === "dark" ? "dark" : "light");
   const toggleTheme = themeContext?.toggleTheme;
   const [search, setSearch] = useState("");
@@ -90,7 +85,6 @@ const ChatSidebar = ({
           </div>
         </div>
 
-        
         <button
           onClick={createNewChat}
           className="flex items-center justify-center gap-2 w-full py-3 mt-4 text-white bg-gradient-to-r from-indigo-600 via-violet-600 to-fuchsia-600 hover:opacity-95 text-sm font-semibold rounded-2xl shadow-[0_8px_20px_rgba(79,70,229,0.25)] hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer shrink-0"
