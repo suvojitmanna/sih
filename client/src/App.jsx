@@ -23,6 +23,7 @@ import InterviewPage from "./pages/InterviewPage";
 import InterviewHistory from "./pages/InterviewHistory";
 import InterviewReport from "./pages/InterviewReport";
 import Settings from "./pages/Settings";
+import PortalDifference from "./pages/PortalDifference";
 import axios from "axios";
 import { useDispatch, useSelector } from "react-redux";
 import { setUserData } from "./redux/userSlice";
@@ -372,6 +373,24 @@ const App = () => {
             </PublicRoute>
           }
         />
+        {/* Comparative Architectural Audit (Legacy vs SankhyaIQ AI Platform) */}
+        <Route
+          path="/portal-comparison"
+          element={
+            <PublicRoute loading={loading}>
+              <PortalDifference />
+            </PublicRoute>
+          }
+        />
+        <Route
+          path="/portal-difference"
+          element={
+            <PublicRoute loading={loading}>
+              <PortalDifference />
+            </PublicRoute>
+          }
+        />
+
         {/* Wildcard Fallback Route */}
         <Route
           path="*"

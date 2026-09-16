@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
+import { useSelector } from "react-redux";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import { ServerUrl } from "../App";
@@ -205,6 +206,9 @@ const QUICK_REPLIES = [
 ];
 
 const AdminDashboard = () => {
+  const { userData } = useSelector((state) => state.user);
+  const isTrainer = userData?.role === "trainer";
+
   const [activeTab, setActiveTab] = useState("overview");
   const [metrics, setMetrics] = useState(null);
   const [learners, setLearners] = useState([]);
@@ -793,6 +797,10 @@ const AdminDashboard = () => {
   };
 
   const filteredLearners = learners.filter((l) => {
+    // Exclude trainers and admins: the learner directory should strictly show officers/learners, not trainer details!
+    if (l.role === "trainer" || l.role === "admin") return false;
+    if (userData && l._id === userData._id && userData.role === "trainer") return false;
+
     const matchesSearch =
       l.name?.toLowerCase().includes(search.toLowerCase()) ||
       l.email?.toLowerCase().includes(search.toLowerCase()) ||
@@ -823,16 +831,28 @@ const AdminDashboard = () => {
           <div>
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/20 text-blue-300 border border-blue-400/30 text-xs font-bold uppercase tracking-wider mb-2">
               <BsShieldCheck size={13} />
-              <span>National Statistical Systems Training Academy (NSSTA)</span>
+              <span>{isTrainer ? "NSSTA Faculty & Trainer Portal • Active Session" : "National Statistical Systems Training Academy (NSSTA)"}</span>
             </div>
             <h1 className="text-2xl sm:text-3xl font-black tracking-tight">
-              Executive Academy Administration & Oversight Hub
+              {isTrainer ? "NSSTA Faculty Training & Oversight Hub" : "Executive Academy Administration & Oversight Hub"}
             </h1>
             <p className="text-xs sm:text-sm text-slate-300 mt-1 max-w-2xl">
-              Monitor officers' viva experiences, respond to real-time
-              inquiries, fulfill study material requests, and dispatch
-              statistical case studies.
+              {isTrainer
+                ? "Monitor cadre officers' viva experiences, respond to real-time inquiries, fulfill study material requests, and dispatch statistical case studies."
+                : "Monitor officers' viva experiences, respond to real-time inquiries, fulfill study material requests, and dispatch statistical case studies."}
             </p>
+            {isTrainer && userData && (
+              <div className="mt-3 inline-flex items-center gap-2 px-3.5 py-1.5 rounded-2xl bg-white/10 border border-white/20 text-xs text-blue-200">
+                <FaUserTie className="text-amber-400" size={12} />
+                <span className="font-bold text-white">Faculty: {userData.name || "Statistical Trainer"}</span>
+                <span className="text-slate-300">({userData.department || "NSSTA Faculty Training Division"})</span>
+                {userData.experienceYears > 0 && (
+                  <span className="px-1.5 py-0.5 rounded bg-amber-400/20 text-amber-300 text-[10px] font-bold">
+                    {userData.experienceYears} Yrs Exp
+                  </span>
+                )}
+              </div>
+            )}
           </div>
 
           <div className="flex flex-wrap gap-2.5">
@@ -898,7 +918,7 @@ const AdminDashboard = () => {
               <FaUsers size={13} />
               <span>2. Officer Performance & Experience Monitor</span>
               <span className="px-2 py-0.5 rounded-full text-[10px] bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300">
-                {learners.length}
+                {filteredLearners.length}
               </span>
             </button>
 

@@ -15,6 +15,7 @@ import {
   BsBookHalf,
   BsStars,
   BsBarChartSteps,
+  BsShieldCheck,
 } from "react-icons/bs";
 import {
   FaUserGraduate,
@@ -148,6 +149,7 @@ const Navbar = () => {
             { label: "Competency", path: "/competencies", icon: FaBrain, desc: "Statistical Competency Framework" },
             { label: "Skill Gaps", path: "/skill-gaps", icon: BsBarChartSteps, badge: "Cadre AI", desc: "Cadre Benchmark & Gap Analysis" },
             { label: "Job Readiness", path: "/job-readiness", icon: FaUserTie, badge: "Report", desc: "Target Cadre Readiness & Deployment Audit" },
+            { label: "Portal Difference", path: "/portal-comparison", icon: BsShieldCheck, isPublic: true, badge: "VS", desc: "Compare Legacy Portals vs SankhyaIQ AI Platform" },
             { label: "History", path: "/history", icon: FaHistory, desc: "Viva Records & Evaluation Logs" },
           ],
         },
@@ -218,6 +220,7 @@ const Navbar = () => {
     if (path === "/community") return "National Statistical Officer Community";
     if (path === "/interview") return "Cadre Board Oral Viva Simulation";
     if (path === "/history") return "Viva Evaluation Records & History";
+    if (path === "/portal-comparison" || path === "/portal-difference") return "Comparative Architectural Audit • Legacy vs SankhyaIQ AI";
     if (path === "/settings") return "System Settings • Profile & Layout Options";
     return "SankhyaIQ AI • National Statistical Systems Training Academy";
   };
@@ -815,6 +818,22 @@ const Navbar = () => {
                             {isPathLocked("/history") && <FaLock size={10} className="text-amber-500" />}
                           </button>
                         )}
+
+                        <button
+                          onClick={() => {
+                            setShowUserPopup(false);
+                            navigate("/portal-comparison");
+                          }}
+                          className="w-full text-left px-3.5 py-2.5 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-800 text-xs font-bold text-slate-700 dark:text-slate-200 flex items-center justify-between transition-colors cursor-pointer"
+                        >
+                          <div className="flex items-center gap-2.5">
+                            <BsShieldCheck size={14} className="text-blue-600 dark:text-blue-400" />
+                            <span>Portal Difference (Legacy vs Ours)</span>
+                          </div>
+                          <span className="text-[9px] font-black px-1.5 py-0.5 rounded-md bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300">
+                            VS
+                          </span>
+                        </button>
 
                         {(userData?.role === "admin" || isTrainer) && (
                           <button

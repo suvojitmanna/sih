@@ -989,6 +989,100 @@ const Home = () => {
             </section>
           </ScrollReveal>
 
+          {/* ======================================================== */}
+          {/* PORTAL DIFFERENCE: LEGACY VS SANKHYAIQ AI SHOWCASE       */}
+          {/* ======================================================== */}
+          <ScrollReveal direction="up" delay={0.1}>
+            <section className="bg-gradient-to-br from-slate-900 via-blue-950 to-slate-900 text-white rounded-3xl p-6 sm:p-10 shadow-2xl border border-blue-900/60 relative overflow-hidden space-y-8">
+              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#FF9933] via-white to-[#138808]" />
+
+              <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
+                <div className="space-y-3 max-w-2xl">
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-500/20 text-blue-300 text-xs font-bold uppercase tracking-wider border border-blue-400/30">
+                    <BsShieldCheck size={13} className="text-emerald-400" />
+                    <span>Comparative Architecture Audit</span>
+                  </div>
+                  <h2 className="text-2xl sm:text-4xl font-black tracking-tight">
+                    Portal Difference: Legacy Systems vs SankhyaIQ™ AI
+                  </h2>
+                  <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                    Why traditional government training portals fall short — and how our closed-loop AI skill intelligence OS bridges the gap between official statistical cadres, competency diagnostics, and iGOT Karmayogi.
+                  </p>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-3 shrink-0">
+                  <button
+                    onClick={() => navigate("/portal-comparison")}
+                    className="px-6 py-3 rounded-2xl bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-xs sm:text-sm shadow-xl shadow-blue-500/25 transition-all flex items-center gap-2 cursor-pointer active:scale-95"
+                  >
+                    <BsShieldCheck size={14} />
+                    <span>View Full 12-Point Matrix</span>
+                    <FaArrowRight size={11} />
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      toast.success("Generating Comparative Audit (PDF)... 📄");
+                      generateCompetencyPDF({
+                        user: userData || { name: "Cadre Statistical Officer", jobRole: "Indian Statistical Service (ISS) Officer" },
+                        profile: userData || { name: "Cadre Statistical Officer", jobRole: "Indian Statistical Service (ISS) Officer" },
+                      });
+                    }}
+                    className="px-5 py-3 rounded-2xl bg-white/10 hover:bg-white/20 text-white border border-white/20 font-bold text-xs sm:text-sm backdrop-blur-md transition-all flex items-center gap-2 cursor-pointer"
+                  >
+                    <FaFilePdf size={13} className="text-rose-400" />
+                    <span>Export Audit (PDF)</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Fast 3-Pillar Comparison Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-5 pt-2">
+                <div className="bg-white/5 border border-white/10 rounded-2xl p-5 space-y-3">
+                  <span className="text-[10px] font-black uppercase tracking-wider text-amber-300 block">
+                    1. Competency Diagnostics
+                  </span>
+                  <div className="text-xs space-y-2">
+                    <p className="text-rose-300 line-through">
+                      Legacy: Annual subjective ACR/APAR forms (6-month lag).
+                    </p>
+                    <p className="text-emerald-300 font-bold">
+                      SankhyaIQ: AI Neural Engine calculates exact domain deficits against 75% benchmark in 15 seconds.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="bg-white/5 border border-white/10 rounded-2xl p-5 space-y-3">
+                  <span className="text-[10px] font-black uppercase tracking-wider text-blue-300 block">
+                    2. Learning Pathways
+                  </span>
+                  <div className="text-xs space-y-2">
+                    <p className="text-rose-300 line-through">
+                      Legacy: Passive keyword search in thousands of generic videos.
+                    </p>
+                    <p className="text-emerald-300 font-bold">
+                      SankhyaIQ: Weakness-driven roadmaps dynamically linking iGOT digital & NSSTA in-service workshops.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="bg-white/5 border border-white/10 rounded-2xl p-5 space-y-3">
+                  <span className="text-[10px] font-black uppercase tracking-wider text-emerald-300 block">
+                    3. Assessment & Viva Voce
+                  </span>
+                  <div className="text-xs space-y-2">
+                    <p className="text-rose-300 line-through">
+                      Legacy: Only static text MCQs; no oral viva voice boards.
+                    </p>
+                    <p className="text-emerald-300 font-bold">
+                      SankhyaIQ: Real-time speech recognition AI oral viva board with Gemini AI and video avatars.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </section>
+          </ScrollReveal>
+
           <ScrollReveal direction="up" delay={0.1}>
             <section className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-10 shadow-xs space-y-6">
               <div className="space-y-2">

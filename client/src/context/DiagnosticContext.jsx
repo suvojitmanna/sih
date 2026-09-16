@@ -74,7 +74,16 @@ export const DiagnosticProvider = ({ children }) => {
 
   const isPathLocked = (path) => {
     if (!isIntakePending) return false;
-    if (!path || path === "/" || path === "" || path === "/auth" || path === "/terms" || path === "/privacy") {
+    if (
+      !path ||
+      path === "/" ||
+      path === "" ||
+      path === "/auth" ||
+      path === "/terms" ||
+      path === "/privacy" ||
+      path === "/portal-comparison" ||
+      path === "/portal-difference"
+    ) {
       return false;
     }
     if (path === "/settings") return false;
@@ -83,7 +92,17 @@ export const DiagnosticProvider = ({ children }) => {
 
   const isAssessmentAllowed = (pathname) => {
     if (!isIntakePending) return true;
-    if (!pathname || pathname === "/" || pathname === "" || pathname === "/auth" || pathname === "/terms" || pathname === "/privacy" || pathname === "/settings") {
+    if (
+      !pathname ||
+      pathname === "/" ||
+      pathname === "" ||
+      pathname === "/auth" ||
+      pathname === "/terms" ||
+      pathname === "/privacy" ||
+      pathname === "/settings" ||
+      pathname === "/portal-comparison" ||
+      pathname === "/portal-difference"
+    ) {
       return true;
     }
     if (pathname === "/interview") {

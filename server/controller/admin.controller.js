@@ -8,15 +8,16 @@ import SupportMessage from "../models/supportMessageModel.js";
 
 export const getAdminOverviewMetrics = async (req, res) => {
     try {
-        const totalLearners = await User.countDocuments();
-        const verifiedLearners = await User.countDocuments({ emailVerified: true });
+        const learnerRoleFilter = { role: { $nin: ["admin", "trainer"] } };
+        const totalLearners = await User.countDocuments(learnerRoleFilter);
+        const verifiedLearners = await User.countDocuments({ emailVerified: true, ...learnerRoleFilter });
         const totalQuizzesAttempted = await QuizAttempt.countDocuments();
         const totalInterviews = await Interview.countDocuments();
         const totalMaterials = await Material.countDocuments();
         const pendingMaterialRequests = await MaterialRequest.countDocuments({ status: "pending" });
         const totalSubmissions = await AssignmentSubmission.countDocuments();
 
-        const users = await User.find({}, "department jobRole overallCompetencyScore overallLevel learningHours quizzesCompleted skillGaps competencies");
+        const users = await User.find(learnerRoleFilter, "department jobRole overallCompetencyScore overallLevel learningHours quizzesCompleted skillGaps competencies");
 
         let sumScore = 0;
         let sumHours = 0;
@@ -86,7 +87,9 @@ export const getAdminOverviewMetrics = async (req, res) => {
 export const getLearnersDirectory = async (req, res) => {
     try {
         const { search = "", department = "", cadre = "" } = req.query;
-        const query = {};
+        const query = {
+            role: { $nin: ["admin", "trainer"] },
+        };
 
         if (search) {
             query.$or = [

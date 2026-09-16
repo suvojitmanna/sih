@@ -110,6 +110,10 @@ const Footer = () => {
                   <p onClick={() => navigate("/privacy")} className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors cursor-pointer">
                     Data Privacy & Security
                   </p>
+                  <p onClick={() => navigate("/portal-comparison")} className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors cursor-pointer flex items-center gap-1 font-bold text-blue-600 dark:text-blue-400">
+                    <BsShieldCheck size={12} />
+                    <span>Portal Difference (VS Legacy)</span>
+                  </p>
                   <p onClick={() => navigate("/admin")} className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors cursor-pointer">
                     NSSTA Admin Portal
                   </p>
