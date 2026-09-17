@@ -5,7 +5,6 @@ import SupportMessage from "../models/supportMessageModel.js";
 import { generateMCQsFromText } from "../services/aiService.js";
 import { extractTextFromFile } from "../utils/documentExtractor.js";
 
-// 1. Upload Learning Material (Supports PDF, PPT/PPTX, DOCX/DOC, TXT, CSV, Images, etc.)
 export const uploadMaterial = async (req, res) => {
   try {
     if (!req.file) {
@@ -102,7 +101,6 @@ export const uploadMaterial = async (req, res) => {
       }
     }
 
-    // Create broadcast announcement message for all officers
     try {
       await SupportMessage.create({
         senderId: req.userId || req.user?._id || material.uploadedBy,
@@ -135,7 +133,6 @@ export const uploadMaterial = async (req, res) => {
   }
 };
 
-// 2. Generate MCQs from Material (All Possible Questions or Custom Count)
 export const generateMcqsFromMaterial = async (req, res) => {
   try {
     const { materialId } = req.params;
@@ -211,7 +208,6 @@ export const generateMcqsFromMaterial = async (req, res) => {
   }
 };
 
-// 3. List Materials
 export const getMaterials = async (req, res) => {
   try {
     const materials = await Material.find().sort({ createdAt: -1 }).limit(40);
@@ -224,7 +220,6 @@ export const getMaterials = async (req, res) => {
   }
 };
 
-// 4. Get Material by ID
 export const getMaterialById = async (req, res) => {
   try {
     const material = await Material.findById(req.params.id);
@@ -242,7 +237,6 @@ export const getMaterialById = async (req, res) => {
   }
 };
 
-// 5. User submits a Study Material Request (with optional attachment)
 export const requestMaterial = async (req, res) => {
   try {
     const { topic, domain, description, urgency = "Normal" } = req.body;
@@ -292,7 +286,6 @@ export const requestMaterial = async (req, res) => {
   }
 };
 
-// 6. User gets their own Study Material Requests & Dispatched Resources
 export const getMyMaterialRequests = async (req, res) => {
   try {
     const requests = await MaterialRequest.find({

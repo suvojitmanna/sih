@@ -6,7 +6,6 @@ import cors from "cors";
 import authRouter from "./routes/auth.route.js";
 import userRouter from "./routes/user.route.js";
 import interviewRoute from "./routes/interview.route.js";
-import paymentRouter from "./routes/payment.route.js";
 import chatRouter from "./routes/chat.route.js";
 import messageRouter from "./routes/message.route.js";
 import communityRouter from "./routes/community.route.js";
@@ -45,6 +44,7 @@ app.use("/api/auth", authRouter);
 app.use("/api/user", userRouter);
 
 app.use("/api/competencies", competencyRouter);
+app.use("/api/competency", competencyRouter);
 app.use("/api/quizzes", quizRouter);
 app.use("/api/quiz", quizRouter);
 app.use("/api/assignments", assignmentRouter);
@@ -61,7 +61,6 @@ app.use("/api/chat", chatRouter);
 app.use("/api/message", messageRouter);
 app.use("/api/community", communityRouter);
 app.use("/api/interview", interviewRoute);
-app.use("/api/payment", paymentRouter);
 
 connectDb()
   .then(() => {

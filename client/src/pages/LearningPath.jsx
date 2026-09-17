@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import BackButton from "../components/BackButton";
@@ -7,7 +7,6 @@ import axios from "axios";
 import toast from "react-hot-toast";
 import {
   FaCertificate,
-  FaGraduationCap,
   FaExternalLinkAlt,
   FaCalendarAlt,
   FaCheckCircle,
@@ -20,7 +19,7 @@ import { BsShieldCheck, BsJournalBookmarkFill } from "react-icons/bs";
 import { CardGridSkeleton } from "../components/SkeletonLoader";
 
 const LearningPath = () => {
-  const [activeTab, setActiveTab] = useState("personalized"); // "personalized" | "igot" | "tpac"
+  const [activeTab, setActiveTab] = useState("personalized");
   const [profile, setProfile] = useState(null);
   const [igotCourses, setIgotCourses] = useState([]);
   const [tpacProgrammes, setTpacProgrammes] = useState([]);
@@ -48,6 +47,20 @@ const LearningPath = () => {
 
   useEffect(() => {
     fetchProfileAndCourses();
+
+    const handleRealtimeSync = () => {
+      fetchProfileAndCourses();
+    };
+
+    window.addEventListener("assessmentCompleted", handleRealtimeSync);
+    window.addEventListener("storage", handleRealtimeSync);
+    window.addEventListener("focus", handleRealtimeSync);
+
+    return () => {
+      window.removeEventListener("assessmentCompleted", handleRealtimeSync);
+      window.removeEventListener("storage", handleRealtimeSync);
+      window.removeEventListener("focus", handleRealtimeSync);
+    };
   }, []);
 
   const handleUpdateStatus = async (stepIndex, status) => {
@@ -61,7 +74,7 @@ const LearningPath = () => {
         toast.success(data.message);
         fetchProfileAndCourses();
       }
-    } catch (error) {
+    } catch {
       toast.error("Failed to update status.");
     }
   };
@@ -78,7 +91,7 @@ const LearningPath = () => {
         toast.success("Learning pathway refreshed using latest skill-gap analysis! ✨");
         fetchProfileAndCourses();
       }
-    } catch (error) {
+    } catch {
       toast.error("Failed to refresh pathway.");
     } finally {
       setLoading(false);
@@ -98,7 +111,7 @@ const LearningPath = () => {
       <Navbar />
 
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 pt-19 pb-16 space-y-3">
-        {/* Back Navigation Bar */}
+
         <div className="flex items-center justify-between">
           <BackButton fallbackUrl="/ai-models" label="Back to AI Models" />
           <span className="text-xs font-bold text-slate-500 dark:text-slate-400">
@@ -106,7 +119,6 @@ const LearningPath = () => {
           </span>
         </div>
 
-        {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-xs">
           <div>
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 dark:bg-blue-950 text-blue-700 dark:text-blue-300 text-xs font-bold uppercase tracking-wider mb-2">
@@ -155,7 +167,6 @@ const LearningPath = () => {
           </div>
         </div>
 
-        {/* TAB 1: PERSONALIZED ROADMAP */}
         {activeTab === "personalized" && (
           <div className="space-y-6">
             <div className="flex items-center justify-between">
@@ -224,7 +235,7 @@ const LearningPath = () => {
                       {step.status === "completed" ? (
                         <span className="flex items-center gap-1.5 px-4 py-2.5 rounded-2xl bg-emerald-50 dark:bg-emerald-950 text-emerald-600 font-bold text-xs">
                           <FaCheckCircle size={14} />
-                          <span>Completed (+10 Credits)</span>
+                          <span>Completed (+10 Competency XP)</span>
                         </span>
                       ) : step.status === "in-progress" ? (
                         <button
@@ -250,10 +261,8 @@ const LearningPath = () => {
           </div>
         )}
 
-        {/* TAB 2: iGOT KARMAYOGI CATALOGUE */}
         {activeTab === "igot" && (
           <div className="space-y-6">
-            {/* Search & Domain Filter Bar */}
             <div className="flex flex-col sm:flex-row gap-3 bg-white dark:bg-slate-900 p-4 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xs">
               <div className="relative flex-1">
                 <FaSearch className="absolute left-3.5 top-3.5 text-slate-400" size={13} />
@@ -279,7 +288,6 @@ const LearningPath = () => {
               </select>
             </div>
 
-            {/* Course Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
               {filteredIgot.map((course) => (
                 <div
@@ -336,7 +344,6 @@ const LearningPath = () => {
           </div>
         )}
 
-        {/* TAB 3: NSSTA TPAC IN-SERVICE PROGRAMMES */}
         {activeTab === "tpac" && (
           <div className="space-y-6">
             <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-xs">

@@ -5,7 +5,6 @@ export const useOutsideClick = (callback) => {
 
   useEffect(() => {
     const handleClick = (event) => {
-      // If the click is outside the element, trigger the callback
       if (ref.current && !ref.current.contains(event.target)) {
         callback();
       }

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import {
   FaBriefcase,
@@ -26,7 +26,10 @@ const PRESET_ROLES = [
 ];
 
 const Step1 = ({ onStart }) => {
-  const [role, setRole] = useState(PRESET_ROLES[0]);
+  const { userData } = useSelector((state) => state.user);
+  const dispatch = useDispatch();
+
+  const [role, setRole] = useState(userData?.jobRole || PRESET_ROLES[0]);
   const [experience, setExperience] = useState("2 Years");
   const [mode, setMode] = useState("Technical");
   const [resumeFile, setResumeFile] = useState(null);
@@ -37,9 +40,29 @@ const Step1 = ({ onStart }) => {
   const [analysisDone, setAnalysisDone] = useState(false);
   const [analyzing, setAnalyzing] = useState(false);
   const [fileError, setFileError] = useState("");
+  const [diagnosticStatus, setDiagnosticStatus] = useState(null);
 
-  const { userData } = useSelector((state) => state.user);
-  const dispatch = useDispatch();
+  useEffect(() => {
+    if (userData?.jobRole) {
+      setRole(userData.jobRole);
+    }
+    const fetchDiagnostic = async () => {
+      try {
+        const { data } = await axios.get(`${ServerUrl}/api/competencies/diagnostic-status`, {
+          withCredentials: true,
+        });
+        if (data.success) {
+          setDiagnosticStatus(data);
+          if (data.diagnosticInterview?.role) {
+            setRole(data.diagnosticInterview.role);
+          }
+        }
+      } catch (err) {
+        console.warn("Failed to fetch diagnostic viva status:", err.message);
+      }
+    };
+    fetchDiagnostic();
+  }, [userData]);
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
@@ -117,6 +140,24 @@ const Step1 = ({ onStart }) => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleStartDiagnostic = async () => {
+    setLoading(true);
+    try {
+      const { data } = await axios.get(`${ServerUrl}/api/interview/diagnostic`, {
+        withCredentials: true,
+      });
+      if (data && data.success && Array.isArray(data.question) && data.question.length > 0) {
+        toast.success("Cadre Diagnostic Viva loaded! 🎙️");
+        onStart(data);
+        return;
+      }
+    } catch (err) {
+      console.warn("Direct diagnostic load error:", err.message);
+    }
+    setRole(diagnosticStatus?.diagnosticInterview?.role || role);
+    handleStart();
   };
 
   return (
@@ -204,6 +245,31 @@ const Step1 = ({ onStart }) => {
               </p>
             </div>
 
+            {diagnosticStatus && !diagnosticStatus.isInterviewCompleted && (
+              <div className="mb-3 p-3.5 rounded-2xl bg-gradient-to-r from-blue-500/10 via-indigo-500/10 to-purple-500/10 border-2 border-indigo-500/40 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-xs">
+                <div className="space-y-1">
+                  <span className="inline-flex items-center gap-1 text-[10px] font-black uppercase text-indigo-700 dark:text-indigo-300 bg-indigo-100 dark:bg-indigo-950 px-2 py-0.5 rounded-md">
+                    <BsShieldCheck size={11} className="text-indigo-500 animate-pulse" />
+                    <span>Official Cadre Diagnostic Viva Assigned</span>
+                  </span>
+                  <h4 className="text-xs font-black text-slate-900 dark:text-white">
+                    {diagnosticStatus.diagnosticInterview?.role || "Cadre Oral Board Viva Voce"}
+                  </h4>
+                  <p className="text-[10px] text-slate-600 dark:text-slate-400">
+                    Mandatory baseline assessment to establish oral reasoning & governance metrics.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleStartDiagnostic}
+                  className="px-3.5 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-md shrink-0 flex items-center gap-1.5 cursor-pointer hover:scale-105 transition"
+                >
+                  <BsFillCameraVideoFill size={11} />
+                  <span>Start Official Viva →</span>
+                </button>
+              </div>
+            )}
+
             <div className="space-y-3">
               <div>
                 <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1">
@@ -226,11 +292,10 @@ const Step1 = ({ onStart }) => {
                       key={r}
                       type="button"
                       onClick={() => setRole(r)}
-                      className={`px-2 py-0.5 rounded-lg text-[10px] font-bold transition-all cursor-pointer ${
-                        role === r
+                      className={`px-2 py-0.5 rounded-lg text-[10px] font-bold transition-all cursor-pointer ${role === r
                           ? "bg-blue-600 text-white shadow-xs"
                           : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700"
-                      }`}
+                        }`}
                     >
                       {r}
                     </button>

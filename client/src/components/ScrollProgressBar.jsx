@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback, useRef } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { useLocation } from "react-router-dom";
 import {
   motion,
@@ -189,7 +189,6 @@ const ScrollProgressBar = () => {
                 />
               </div>
 
-              {/* Scroll percentage readout */}
               <span className="text-xs font-mono font-black tracking-tight pr-1">
                 {scrollPercent}%
               </span>

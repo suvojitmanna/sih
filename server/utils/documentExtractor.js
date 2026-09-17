@@ -49,7 +49,6 @@ export const extractPptxText = async (buffer) => {
     const slides = [];
     const notes = {};
 
-    // 1. Gather all speaker notes
     zipEntries.forEach((entry) => {
       const match = entry.entryName.match(
         /ppt\/notesSlides\/notesSlide(\d+)\.xml/i,
@@ -64,7 +63,6 @@ export const extractPptxText = async (buffer) => {
       }
     });
 
-    // 2. Gather all slides
     zipEntries.forEach((entry) => {
       const match = entry.entryName.match(/ppt\/slides\/slide(\d+)\.xml/i);
       if (match) {

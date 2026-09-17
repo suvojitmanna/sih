@@ -4,30 +4,27 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-// Generate a cryptographically secure 6-digit numeric OTP
 export const generateSecureOtp = () => {
-    return crypto.randomInt(100000, 1000000).toString();
+  return crypto.randomInt(100000, 1000000).toString();
 };
 
-// Create Nodemailer Transporter
 const createTransporter = () => {
-    if (process.env.EMAIL_USER && process.env.EMAIL_PASSWORD) {
-        return nodemailer.createTransport({
-            host: process.env.EMAIL_HOST || "smtp.gmail.com",
-            port: Number(process.env.EMAIL_PORT) || 587,
-            secure: Number(process.env.EMAIL_PORT) === 465,
-            auth: {
-                user: process.env.EMAIL_USER,
-                pass: process.env.EMAIL_PASSWORD,
-            },
-        });
-    }
-    return null;
+  if (process.env.EMAIL_USER && process.env.EMAIL_PASSWORD) {
+    return nodemailer.createTransport({
+      host: process.env.EMAIL_HOST || "smtp.gmail.com",
+      port: Number(process.env.EMAIL_PORT) || 587,
+      secure: Number(process.env.EMAIL_PORT) === 465,
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASSWORD,
+      },
+    });
+  }
+  return null;
 };
 
-// Government of India / NSSTA Branded Email Template
 const getEmailHtmlTemplate = ({ title, preheader, name, otp, purposeText }) => {
-    return `
+  return `
     <!DOCTYPE html>
     <html lang="en">
     <head>
@@ -87,79 +84,138 @@ const getEmailHtmlTemplate = ({ title, preheader, name, otp, purposeText }) => {
     `;
 };
 
-// Send Signup Account Verification OTP
 export const sendSignupOtp = async (email, name, otp) => {
-    try {
-        const transporter = createTransporter();
-        const mailOptions = {
-            from: `"${process.env.EMAIL_FROM_NAME || 'MoSPI-NSSTA Skill Intelligence'}" <${process.env.EMAIL_FROM || process.env.EMAIL_USER || 'no-reply@mospi.gov.in'}>`,
-            to: email,
-            subject: `[NSSTA-MoSPI] Your Account Verification Code: ${otp}`,
-            html: getEmailHtmlTemplate({
-                title: "Verify Your Account - NSSTA MoSPI",
-                preheader: `Your verification code is ${otp}`,
-                name,
-                otp,
-                purposeText: "Thank you for registering on the <strong>AI-Enabled Skill Intelligence and Learning Platform</strong> for India's Official Statistical System. Please enter the verification code below to activate your learner profile.",
-            }),
-        };
+  try {
+    const transporter = createTransporter();
+    const mailOptions = {
+      from: `"${process.env.EMAIL_FROM_NAME || "MoSPI-NSSTA Skill Intelligence"}" <${process.env.EMAIL_FROM || process.env.EMAIL_USER || "no-reply@mospi.gov.in"}>`,
+      to: email,
+      subject: `[NSSTA-MoSPI] Your Account Verification Code: ${otp}`,
+      html: getEmailHtmlTemplate({
+        title: "Verify Your Account - NSSTA MoSPI",
+        preheader: `Your verification code is ${otp}`,
+        name,
+        otp,
+        purposeText:
+          "Thank you for registering on the <strong>AI-Enabled Skill Intelligence and Learning Platform</strong> for India's Official Statistical System. Please enter the verification code below to activate your learner profile.",
+      }),
+    };
 
-        if (transporter) {
-            const info = await transporter.sendMail(mailOptions);
-            console.log(`[EMAIL SERVICE] Signup OTP sent to ${email} (MessageId: ${info.messageId})`);
-            return { success: true, messageId: info.messageId };
-        } else {
-            console.log(`\n========================================================`);
-            console.log(`[DEV EMAIL SIMULATOR] SIGNUP OTP FOR ${email} (${name}):`);
-            console.log(`>>> OTP: ${otp} <<< (Valid for 10 minutes)`);
-            console.log(`========================================================\n`);
-            return { success: true, simulated: true };
-        }
-    } catch (error) {
-        console.error(`[EMAIL ERROR] Failed to send signup OTP to ${email}:`, error.message);
-        // Fallback log for local dev continuity
-        console.log(`\n>>> [DEV FALLBACK OTP] For ${email}: ${otp} <<<\n`);
-        return { success: true, fallback: true, error: error.message };
+    if (transporter) {
+      const info = await transporter.sendMail(mailOptions);
+      return { success: true, messageId: info.messageId };
+    } else {
+      return { success: true, simulated: true };
     }
+  } catch (error) {
+    console.error(
+      `[EMAIL ERROR] Failed to send signup OTP to ${email}:`,
+      error.message,
+    );
+    return { success: true, fallback: true, error: error.message };
+  }
 };
 
-// Send Login 2FA Verification OTP
 export const sendLoginOtp = async (email, name, otp) => {
-    try {
-        const transporter = createTransporter();
-        const mailOptions = {
-            from: `"${process.env.EMAIL_FROM_NAME || 'MoSPI-NSSTA Skill Intelligence'}" <${process.env.EMAIL_FROM || process.env.EMAIL_USER || 'no-reply@mospi.gov.in'}>`,
-            to: email,
-            subject: `[NSSTA-MoSPI] Your Login Security Code: ${otp}`,
-            html: getEmailHtmlTemplate({
-                title: "Security Login Verification - NSSTA MoSPI",
-                preheader: `Your login code is ${otp}`,
-                name,
-                otp,
-                purposeText: "A secure sign-in attempt was initiated for your Official Statistics Learner account. Use the code below to complete authentication.",
-            }),
-        };
+  try {
+    const transporter = createTransporter();
+    const mailOptions = {
+      from: `"${process.env.EMAIL_FROM_NAME || "MoSPI-NSSTA Skill Intelligence"}" <${process.env.EMAIL_FROM || process.env.EMAIL_USER || "no-reply@mospi.gov.in"}>`,
+      to: email,
+      subject: `[NSSTA-MoSPI] Your Login Security Code: ${otp}`,
+      html: getEmailHtmlTemplate({
+        title: "Security Login Verification - NSSTA MoSPI",
+        preheader: `Your login code is ${otp}`,
+        name,
+        otp,
+        purposeText:
+          "A secure sign-in attempt was initiated for your Official Statistics Learner account. Use the code below to complete authentication.",
+      }),
+    };
 
-        if (transporter) {
-            const info = await transporter.sendMail(mailOptions);
-            console.log(`[EMAIL SERVICE] Login OTP sent to ${email} (MessageId: ${info.messageId})`);
-            return { success: true, messageId: info.messageId };
-        } else {
-            console.log(`\n========================================================`);
-            console.log(`[DEV EMAIL SIMULATOR] LOGIN OTP FOR ${email} (${name}):`);
-            console.log(`>>> OTP: ${otp} <<< (Valid for 10 minutes)`);
-            console.log(`========================================================\n`);
-            return { success: true, simulated: true };
-        }
-    } catch (error) {
-        console.error(`[EMAIL ERROR] Failed to send login OTP to ${email}:`, error.message);
-        console.log(`\n>>> [DEV FALLBACK OTP] For ${email}: ${otp} <<<\n`);
-        return { success: true, fallback: true, error: error.message };
+    if (transporter) {
+      const info = await transporter.sendMail(mailOptions);
+      return { success: true, messageId: info.messageId };
+    } else {
+      return { success: true, simulated: true };
     }
+  } catch (error) {
+    console.error(
+      `[EMAIL ERROR] Failed to send login OTP to ${email}:`,
+      error.message,
+    );
+    return { success: true, fallback: true, error: error.message };
+  }
+};
+
+export const sendPasswordResetOtp = async (email, name, otp) => {
+  try {
+    const transporter = createTransporter();
+    const mailOptions = {
+      from: `"${process.env.EMAIL_FROM_NAME || "MoSPI-NSSTA Skill Intelligence"}" <${process.env.EMAIL_FROM || process.env.EMAIL_USER || "no-reply@mospi.gov.in"}>`,
+      to: email,
+      subject: `[NSSTA-MoSPI] Your Password Reset Security Code: ${otp}`,
+      html: getEmailHtmlTemplate({
+        title: "Password Reset Request - NSSTA MoSPI",
+        preheader: `Your password reset code is ${otp}`,
+        name,
+        otp,
+        purposeText:
+          "A request was received to reset your password on the <strong>AI-Enabled Skill Intelligence and Capacity Building Platform</strong>. Enter the 6-digit one-time code below to choose a new password.",
+      }),
+    };
+
+    if (transporter) {
+      const info = await transporter.sendMail(mailOptions);
+      return { success: true, messageId: info.messageId };
+    } else {
+      return { success: true, simulated: true };
+    }
+  } catch (error) {
+    console.error(
+      `[EMAIL ERROR] Failed to send password reset OTP to ${email}:`,
+      error.message,
+    );
+    return { success: true, fallback: true, error: error.message };
+  }
+};
+
+export const sendAlternateEmailOtp = async (email, name, otp) => {
+  try {
+    const transporter = createTransporter();
+    const mailOptions = {
+      from: `"${process.env.EMAIL_FROM_NAME || "MoSPI-NSSTA Skill Intelligence"}" <${process.env.EMAIL_FROM || process.env.EMAIL_USER || "no-reply@mospi.gov.in"}>`,
+      to: email,
+      subject: `[NSSTA-MoSPI] Your Alternate Email Verification Code: ${otp}`,
+      html: getEmailHtmlTemplate({
+        title: "Verify Alternate Email - NSSTA MoSPI",
+        preheader: `Your verification code is ${otp}`,
+        name,
+        otp,
+        purposeText:
+          "You have initiated a request to link or update this email address as your <strong>Alternate Recovery & Notification Email</strong> on the NSSTA-MoSPI Platform. Please enter the verification code below to confirm this address.",
+      }),
+    };
+
+    if (transporter) {
+      const info = await transporter.sendMail(mailOptions);
+      return { success: true, messageId: info.messageId };
+    } else {
+      return { success: true, simulated: true };
+    }
+  } catch (error) {
+    console.error(
+      `[EMAIL ERROR] Failed to send alternate email OTP to ${email}:`,
+      error.message,
+    );
+    return { success: true, fallback: true, error: error.message };
+  }
 };
 
 export default {
-    generateSecureOtp,
-    sendSignupOtp,
-    sendLoginOtp,
+  generateSecureOtp,
+  sendSignupOtp,
+  sendLoginOtp,
+  sendPasswordResetOtp,
+  sendAlternateEmailOtp,
 };

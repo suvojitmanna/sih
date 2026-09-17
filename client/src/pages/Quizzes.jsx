@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import BackButton from "../components/BackButton";
@@ -8,15 +8,12 @@ import axios from "axios";
 import toast from "react-hot-toast";
 import {
   FaTasks,
-  FaPlus,
   FaPlay,
   FaHistory,
   FaClock,
-  FaAward,
   FaCheckCircle,
   FaHandSparkles,
 } from "react-icons/fa";
-import { HiSparkles } from "react-icons/hi";
 import { BsShieldCheck } from "react-icons/bs";
 import { CardGridSkeleton } from "../components/SkeletonLoader";
 
@@ -32,16 +29,37 @@ const SAMPLE_TOPICS = [
 
 const Quizzes = () => {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState("explore"); // "explore" | "history"
+  const [activeTab, setActiveTab] = useState("explore");
   const [quizzes, setQuizzes] = useState([]);
   const [myAttempts, setMyAttempts] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Modal State for AI Generator
+  const isQuizMastered = (quiz) => {
+    if (!quiz) return false;
+    const targetId = String(quiz._id || "");
+    const targetTitle = (quiz.title || "").trim().toLowerCase();
+
+    return (myAttempts || []).some((att) => {
+      const attQuizId = String(
+        (att.quizId && typeof att.quizId === "object" ? att.quizId._id : att.quizId) || ""
+      );
+      const attTitle = (att.quizTitle || "").trim().toLowerCase();
+
+      const isIdMatch = Boolean(targetId && attQuizId && targetId === attQuizId);
+      const isTitleMatch = Boolean(targetTitle && attTitle && targetTitle === attTitle);
+
+      const score = Number(att.score ?? att.accuracy ?? 0);
+      return (isIdMatch || isTitleMatch) && score >= 75;
+    });
+  };
+
+  const availableQuizzes = (quizzes || []).filter((quiz) => !isQuizMastered(quiz));
+  const masteredQuizzesCount = (quizzes || []).filter((quiz) => isQuizMastered(quiz)).length;
+
   const [showGenModal, setShowGenModal] = useState(false);
   const [topic, setTopic] = useState(SAMPLE_TOPICS[0]);
   const [customTopic, setCustomTopic] = useState("");
-  const [domain, setDomain] = useState("Statistical Competencies");
+  const [domain] = useState("Statistical Competencies");
   const [difficulty, setDifficulty] = useState("Medium");
   const [numQuestions, setNumQuestions] = useState(5);
   const [genLoading, setGenLoading] = useState(false);
@@ -65,6 +83,20 @@ const Quizzes = () => {
 
   useEffect(() => {
     fetchQuizzesAndAttempts();
+
+    const handleRealtimeSync = () => {
+      fetchQuizzesAndAttempts();
+    };
+
+    window.addEventListener("assessmentCompleted", handleRealtimeSync);
+    window.addEventListener("storage", handleRealtimeSync);
+    window.addEventListener("focus", handleRealtimeSync);
+
+    return () => {
+      window.removeEventListener("assessmentCompleted", handleRealtimeSync);
+      window.removeEventListener("storage", handleRealtimeSync);
+      window.removeEventListener("focus", handleRealtimeSync);
+    };
   }, []);
 
   const handleGenerateQuiz = async (e) => {
@@ -111,7 +143,6 @@ const Quizzes = () => {
           </span>
         </div>
 
-        {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-xs">
           <div>
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 dark:bg-blue-950 text-blue-700 dark:text-blue-300 text-xs font-bold uppercase tracking-wider mb-2">
@@ -125,6 +156,14 @@ const Quizzes = () => {
               Benchmark your conceptual mastery, receive instant topic-level
               diagnostics, and update your competency profile.
             </p>
+            {masteredQuizzesCount > 0 && (
+              <div className="inline-flex items-center gap-1.5 mt-2.5 px-3 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 text-[11px] font-bold text-emerald-700 dark:text-emerald-400">
+                <FaCheckCircle size={11} className="text-emerald-500 shrink-0" />
+                <span>
+                  {masteredQuizzesCount} assessment{masteredQuizzesCount > 1 ? "s" : ""} mastered (≥ 75% marks obtained) • Archived from available list
+                </span>
+              </div>
+            )}
           </div>
 
           <div className="flex items-center gap-3">
@@ -132,20 +171,20 @@ const Quizzes = () => {
               <button
                 onClick={() => setActiveTab("explore")}
                 className={`px-3.5 py-2 rounded-xl transition-all cursor-pointer ${activeTab === "explore"
-                    ? "bg-white dark:bg-slate-900 text-blue-700 dark:text-blue-400 shadow-xs"
-                    : "text-slate-500 hover:text-slate-900 dark:hover:text-white"
+                  ? "bg-white dark:bg-slate-900 text-blue-700 dark:text-blue-400 shadow-xs"
+                  : "text-slate-500 hover:text-slate-900 dark:hover:text-white"
                   }`}
               >
-                Available Quizzes
+                Available Quizzes ({availableQuizzes.length})
               </button>
               <button
                 onClick={() => setActiveTab("history")}
                 className={`px-3.5 py-2 rounded-xl transition-all cursor-pointer ${activeTab === "history"
-                    ? "bg-white dark:bg-slate-900 text-blue-700 dark:text-blue-400 shadow-xs"
-                    : "text-slate-500 hover:text-slate-900 dark:hover:text-white"
+                  ? "bg-white dark:bg-slate-900 text-blue-700 dark:text-blue-400 shadow-xs"
+                  : "text-slate-500 hover:text-slate-900 dark:hover:text-white"
                   }`}
               >
-                My Past Attempts
+                My Past Attempts ({myAttempts.length})
               </button>
             </div>
 
@@ -159,75 +198,127 @@ const Quizzes = () => {
           </div>
         </div>
 
-        {/* TAB 1: EXPLORE QUIZZES */}
         {activeTab === "explore" && (
           <div className="space-y-6">
             {loading ? (
               <CardGridSkeleton count={6} />
+            ) : availableQuizzes.length === 0 ? (
+              <div className="text-center py-16 px-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-8 shadow-xs space-y-4">
+                <div className="w-14 h-14 rounded-2xl bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mx-auto shadow-xs">
+                  <FaCheckCircle size={26} />
+                </div>
+                <div>
+                  <h3 className="text-base sm:text-lg font-black text-slate-900 dark:text-white">
+                    {masteredQuizzesCount > 0
+                      ? "All Assessments Mastered (75%+ Marks Obtained) 🎓"
+                      : "No Assessments Available"}
+                  </h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 max-w-md mx-auto leading-relaxed">
+                    {masteredQuizzesCount > 0
+                      ? "You have achieved 75% or higher marks on all completed quizzes! As per MoSPI competency standards, mastered quizzes are omitted from this page. You can review your scores and explanations in My Past Attempts or generate a fresh AI quiz below."
+                      : "No assessments currently assigned. Click the button below to generate an on-demand AI assessment tailored to your statistical cadre track."}
+                  </p>
+                </div>
+                <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
+                  <button
+                    onClick={() => setShowGenModal(true)}
+                    className="px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition shadow-xs flex items-center gap-1.5 cursor-pointer"
+                  >
+                    <FaHandSparkles size={11} className="text-amber-300" />
+                    <span>Generate New AI Quiz</span>
+                  </button>
+                  <button
+                    onClick={() => setActiveTab("history")}
+                    className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl text-xs font-bold transition cursor-pointer"
+                  >
+                    <span>View My Past Attempts ({myAttempts.length})</span>
+                  </button>
+                </div>
+              </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-                {(quizzes || []).map((quiz) => (
-                  <div
-                    key={quiz._id}
-                    className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-5 shadow-xs hover:border-blue-400 transition-all flex flex-col justify-between"
-                  >
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between">
-                        <span className="text-[10px] font-extrabold text-blue-700 dark:text-blue-400 bg-blue-50 dark:bg-blue-950 px-2.5 py-0.5 rounded-full uppercase">
-                          {quiz.domain}
+                {availableQuizzes.map((quiz) => {
+                  const isDiag = quiz.isDiagnostic === true;
+                  return (
+                    <div
+                      key={quiz._id}
+                      className={`border rounded-3xl p-5 shadow-xs transition-all flex flex-col justify-between ${isDiag
+                          ? "bg-gradient-to-br from-amber-50/60 via-white to-orange-50/40 dark:from-slate-900 dark:via-amber-950/20 dark:to-slate-900 border-2 border-amber-500/80 dark:border-amber-400/70 shadow-lg hover:shadow-xl hover:scale-[1.01]"
+                          : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:border-blue-400"
+                        }`}
+                    >
+                      <div className="space-y-3">
+                        {isDiag && (
+                          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/20 border border-amber-500/40 text-amber-800 dark:text-amber-300 text-[10px] font-black uppercase tracking-wider">
+                            <BsShieldCheck size={12} className="text-amber-500 animate-pulse" />
+                            <span>Official Cadre Diagnostic Baseline Exam</span>
+                          </div>
+                        )}
+
+                        <div className="flex items-center justify-between">
+                          <span
+                            className={`text-[10px] font-extrabold px-2.5 py-0.5 rounded-full uppercase ${isDiag
+                                ? "text-amber-800 dark:text-amber-300 bg-amber-100 dark:bg-amber-950"
+                                : "text-blue-700 dark:text-blue-400 bg-blue-50 dark:bg-blue-950"
+                              }`}
+                          >
+                            {quiz.domain}
+                          </span>
+                          <span
+                            className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${quiz.difficulty === "Hard"
+                                ? "bg-rose-100 text-rose-700"
+                                : quiz.difficulty === "Easy"
+                                  ? "bg-emerald-100 text-emerald-700"
+                                  : "bg-amber-100 text-amber-700"
+                              }`}
+                          >
+                            {quiz.difficulty}
+                          </span>
+                        </div>
+
+                        <h4 className="font-bold text-sm sm:text-base text-slate-900 dark:text-white leading-snug">
+                          {quiz.title}
+                        </h4>
+
+                        <div className="flex items-center gap-4 text-xs text-slate-500">
+                          <span className="flex items-center gap-1.5">
+                            <FaTasks size={11} className={isDiag ? "text-amber-500" : "text-blue-500"} />
+                            <span>{quiz.questions?.length || 5} Questions</span>
+                          </span>
+                          <span className="flex items-center gap-1.5">
+                            <FaClock size={11} className="text-amber-500" />
+                            <span>{quiz.timeLimitMinutes || 10} Mins</span>
+                          </span>
+                        </div>
+
+                        <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 text-[11px] text-slate-600 dark:text-slate-400">
+                          Topic: <strong>{quiz.topic}</strong>
+                        </div>
+                      </div>
+
+                      <div className="mt-5 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
+                        <span className="text-[11px] font-bold text-slate-400">
+                          Pass Mark: 60%
                         </span>
-                        <span
-                          className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${quiz.difficulty === "Hard"
-                              ? "bg-rose-100 text-rose-700"
-                              : quiz.difficulty === "Easy"
-                                ? "bg-emerald-100 text-emerald-700"
-                                : "bg-amber-100 text-amber-700"
+                        <button
+                          onClick={() => navigate(`/quiz/${quiz._id}`)}
+                          className={`px-4 py-2 rounded-xl text-white font-bold text-xs flex items-center gap-1.5 hover:shadow-md transition-all cursor-pointer ${isDiag
+                              ? "bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 shadow-md"
+                              : "bg-gradient-to-r from-blue-700 to-indigo-700"
                             }`}
                         >
-                          {quiz.difficulty}
-                        </span>
-                      </div>
-
-                      <h4 className="font-bold text-sm sm:text-base text-slate-900 dark:text-white leading-snug">
-                        {quiz.title}
-                      </h4>
-
-                      <div className="flex items-center gap-4 text-xs text-slate-500">
-                        <span className="flex items-center gap-1.5">
-                          <FaTasks size={11} className="text-blue-500" />
-                          <span>{quiz.questions?.length || 5} Questions</span>
-                        </span>
-                        <span className="flex items-center gap-1.5">
-                          <FaClock size={11} className="text-amber-500" />
-                          <span>{quiz.timeLimitMinutes || 10} Mins</span>
-                        </span>
-                      </div>
-
-                      <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 text-[11px] text-slate-600 dark:text-slate-400">
-                        Topic: <strong>{quiz.topic}</strong>
+                          <FaPlay size={10} />
+                          <span>{isDiag ? "Start Diagnostic Intake" : "Start Assessment"}</span>
+                        </button>
                       </div>
                     </div>
-
-                    <div className="mt-5 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
-                      <span className="text-[11px] font-bold text-slate-400">
-                        Pass Mark: 60%
-                      </span>
-                      <button
-                        onClick={() => navigate(`/quiz/${quiz._id}`)}
-                        className="px-4 py-2 rounded-xl bg-gradient-to-r from-blue-700 to-indigo-700 text-white font-bold text-xs flex items-center gap-1.5 hover:shadow-md transition-all cursor-pointer"
-                      >
-                        <FaPlay size={10} />
-                        <span>Start Assessment</span>
-                      </button>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>
         )}
 
-        {/* TAB 2: MY PAST ATTEMPTS */}
         {activeTab === "history" && (
           <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-xs space-y-4">
             <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
@@ -249,6 +340,7 @@ const Quizzes = () => {
                     <tr>
                       <th className="p-3.5 rounded-l-xl">Assessment Title</th>
                       <th className="p-3.5">Topic</th>
+                      <th className="p-3.5">Grade</th>
                       <th className="p-3.5">Score</th>
                       <th className="p-3.5">Accuracy</th>
                       <th className="p-3.5">Result</th>
@@ -256,41 +348,65 @@ const Quizzes = () => {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                    {(myAttempts || []).map((att, idx) => (
-                      <tr
-                        key={idx}
-                        className="hover:bg-slate-50/50 dark:hover:bg-slate-800/40"
-                      >
-                        <td className="p-3.5 font-bold text-slate-800 dark:text-slate-200">
-                          {att.quizTitle || "Official Statistics Test"}
-                        </td>
-                        <td className="p-3.5 text-slate-500 font-medium">
-                          {att.topic}
-                        </td>
-                        <td className="p-3.5">
-                          <span className="font-extrabold text-blue-600 dark:text-blue-400">
-                            {att.score}%
-                          </span>
-                        </td>
-                        <td className="p-3.5 font-semibold text-slate-600 dark:text-slate-300">
-                          {att.correctCount}/{att.totalQuestions} (
-                          {att.accuracy}%)
-                        </td>
-                        <td className="p-3.5">
-                          <span
-                            className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${att.passed
+                    {(myAttempts || []).map((att, idx) => {
+                      const sc = att.score ?? 0;
+                      const grade =
+                        sc >= 90 ? "A+" : sc >= 80 ? "A" : sc >= 70 ? "B" : sc >= 60 ? "C" : sc >= 50 ? "D" : "F";
+                      return (
+                        <tr
+                          key={idx}
+                          className="hover:bg-slate-50/50 dark:hover:bg-slate-800/40"
+                        >
+                          <td className="p-3.5 font-bold text-slate-800 dark:text-slate-200">
+                            {att.quizTitle || "Official Statistics Test"}
+                          </td>
+                          <td className="p-3.5 text-slate-500 font-medium">
+                            {att.topic}
+                          </td>
+                          <td className="p-3.5">
+                            <div className="flex items-center gap-1.5">
+                              <span
+                                className={`px-2.5 py-1 rounded-lg text-[11px] font-black ${sc >= 75
+                                    ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 border border-emerald-300/40"
+                                    : sc >= 60
+                                      ? "bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300 border border-blue-300/40"
+                                      : "bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300 border border-amber-300/40"
+                                  }`}
+                              >
+                                Grade {grade}
+                              </span>
+                              {sc >= 75 && (
+                                <span className="px-1.5 py-0.5 rounded-md text-[9px] font-black bg-emerald-600 text-white shadow-2xs">
+                                  75%+ Mastered
+                                </span>
+                              )}
+                            </div>
+                          </td>
+                          <td className="p-3.5">
+                            <span className="font-extrabold text-blue-600 dark:text-blue-400">
+                              {att.score}%
+                            </span>
+                          </td>
+                          <td className="p-3.5 font-semibold text-slate-600 dark:text-slate-300">
+                            {att.correctCount}/{att.totalQuestions} (
+                            {att.accuracy}%)
+                          </td>
+                          <td className="p-3.5">
+                            <span
+                              className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${att.passed
                                 ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300"
                                 : "bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-300"
-                              }`}
-                          >
-                            {att.passed ? "Passed" : "Needs Review"}
-                          </span>
-                        </td>
-                        <td className="p-3.5 text-slate-400 text-[11px]">
-                          {new Date(att.createdAt).toLocaleDateString()}
-                        </td>
-                      </tr>
-                    ))}
+                                }`}
+                            >
+                              {att.passed ? "Passed" : "Needs Review"}
+                            </span>
+                          </td>
+                          <td className="p-3.5 text-slate-400 text-[11px]">
+                            {new Date(att.createdAt).toLocaleDateString()}
+                          </td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>
@@ -299,7 +415,6 @@ const Quizzes = () => {
         )}
       </main>
 
-      {/* AI QUIZ GENERATOR MODAL */}
       {showGenModal && (
         <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-md flex items-center justify-center p-4">
           <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-2xl space-y-5">

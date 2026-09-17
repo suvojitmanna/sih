@@ -1,5 +1,3 @@
-// Official Statistical System Competency Framework (MoSPI / NSSTA)
-
 export const COMPETENCY_DOMAINS = [
   {
     id: "statistical",
@@ -175,7 +173,6 @@ export const COMPETENCY_DOMAINS = [
   },
 ];
 
-// Target benchmark requirements by Cadre / Job Role in Official Statistical System
 export const ROLE_BENCHMARK_PROFILES = {
   "Indian Statistical Service (ISS) Officer": {
     minScore: 78,

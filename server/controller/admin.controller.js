@@ -8,15 +8,23 @@ import SupportMessage from "../models/supportMessageModel.js";
 
 export const getAdminOverviewMetrics = async (req, res) => {
     try {
-        const totalLearners = await User.countDocuments();
-        const verifiedLearners = await User.countDocuments({ emailVerified: true });
+        const learnerRoleFilter = { role: { $nin: ["admin", "trainer"] } };
+        const totalLearners = await User.countDocuments(learnerRoleFilter);
+        const verifiedLearners = await User.countDocuments({ emailVerified: true, ...learnerRoleFilter });
         const totalQuizzesAttempted = await QuizAttempt.countDocuments();
         const totalInterviews = await Interview.countDocuments();
         const totalMaterials = await Material.countDocuments();
         const pendingMaterialRequests = await MaterialRequest.countDocuments({ status: "pending" });
         const totalSubmissions = await AssignmentSubmission.countDocuments();
 
-        const users = await User.find({}, "department jobRole overallCompetencyScore overallLevel learningHours quizzesCompleted skillGaps competencies");
+        const users = await User.find(learnerRoleFilter, "department jobRole overallCompetencyScore overallLevel learningHours quizzesCompleted skillGaps competencies");
+
+        const userIds = (users || []).map((u) => u._id);
+        const completedInterviews = await Interview.find({
+            userId: { $in: userIds },
+            status: "completed",
+        }).select("userId");
+        const completedVivaUserIds = new Set(completedInterviews.map((iv) => iv.userId.toString()));
 
         let sumScore = 0;
         let sumHours = 0;
@@ -25,7 +33,11 @@ export const getAdminOverviewMetrics = async (req, res) => {
         const gapCounts = {};
 
         (users || []).forEach((u) => {
-            sumScore += u.overallCompetencyScore || 65;
+            const hasCompletedViva = completedVivaUserIds.has(u._id.toString());
+            const userScore = hasCompletedViva
+                ? (u.overallCompetencyScore !== undefined && u.overallCompetencyScore !== null ? u.overallCompetencyScore : 0)
+                : 0;
+            sumScore += userScore;
             sumHours += u.learningHours || 0;
 
             const dept = u.department || "MoSPI Headquarters";
@@ -43,7 +55,7 @@ export const getAdminOverviewMetrics = async (req, res) => {
             }
         });
 
-        const avgCompetency = (users && users.length) ? Math.round(sumScore / users.length) : 70;
+        const avgCompetency = (users && users.length) ? Math.round(sumScore / users.length) : 0;
 
         const topDeficits = Object.keys(gapCounts)
             .map((k) => ({ competencyName: k, count: gapCounts[k] }))
@@ -86,7 +98,9 @@ export const getAdminOverviewMetrics = async (req, res) => {
 export const getLearnersDirectory = async (req, res) => {
     try {
         const { search = "", department = "", cadre = "" } = req.query;
-        const query = {};
+        const query = {
+            role: { $nin: ["admin", "trainer"] },
+        };
 
         if (search) {
             query.$or = [
@@ -101,9 +115,28 @@ export const getLearnersDirectory = async (req, res) => {
             .sort({ createdAt: -1 })
             .limit(60);
 
+        const learnerIds = learners.map((l) => l._id);
+        const completedInterviews = await Interview.find({
+            userId: { $in: learnerIds },
+            status: "completed",
+        }).select("userId");
+        const completedVivaUserIds = new Set(completedInterviews.map((iv) => iv.userId.toString()));
+
+        const learnersWithVivaStatus = learners.map((l) => {
+            const lObj = l.toObject();
+            const hasCompletedViva = completedVivaUserIds.has(l._id.toString());
+            lObj.hasCompletedViva = hasCompletedViva;
+
+            if (!hasCompletedViva) {
+                lObj.overallCompetencyScore = 0;
+                lObj.overallLevel = "Novice (Viva Pending)";
+            }
+            return lObj;
+        });
+
         return res.status(200).json({
             success: true,
-            learners,
+            learners: learnersWithVivaStatus,
         });
     } catch (error) {
         return res.status(500).json({ success: false, message: error.message });
@@ -125,13 +158,32 @@ export const getLearnerDetail = async (req, res) => {
             MaterialRequest.find({ requesterId: id }).sort({ createdAt: -1 }).limit(20),
         ]);
 
+        const hasCompletedQuiz = Boolean(
+            (quizAttempts && quizAttempts.length > 0) ||
+            (learner.quizzesCompleted && learner.quizzesCompleted > 0)
+        );
+        const hasCompletedInterview = Boolean(
+            interviews && interviews.some((i) => i.status === "completed" || i.finalScore || i.score)
+        );
+        const isDiagnosticCompleted = hasCompletedQuiz && hasCompletedInterview;
+
+        const learnerObj = learner.toObject();
+        if (!hasCompletedInterview) {
+            learnerObj.overallCompetencyScore = 0;
+            learnerObj.overallLevel = "Novice (Viva Pending)";
+        }
+
         return res.status(200).json({
             success: true,
-            learner,
+            learner: learnerObj,
             interviews,
             quizAttempts,
             submissions,
             materialRequests,
+            isDiagnosticCompleted,
+            hasCompletedQuiz,
+            hasCompletedInterview,
+            hasCompletedViva: hasCompletedInterview,
         });
     } catch (error) {
         console.error("[GET LEARNER DETAIL ERROR]", error);
@@ -203,7 +255,6 @@ export const fulfillMaterialRequest = async (req, res) => {
 
         await request.save();
 
-        // Create direct notification message to requester
         try {
             if (request.requesterId) {
                 const reqUser = await User.findById(request.requesterId);
@@ -302,7 +353,6 @@ export const dispatchMaterial = async (req, res) => {
             uploadedBy: req.user._id,
         });
 
-        // Create direct or broadcast notification message for officers
         try {
             if (targetUserId && directTargetUser) {
                 await SupportMessage.create({
@@ -404,7 +454,6 @@ export const dispatchAssignment = async (req, res) => {
             adminNotes,
         });
 
-        // Create direct or broadcast notification message for officers
         try {
             const formattedDueDate = dueDate
                 ? new Date(dueDate).toLocaleString("en-IN", {

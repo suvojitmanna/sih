@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useLocation } from "react-router-dom";
 import { useSelector } from "react-redux";
 import axios from "axios";
@@ -52,10 +52,20 @@ const formatDateTime = (dateStr) => {
   });
 };
 
+const CORE_PORTAL_PAGES = [
+  "/",
+  "/welcome",
+  "/dashboard",
+  "/competencies",
+  "/history",
+];
+
 const isAllowedRoute = (pathname) => {
   const clean = pathname.replace(/\/+$/, "") || "/";
-  if (clean === "/auth" || clean === "/privacy" || clean === "/terms" || clean.startsWith("/admin")) return false;
-  return true;
+  return CORE_PORTAL_PAGES.some((coreRoute) => {
+    if (coreRoute === "/") return clean === "/" || clean === "/welcome";
+    return clean === coreRoute || clean.startsWith(`${coreRoute}/`);
+  });
 };
 
 const LiveAdminChatWidget = () => {
@@ -96,7 +106,6 @@ const LiveAdminChatWidget = () => {
     return () => window.removeEventListener("open-nssta-helpdesk", handleOpenHelpdesk);
   }, []);
 
-  // Minimize chat box when clicking anywhere outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (
@@ -283,11 +292,17 @@ const LiveAdminChatWidget = () => {
   };
 
   useEffect(() => {
-    if (!isAllowed) return;
+    if (!isAllowed || !userData) return;
     fetchMessages();
     const interval = setInterval(() => fetchMessages(true), 2500);
     return () => clearInterval(interval);
-  }, [lastMessageCount, isOpen, isAllowed]);
+  }, [lastMessageCount, isOpen, isAllowed, userData]);
+
+  const scrollToBottom = () => {
+    if (messagesContainerRef.current) {
+      messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight;
+    }
+  };
 
   useEffect(() => {
     if (isOpen) {
@@ -295,12 +310,6 @@ const LiveAdminChatWidget = () => {
       scrollToBottom();
     }
   }, [isOpen, messages]);
-
-  const scrollToBottom = () => {
-    if (messagesContainerRef.current) {
-      messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight;
-    }
-  };
 
   const handleSendMessage = async (e) => {
     e.preventDefault();
@@ -347,7 +356,7 @@ const LiveAdminChatWidget = () => {
     setInputText(prompt);
   };
 
-  if (!isAllowed) {
+  if (!userData || !isAllowed) {
     return null;
   }
 

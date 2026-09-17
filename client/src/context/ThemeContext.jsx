@@ -1,9 +1,8 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
+import { createContext, useContext, useState, useEffect } from "react";
 
 const ThemeContext = createContext();
 
 export const ThemeProvider = ({ children }) => {
-  // Mode can be: 'system', 'dark', 'light' (Default: 'system')
   const [theme, setThemeState] = useState(() => {
     const saved = localStorage.getItem("theme");
     return saved === "dark" || saved === "light" || saved === "system" ? saved : "system";
@@ -44,7 +43,6 @@ export const ThemeProvider = ({ children }) => {
   useEffect(() => {
     applyTheme(theme);
 
-    // Dynamic OS listener for system mode
     const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
     const handleChange = () => {
       const current = localStorage.getItem("theme") || "system";

@@ -1,13 +1,12 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import BackButton from "../components/BackButton";
 import { ServerUrl } from "../App";
 import axios from "axios";
 import toast from "react-hot-toast";
-import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 import { setUserData } from "../redux/userSlice";
 import {
   FaBrain,
@@ -62,13 +61,11 @@ const CORE_EVALUATION_SKILLS = [
 const CompetencyAssessment = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { userData } = useSelector((state) => state.user);
 
   const [loading, setLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState("form"); // "form" | "results"
+  const [activeTab, setActiveTab] = useState("form");
   const [profile, setProfile] = useState(null);
 
-  // Form State
   const [jobRole, setJobRole] = useState(CADRE_LIST[0]);
   const [department, setDepartment] = useState(DEPARTMENT_LIST[0]);
   const [designation, setDesignation] = useState("Statistical Officer");
@@ -76,7 +73,6 @@ const CompetencyAssessment = () => {
   const [educationalQualification, setEducationalQualification] = useState("Master's in Statistics / Economics");
   const [ratings, setRatings] = useState({});
 
-  // Fetch initial profile
   const fetchProfile = async () => {
     try {
       const { data } = await axios.get(`${ServerUrl}/api/competencies/my-profile`, {
@@ -90,7 +86,6 @@ const CompetencyAssessment = () => {
         setWorkExperience(data.profile.workExperience || 3);
         setEducationalQualification(data.profile.educationalQualification || "Master's in Statistics / Economics");
 
-        // Initialize ratings from existing competencies
         const initialRatings = {};
         CORE_EVALUATION_SKILLS.forEach((skill) => {
           const found = (data.profile.competencies || []).find((c) => c.competencyName === skill.id);
@@ -122,7 +117,6 @@ const CompetencyAssessment = () => {
     e.preventDefault();
     setLoading(true);
     try {
-      // 1. Update Profile fields first
       await axios.put(
         `${ServerUrl}/api/competencies/update-profile`,
         {
@@ -135,7 +129,6 @@ const CompetencyAssessment = () => {
         { withCredentials: true }
       );
 
-      // 2. Trigger Gemini AI Assessment
       const { data } = await axios.post(
         `${ServerUrl}/api/competencies/assess`,
         { selfRatings: ratings },
@@ -147,7 +140,6 @@ const CompetencyAssessment = () => {
         if (data.user) {
           dispatch(setUserData(data.user));
         }
-        // Broadcast real-time event
         window.dispatchEvent(new CustomEvent("assessmentCompleted", { detail: data }));
         localStorage.setItem("lastAssessmentUpdate", Date.now().toString());
 
@@ -394,12 +386,12 @@ const CompetencyAssessment = () => {
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-xs flex items-center gap-4">
                 <div className="w-14 h-14 rounded-2xl bg-blue-50 dark:bg-blue-950 text-blue-600 flex items-center justify-center font-black text-xl">
-                  {profile?.overallCompetencyScore || 65}%
+                  {profile?.overallCompetencyScore !== undefined && profile?.overallCompetencyScore !== null ? profile.overallCompetencyScore : 0}%
                 </div>
                 <div>
                   <span className="text-xs font-semibold text-slate-500">Overall Competency Score</span>
                   <h3 className="text-xl font-bold text-slate-900 dark:text-white">
-                    {profile?.overallLevel || "Intermediate"} Level
+                    {profile?.overallLevel || "Novice"} Level
                   </h3>
                 </div>
               </div>
@@ -440,11 +432,20 @@ const CompetencyAssessment = () => {
 
               <div className="flex flex-wrap items-center gap-2">
                 <button
+                  onClick={() => navigate("/skill-gaps")}
+                  className="px-4 py-2 rounded-xl bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-xs shadow-md transition-all flex items-center gap-1.5 cursor-pointer"
+                >
+                  <BsBarChartSteps size={12} />
+                  <span>Deep Skill Gap Analysis</span>
+                  <FaArrowRight size={10} />
+                </button>
+
+                <button
                   onClick={() => navigate("/dashboard")}
-                  className="px-4 py-2 rounded-xl bg-gradient-to-r from-blue-700 to-indigo-700 hover:from-blue-800 hover:to-indigo-800 text-white font-bold text-xs shadow-md transition-all flex items-center gap-1.5 cursor-pointer"
+                  className="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-bold text-xs shadow-xs transition-all flex items-center gap-1.5 cursor-pointer"
                 >
                   <FaTachometerAlt size={12} />
-                  <span>View Live Dashboard</span>
+                  <span>Dashboard</span>
                   <FaArrowRight size={10} />
                 </button>
 

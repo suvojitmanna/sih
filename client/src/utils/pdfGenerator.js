@@ -1110,16 +1110,16 @@ export const generateCompetencyPDF = ({
     currentY + 19.5,
   );
   doc.text(
-  `AI Analysis: Multi-Domain Competency Assessment`,
-  margin + 5,
-  currentY + 25.5,
-);
+    `AI Analysis: Multi-Domain Competency Assessment`,
+    margin + 5,
+    currentY + 25.5,
+  );
 
-doc.text(
-  `Recommended Pathway: ${learningPath.length} Learning models`,
-  margin + 72,
-  currentY + 25.5,
-);
+  doc.text(
+    `Recommended Pathway: ${learningPath.length} Learning models`,
+    margin + 72,
+    currentY + 25.5,
+  );
 
   const badgeX = pageWidth - margin - 34;
   const badgeW = 30;
@@ -1436,11 +1436,160 @@ doc.text(
   doc.save(filename);
 };
 
+export const generatePortalComparisonPDF = ({ user: _user } = {}) => {
+  const doc = new jsPDF({
+    orientation: "portrait",
+    unit: "mm",
+    format: "a4",
+  });
+
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const margin = 14;
+
+  applyOfficialDecorations(
+    doc,
+    "ARCHITECTURAL COMPARISON: LEGACY VS SANKHYAIQ AI",
+    "Comparative Audit & Operational Differentiators • MoSPI & NSSTA",
+    "NSSTA-COMP-2026",
+  );
+
+  let currentY = 46;
+
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(13);
+  doc.setTextColor(30, 58, 138);
+  doc.text("EXECUTIVE COMPARATIVE ARCHITECTURE AUDIT", margin, currentY);
+
+  currentY += 6;
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(8.5);
+  doc.setTextColor(51, 65, 85);
+  const summaryText =
+    "This official comparative dossier outlines the transformative differences between legacy government training portals / generic LMS and the SankhyaIQ AI-Enabled Skill Intelligence Platform engineered specifically for India's Official Statistical System (MoSPI & NSSTA).";
+  const splitSummary = doc.splitTextToSize(summaryText, pageWidth - margin * 2);
+  doc.text(splitSummary, margin, currentY);
+  currentY += splitSummary.length * 4.5 + 4;
+
+  const comparisonData = [
+    [
+      "Cadre Competency Mapping",
+      "Generic non-cadre catalogs, one-size-fits-all",
+      "4-Domain MoSPI Framework across ISS, SSS, FOD, DES",
+      "+100% Cadre Specificity",
+    ],
+    [
+      "Skill Gap Diagnostics",
+      "Subjective annual ACR/APAR, no automated gap metric",
+      "SankhyaIQ AI Neural Engine real-time gap calculation (<75%)",
+      "Instant Gap Remediation",
+    ],
+    [
+      "Adaptive Learning Pathways",
+      "Passive video catalogs with manual keyword search",
+      "AI-curated sequential iGOT digital & NSSTA in-service roadmaps",
+      "95% Faster Skill Mastery",
+    ],
+    [
+      "Oral Viva Voce & Interview",
+      "Non-existent; requires manual in-person boards",
+      "Real-time voice speech-to-text oral examination with Gemini AI",
+      "Continuous Board Prep",
+    ],
+    [
+      "Training Manual MCQ Studio",
+      "Months of manual committee authoring",
+      "Upload survey manuals (PDF/TXT) to author MCQs in 30 seconds",
+      "Instant Syllabus Updates",
+    ],
+    [
+      "Official Performance Dossier",
+      "Basic unverified attendance certificate",
+      "MoSPI verifiable competency dossier with QR and national seal",
+      "Career Progression Record",
+    ],
+    [
+      "24/7 Contextual Assistant",
+      "Static FAQ page or email helpdesk",
+      "SankhyaCopilot AI trained in official statistical methodologies",
+      "Instant Methodology Guidance",
+    ],
+    [
+      "Executive Oversight & Chat",
+      "Delayed quarterly spreadsheets, fragmented records",
+      "Live heatmaps, material dispatch, and real-time officer support chat",
+      "100% Real-Time Visibility",
+    ],
+  ];
+
+  autoTable(doc, {
+    startY: currentY,
+    head: [
+      [
+        "Capability / Dimension",
+        "Legacy Government Portals",
+        "SankhyaIQ AI Platform (MoSPI / NSSTA)",
+        "Strategic Impact",
+      ],
+    ],
+    body: comparisonData,
+    margin: { left: margin, right: margin },
+    theme: "grid",
+    headStyles: {
+      fillColor: [30, 58, 138],
+      textColor: [255, 255, 255],
+      fontStyle: "bold",
+      fontSize: 8,
+      halign: "center",
+      cellPadding: 2.5,
+    },
+    bodyStyles: {
+      fontSize: 7.5,
+      textColor: [30, 41, 59],
+      cellPadding: 2.5,
+      valign: "middle",
+    },
+    columnStyles: {
+      0: { fontStyle: "bold", cellWidth: 38 },
+      1: { textColor: [185, 28, 28], cellWidth: 50 },
+      2: { textColor: [21, 128, 61], fontStyle: "bold", cellWidth: 58 },
+      3: {
+        textColor: [30, 58, 138],
+        fontStyle: "bold",
+        halign: "center",
+        cellWidth: 36,
+      },
+    },
+    alternateRowStyles: {
+      fillColor: [248, 250, 252],
+    },
+  });
+
+  const finalY = doc.lastAutoTable.finalY + 8;
+
+  if (finalY < 265) {
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(8.5);
+    doc.setTextColor(30, 58, 138);
+    doc.text("VERIFICATION & COMPLIANCE SEAL", margin, finalY);
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(7.5);
+    doc.setTextColor(100, 116, 139);
+    doc.text(
+      "Validated by SankhyaIQ AI Engine • Aligned with UN-NQAF & Digital Personal Data Protection (DPDP) Act 2023.",
+      margin,
+      finalY + 5,
+    );
+  }
+
+  doc.save("MoSPI_NSSTA_Portal_Architecture_Comparison.pdf");
+};
+
 export const generateModelHistoryPDF = ({
   type,
   record,
   user,
-  extraData = {},
+  extraData: _extraData = {},
 }) => {
   switch (type) {
     case "chat":
@@ -1459,6 +1608,8 @@ export const generateModelHistoryPDF = ({
         skillGaps: record?.skillGaps || user?.skillGaps || [],
         learningPath: record?.learningPath || user?.learningPath || [],
       });
+    case "comparison":
+      return generatePortalComparisonPDF({ user });
     default:
       console.warn("Unknown PDF type:", type);
       return generateChatPDF({ chat: record, user });
@@ -1472,4 +1623,5 @@ export default {
   generateQuizPDF,
   generateCompetencyPDF,
   generateModelHistoryPDF,
+  generatePortalComparisonPDF,
 };

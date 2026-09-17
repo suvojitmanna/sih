@@ -1,6 +1,5 @@
 import Chat from "../models/chatModel.js";
 
-// Create New Chat
 export const createChat = async (req, res) => {
     try {
         const userId = req.userId || req.user?._id;
@@ -26,7 +25,6 @@ export const createChat = async (req, res) => {
     }
 };
 
-// Get All Chats for Current User
 export const getChats = async (req, res) => {
     try {
         const userId = req.userId || req.user?._id;
@@ -46,7 +44,6 @@ export const getChats = async (req, res) => {
     }
 };
 
-// Get Single Chat
 export const getChatById = async (req, res) => {
     try {
         const userId = req.userId || req.user?._id;
@@ -73,7 +70,6 @@ export const getChatById = async (req, res) => {
     }
 };
 
-// Delete Chat
 export const deleteChat = async (req, res) => {
     try {
         const userId = req.userId || req.user?._id;

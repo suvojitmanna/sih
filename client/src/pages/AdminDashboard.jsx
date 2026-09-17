@@ -1,4 +1,5 @@
-import React, { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef } from "react";
+import { useSelector } from "react-redux";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import { ServerUrl } from "../App";
@@ -205,6 +206,9 @@ const QUICK_REPLIES = [
 ];
 
 const AdminDashboard = () => {
+  const { userData } = useSelector((state) => state.user);
+  const isTrainer = userData?.role === "trainer";
+
   const [activeTab, setActiveTab] = useState("overview");
   const [metrics, setMetrics] = useState(null);
   const [learners, setLearners] = useState([]);
@@ -213,7 +217,6 @@ const AdminDashboard = () => {
   const [submissions, setSubmissions] = useState([]);
   const [search, setSearch] = useState("");
   const [selectedCadreFilter, setSelectedCadreFilter] = useState("All");
-  const [loading, setLoading] = useState(true);
 
   const tabContainerRef = useRef(null);
 
@@ -256,7 +259,7 @@ const AdminDashboard = () => {
   const [showDispatchAssignmentModal, setShowDispatchAssignmentModal] =
     useState(false);
   const [dispatchedAssignments, setDispatchedAssignments] = useState([]);
-  const [assignmentSubTab, setAssignmentSubTab] = useState("posted"); // "posted" | "submissions"
+  const [assignmentSubTab, setAssignmentSubTab] = useState("posted");
   const [timerPreset, setTimerPreset] = useState("24h");
   const [customDueDateTime, setCustomDueDateTime] = useState("");
   const [assignmentForm, setAssignmentForm] = useState({
@@ -299,7 +302,6 @@ const AdminDashboard = () => {
 
   const fetchAdminData = async (isBackground = false) => {
     try {
-      if (!isBackground) setLoading(true);
       const [
         overviewRes,
         learnersRes,
@@ -418,8 +420,6 @@ const AdminDashboard = () => {
       if (!isBackground) {
         console.error("Admin dashboard fetch error:", error);
       }
-    } finally {
-      if (!isBackground) setLoading(false);
     }
   };
 
@@ -793,6 +793,9 @@ const AdminDashboard = () => {
   };
 
   const filteredLearners = learners.filter((l) => {
+    if (l.role === "trainer" || l.role === "admin") return false;
+    if (userData && l._id === userData._id && userData.role === "trainer") return false;
+
     const matchesSearch =
       l.name?.toLowerCase().includes(search.toLowerCase()) ||
       l.email?.toLowerCase().includes(search.toLowerCase()) ||
@@ -823,16 +826,28 @@ const AdminDashboard = () => {
           <div>
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/20 text-blue-300 border border-blue-400/30 text-xs font-bold uppercase tracking-wider mb-2">
               <BsShieldCheck size={13} />
-              <span>National Statistical Systems Training Academy (NSSTA)</span>
+              <span>{isTrainer ? "NSSTA Faculty & Trainer Portal • Active Session" : "National Statistical Systems Training Academy (NSSTA)"}</span>
             </div>
             <h1 className="text-2xl sm:text-3xl font-black tracking-tight">
-              Executive Academy Administration & Oversight Hub
+              {isTrainer ? "NSSTA Faculty Training & Oversight Hub" : "Executive Academy Administration & Oversight Hub"}
             </h1>
             <p className="text-xs sm:text-sm text-slate-300 mt-1 max-w-2xl">
-              Monitor officers' viva experiences, respond to real-time
-              inquiries, fulfill study material requests, and dispatch
-              statistical case studies.
+              {isTrainer
+                ? "Monitor cadre officers' viva experiences, respond to real-time inquiries, fulfill study material requests, and dispatch statistical case studies."
+                : "Monitor officers' viva experiences, respond to real-time inquiries, fulfill study material requests, and dispatch statistical case studies."}
             </p>
+            {isTrainer && userData && (
+              <div className="mt-3 inline-flex items-center gap-2 px-3.5 py-1.5 rounded-2xl bg-white/10 border border-white/20 text-xs text-blue-200">
+                <FaUserTie className="text-amber-400" size={12} />
+                <span className="font-bold text-white">Faculty: {userData.name || "Statistical Trainer"}</span>
+                <span className="text-slate-300">({userData.department || "NSSTA Faculty Training Division"})</span>
+                {userData.experienceYears > 0 && (
+                  <span className="px-1.5 py-0.5 rounded bg-amber-400/20 text-amber-300 text-[10px] font-bold">
+                    {userData.experienceYears} Yrs Exp
+                  </span>
+                )}
+              </div>
+            )}
           </div>
 
           <div className="flex flex-wrap gap-2.5">
@@ -898,7 +913,7 @@ const AdminDashboard = () => {
               <FaUsers size={13} />
               <span>2. Officer Performance & Experience Monitor</span>
               <span className="px-2 py-0.5 rounded-full text-[10px] bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300">
-                {learners.length}
+                {filteredLearners.length}
               </span>
             </button>
 
@@ -1327,13 +1342,25 @@ const AdminDashboard = () => {
                         {l.department || "MoSPI Headquarters"}
                       </td>
                       <td className="p-4 text-center">
-                        <span className="px-3 py-1 rounded-full font-black text-xs bg-blue-50 dark:bg-blue-950 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
-                          {l.overallCompetencyScore || 65}%
+                        <span
+                          className={`px-3 py-1 rounded-full font-black text-xs border ${
+                            l.hasCompletedViva === false || l.overallCompetencyScore === 0
+                              ? "bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 border-rose-200 dark:border-rose-900"
+                              : "bg-blue-50 dark:bg-blue-950 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800"
+                          }`}
+                        >
+                          {l.hasCompletedViva === false ? 0 : (l.overallCompetencyScore !== undefined && l.overallCompetencyScore !== null ? l.overallCompetencyScore : 0)}%
                         </span>
                       </td>
                       <td className="p-4 text-center">
-                        <span className="px-2.5 py-1 rounded-xl text-[10px] font-bold bg-emerald-50 dark:bg-emerald-950 text-emerald-600 border border-emerald-200 dark:border-emerald-800">
-                          {l.overallLevel || "Proficient"}
+                        <span
+                          className={`px-2.5 py-1 rounded-xl text-[10px] font-bold border ${
+                            l.hasCompletedViva === false
+                              ? "bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-900"
+                              : "bg-emerald-50 dark:bg-emerald-950 text-emerald-600 border border-emerald-200 dark:border-emerald-800"
+                          }`}
+                        >
+                          {l.hasCompletedViva === false ? "Novice (Viva Pending)" : (l.overallLevel || "Proficient")}
                         </span>
                       </td>
                       <td className="p-4 text-center font-bold text-slate-700 dark:text-slate-300">
@@ -2269,7 +2296,6 @@ const AdminDashboard = () => {
       {inspectingUser && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
           <div className="bg-white dark:bg-slate-900 rounded-3xl max-w-4xl w-full max-h-[90vh] flex flex-col overflow-hidden shadow-2xl border border-slate-200 dark:border-slate-800">
-            {/* Modal Header */}
             <div className="p-6 bg-gradient-to-r from-slate-900 via-blue-950 to-slate-900 text-white flex items-center justify-between border-b border-slate-800">
               <div className="flex items-center gap-3.5">
                 <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-blue-700 to-indigo-700 text-white flex items-center justify-center font-black text-base shadow-md">
@@ -2312,7 +2338,13 @@ const AdminDashboard = () => {
                       Overall Score
                     </span>
                     <span className="text-xl font-black text-blue-900 dark:text-blue-200">
-                      {userDetailedData?.learner?.overallCompetencyScore || 65}%
+                      {(userDetailedData?.interviews && userDetailedData.interviews.some((i) => i.status === "completed" || i.finalScore || i.score)) ||
+                      userDetailedData?.hasCompletedInterview ||
+                      userDetailedData?.hasCompletedViva
+                        ? (userDetailedData?.learner?.overallCompetencyScore !== undefined && userDetailedData?.learner?.overallCompetencyScore !== null
+                          ? userDetailedData.learner.overallCompetencyScore
+                          : 0)
+                        : 0}%
                     </span>
                   </div>
                   <div className="p-3.5 rounded-2xl bg-emerald-50/70 dark:bg-emerald-950/40 border border-emerald-200/60 dark:border-emerald-800/60">
@@ -2320,7 +2352,11 @@ const AdminDashboard = () => {
                       Proficiency Level
                     </span>
                     <span className="text-xl font-black text-emerald-900 dark:text-emerald-200">
-                      {userDetailedData?.learner?.overallLevel || "Proficient"}
+                      {(userDetailedData?.interviews && userDetailedData.interviews.some((i) => i.status === "completed" || i.finalScore || i.score)) ||
+                      userDetailedData?.hasCompletedInterview ||
+                      userDetailedData?.hasCompletedViva
+                        ? (userDetailedData?.learner?.overallLevel || "Proficient")
+                        : "Novice (Viva Pending)"}
                     </span>
                   </div>
                   <div className="p-3.5 rounded-2xl bg-indigo-50/70 dark:bg-indigo-950/40 border border-indigo-200/60 dark:border-indigo-800/60">
@@ -2398,134 +2434,157 @@ const AdminDashboard = () => {
                   </button>
                 </div>
 
-                {inspectTab === "competencies" && (
-                  <div className="space-y-6">
-                    {/* Radar & Domain Breakdown */}
-                    <div className="grid md:grid-cols-12 gap-4">
-                      <div className="md:col-span-5 p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/80 flex flex-col items-center justify-center">
-                        <span className="text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-2">
-                          4-Domain Competency Radar
-                        </span>
-                        <div className="h-56 w-full">
-                          <ResponsiveContainer width="100%" height="100%">
-                            <RadarChart
-                              data={[
-                                {
-                                  domain: "Statistical",
-                                  score: Math.round(
-                                    (userDetailedData?.learner?.competencies || [])
-                                      .filter((c) => (c.domain || "").toLowerCase().includes("stat"))
-                                      .reduce((acc, c) => acc + (Number(c.score) || 60), 0) /
-                                    Math.max(1, (userDetailedData?.learner?.competencies || []).filter((c) => (c.domain || "").toLowerCase().includes("stat")).length)
-                                  ) || 65,
-                                  fullMark: 100,
-                                },
-                                {
-                                  domain: "Technical",
-                                  score: Math.round(
-                                    (userDetailedData?.learner?.competencies || [])
-                                      .filter((c) => (c.domain || "").toLowerCase().includes("tech"))
-                                      .reduce((acc, c) => acc + (Number(c.score) || 60), 0) /
-                                    Math.max(1, (userDetailedData?.learner?.competencies || []).filter((c) => (c.domain || "").toLowerCase().includes("tech")).length)
-                                  ) || 65,
-                                  fullMark: 100,
-                                },
-                                {
-                                  domain: "Governance",
-                                  score: Math.round(
-                                    (userDetailedData?.learner?.competencies || [])
-                                      .filter((c) => (c.domain || "").toLowerCase().includes("gov"))
-                                      .reduce((acc, c) => acc + (Number(c.score) || 60), 0) /
-                                    Math.max(1, (userDetailedData?.learner?.competencies || []).filter((c) => (c.domain || "").toLowerCase().includes("gov")).length)
-                                  ) || 65,
-                                  fullMark: 100,
-                                },
-                                {
-                                  domain: "Managerial",
-                                  score: Math.round(
-                                    (userDetailedData?.learner?.competencies || [])
-                                      .filter((c) => (c.domain || "").toLowerCase().includes("manag") || (c.domain || "").toLowerCase().includes("behav"))
-                                      .reduce((acc, c) => acc + (Number(c.score) || 60), 0) /
-                                    Math.max(1, (userDetailedData?.learner?.competencies || []).filter((c) => (c.domain || "").toLowerCase().includes("manag") || (c.domain || "").toLowerCase().includes("behav")).length)
-                                  ) || 65,
-                                  fullMark: 100,
-                                },
-                              ]}
-                            >
-                              <PolarGrid stroke="#94a3b8" opacity={0.3} />
-                              <PolarAngleAxis
-                                dataKey="domain"
-                                tick={{ fontSize: 10, fill: "#64748b", fontWeight: 700 }}
-                              />
-                              <PolarRadiusAxis angle={30} domain={[0, 100]} tick={false} axisLine={false} />
-                              <Radar
-                                name="Competency Score"
-                                dataKey="score"
-                                stroke="#2563eb"
-                                fill="#3b82f6"
-                                fillOpacity={0.5}
-                              />
-                            </RadarChart>
-                          </ResponsiveContainer>
+                {inspectTab === "competencies" && (() => {
+                  const isLearnerQuizDone = Boolean(
+                    (userDetailedData?.quizAttempts && userDetailedData.quizAttempts.length > 0) ||
+                    (userDetailedData?.learner?.quizzesCompleted && userDetailedData.learner.quizzesCompleted > 0) ||
+                    userDetailedData?.hasCompletedQuiz
+                  );
+                  const isLearnerVivaDone = Boolean(
+                    (userDetailedData?.interviews && userDetailedData.interviews.some((i) => i.status === "completed" || i.finalScore || i.score)) ||
+                    userDetailedData?.hasCompletedInterview
+                  );
+                  const isLearnerAssignmentComplete = isLearnerQuizDone && isLearnerVivaDone;
+
+                  const calcDomainScore = (pattern) => {
+                    if (!isLearnerAssignmentComplete) return 0;
+                    const comps = (userDetailedData?.learner?.competencies || []).filter((c) =>
+                      (c.domain || "").toLowerCase().includes(pattern.toLowerCase())
+                    );
+                    if (!comps.length) return 0;
+                    return Math.round(
+                      comps.reduce((acc, c) => acc + (Number(c.score) || 0), 0) / comps.length
+                    );
+                  };
+
+                  const statScore = calcDomainScore("stat");
+                  const techScore = calcDomainScore("tech");
+                  const govScore = calcDomainScore("gov");
+                  const managScore = calcDomainScore("manag") || calcDomainScore("behav");
+
+                  return (
+                    <div className="space-y-6">
+                      {!isLearnerAssignmentComplete && (
+                        <div className="p-4 rounded-2xl bg-gradient-to-r from-amber-500/15 via-rose-500/10 to-amber-500/15 border-2 border-amber-500/40 text-amber-950 dark:text-amber-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-xs">
+                          <div className="flex items-start gap-3">
+                            <div className="p-2 rounded-xl bg-amber-500/20 text-amber-700 dark:text-amber-400 shrink-0 mt-0.5">
+                              <FaExclamationTriangle size={18} />
+                            </div>
+                            <div>
+                              <div className="flex flex-wrap items-center gap-2">
+                                <h5 className="text-xs sm:text-sm font-black text-amber-950 dark:text-amber-100">
+                                  Signup Assignment Incomplete — All Radar Values Set to 0%
+                                </h5>
+                                <span className="px-1.5 py-0.5 text-[9px] uppercase font-black bg-rose-600 text-white rounded">
+                                  Unverified
+                                </span>
+                              </div>
+                              <p className="text-[11px] text-amber-900/90 dark:text-amber-300/90 mt-0.5 leading-relaxed">
+                                This user has not completed their mandatory signup assignment (Diagnostic Quiz & Intake Viva Voce). 
+                                4-Domain Competency Radar values remain at <strong>0%</strong> until both baseline evaluations are completed.
+                              </p>
+                              <div className="flex flex-wrap items-center gap-2 mt-2 text-[10px] font-bold">
+                                <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md border ${isLearnerQuizDone ? "bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800" : "bg-rose-50 dark:bg-rose-950/50 text-rose-700 dark:text-rose-300 border-rose-200 dark:border-rose-800"}`}>
+                                  {isLearnerQuizDone ? "✓ Diagnostic Quiz: Completed" : "✕ Diagnostic Quiz: Not Completed"}
+                                </span>
+                                <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md border ${isLearnerVivaDone ? "bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800" : "bg-rose-50 dark:bg-rose-950/50 text-rose-700 dark:text-rose-300 border-rose-200 dark:border-rose-800"}`}>
+                                  {isLearnerVivaDone ? "✓ Intake Viva Voce: Completed" : "✕ Intake Viva Voce: Not Completed"}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      <div className="grid md:grid-cols-12 gap-4">
+                        <div className="md:col-span-5 p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/80 flex flex-col items-center justify-center relative">
+                          <span className="text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-2">
+                            4-Domain Competency Radar
+                          </span>
+                          {!isLearnerAssignmentComplete && (
+                            <span className="text-[10px] font-bold text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/70 border border-rose-200 dark:border-rose-900 px-2.5 py-0.5 rounded-full mb-1">
+                              All Values: 0% • Incomplete Signup Assignment
+                            </span>
+                          )}
+                          <div className="h-56 w-full">
+                            <ResponsiveContainer width="100%" height="100%">
+                              <RadarChart
+                                data={[
+                                  {
+                                    domain: "Statistical",
+                                    score: statScore,
+                                    fullMark: 100,
+                                  },
+                                  {
+                                    domain: "Technical",
+                                    score: techScore,
+                                    fullMark: 100,
+                                  },
+                                  {
+                                    domain: "Governance",
+                                    score: govScore,
+                                    fullMark: 100,
+                                  },
+                                  {
+                                    domain: "Managerial",
+                                    score: managScore,
+                                    fullMark: 100,
+                                  },
+                                ]}
+                              >
+                                <PolarGrid stroke="#94a3b8" opacity={0.3} />
+                                <PolarAngleAxis
+                                  dataKey="domain"
+                                  tick={{ fontSize: 10, fill: "#64748b", fontWeight: 700 }}
+                                />
+                                <PolarRadiusAxis angle={30} domain={[0, 100]} tick={false} axisLine={false} />
+                                <Radar
+                                  name="Competency Score"
+                                  dataKey="score"
+                                  stroke="#2563eb"
+                                  fill="#3b82f6"
+                                  fillOpacity={0.5}
+                                />
+                              </RadarChart>
+                            </ResponsiveContainer>
+                          </div>
+                        </div>
+
+                        <div className="md:col-span-7 grid grid-cols-2 gap-3 content-center">
+                          <div className="p-3 rounded-2xl bg-blue-50/60 dark:bg-blue-950/30 border border-blue-200/60 dark:border-blue-900/60">
+                            <span className="text-[10px] font-bold text-blue-600 block">Statistical Domain</span>
+                            <span className="text-lg font-black text-blue-900 dark:text-blue-200">
+                              {statScore}%
+                            </span>
+                            <span className="text-[10px] text-slate-500 block">Sampling, SNA & Indices</span>
+                          </div>
+
+                          <div className="p-3 rounded-2xl bg-emerald-50/60 dark:bg-emerald-950/30 border border-emerald-200/60 dark:border-emerald-900/60">
+                            <span className="text-[10px] font-bold text-emerald-600 block">Technical Domain</span>
+                            <span className="text-lg font-black text-emerald-900 dark:text-emerald-200">
+                              {techScore}%
+                            </span>
+                            <span className="text-[10px] text-slate-500 block">Processing & Microdata</span>
+                          </div>
+
+                          <div className="p-3 rounded-2xl bg-purple-50/60 dark:bg-purple-950/30 border border-purple-200/60 dark:border-purple-900/60">
+                            <span className="text-[10px] font-bold text-purple-600 block">Governance & Privacy</span>
+                            <span className="text-lg font-black text-purple-900 dark:text-purple-200">
+                              {govScore}%
+                            </span>
+                            <span className="text-[10px] text-slate-500 block">DPDP Act & Security</span>
+                          </div>
+
+                          <div className="p-3 rounded-2xl bg-amber-50/60 dark:bg-amber-950/30 border border-amber-200/60 dark:border-amber-900/60">
+                            <span className="text-[10px] font-bold text-amber-600 block">Managerial & Policy</span>
+                            <span className="text-lg font-black text-amber-900 dark:text-amber-200">
+                              {managScore}%
+                            </span>
+                            <span className="text-[10px] text-slate-500 block">Leadership & Briefs</span>
+                          </div>
                         </div>
                       </div>
 
-                      <div className="md:col-span-7 grid grid-cols-2 gap-3 content-center">
-                        <div className="p-3 rounded-2xl bg-blue-50/60 dark:bg-blue-950/30 border border-blue-200/60 dark:border-blue-900/60">
-                          <span className="text-[10px] font-bold text-blue-600 block">Statistical Domain</span>
-                          <span className="text-lg font-black text-blue-900 dark:text-blue-200">
-                            {Math.round(
-                              (userDetailedData?.learner?.competencies || [])
-                                .filter((c) => (c.domain || "").toLowerCase().includes("stat"))
-                                .reduce((acc, c) => acc + (Number(c.score) || 60), 0) /
-                              Math.max(1, (userDetailedData?.learner?.competencies || []).filter((c) => (c.domain || "").toLowerCase().includes("stat")).length)
-                            ) || 65}%
-                          </span>
-                          <span className="text-[10px] text-slate-500 block">Sampling, SNA & Indices</span>
-                        </div>
-
-                        <div className="p-3 rounded-2xl bg-emerald-50/60 dark:bg-emerald-950/30 border border-emerald-200/60 dark:border-emerald-900/60">
-                          <span className="text-[10px] font-bold text-emerald-600 block">Technical Domain</span>
-                          <span className="text-lg font-black text-emerald-900 dark:text-emerald-200">
-                            {Math.round(
-                              (userDetailedData?.learner?.competencies || [])
-                                .filter((c) => (c.domain || "").toLowerCase().includes("tech"))
-                                .reduce((acc, c) => acc + (Number(c.score) || 60), 0) /
-                              Math.max(1, (userDetailedData?.learner?.competencies || []).filter((c) => (c.domain || "").toLowerCase().includes("tech")).length)
-                            ) || 65}%
-                          </span>
-                          <span className="text-[10px] text-slate-500 block">Processing & Microdata</span>
-                        </div>
-
-                        <div className="p-3 rounded-2xl bg-purple-50/60 dark:bg-purple-950/30 border border-purple-200/60 dark:border-purple-900/60">
-                          <span className="text-[10px] font-bold text-purple-600 block">Governance & Privacy</span>
-                          <span className="text-lg font-black text-purple-900 dark:text-purple-200">
-                            {Math.round(
-                              (userDetailedData?.learner?.competencies || [])
-                                .filter((c) => (c.domain || "").toLowerCase().includes("gov"))
-                                .reduce((acc, c) => acc + (Number(c.score) || 60), 0) /
-                              Math.max(1, (userDetailedData?.learner?.competencies || []).filter((c) => (c.domain || "").toLowerCase().includes("gov")).length)
-                            ) || 65}%
-                          </span>
-                          <span className="text-[10px] text-slate-500 block">DPDP Act & Security</span>
-                        </div>
-
-                        <div className="p-3 rounded-2xl bg-amber-50/60 dark:bg-amber-950/30 border border-amber-200/60 dark:border-amber-900/60">
-                          <span className="text-[10px] font-bold text-amber-600 block">Managerial & Policy</span>
-                          <span className="text-lg font-black text-amber-900 dark:text-amber-200">
-                            {Math.round(
-                              (userDetailedData?.learner?.competencies || [])
-                                .filter((c) => (c.domain || "").toLowerCase().includes("manag") || (c.domain || "").toLowerCase().includes("behav"))
-                                .reduce((acc, c) => acc + (Number(c.score) || 60), 0) /
-                              Math.max(1, (userDetailedData?.learner?.competencies || []).filter((c) => (c.domain || "").toLowerCase().includes("manag") || (c.domain || "").toLowerCase().includes("behav")).length)
-                            ) || 65}%
-                          </span>
-                          <span className="text-[10px] text-slate-500 block">Leadership & Briefs</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Competency Matrix Table */}
                     <div className="space-y-3">
                       <h4 className="font-bold text-slate-900 dark:text-white flex items-center gap-1.5 text-xs">
                         <FaSlidersH className="text-blue-600" />
@@ -2575,7 +2634,6 @@ const AdminDashboard = () => {
                       )}
                     </div>
 
-                    {/* Skill Gaps Section */}
                     <div className="space-y-3">
                       <h4 className="font-bold text-slate-900 dark:text-white flex items-center gap-1.5 text-xs">
                         <FaExclamationTriangle className="text-amber-500" />
@@ -2621,7 +2679,6 @@ const AdminDashboard = () => {
                       )}
                     </div>
 
-                    {/* Learning Pathway */}
                     <div className="space-y-3">
                       <h4 className="font-bold text-slate-900 dark:text-white flex items-center gap-1.5 text-xs">
                         <FaGraduationCap className="text-emerald-600" />
@@ -2668,14 +2725,26 @@ const AdminDashboard = () => {
                       )}
                     </div>
                   </div>
-                )}
+                );
+              })()}
 
                 {inspectTab === "interviews" && (
                   <div className="space-y-4">
-                    {userDetailedData?.interviews?.length === 0 ? (
-                      <p className="text-slate-400 text-center py-6">
-                        No viva mock interviews recorded yet.
-                      </p>
+                    {(!userDetailedData?.interviews || userDetailedData.interviews.length === 0) ? (
+                      <div className="p-8 text-center space-y-3 bg-slate-50 dark:bg-slate-800/40 rounded-2xl border border-dashed border-rose-300 dark:border-rose-900/50">
+                        <div className="w-12 h-12 mx-auto rounded-2xl bg-rose-100 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 flex items-center justify-center">
+                          <FaExclamationTriangle size={20} />
+                        </div>
+                        <h4 className="font-black text-slate-900 dark:text-white text-sm">
+                          AI Viva Voce Not Completed
+                        </h4>
+                        <p className="text-slate-500 dark:text-slate-400 text-xs max-w-md mx-auto">
+                          This officer has not completed their mandatory AI Viva Voce evaluation. All oral evaluation baseline scores remain at 0% until completed.
+                        </p>
+                        <span className="inline-block px-3 py-1 rounded-full text-xs font-bold bg-rose-100 dark:bg-rose-950 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800">
+                          Recorded Score: 0% (Viva Incomplete)
+                        </span>
+                      </div>
                     ) : (
                       userDetailedData?.interviews?.map((iv, idx) => (
                         <div
@@ -2692,7 +2761,7 @@ const AdminDashboard = () => {
                               </span>
                             </div>
                             <span className="px-3 py-1 rounded-xl bg-blue-600 text-white font-black text-xs">
-                              Score: {iv.finalScore || 80}%
+                              Score: {iv.finalScore !== undefined && iv.finalScore !== null ? iv.finalScore : (iv.score !== undefined && iv.score !== null ? iv.score : 0)}%
                             </span>
                           </div>
 
@@ -2725,7 +2794,6 @@ const AdminDashboard = () => {
                   </div>
                 )}
 
-                {/* Tab: Quizzes */}
                 {inspectTab === "quizzes" && (
                   <div className="space-y-3">
                     {userDetailedData?.quizAttempts?.length === 0 ? (
@@ -2763,7 +2831,6 @@ const AdminDashboard = () => {
                   </div>
                 )}
 
-                {/* Tab: Assignments */}
                 {inspectTab === "assignments" && (
                   <div className="space-y-3">
                     {userDetailedData?.submissions?.length === 0 ? (
@@ -2800,7 +2867,6 @@ const AdminDashboard = () => {
                   </div>
                 )}
 
-                {/* Tab: Requests */}
                 {inspectTab === "requests" && (
                   <div className="space-y-3">
                     {userDetailedData?.materialRequests?.length === 0 ? (
@@ -3311,7 +3377,6 @@ const AdminDashboard = () => {
                 </div>
               </div>
 
-              {/* TIMER LIMIT / DUE DATE PICKER */}
               <div className="p-4 rounded-2xl bg-amber-50/60 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/60 space-y-3">
                 <div className="flex items-center justify-between">
                   <label className="font-black text-amber-900 dark:text-amber-200 flex items-center gap-1.5 text-xs">
@@ -3500,7 +3565,6 @@ const AdminDashboard = () => {
                 </div>
               </div>
 
-              {/* AI Evaluation */}
               {viewingSubmission.aiEvaluation && (
                 <div className="p-5 rounded-2xl bg-emerald-50/70 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 space-y-3">
                   <div className="flex items-center justify-between">

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { setUserData } from "../redux/userSlice";
@@ -56,6 +56,37 @@ const AssignmentDetails = () => {
 
   const draftKey = `sankhyaiq_case_study_draft_${id}`;
 
+  const fetchAssignmentDetails = async () => {
+    try {
+      setLoading(true);
+      const res = await axios.get(`${ServerUrl}/api/assignments/${id}`, {
+        withCredentials: true,
+      });
+      if (res.data?.success) {
+        setAssignment(res.data.assignment);
+        const savedDraft = localStorage.getItem(draftKey);
+
+        if (res.data.submission) {
+          setSubmission(res.data.submission);
+          if (savedDraft && savedDraft.trim() && savedDraft !== res.data.submission.submissionText) {
+            setSubmissionText(savedDraft);
+          } else {
+            setSubmissionText(res.data.submission.submissionText || "");
+          }
+        } else {
+          if (savedDraft && savedDraft.trim()) {
+            setSubmissionText(savedDraft);
+          }
+        }
+      }
+    } catch (err) {
+      console.error("Error fetching assignment:", err);
+      toast.error("Failed to load assignment");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     fetchAssignmentDetails();
   }, [id]);
@@ -88,12 +119,10 @@ const AssignmentDetails = () => {
       const minutes = Math.floor((totalSecs % 3600) / 60);
       const seconds = totalSecs % 60;
 
-      let formattedText = "";
-      if (days > 0) {
-        formattedText = `${days}d ${hours}h ${minutes}m ${seconds}s`;
-      } else {
-        formattedText = `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
-      }
+      const formattedText =
+        days > 0
+          ? `${days}d ${hours}h ${minutes}m ${seconds}s`
+          : `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
 
       setCountdown({
         text: formattedText,
@@ -125,46 +154,13 @@ const AssignmentDetails = () => {
       if (submissionText && submissionText.trim()) {
         try {
           localStorage.setItem(draftKey, submissionText);
-        } catch (err) {}
+        } catch { }
       }
     };
 
     window.addEventListener("beforeunload", handleBeforeUnload);
     return () => window.removeEventListener("beforeunload", handleBeforeUnload);
   }, [submissionText, draftKey]);
-
-  const fetchAssignmentDetails = async () => {
-    try {
-      setLoading(true);
-      const res = await axios.get(`${ServerUrl}/api/assignments/${id}`, {
-        withCredentials: true,
-      });
-      if (res.data?.success) {
-        setAssignment(res.data.assignment);
-        const savedDraft = localStorage.getItem(draftKey);
-
-        if (res.data.submission) {
-          setSubmission(res.data.submission);
-          // If user had unsubmitted work in progress that differs from submitted text, restore it
-          if (savedDraft && savedDraft.trim() && savedDraft !== res.data.submission.submissionText) {
-            setSubmissionText(savedDraft);
-          } else {
-            setSubmissionText(res.data.submission.submissionText || "");
-          }
-        } else {
-          // If not submitted yet, restore draft from localStorage if available
-          if (savedDraft && savedDraft.trim()) {
-            setSubmissionText(savedDraft);
-          }
-        }
-      }
-    } catch (err) {
-      console.error("Error fetching assignment:", err);
-      toast.error("Failed to load assignment");
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -195,10 +191,9 @@ const AssignmentDetails = () => {
         window.dispatchEvent(new CustomEvent("assessmentCompleted", { detail: res.data }));
         localStorage.setItem("lastAssessmentUpdate", Date.now().toString());
 
-        // Clear local draft upon successful submission
         try {
           localStorage.removeItem(draftKey);
-        } catch (err) {}
+        } catch { }
       }
     } catch (err) {
       console.error("Error submitting assignment:", err);
@@ -243,24 +238,21 @@ const AssignmentDetails = () => {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-16 space-y-6">
         <BackButton to="/assignments" label="Back to All Assignments" />
 
-        {/* TIMER & DEADLINE BANNER */}
         {assignment.dueDate && (
           <div
-            className={`p-4 sm:p-5 rounded-3xl border flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-all shadow-md ${
-              isExpired
+            className={`p-4 sm:p-5 rounded-3xl border flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-all shadow-md ${isExpired
                 ? "bg-rose-50 dark:bg-rose-950/70 border-rose-200 dark:border-rose-900 text-rose-900 dark:text-rose-200"
                 : countdown.hours < 6
-                ? "bg-amber-50 dark:bg-amber-950/70 border-amber-300 dark:border-amber-800 text-amber-900 dark:text-amber-200"
-                : "bg-blue-50 dark:bg-blue-950/70 border-blue-200 dark:border-blue-900 text-blue-900 dark:text-blue-200"
-            }`}
+                  ? "bg-amber-50 dark:bg-amber-950/70 border-amber-300 dark:border-amber-800 text-amber-900 dark:text-amber-200"
+                  : "bg-blue-50 dark:bg-blue-950/70 border-blue-200 dark:border-blue-900 text-blue-900 dark:text-blue-200"
+              }`}
           >
             <div className="flex items-center gap-3">
               <div
-                className={`p-3 rounded-2xl ${
-                  isExpired
+                className={`p-3 rounded-2xl ${isExpired
                     ? "bg-rose-200/80 dark:bg-rose-900/60 text-rose-700 dark:text-rose-300"
                     : "bg-blue-200/80 dark:bg-blue-900/60 text-blue-700 dark:text-blue-300"
-                }`}
+                  }`}
               >
                 {isExpired ? (
                   <FaLock size={20} className="text-rose-600 dark:text-rose-400" />
@@ -289,11 +281,10 @@ const AssignmentDetails = () => {
 
             <div className="flex items-center gap-2 self-start sm:self-auto shrink-0">
               <div
-                className={`px-4 py-2 rounded-2xl text-center font-mono font-black text-sm sm:text-base border shadow-inner ${
-                  isExpired
+                className={`px-4 py-2 rounded-2xl text-center font-mono font-black text-sm sm:text-base border shadow-inner ${isExpired
                     ? "bg-rose-200/60 dark:bg-rose-900/80 border-rose-300 text-rose-800 dark:text-rose-200"
                     : "bg-white/80 dark:bg-slate-900/80 border-blue-300 dark:border-blue-800 text-blue-700 dark:text-blue-300"
-                }`}
+                  }`}
               >
                 <span className="text-[9px] font-sans font-bold uppercase tracking-wider block opacity-70">
                   {isExpired ? "Status" : "Time Remaining"}

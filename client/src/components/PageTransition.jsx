@@ -1,8 +1,7 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { DashboardSkeleton, CardGridSkeleton } from "./SkeletonLoader";
 
-// Smooth Bottom-to-Top Entrance Animation Variants
 export const pageVariants = {
   initial: {
     opacity: 0,
@@ -15,7 +14,7 @@ export const pageVariants = {
     filter: "blur(0px)",
     transition: {
       duration: 0.45,
-      ease: [0.22, 1, 0.36, 1], // Apple / iOS standard cubic-bezier for snappy fluid glide
+      ease: [0.22, 1, 0.36, 1],
       staggerChildren: 0.08,
     },
   },
@@ -41,9 +40,9 @@ export const childVariants = {
 
 const PageTransition = ({
   children,
-  skeletonType = null, // "dashboard" | "cards" | null
+  skeletonType = null,
   isLoading = false,
-  showInitialSkeleton = false, // brief initial shimmer before reveal
+  showInitialSkeleton = false,
 }) => {
   const [initialLoading, setInitialLoading] = useState(showInitialSkeleton);
 

@@ -1,0 +1,763 @@
+import { useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { useNavigate, useLocation } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  BsBarChartLine,
+  BsShieldLock,
+  BsBookHalf,
+  BsRobot,
+  BsChevronLeft,
+  BsChevronRight,
+  BsChevronUp,
+  BsGearFill,
+  BsStars,
+  BsBarChartSteps,
+  BsShieldCheck,
+} from "react-icons/bs";
+import {
+  FaHome,
+  FaBrain,
+  FaTasks,
+  FaHistory,
+  FaFilePdf,
+  FaUserGraduate,
+  FaBookOpen,
+  FaMicrophone,
+  FaUserTie,
+  FaLock,
+} from "react-icons/fa";
+import {
+  HiSparkles,
+  HiOutlineLogout,
+  HiX,
+} from "react-icons/hi";
+import axios from "axios";
+import { ServerUrl } from "../App";
+import { setUserData } from "../redux/userSlice";
+import { generateCompetencyPDF } from "../utils/pdfGenerator";
+import { useNavigation } from "../context/NavigationContext";
+import { useDiagnostic } from "../context/DiagnosticContext";
+import { useOutsideClick } from "../utils/outsideClick";
+import toast from "react-hot-toast";
+
+const Sidebar = ({ onOpenAuth }) => {
+  const { userData } = useSelector((state) => state.user);
+  const {
+    isCollapsed,
+    toggleCollapse,
+    mobileOpen,
+    setMobileOpen,
+  } = useNavigation();
+
+  const navigate = useNavigate();
+  const location = useLocation();
+  const dispatch = useDispatch();
+  const { isPathLocked, triggerLockedError, isIntakePending } = useDiagnostic();
+
+  const [hoveredLink, setHoveredLink] = useState(null);
+  const [showUserDropdown, setShowUserDropdown] = useState(false);
+  const userCardRef = useOutsideClick(() => setShowUserDropdown(false));
+
+  const userPhoto = userData?.image || userData?.picture || userData?.avatar || userData?.photoUrl || userData?.avatarUrl || userData?.profilePicture;
+
+  const handleLogout = async () => {
+    try {
+      await axios.post(`${ServerUrl}/api/auth/logout`, {}, { withCredentials: true });
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+      sessionStorage.clear();
+      dispatch(setUserData(null));
+      setMobileOpen(false);
+      navigate("/auth");
+      toast.success("Successfully logged out");
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const handleDownloadDossier = () => {
+    if (!userData) {
+      if (onOpenAuth) onOpenAuth();
+      return;
+    }
+    if (isIntakePending) {
+      triggerLockedError("Official Dossier PDF Export");
+      return;
+    }
+    toast.success("Preparing Official Performance Dossier (PDF)... 📄");
+    generateCompetencyPDF({
+      user: userData,
+      profile: userData,
+      competencies: userData.competencies || [],
+      skillGaps: userData.skillGaps || [],
+      learningPath: userData.learningPath || [],
+    });
+  };
+
+  const handleNavigate = (path, isPublic = false, label = "") => {
+    if (!userData && !isPublic) {
+      if (onOpenAuth) onOpenAuth();
+      return;
+    }
+    if (isPathLocked(path)) {
+      triggerLockedError(label);
+      return;
+    }
+    navigate(path);
+    setMobileOpen(false);
+  };
+
+  const isTrainer = userData?.role === "trainer";
+
+  const navSections = isTrainer
+    ? [
+      {
+        title: "Governance",
+        links: [
+          { label: "Admin Portal", path: "/admin", icon: BsShieldLock, badge: "Trainer" },
+        ],
+      },
+    ]
+    : [
+      {
+        title: "Core Portal",
+        links: [
+          { label: "Home", path: "/", icon: FaHome, isPublic: true },
+          ...(userData?.role !== "admin"
+            ? [{ label: "Dashboard", path: "/dashboard", icon: BsBarChartLine }]
+            : []),
+          { label: "Competency", path: "/competencies", icon: FaBrain },
+          { label: "Skill Gaps", path: "/skill-gaps", icon: BsBarChartSteps, badge: "Cadre AI" },
+          { label: "Job Readiness", path: "/job-readiness", icon: FaUserTie, badge: "Report" },
+          { label: "History", path: "/history", icon: FaHistory },
+        ],
+      },
+      {
+        title: "Capacity Building",
+        links: [
+          { label: "Learning Path", path: "/learning-path", icon: BsBookHalf },
+          { label: "Quizzes", path: "/quizzes", icon: FaTasks },
+          { label: "Assignment", path: "/assignments", icon: FaFilePdf },
+          { label: "Material Request", path: "/materials", icon: FaBookOpen },
+          { label: "MCQ Create", path: "/mcq-create", icon: BsStars, isAi: true, badge: "AI Gen" },
+        ],
+      },
+      {
+        title: "Intelligence Board",
+        links: [
+          {
+            label: "Interview Viva",
+            path: "/interview",
+            icon: FaMicrophone,
+            badge: "Oral Board",
+          }, {
+            label: "AI Copilot",
+            path: "/chat",
+            icon: BsRobot,
+            isAi: true,
+            badge: "AI Copilot",
+          },
+        ],
+      },
+      ...(userData?.role === "admin"
+        ? [
+          {
+            title: "Governance",
+            links: [
+              { label: "Admin Portal", path: "/admin", icon: BsShieldLock, badge: "Officer" },
+            ],
+          },
+        ]
+        : []),
+    ];
+
+  const isLinkActive = (path) => {
+    if (path === "/") return location.pathname === "/";
+    if (path === "/skill-gaps") {
+      return location.pathname === "/skill-gaps" || location.pathname === "/skill-gap-analysis";
+    }
+    if (path === "/quizzes") {
+      return location.pathname === "/quizzes" || location.pathname.startsWith("/quiz/");
+    }
+    if (path === "/assignments") {
+      return location.pathname === "/assignments" || location.pathname.startsWith("/assignments/");
+    }
+    return location.pathname === path;
+  };
+
+  return (
+    <>
+      <AnimatePresence>
+        {mobileOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setMobileOpen(false)}
+            className="fixed inset-0 z-[110] bg-slate-950/60 backdrop-blur-xs md:hidden"
+          />
+        )}
+      </AnimatePresence>
+
+      <aside
+        className={`fixed top-0 bottom-0 left-0 z-[120] h-[100dvh] bg-white/95 dark:bg-slate-950/95 backdrop-blur-2xl border-r border-slate-200/80 dark:border-slate-800/80 shadow-2xl flex flex-col transition-all duration-300 ease-in-out select-none ${mobileOpen ? "translate-x-0 w-[280px] sm:w-72 max-w-[85vw]" : "-translate-x-full md:translate-x-0"
+          } ${isCollapsed ? "md:w-[76px]" : "md:w-[260px]"}`}
+      >
+        <div className="h-1 w-full bg-gradient-to-r from-[#FF9933] via-white to-[#138808]" />
+
+        {isCollapsed && !mobileOpen ? (
+          <div className="p-3 flex items-center justify-center border-b border-slate-200/70 dark:border-slate-800/70 shrink-0 relative group/logo">
+            <button
+              onClick={toggleCollapse}
+              className="relative w-11 h-11 rounded-2xl flex items-center justify-center cursor-pointer transition-all duration-300 focus:outline-none"
+              title="Expand Sidebar (260px)"
+            >
+              <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-slate-950 via-blue-950 to-indigo-900 text-white flex flex-col items-center justify-center shadow-lg border border-blue-400/30 overflow-hidden transition-all duration-300 group-hover/logo:opacity-0 group-hover/logo:scale-90 group-hover/logo:pointer-events-none">
+                <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-[#FF9933] via-white to-[#138808]" />
+                <span className="font-black text-sm tracking-tight text-white drop-shadow-xs">
+                  S
+                </span>
+                <span className="text-[7px] font-black tracking-widest text-amber-300 flex items-center gap-0.5">
+                  <HiSparkles size={6} className="text-amber-400 animate-pulse" /> AI
+                </span>
+              </div>
+
+              <div className="absolute inset-0 rounded-2xl bg-blue-600 dark:bg-blue-600 text-white flex flex-col items-center justify-center shadow-xl shadow-blue-500/30 border border-blue-400/50 transition-all duration-300 opacity-0 scale-90 pointer-events-none group-hover/logo:opacity-100 group-hover/logo:scale-100 group-hover/logo:pointer-events-auto">
+                <BsChevronRight size={18} className="text-white" />
+                <span className="text-[7px] font-black tracking-wider uppercase text-blue-100 mt-0.5">Expand</span>
+              </div>
+            </button>
+          </div>
+        ) : (
+          <div className="p-3 sm:p-3.5 flex items-center justify-between border-b border-slate-200/70 dark:border-slate-800/70 shrink-0">
+            <div
+              onClick={() => handleNavigate("/", true)}
+              className="flex items-center gap-2.5 cursor-pointer group min-w-0 overflow-hidden relative"
+            >
+              <div className="relative w-10 h-10 rounded-2xl bg-gradient-to-br from-slate-950 via-blue-950 to-indigo-900 text-white flex flex-col items-center justify-center shadow-lg group-hover:scale-105 group-hover:shadow-blue-500/25 transition-all duration-300 border border-blue-400/30 shrink-0 overflow-hidden">
+                <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-[#FF9933] via-white to-[#138808]" />
+                <span className="font-black text-sm tracking-tight text-white drop-shadow-xs">
+                  S
+                </span>
+                <span className="text-[7px] font-black tracking-widest text-amber-300 flex items-center gap-0.5">
+                  <HiSparkles size={6} className="text-amber-400 animate-pulse" /> AI
+                </span>
+              </div>
+
+              <div className="flex flex-col min-w-0 pr-1">
+                <span className="font-black text-base text-slate-900 dark:text-white tracking-tight leading-tight">
+                  SankhyaIQ <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400">AI</span>
+                </span>
+                <span
+                  className="text-[9px] text-slate-500 dark:text-slate-400 font-medium tracking-tight leading-tight mt-0.5 truncate"
+                  title="National Statistical Systems Training Academy"
+                >
+                  National Statistical Systems Training Academy
+                </span>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-1">
+              <button
+                onClick={() => setMobileOpen(false)}
+                className="md:hidden p-1.5 rounded-xl text-slate-500 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+                title="Close Menu"
+              >
+                <HiX size={20} />
+              </button>
+
+              <button
+                onClick={toggleCollapse}
+                className="hidden md:flex p-1.5 rounded-xl text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-all cursor-pointer"
+                title="Collapse Sidebar (76px)"
+              >
+                <BsChevronLeft size={14} />
+              </button>
+            </div>
+          </div>
+        )}
+
+        <div className="flex-1 overflow-y-auto custom-scrollbar px-2.5 py-3 space-y-4">
+          {navSections.map((section, idx) => (
+            <div key={idx} className="space-y-1">
+              {(!isCollapsed || mobileOpen) && (
+                <div className="px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+                  {section.title}
+                </div>
+              )}
+              {isCollapsed && !mobileOpen && (
+                <div className="my-1.5 mx-auto w-6 h-px bg-slate-200 dark:bg-slate-800" />
+              )}
+
+              {section.links.map((link) => {
+                const Icon = link.icon;
+                const isActive = isLinkActive(link.path);
+                const isLocked = isPathLocked(link.path);
+
+                return (
+                  <div
+                    key={link.path}
+                    className="relative"
+                    onMouseEnter={() => setHoveredLink(link.path)}
+                    onMouseLeave={() => setHoveredLink(null)}
+                  >
+                    <button
+                      onClick={() => handleNavigate(link.path, link.isPublic, link.label)}
+                      title={isLocked ? `Locked: Complete Intake Viva Voce & Diagnostic Quiz first` : link.label}
+                      className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-2xl text-xs font-bold transition-all cursor-pointer group ${isLocked
+                        ? "text-slate-400 dark:text-slate-500 hover:bg-amber-50/50 dark:hover:bg-amber-950/30 hover:text-amber-600 dark:hover:text-amber-400 border border-transparent hover:border-amber-400/30"
+                        : isActive
+                          ? link.isAi
+                            ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md font-black"
+                            : "bg-blue-50 dark:bg-blue-950/70 text-blue-700 dark:text-blue-300 font-black shadow-xs border border-blue-200/50 dark:border-blue-800/50"
+                          : link.isAi
+                            ? "text-blue-600 dark:text-blue-400 hover:bg-blue-50/60 dark:hover:bg-blue-950/40"
+                            : "text-slate-600 dark:text-slate-300 hover:bg-slate-100/80 dark:hover:bg-slate-800/80 hover:text-slate-900 dark:hover:text-white"
+                        } ${isCollapsed && !mobileOpen ? "justify-center px-0" : ""}`}
+                    >
+                      <div className="relative shrink-0">
+                        <Icon
+                          size={17}
+                          className={`${isLocked
+                            ? "text-slate-400 dark:text-slate-500 group-hover:text-amber-500 transition-colors"
+                            : isActive
+                              ? link.isAi
+                                ? "text-amber-300"
+                                : "text-blue-600 dark:text-blue-400"
+                              : link.isAi
+                                ? "text-blue-500 group-hover:scale-110 transition-transform"
+                                : "text-slate-400 group-hover:text-slate-700 dark:group-hover:text-slate-200"
+                            }`}
+                        />
+                        {isLocked ? (
+                          <span className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-amber-500 text-white flex items-center justify-center shadow-xs">
+                            <FaLock size={7} />
+                          </span>
+                        ) : link.isAi ? (
+                          <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-amber-400 animate-ping" />
+                        ) : null}
+                      </div>
+
+                      {(!isCollapsed || mobileOpen) && (
+                        <div className="flex items-center justify-between flex-1 min-w-0">
+                          <span className={`truncate ${isLocked ? "text-slate-400 dark:text-slate-500 group-hover:text-amber-600 dark:group-hover:text-amber-400" : ""}`}>
+                            {link.label}
+                          </span>
+                          {isLocked ? (
+                            <span className="flex items-center gap-1 text-[9px] font-black px-1.5 py-0.5 rounded-md bg-amber-500/10 dark:bg-amber-500/20 text-amber-600 dark:text-amber-400 border border-amber-500/20 shrink-0 ml-1.5 shadow-2xs">
+                              <FaLock size={8} />
+                              <span>LOCKED</span>
+                            </span>
+                          ) : link.badge ? (
+                            <span
+                              className={`text-[9px] font-black px-1.5 py-0.5 rounded-md uppercase tracking-wider ${isActive
+                                ? link.isAi
+                                  ? "bg-white/20 text-white"
+                                  : "bg-blue-200/80 dark:bg-blue-900/90 text-blue-800 dark:text-blue-200"
+                                : "bg-blue-100 dark:bg-blue-900/60 text-blue-700 dark:text-blue-300"
+                                }`}
+                            >
+                              {link.badge}
+                            </span>
+                          ) : null}
+                        </div>
+                      )}
+                    </button>
+
+                    {isCollapsed && !mobileOpen && hoveredLink === link.path && (
+                      <div className="fixed left-[84px] z-[130] -translate-y-9 px-2.5 py-1.5 bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 text-xs font-bold rounded-xl shadow-xl whitespace-nowrap pointer-events-none flex items-center gap-1.5 animate-fadeIn">
+                        <span>{link.label}</span>
+                        {isLocked ? (
+                          <span className="text-[9px] font-extrabold px-1.5 py-0.5 rounded bg-amber-500 text-white flex items-center gap-1 uppercase">
+                            <FaLock size={7} /> Locked
+                          </span>
+                        ) : link.badge ? (
+                          <span className="text-[9px] font-extrabold px-1 rounded bg-blue-500 text-white uppercase">
+                            {link.badge}
+                          </span>
+                        ) : null}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          ))}
+        </div>
+
+        <div className="p-3 border-t border-slate-200/80 dark:border-slate-800/80 bg-slate-50/50 dark:bg-slate-900/50 space-y-2 shrink-0">
+
+          {(!isCollapsed || mobileOpen) && !isTrainer ? (
+            <div className="space-y-1.5">
+              {userData && userData.role !== "admin" && (
+                <button
+                  onClick={handleDownloadDossier}
+                  className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${isIntakePending
+                    ? "bg-slate-100/70 dark:bg-slate-800/50 text-slate-400 dark:text-slate-500 hover:bg-amber-500/10 hover:text-amber-600 dark:hover:text-amber-400 border border-slate-200/50 dark:border-slate-700/50"
+                    : "bg-white dark:bg-slate-800/90 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200/80 dark:border-slate-700/80 shadow-2xs"
+                    }`}
+                  title={isIntakePending ? "Export Dossier (Locked: Complete Intake Viva & Quiz first)" : "Export Performance Dossier (PDF)"}
+                >
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <FaFilePdf size={13} className={isIntakePending ? "text-slate-400" : "text-rose-600"} />
+                    <span className="truncate">Export Dossier (PDF)</span>
+                  </div>
+                  {isIntakePending ? (
+                    <span className="flex items-center gap-1 text-[9px] font-black px-1.5 py-0.5 rounded-md bg-amber-500/10 dark:bg-amber-500/20 text-amber-600 dark:text-amber-400 border border-amber-500/20 shrink-0 ml-1.5 shadow-2xs">
+                      <FaLock size={8} />
+                      <span>LOCKED</span>
+                    </span>
+                  ) : (
+                    <span className="text-[9px] font-black px-1.5 py-0.5 rounded bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-300 border border-rose-200/50">
+                      PDF
+                    </span>
+                  )}
+                </button>
+              )}
+
+              <button
+                onClick={() => handleNavigate("/portal-comparison", true, "Portal Difference")}
+                className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${location.pathname === "/portal-comparison"
+                  ? "bg-blue-600 text-white shadow-xs font-black"
+                  : "bg-white dark:bg-slate-800/90 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200/80 dark:border-slate-700/80 shadow-2xs"
+                  }`}
+                title="Compare Legacy Portals vs SankhyaIQ AI Platform"
+              >
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <BsShieldCheck size={14} className={location.pathname === "/portal-comparison" ? "text-white" : "text-blue-600 dark:text-blue-400"} />
+                  <span className="truncate">Portal Difference</span>
+                </div>
+                <span className={`text-[9px] font-black px-1.5 py-0.5 rounded uppercase tracking-wider ${location.pathname === "/portal-comparison"
+                  ? "bg-white/20 text-white"
+                  : "bg-blue-50 dark:bg-blue-950/80 text-blue-700 dark:text-blue-300 border border-blue-200/50"
+                  }`}>
+                  VS
+                </span>
+              </button>
+            </div>
+          ) : !isTrainer ? (
+            <div className="flex flex-col items-center gap-2">
+              {userData && userData.role !== "admin" && (
+                <div
+                  className="relative"
+                  onMouseEnter={() => setHoveredLink("footer-dossier")}
+                  onMouseLeave={() => setHoveredLink(null)}
+                >
+                  <button
+                    onClick={handleDownloadDossier}
+                    className={`w-9 h-9 flex items-center justify-center rounded-xl transition-all cursor-pointer ${isIntakePending
+                      ? "bg-slate-100/60 dark:bg-slate-800/40 text-slate-400 hover:bg-slate-200/60 dark:hover:bg-slate-800/80"
+                      : "hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300"
+                      }`}
+                  >
+                    <div className="relative">
+                      <FaFilePdf size={14} className={isIntakePending ? "text-slate-400" : "text-rose-600"} />
+                      {isIntakePending && (
+                        <span className="absolute -top-1.5 -right-2 w-3.5 h-3.5 rounded-full bg-amber-500 text-white flex items-center justify-center text-[7px] shadow-xs">
+                          <FaLock size={6} />
+                        </span>
+                      )}
+                    </div>
+                  </button>
+
+                  {hoveredLink === "footer-dossier" && (
+                    <div className="fixed left-[84px] z-[130] -translate-y-9 px-2.5 py-1.5 bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 text-xs font-bold rounded-xl shadow-xl whitespace-nowrap pointer-events-none flex items-center gap-1.5 animate-fadeIn">
+                      <span>Export Dossier (PDF)</span>
+                      {isIntakePending && (
+                        <span className="text-[9px] font-extrabold px-1.5 py-0.5 rounded bg-amber-500 text-white flex items-center gap-1 uppercase">
+                          <FaLock size={7} /> Locked
+                        </span>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              <div
+                className="relative"
+                onMouseEnter={() => setHoveredLink("footer-comparison")}
+                onMouseLeave={() => setHoveredLink(null)}
+              >
+                <button
+                  onClick={() => handleNavigate("/portal-comparison", true, "Portal Difference")}
+                  className={`w-9 h-9 flex items-center justify-center rounded-xl transition-all cursor-pointer ${location.pathname === "/portal-comparison"
+                    ? "bg-blue-600 text-white shadow-xs"
+                    : "hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300"
+                    }`}
+                >
+                  <BsShieldCheck size={14} className={location.pathname === "/portal-comparison" ? "text-white" : "text-blue-600 dark:text-blue-400"} />
+                </button>
+
+                {hoveredLink === "footer-comparison" && (
+                  <div className="fixed left-[84px] z-[130] -translate-y-9 px-2.5 py-1.5 bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 text-xs font-bold rounded-xl shadow-xl whitespace-nowrap pointer-events-none flex items-center gap-1.5 animate-fadeIn">
+                    <span>Portal Difference</span>
+                    <span className="text-[9px] font-extrabold px-1 rounded bg-blue-500 text-white uppercase">
+                      VS
+                    </span>
+                  </div>
+                )}
+              </div>
+            </div>
+          ) : null}
+
+          {userData ? (
+            <div ref={userCardRef} className="relative">
+              <button
+                type="button"
+                onClick={() => setShowUserDropdown(!showUserDropdown)}
+                className={`w-full flex items-center gap-2.5 p-2 rounded-2xl bg-white dark:bg-slate-800/90 hover:bg-slate-100/80 dark:hover:bg-slate-800 border border-slate-200/80 dark:border-slate-700/80 shadow-xs transition-all cursor-pointer group text-left ${isCollapsed && !mobileOpen ? "justify-center p-1.5" : ""
+                  }`}
+                title="Officer Account & Session • Click to open settings & options"
+              >
+                <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-blue-700 to-indigo-700 text-white flex items-center justify-center font-black text-xs shadow-sm shrink-0 group-hover:scale-105 transition-transform overflow-hidden relative">
+                  {userPhoto ? (
+                    <img
+                      src={userPhoto}
+                      alt={userData?.name || "Officer"}
+                      className="w-full h-full object-cover rounded-xl"
+                      onError={(e) => {
+                        e.currentTarget.style.display = 'none';
+                        if (e.currentTarget.nextElementSibling) {
+                          e.currentTarget.nextElementSibling.style.display = 'flex';
+                        }
+                      }}
+                    />
+                  ) : null}
+                  <span className={userPhoto ? "hidden" : "flex items-center justify-center"}>
+                    {userData.name ? userData.name.charAt(0).toUpperCase() : <FaUserGraduate size={14} />}
+                  </span>
+                </div>
+
+                {(!isCollapsed || mobileOpen) && (
+                  <div className="flex-1 min-w-0">
+                    <span className="text-xs font-black text-slate-900 dark:text-slate-100 truncate block">
+                      {userData.name}
+                    </span>
+                    <span className="text-[10px] text-blue-600 dark:text-blue-400 font-bold truncate block">
+                      {userData.jobRole || userData.role || "Officer"}
+                    </span>
+                  </div>
+                )}
+
+                {(!isCollapsed || mobileOpen) && (
+                  <div className="text-slate-400 group-hover:text-slate-700 dark:group-hover:text-slate-200 transition-colors p-1">
+                    <BsChevronUp
+                      size={12}
+                      className={`transition-transform duration-200 ${showUserDropdown ? "rotate-180" : ""}`}
+                    />
+                  </div>
+                )}
+              </button>
+
+              <AnimatePresence>
+                {showUserDropdown && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 8, scale: 0.96 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 8, scale: 0.96 }}
+                    transition={{ duration: 0.16 }}
+                    className={`bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden z-[150] max-h-[85vh] overflow-y-auto custom-scrollbar ${isCollapsed && !mobileOpen
+                      ? "fixed left-[84px] bottom-3 w-80 shadow-[0_10px_40px_rgba(0,0,0,0.25)]"
+                      : "absolute bottom-[calc(100%+8px)] left-0 right-0 w-full min-w-[250px] shadow-[0_10px_40px_rgba(0,0,0,0.25)]"
+                      }`}
+                  >
+                    <div className="h-1 w-full bg-gradient-to-r from-[#FF9933] via-white to-[#138808]" />
+
+                    <div className="p-3.5 bg-gradient-to-br from-slate-50 to-blue-50/40 dark:from-slate-800/80 dark:to-blue-950/40 border-b border-slate-100 dark:border-slate-800">
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-blue-700 to-indigo-700 text-white flex items-center justify-center font-black text-sm shadow-md shrink-0 overflow-hidden relative">
+                          {userPhoto ? (
+                            <img
+                              src={userPhoto}
+                              alt={userData?.name || "Officer"}
+                              className="w-full h-full object-cover rounded-2xl"
+                              onError={(e) => {
+                                e.currentTarget.style.display = 'none';
+                                if (e.currentTarget.nextElementSibling) {
+                                  e.currentTarget.nextElementSibling.style.display = 'flex';
+                                }
+                              }}
+                            />
+                          ) : null}
+                          <span className={userPhoto ? "hidden" : "flex items-center justify-center"}>
+                            {userData.name ? userData.name.charAt(0).toUpperCase() : "O"}
+                          </span>
+                        </div>
+                        <div className="flex flex-col min-w-0">
+                          <span className="font-black text-xs sm:text-sm text-slate-900 dark:text-white truncate">
+                            {userData.name}
+                          </span>
+                          <span className="text-[10px] text-slate-500 dark:text-slate-400 truncate">
+                            {userData.email}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="mt-2.5 pt-2 border-t border-slate-200/60 dark:border-slate-700/60 flex items-center justify-between text-[10.5px]">
+                        <span className="font-semibold text-slate-600 dark:text-slate-300">Cadre:</span>
+                        <span className="font-bold text-blue-700 dark:text-blue-400 truncate max-w-[150px]">
+                          {userData.jobRole || "ISS Officer"}
+                        </span>
+                      </div>
+
+                      <div className="mt-1 flex items-center justify-between text-[10.5px]">
+                        <span className="font-semibold text-slate-600 dark:text-slate-300">Competency:</span>
+                        <span className="font-black text-emerald-600 dark:text-emerald-400">
+                          {userData.overallCompetencyScore !== undefined && userData.overallCompetencyScore !== null ? userData.overallCompetencyScore : 0}% ({userData.overallLevel || "Novice"})
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="p-2 border-b border-slate-100 dark:border-slate-800">
+                      <button
+                        onClick={() => {
+                          setShowUserDropdown(false);
+                          navigate("/settings");
+                        }}
+                        className="w-full text-left px-3 py-2 rounded-2xl hover:bg-blue-50/70 dark:hover:bg-blue-950/40 text-xs font-bold text-slate-700 dark:text-slate-200 flex items-center justify-between transition-colors cursor-pointer group"
+                      >
+                        <div className="flex items-center gap-2.5">
+                          <div className="p-1.5 rounded-xl bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 group-hover:rotate-45 transition-transform duration-300">
+                            <BsGearFill size={13} />
+                          </div>
+                          <div>
+                            <span className="block font-black text-slate-900 dark:text-white text-xs">Settings</span>
+                          </div>
+                        </div>
+                      </button>
+                    </div>
+
+
+                    <div className="p-1.5 space-y-0.5">
+                      {!isTrainer && (
+                        <button
+                          onClick={() => {
+                            setShowUserDropdown(false);
+                            if (isPathLocked("/ai-models")) {
+                              triggerLockedError("AI Models Hub");
+                              return;
+                            }
+                            navigate("/ai-models");
+                          }}
+                          className="w-full text-left px-3 py-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 text-xs font-bold text-slate-700 dark:text-slate-200 flex items-center justify-between transition-colors cursor-pointer"
+                        >
+                          <div className="flex items-center gap-2.5">
+                            <HiSparkles size={13} className="text-amber-500" />
+                            <span>AI Models & Workflows Hub</span>
+                          </div>
+                          {isPathLocked("/ai-models") && <FaLock size={10} className="text-amber-500" />}
+                        </button>
+                      )}
+
+                      {userData?.role !== "admin" && !isTrainer && (
+                        <button
+                          onClick={() => {
+                            setShowUserDropdown(false);
+                            handleDownloadDossier();
+                          }}
+                          className={`w-full text-left px-3 py-2 rounded-xl text-xs font-bold flex items-center justify-between transition-colors cursor-pointer ${isIntakePending
+                            ? "hover:bg-amber-500/5 text-slate-500 dark:text-slate-400"
+                            : "hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200"
+                            }`}
+                        >
+                          <div className="flex items-center gap-2.5">
+                            <FaFilePdf size={13} className={isIntakePending ? "text-slate-400" : "text-rose-600"} />
+                            <span>Export Official Dossier (PDF)</span>
+                          </div>
+                          {isIntakePending ? (
+                            <span className="flex items-center gap-1 text-[9px] font-black px-1.5 py-0.5 rounded-md bg-amber-500/10 dark:bg-amber-500/20 text-amber-600 dark:text-amber-400 border border-amber-500/20 shrink-0 ml-1.5 shadow-2xs">
+                              <FaLock size={8} />
+                              <span>LOCKED</span>
+                            </span>
+                          ) : (
+                            <span className="text-[10px] text-slate-400 font-semibold">PDF</span>
+                          )}
+                        </button>
+                      )}
+
+                      {!isTrainer && (
+                        <button
+                          onClick={() => {
+                            setShowUserDropdown(false);
+                            navigate("/portal-comparison");
+                          }}
+                          className="w-full text-left px-3 py-2 rounded-xl text-xs font-bold flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 transition-colors cursor-pointer"
+                        >
+                          <div className="flex items-center gap-2.5">
+                            <BsShieldCheck size={13} className="text-blue-600 dark:text-blue-400" />
+                            <span>Portal Difference (Legacy vs Ours)</span>
+                          </div>
+                          <span className="text-[9px] font-black px-1.5 py-0.5 rounded-md bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300">
+                            VS
+                          </span>
+                        </button>
+                      )}
+
+                      {userData?.role !== "admin" && !isTrainer && (
+                        <button
+                          onClick={() => {
+                            setShowUserDropdown(false);
+                            if (isPathLocked("/history")) {
+                              triggerLockedError("Interview History");
+                              return;
+                            }
+                            navigate("/history");
+                          }}
+                          className="w-full text-left px-3 py-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 text-xs font-bold text-slate-700 dark:text-slate-200 flex items-center justify-between transition-colors cursor-pointer"
+                        >
+                          <div className="flex items-center gap-2.5">
+                            <FaHistory size={13} className="text-indigo-600" />
+                            <span>Interview History & Scorecards</span>
+                          </div>
+                          {isPathLocked("/history") && <FaLock size={10} className="text-amber-500" />}
+                        </button>
+                      )}
+
+                      {(userData?.role === "admin" || isTrainer) && (
+                        <button
+                          onClick={() => {
+                            setShowUserDropdown(false);
+                            navigate("/admin");
+                          }}
+                          className="w-full text-left px-3 py-2 rounded-xl hover:bg-blue-50/60 dark:hover:bg-blue-950/40 text-xs font-bold text-blue-700 dark:text-blue-300 flex items-center gap-2.5 transition-colors cursor-pointer"
+                        >
+                          <BsShieldLock size={13} className="text-blue-600" />
+                          <span>{isTrainer ? "Admin Portal" : "Executive Admin Portal"}</span>
+                        </button>
+                      )}
+                    </div>
+
+                    <div className="p-1.5 border-t border-slate-100 dark:border-slate-800">
+                      <button
+                        onClick={() => {
+                          setShowUserDropdown(false);
+                          handleLogout();
+                        }}
+                        className="w-full px-3 py-2 rounded-xl hover:bg-rose-50 dark:hover:bg-rose-950/60 text-xs font-bold text-rose-600 dark:text-rose-400 flex items-center gap-2 transition-colors cursor-pointer"
+                      >
+                        <HiOutlineLogout size={14} />
+                        <span>Sign Out</span>
+                      </button>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          ) : (
+            <button
+              onClick={() => handleNavigate("/auth", true)}
+              className={`w-full flex items-center justify-center gap-2 py-2 px-3 bg-gradient-to-r from-blue-700 to-indigo-700 hover:from-blue-800 hover:to-indigo-800 text-white rounded-xl text-xs font-black shadow-md transition-all cursor-pointer ${isCollapsed && !mobileOpen ? "px-1.5" : ""
+                }`}
+            >
+              <FaUserGraduate size={13} />
+              {(!isCollapsed || mobileOpen) && <span>Officer Sign In</span>}
+            </button>
+          )}
+        </div>
+      </aside>
+    </>
+  );
+};
+
+export default Sidebar;

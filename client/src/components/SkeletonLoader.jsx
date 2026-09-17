@@ -1,5 +1,3 @@
-import React from "react";
-
 export const SkeletonBox = ({ className = "" }) => (
   <div
     className={`animate-pulse rounded-2xl bg-gradient-to-r from-slate-200 via-slate-100 to-slate-200 dark:from-slate-800 dark:via-slate-700/60 dark:to-slate-800 ${className}`}
@@ -21,7 +19,6 @@ export const SkeletonText = ({ lines = 3, className = "" }) => (
 export const DashboardSkeleton = () => {
   return (
     <div className="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-16 space-y-8 animate-fadeIn">
-      {/* Welcome Banner Skeleton */}
       <div className="rounded-3xl p-8 bg-slate-200/80 dark:bg-slate-900/80 border border-slate-300 dark:border-slate-800 animate-pulse flex flex-col md:flex-row justify-between gap-6">
         <div className="space-y-3 w-full max-w-xl">
           <div className="h-6 w-48 rounded-full bg-slate-300 dark:bg-slate-800" />
@@ -34,7 +31,6 @@ export const DashboardSkeleton = () => {
         </div>
       </div>
 
-      {/* KPI Cards Grid Skeleton */}
       <div className="grid grid-cols-2 lg:grid-cols-6 gap-4">
         {Array.from({ length: 6 }).map((_, i) => (
           <div
@@ -51,7 +47,6 @@ export const DashboardSkeleton = () => {
         ))}
       </div>
 
-      {/* Bar Chart Full Width Skeleton */}
       <div className="p-7 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-6">
         <div className="flex justify-between items-center pb-4 border-b border-slate-100 dark:border-slate-800">
           <div className="space-y-2">
@@ -71,7 +66,6 @@ export const DashboardSkeleton = () => {
         </div>
       </div>
 
-      {/* 4-Domain Radar Skeleton */}
       <div className="p-7 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
         <div className="lg:col-span-6 h-64 rounded-full bg-slate-100 dark:bg-slate-800 animate-pulse mx-auto w-64" />
         <div className="lg:col-span-6 grid grid-cols-1 sm:grid-cols-2 gap-4">

@@ -7,7 +7,6 @@ export const askAi = async (messages) => {
             throw new Error("Messages array is empty.");
         }
 
-        // 1. Try OpenRouter if API key is provided
         if (process.env.OPENROUTER_API_KEY) {
             try {
                 const response = await axios.post(
@@ -34,7 +33,6 @@ export const askAi = async (messages) => {
             }
         }
 
-        // 2. Fallback to Google Gemini
         if (ai) {
             try {
                 const systemMsg = messages.find((m) => m.role === "system")?.content || "";

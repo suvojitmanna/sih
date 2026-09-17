@@ -5,7 +5,6 @@ import Chat from "../models/chatModel.js";
 import User from "../models/userModel.js";
 import axios from "axios";
 
-// TEXT MESSAGE CONTROLLER (Gemini with OpenRouter fallback)
 export const textMessageController = async (req, res) => {
     try {
         const userId = req.userId || req.user?._id;
@@ -20,16 +19,12 @@ export const textMessageController = async (req, res) => {
             return res.status(404).json({ success: false, message: "User not found" });
         }
 
-        if (user.credits < 1) {
-            return res.status(403).json({ success: false, message: "Not enough credits. Minimum 1 required." });
-        }
 
         const chat = await Chat.findOne({ userId, _id: chatId });
         if (!chat) {
             return res.status(404).json({ success: false, message: "Chat not found" });
         }
 
-        // Save user message
         chat.messages.push({
             role: "user",
             content: prompt,
@@ -37,7 +32,6 @@ export const textMessageController = async (req, res) => {
             isImage: false,
         });
 
-        // Auto name chat from first prompt if default
         if (chat.name === "New Chat" || !chat.name) {
             chat.name = prompt.slice(0, 35);
         }
@@ -50,7 +44,6 @@ Rules:
 
         let replyText = "";
 
-        // Try Gemini first if configured
         if (ai) {
             try {
                 const response = await ai.models.generateContent({
@@ -63,7 +56,6 @@ Rules:
             }
         }
 
-        // Fallback to OpenRouter if Gemini failed or is unconfigured
         if (!replyText) {
             try {
                 const messages = [
@@ -90,9 +82,6 @@ Rules:
         chat.messages.push(reply);
         await chat.save();
 
-        // Deduct 1 credit
-        user.credits = Math.max(0, user.credits - 1);
-        await user.save();
 
         res.status(200).json({
             success: true,
@@ -105,7 +94,6 @@ Rules:
     }
 };
 
-// IMAGE GENERATION CONTROLLER
 export const imageMessageController = async (req, res) => {
     try {
         const userId = req.userId || req.user?._id;
@@ -120,16 +108,12 @@ export const imageMessageController = async (req, res) => {
             return res.status(404).json({ success: false, message: "User not found" });
         }
 
-        if (user.credits < 2) {
-            return res.status(403).json({ success: false, message: "Not enough credits. Minimum 2 required." });
-        }
 
         const chat = await Chat.findOne({ userId, _id: chatId });
         if (!chat) {
             return res.status(404).json({ success: false, message: "Chat not found" });
         }
 
-        // Save user prompt message
         chat.messages.push({
             role: "user",
             content: prompt,
@@ -139,7 +123,6 @@ export const imageMessageController = async (req, res) => {
 
         let imageUrl = "";
 
-        // Strategy 1: ClipDrop API (if CLIPDROP_API_KEY is available)
         if (process.env.CLIPDROP_API_KEY) {
             try {
                 const clipdropResponse = await axios.post(
@@ -168,7 +151,6 @@ export const imageMessageController = async (req, res) => {
             }
         }
 
-        // Strategy 2: High quality free Pollinations AI fallback
         if (!imageUrl) {
             const seed = Math.floor(Math.random() * 1000000);
             const encodedPrompt = encodeURIComponent(prompt);
@@ -201,10 +183,6 @@ export const imageMessageController = async (req, res) => {
         chat.messages.push(reply);
         await chat.save();
 
-        // Deduct 2 credits
-        user.credits = Math.max(0, user.credits - 2);
-        await user.save();
-
         res.status(200).json({
             success: true,
             reply,
@@ -219,7 +197,6 @@ export const imageMessageController = async (req, res) => {
     }
 };
 
-// PUBLISH IMAGE TOGGLE CONTROLLER
 export const publishImageController = async (req, res) => {
     try {
         const userId = req.userId || req.user?._id;

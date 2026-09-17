@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo } from "react";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import { useSelector, useDispatch } from "react-redux";
@@ -33,6 +33,9 @@ import {
   FaClock,
   FaAward,
   FaArrowRight,
+  FaArrowUp,
+  FaArrowDown,
+  FaGraduationCap,
   FaExclamationTriangle,
   FaCheckCircle,
   FaPlayCircle,
@@ -54,6 +57,8 @@ import {
   BsFillCameraVideoFill,
   BsLightningChargeFill,
   BsBookHalf,
+  BsCheckCircleFill,
+  BsBarChartSteps,
 } from "react-icons/bs";
 import { generateCompetencyPDF } from "../utils/pdfGenerator";
 import PageTransition from "../components/PageTransition";
@@ -99,14 +104,14 @@ const getShortCompetencyName = (name = "") => {
 };
 
 const OFFICIAL_BASELINE_COMPETENCIES = [
-  { competencyName: "Sampling Techniques & Estimation", domain: "Statistical", score: 62 },
-  { competencyName: "National Accounts & GDP (SNA 2008)", domain: "Statistical", score: 82 },
-  { competencyName: "Price Statistics (CPI, WPI, Inflation)", domain: "Statistical", score: 78 },
-  { competencyName: "Statistical Computing & Automated Processing", domain: "Technical", score: 48 },
-  { competencyName: "Data Privacy, Ethics & DPDP Act", domain: "Governance", score: 72 },
-  { competencyName: "Labour & Employment Statistics (PLFS)", domain: "Statistical", score: 84 },
-  { competencyName: "Microdata Analytics & Survey Weighting", domain: "Technical", score: 52 },
-  { competencyName: "Evidence-Based Policy & Decision Leadership", domain: "Managerial", score: 80 },
+  { competencyName: "Sampling Techniques & Estimation", domain: "Statistical", score: 0 },
+  { competencyName: "National Accounts & GDP (SNA 2008)", domain: "Statistical", score: 0 },
+  { competencyName: "Price Statistics (CPI, WPI, Inflation)", domain: "Statistical", score: 0 },
+  { competencyName: "Statistical Computing & Automated Processing", domain: "Technical", score: 0 },
+  { competencyName: "Data Privacy, Ethics & DPDP Act", domain: "Governance", score: 0 },
+  { competencyName: "Labour & Employment Statistics (PLFS)", domain: "Statistical", score: 0 },
+  { competencyName: "Microdata Analytics & Survey Weighting", domain: "Technical", score: 0 },
+  { competencyName: "Evidence-Based Policy & Decision Leadership", domain: "Managerial", score: 0 },
 ];
 
 const DOMAIN_CATEGORIES = [
@@ -128,12 +133,13 @@ const Dashboard = () => {
   const [interviews, setInterviews] = useState([]);
   const [assignmentSubmissions, setAssignmentSubmissions] = useState([]);
   const [chats, setChats] = useState([]);
+  const [diagnosticStatus, setDiagnosticStatus] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isSyncing, setIsSyncing] = useState(false);
-  const [lastSyncedAt, setLastSyncedAt] = useState(new Date());
   const [generatingPath, setGeneratingPath] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
   const [domainFilter, setDomainFilter] = useState("all");
+  const [skillGapFilter, setSkillGapFilter] = useState("all");
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -154,6 +160,7 @@ const Dashboard = () => {
         interviewRes,
         assignmentSubmissionsRes,
         chatRes,
+        diagnosticRes,
       ] = await Promise.allSettled([
         axios.get(`${ServerUrl}/api/competencies/my-profile`, { withCredentials: true }),
         axios.get(`${ServerUrl}/api/support/broadcasts`, { withCredentials: true }),
@@ -161,6 +168,7 @@ const Dashboard = () => {
         axios.get(`${ServerUrl}/api/interview/get-interview`, { withCredentials: true }),
         axios.get(`${ServerUrl}/api/assignments/history/my-submissions`, { withCredentials: true }),
         axios.get(`${ServerUrl}/api/chat/get`, { withCredentials: true }),
+        axios.get(`${ServerUrl}/api/competencies/diagnostic-status`, { withCredentials: true }),
       ]);
 
       if (profileRes.status === "fulfilled" && profileRes.value.data?.success) {
@@ -171,6 +179,10 @@ const Dashboard = () => {
 
       if (broadcastsRes.status === "fulfilled" && broadcastsRes.value.data?.success) {
         setBroadcasts(broadcastsRes.value.data.broadcasts || []);
+      }
+
+      if (diagnosticRes.status === "fulfilled" && diagnosticRes.value.data?.success) {
+        setDiagnosticStatus(diagnosticRes.value.data);
       }
 
       if (quizAttemptsRes.status === "fulfilled" && quizAttemptsRes.value.data?.success) {
@@ -195,7 +207,6 @@ const Dashboard = () => {
       if (chatRes.status === "fulfilled" && chatRes.value.data?.success) {
         setChats(chatRes.value.data.chats || []);
       }
-      setLastSyncedAt(new Date());
     } catch (error) {
       if (!isBackground) {
         console.error("Dashboard multi-source fetch error:", error);
@@ -211,12 +222,10 @@ const Dashboard = () => {
   useEffect(() => {
     fetchDashboardData(false);
 
-    // Periodic real-time background synchronization (every 3.5s)
     const interval = setInterval(() => {
       fetchDashboardData(true);
     }, 3500);
 
-    // Real-time custom event and focus listeners
     const handleAssessmentCompleted = (e) => {
       console.log("[REALTIME DASHBOARD SYNC] Assessment completed event triggered:", e.detail);
       fetchDashboardData(false);
@@ -251,7 +260,7 @@ const Dashboard = () => {
         ? profile.competencies.map((c) => ({
           competencyName: c.competencyName,
           domain: c.domain || "Statistical",
-          score: Number(c.score) || 60,
+          score: Number.isFinite(Number(c.score)) ? Number(c.score) : 0,
           source: c.source || "assessment-derived",
         }))
         : OFFICIAL_BASELINE_COMPETENCIES;
@@ -316,16 +325,27 @@ const Dashboard = () => {
 
       return {
         ...comp,
-        score: Math.min(100, Math.max(10, finalScore)),
+        score: Math.min(100, Math.max(0, finalScore)),
         evaluationsCount: matchedQuizScores.length + matchedAssignmentScores.length,
       };
     });
   }, [profile, quizAttempts, assignmentSubmissions]);
 
-  // 2. Computed Live Knowledge Index & Metric Stats
   const knowledgeStats = useMemo(() => {
+    const hasAnyAttempts =
+      (quizAttempts && quizAttempts.length > 0) ||
+      (interviews && interviews.length > 0) ||
+      (assignmentSubmissions && assignmentSubmissions.length > 0) ||
+      (profile?.learningPath && profile.learningPath.some((s) => s.status === "completed"));
+
     const totalScore = synthesizedCompetencies.reduce((acc, c) => acc + c.score, 0);
-    const overallScore = Math.round(totalScore / (synthesizedCompetencies.length || 1));
+    let overallScore = hasAnyAttempts
+      ? Math.round(totalScore / (synthesizedCompetencies.length || 1))
+      : 0;
+
+    if (profile?.overallCompetencyScore !== undefined && profile?.overallCompetencyScore !== null && hasAnyAttempts) {
+      overallScore = profile.overallCompetencyScore;
+    }
 
     const criticalWeaknesses = synthesizedCompetencies.filter((c) => c.score < 50);
     const developingCount = synthesizedCompetencies.filter((c) => c.score >= 50 && c.score < 75);
@@ -362,19 +382,23 @@ const Dashboard = () => {
 
     const totalConsultations = chats.reduce((acc, c) => acc + (c.messages?.length || 0), 0);
 
-    const baseHours = profile?.learningHours || 12;
+    const baseHours = profile?.learningHours !== undefined && profile?.learningHours !== null ? profile.learningHours : 0;
     const computedHours = baseHours + completedQuizzes * 0.5 + completedInterviews * 0.75 + completedAssignments * 1.5;
 
-    let overallLevel = "Intermediate";
-    if (overallScore >= 80) overallLevel = "Expert (ISS)";
+    let overallLevel;
+    if (!hasAnyAttempts) {
+      overallLevel = "Novice (Baseline Pending)";
+    } else if (overallScore >= 80) overallLevel = "Expert (ISS)";
     else if (overallScore >= 70) overallLevel = "Advanced (SSO)";
     else if (overallScore >= 55) overallLevel = "Intermediate (JSO)";
-    else overallLevel = "Foundational";
+    else if (overallScore > 0) overallLevel = "Foundational";
+    else overallLevel = "Novice";
 
     return {
+      hasAnyAttempts,
       overallScore,
       overallLevel,
-      criticalWeaknessesCount: criticalWeaknesses.length,
+      criticalWeaknessesCount: hasAnyAttempts ? criticalWeaknesses.length : 0,
       criticalWeaknesses,
       developingCount: developingCount.length,
       masteredCount: masteredCount.length,
@@ -386,17 +410,143 @@ const Dashboard = () => {
       evaluatedAssignments,
       totalConsultations,
       learningHours: Math.round(computedHours),
-      learningStreak: profile?.learningStreak || (completedQuizzes > 0 ? 4 : 2),
+      learningStreak: profile?.learningStreak !== undefined && profile?.learningStreak !== null ? profile.learningStreak : 0,
     };
   }, [synthesizedCompetencies, quizAttempts, interviews, assignmentSubmissions, chats, profile]);
 
-  // 3. Radar Chart Data (4 Official MoSPI Domains)
+  const isQuizCompleted = Boolean(
+    diagnosticStatus?.isQuizCompleted ||
+    (quizAttempts && quizAttempts.length > 0) ||
+    (profile?.quizzesCompleted && profile.quizzesCompleted > 0)
+  );
+
+  const isInterviewCompleted = Boolean(
+    diagnosticStatus?.isInterviewCompleted ||
+    (interviews && interviews.some((i) => i.status === "completed" || i.finalScore || i.score))
+  );
+
+  const isSignupAssignmentComplete = Boolean(
+    (userData?.role === "admin" || userData?.role === "trainer") ||
+    (diagnosticStatus?.isDiagnosticFullyCompleted || (isQuizCompleted && isInterviewCompleted))
+  );
+
+  const domainTrends = useMemo(() => {
+    const calcTrend = (domainName) => {
+      if (!isSignupAssignmentComplete) {
+        return { delta: "0%", text: "Pending Signup Assignment", isPositive: false, direction: "neutral" };
+      }
+
+      const relatedAttempts = (quizAttempts || []).filter((q) => {
+        const text = `${q.quizTitle || ""} ${q.topic || ""} ${q.domain || ""}`.toLowerCase();
+        return text.includes(domainName.toLowerCase());
+      });
+
+      if (relatedAttempts.length === 0) {
+        if (!knowledgeStats.hasAnyAttempts) {
+          return { delta: "0%", text: "Pending Diagnostic Intake", isPositive: true, direction: "neutral" };
+        }
+        return { delta: "+0%", text: "Benchmark Baseline", isPositive: true, direction: "neutral" };
+      }
+
+      const recentScore = relatedAttempts[0]?.score !== undefined && relatedAttempts[0]?.score !== null
+        ? relatedAttempts[0].score
+        : 70;
+
+      if (recentScore >= 75) {
+        const diff = Math.min(25, Math.max(4, recentScore - 68));
+        return { delta: `+${diff}%`, text: "Improved Post-Test", isPositive: true, direction: "up" };
+      } else {
+        const diff = Math.min(25, Math.max(4, 75 - recentScore));
+        return { delta: `-${diff}%`, text: "Deficit Identified", isPositive: false, direction: "down" };
+      }
+    };
+
+    return {
+      Statistical: calcTrend("Statistical"),
+      Technical: calcTrend("Technical"),
+      Governance: calcTrend("Governance"),
+      Managerial: calcTrend("Managerial"),
+    };
+  }, [quizAttempts, knowledgeStats.hasAnyAttempts, isSignupAssignmentComplete]);
+
+  const allPossibleSkillGaps = useMemo(() => {
+    if (profile?.skillGaps && profile.skillGaps.length > 0) {
+      return profile.skillGaps;
+    }
+
+    return synthesizedCompetencies.map((comp) => {
+      const benchmarkTarget = 75;
+      const gapScore = Math.max(0, benchmarkTarget - comp.score);
+      const isCritical = gapScore >= 25 || comp.score < 45;
+      const isModerate = gapScore >= 10 || comp.score < 65;
+      const priority = isCritical ? "High" : isModerate ? "Medium" : "Low";
+
+      return {
+        competencyName: comp.competencyName,
+        domain: comp.domain || "Statistical",
+        currentLevel: comp.score >= 75 ? "Expert" : comp.score >= 60 ? "Advanced" : comp.score >= 45 ? "Intermediate" : comp.score > 0 ? "Beginner" : "Novice",
+        requiredLevel: "Advanced",
+        gapScore,
+        priority,
+        impact: isCritical
+          ? "Critical capability deficit directly affecting official survey operations & macroeconomic compilation."
+          : isModerate
+            ? "Moderate operational deficit requiring targeted practicum drills and mock evaluations."
+            : "Proficiency satisfies official cadre operational requirements.",
+        recommendedAction: isCritical
+          ? `Enroll in mandatory iGOT Karmayogi core module for ${comp.competencyName}.`
+          : `Practice diagnostic assessment and drills in ${comp.competencyName}.`,
+      };
+    });
+  }, [profile, synthesizedCompetencies]);
+
+  const filteredSkillGaps = useMemo(() => {
+    if (skillGapFilter === "all") return allPossibleSkillGaps;
+    if (skillGapFilter === "high") return allPossibleSkillGaps.filter((g) => g.priority === "High");
+    if (skillGapFilter === "medium") return allPossibleSkillGaps.filter((g) => g.priority === "Medium");
+    if (skillGapFilter === "strengths") return allPossibleSkillGaps.filter((g) => g.priority === "Low" || g.gapScore === 0);
+    return allPossibleSkillGaps;
+  }, [allPossibleSkillGaps, skillGapFilter]);
+
   const radarData = useMemo(() => {
+    if (!isSignupAssignmentComplete) {
+      return [
+        {
+          domain: "Statistical",
+          fullName: "Statistical Competencies",
+          score: 0,
+          fullMark: 100,
+          benchmark: 75,
+        },
+        {
+          domain: "Technical",
+          fullName: "Technical & Computing",
+          score: 0,
+          fullMark: 100,
+          benchmark: 75,
+        },
+        {
+          domain: "Governance",
+          fullName: "Digital Governance & Privacy",
+          score: 0,
+          fullMark: 100,
+          benchmark: 75,
+        },
+        {
+          domain: "Managerial",
+          fullName: "Behavioural & Leadership",
+          score: 0,
+          fullMark: 100,
+          benchmark: 75,
+        },
+      ];
+    }
+
     const domainCalc = (pattern) => {
       const comps = synthesizedCompetencies.filter((c) =>
         c.domain?.toLowerCase().includes(pattern.toLowerCase())
       );
-      if (!comps.length) return 70;
+      if (!comps.length) return 0;
       return Math.round(comps.reduce((acc, c) => acc + c.score, 0) / comps.length);
     };
 
@@ -430,9 +580,8 @@ const Dashboard = () => {
         benchmark: 75,
       },
     ];
-  }, [synthesizedCompetencies]);
+  }, [synthesizedCompetencies, isSignupAssignmentComplete]);
 
-  // 4. Bar Chart Column Data with Domain Filtering
   const columnBarData = useMemo(() => {
     let list = synthesizedCompetencies;
     if (domainFilter !== "all") {
@@ -456,7 +605,6 @@ const Dashboard = () => {
     });
   }, [synthesizedCompetencies, domainFilter]);
 
-  // 5. Multi-Model Knowledge Evaluation Score Timeline (Progress Over Sessions)
   const knowledgeTimelineData = useMemo(() => {
     let events = [];
 
@@ -469,7 +617,7 @@ const Dashboard = () => {
       }
       sc = Math.min(100, Math.max(0, Number(sc) || 0));
       events.push({
-        date: q.createdAt ? new Date(q.createdAt) : new Date(Date.now() - ((quizAttempts?.length || 1) - idx) * 86400000 * 2),
+        date: q.createdAt ? new Date(q.createdAt) : new Date(1735689600000 + idx * 86400000 * 2),
         score: sc,
         type: "Quiz Test",
         title: q.quizId?.title || q.quizTitle || q.title || `Quiz Evaluation #${idx + 1}`,
@@ -482,7 +630,7 @@ const Dashboard = () => {
       const sc = raw !== null ? (raw <= 10 ? raw * 10 : raw) : 75;
       const normalizedScore = Math.min(100, Math.max(0, Math.round(sc)));
       events.push({
-        date: i.createdAt ? new Date(i.createdAt) : new Date(Date.now() - ((interviews?.length || 1) - idx) * 86400000 * 3),
+        date: i.createdAt ? new Date(i.createdAt) : new Date(1735689600000 + idx * 86400000 * 3),
         score: normalizedScore,
         type: "Viva Voce",
         title: i.role || i.jobRole || i.title || `Cadre Board Viva #${idx + 1}`,
@@ -498,7 +646,7 @@ const Dashboard = () => {
         }
         const normalizedScore = Math.min(100, Math.max(0, Math.round(sc)));
         events.push({
-          date: a.createdAt ? new Date(a.createdAt) : new Date(Date.now() - ((assignmentSubmissions?.length || 1) - idx) * 86400000 * 2.5),
+          date: a.createdAt ? new Date(a.createdAt) : new Date(1735689600000 + idx * 86400000 * 2.5),
           score: normalizedScore,
           type: "Practicum",
           title: a.assignmentId?.title || a.assignmentTitle || a.title || `Practicum Case #${idx + 1}`,
@@ -688,6 +836,147 @@ const Dashboard = () => {
             </div>
           </div>
 
+          {(!diagnosticStatus || !diagnosticStatus.isDiagnosticFullyCompleted) && (
+            <ScrollReveal direction="up" delay={0.03}>
+              <div className="relative rounded-3xl overflow-hidden bg-gradient-to-r from-amber-500/10 via-blue-900/40 to-indigo-950 text-slate-900 dark:text-white p-6 sm:p-7 shadow-xl border-2 border-amber-500/40 dark:border-amber-400/30 backdrop-blur-md">
+                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+                  <div className="space-y-3 max-w-3xl">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/20 border border-amber-500/40 text-amber-700 dark:text-amber-300 text-xs font-black uppercase tracking-wider">
+                        <BsShieldCheck size={13} className="text-amber-500 animate-pulse" />
+                        <span>Mandatory Cadre Diagnostic Baseline Intake</span>
+                      </span>
+                      <span className="text-[11px] font-mono px-2.5 py-0.5 rounded-full bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold">
+                        Target Role: {profile?.jobRole || userData?.jobRole || "Indian Statistical Service (ISS)"}
+                      </span>
+                    </div>
+
+                    <h2 className="text-xl sm:text-2xl font-black tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
+                      <span>Baseline Competency Diagnostic Assessment Required</span>
+                    </h2>
+
+                    <p className="text-xs sm:text-sm text-slate-700 dark:text-slate-300 leading-relaxed">
+                      New officer profiles are initialized at a <strong>0% baseline</strong>. Complete your AI-generated role diagnostic quiz and mock oral viva below to calculate your verified <strong>4-Domain Knowledge Taxonomy</strong>, establish <strong>Cadre Skill Gaps</strong>, and activate your personalized training roadmap.
+                    </p>
+
+                    <div className="flex items-center gap-3 pt-1 text-xs">
+                      <div className="flex items-center gap-2 font-bold text-slate-700 dark:text-slate-300">
+                        <span>Intake Completion:</span>
+                        <span className="px-2 py-0.5 rounded-md bg-amber-100 dark:bg-amber-950/80 text-amber-800 dark:text-amber-300 font-black">
+                          {((diagnosticStatus?.isQuizCompleted ? 1 : 0) + (diagnosticStatus?.isInterviewCompleted ? 1 : 0))}/2 Completed
+                        </span>
+                      </div>
+                      <div className="w-36 bg-slate-200 dark:bg-slate-800 h-2 rounded-full overflow-hidden">
+                        <div
+                          className="h-full bg-amber-500 transition-all duration-500 rounded-full"
+                          style={{
+                            width: `${(((diagnosticStatus?.isQuizCompleted ? 1 : 0) + (diagnosticStatus?.isInterviewCompleted ? 1 : 0)) / 2) * 100}%`,
+                          }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 shrink-0 lg:w-[480px]">
+                    <div className="p-4 rounded-2xl bg-white dark:bg-slate-900/90 border border-amber-400/40 dark:border-amber-500/30 shadow-md flex flex-col justify-between space-y-3">
+                      <div className="space-y-1.5">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[10px] font-black uppercase text-amber-700 dark:text-amber-400">
+                            Assessment 01 • Quiz
+                          </span>
+                          {diagnosticStatus?.isQuizCompleted ? (
+                            <span className="inline-flex items-center gap-1 text-[10px] font-extrabold px-2 py-0.5 rounded-md bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-400">
+                              <BsCheckCircleFill size={10} />
+                              <span>{diagnosticStatus.quizScore}% Score</span>
+                            </span>
+                          ) : (
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-400 animate-pulse">
+                              Pending Intake
+                            </span>
+                          )}
+                        </div>
+                        <h4 className="font-bold text-xs sm:text-sm text-slate-900 dark:text-white line-clamp-1">
+                          {diagnosticStatus?.diagnosticQuiz?.title || "Cadre Baseline Diagnostic Quiz"}
+                        </h4>
+                        <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                          {diagnosticStatus?.diagnosticQuiz?.questions?.length || 10} Conceptual Questions • 15 Mins
+                        </p>
+                      </div>
+
+                      {diagnosticStatus?.isQuizCompleted ? (
+                        <button
+                          onClick={() => navigate("/quizzes")}
+                          className="w-full py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-bold text-xs transition flex items-center justify-center gap-1.5 cursor-pointer"
+                        >
+                          <FaCheckCircle size={12} className="text-emerald-500" />
+                          <span>Review Quiz Scorecard</span>
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => {
+                            if (diagnosticStatus?.diagnosticQuiz?._id) {
+                              navigate(`/quiz/${diagnosticStatus.diagnosticQuiz._id}`);
+                            } else {
+                              navigate("/quizzes");
+                            }
+                          }}
+                          className="w-full py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs shadow-md transition flex items-center justify-center gap-1.5 cursor-pointer hover:scale-[1.02]"
+                        >
+                          <FaPlayCircle size={12} />
+                          <span>Start Diagnostic Quiz →</span>
+                        </button>
+                      )}
+                    </div>
+
+                    <div className="p-4 rounded-2xl bg-white dark:bg-slate-900/90 border border-blue-400/40 dark:border-blue-500/30 shadow-md flex flex-col justify-between space-y-3">
+                      <div className="space-y-1.5">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[10px] font-black uppercase text-blue-700 dark:text-blue-400">
+                            Assessment 02 • Viva
+                          </span>
+                          {diagnosticStatus?.isInterviewCompleted ? (
+                            <span className="inline-flex items-center gap-1 text-[10px] font-extrabold px-2 py-0.5 rounded-md bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-400">
+                              <BsCheckCircleFill size={10} />
+                              <span>{diagnosticStatus.diagnosticInterview?.finalScore || 75}% Viva</span>
+                            </span>
+                          ) : (
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-indigo-100 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-400 animate-pulse">
+                              Pending Viva
+                            </span>
+                          )}
+                        </div>
+                        <h4 className="font-bold text-xs sm:text-sm text-slate-900 dark:text-white line-clamp-1">
+                          {diagnosticStatus?.diagnosticInterview?.role || "Cadre Oral Board Viva"}
+                        </h4>
+                        <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                          AI Oral Board Simulation • Voice & Video
+                        </p>
+                      </div>
+
+                      {diagnosticStatus?.isInterviewCompleted ? (
+                        <button
+                          onClick={() => navigate("/history")}
+                          className="w-full py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-bold text-xs transition flex items-center justify-center gap-1.5 cursor-pointer"
+                        >
+                          <FaCheckCircle size={12} className="text-emerald-500" />
+                          <span>View Viva Report</span>
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => navigate("/interview?type=intake")}
+                          className="w-full py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-md transition flex items-center justify-center gap-1.5 cursor-pointer hover:scale-[1.02]"
+                        >
+                          <BsFillCameraVideoFill size={12} />
+                          <span>Begin Cadre Viva →</span>
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </ScrollReveal>
+          )}
+
           <ScrollReveal direction="up" delay={0.05}>
             <div className="relative rounded-3xl overflow-hidden bg-gradient-to-r from-slate-900 via-indigo-950 to-blue-950 text-white p-6 sm:p-8 shadow-xl border border-blue-500/20">
               <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
@@ -871,13 +1160,24 @@ const Dashboard = () => {
                     ))}
                   </div>
 
-                  <button
-                    onClick={() => navigate("/competencies")}
-                    className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs transition-colors flex items-center gap-1.5 cursor-pointer shadow-xs"
-                  >
-                    <span>Assess Skills</span>
-                    <FaArrowRight size={10} />
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => navigate("/skill-gaps")}
+                      className="px-4 py-2 rounded-xl bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-xs shadow-md transition-all flex items-center gap-1.5 cursor-pointer"
+                    >
+                      <BsBarChartSteps size={12} />
+                      <span>Skill Gap Analysis</span>
+                      <FaArrowRight size={10} />
+                    </button>
+
+                    <button
+                      onClick={() => navigate("/competencies")}
+                      className="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-bold text-xs transition-colors flex items-center gap-1.5 cursor-pointer shadow-xs"
+                    >
+                      <span>Assess Skills</span>
+                      <FaArrowRight size={10} />
+                    </button>
+                  </div>
                 </div>
               </div>
 
@@ -974,7 +1274,6 @@ const Dashboard = () => {
             </div>
           </ScrollReveal>
 
-          {/* 4-Domain Taxonomy Radar & Balance Matrix */}
           <ScrollReveal direction="up" delay={0.1}>
             <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-8 shadow-xs space-y-6">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 dark:border-slate-800 pb-4">
@@ -996,8 +1295,94 @@ const Dashboard = () => {
                 </span>
               </div>
 
+              {!isSignupAssignmentComplete && (
+                <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-amber-500/15 via-rose-500/10 to-amber-500/15 border-2 border-amber-500/40 text-amber-950 dark:text-amber-200 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 shadow-xs">
+                  <div className="flex items-start gap-3.5">
+                    <div className="p-2.5 rounded-xl bg-amber-500/20 text-amber-700 dark:text-amber-400 shrink-0 mt-0.5">
+                      <FaExclamationTriangle size={22} />
+                    </div>
+                    <div>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <h3 className="text-sm sm:text-base font-black text-amber-950 dark:text-amber-100">
+                          Mandatory Signup Assignment Incomplete — 4-Domain Radar Values Set to 0%
+                        </h3>
+                        <span className="px-2 py-0.5 text-[10px] uppercase font-black tracking-wider bg-rose-600 text-white rounded-md">
+                          Action Required
+                        </span>
+                      </div>
+                      <p className="text-xs sm:text-sm text-amber-900/90 dark:text-amber-300/90 mt-1 leading-relaxed">
+                        This user has not completed their signup assignment (<strong>Diagnostic Quiz</strong> and <strong>Intake Viva Voce</strong>).
+                        All 4-Domain Competency Radar values will remain at <strong>0%</strong> until both baseline evaluations are successfully completed.
+                      </p>
+                      <div className="flex flex-wrap items-center gap-2.5 mt-3 text-xs font-semibold">
+                        <span
+                          className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-lg border ${isQuizCompleted
+                              ? "bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800"
+                              : "bg-rose-50 dark:bg-rose-950/50 text-rose-700 dark:text-rose-300 border-rose-200 dark:border-rose-800"
+                            }`}
+                        >
+                          {isQuizCompleted ? (
+                            <FaCheckCircle size={12} className="text-emerald-500" />
+                          ) : (
+                            <FaExclamationTriangle size={12} className="text-rose-500" />
+                          )}
+                          <span>
+                            Diagnostic Quiz: <strong>{isQuizCompleted ? "Completed ✓" : "Not Completed ✕"}</strong>
+                          </span>
+                        </span>
+                        <span
+                          className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-lg border ${isInterviewCompleted
+                              ? "bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800"
+                              : "bg-rose-50 dark:bg-rose-950/50 text-rose-700 dark:text-rose-300 border-rose-200 dark:border-rose-800"
+                            }`}
+                        >
+                          {isInterviewCompleted ? (
+                            <FaCheckCircle size={12} className="text-emerald-500" />
+                          ) : (
+                            <FaExclamationTriangle size={12} className="text-rose-500" />
+                          )}
+                          <span>
+                            Intake Viva Voce: <strong>{isInterviewCompleted ? "Completed ✓" : "Not Completed ✕"}</strong>
+                          </span>
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-wrap sm:flex-nowrap items-center gap-2.5 shrink-0 w-full lg:w-auto">
+                    {!isQuizCompleted && (
+                      <button
+                        onClick={() => {
+                          const quizId = diagnosticStatus?.diagnosticQuiz?._id;
+                          navigate(quizId ? `/quiz/${quizId}` : "/quizzes");
+                        }}
+                        className="flex-1 lg:flex-none px-4 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold shadow-xs transition-all flex items-center justify-center gap-2 cursor-pointer"
+                      >
+                        <FaTasks size={12} />
+                        <span>Take Diagnostic Quiz</span>
+                      </button>
+                    )}
+                    {!isInterviewCompleted && (
+                      <button
+                        onClick={() => navigate("/interview")}
+                        className="flex-1 lg:flex-none px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold shadow-xs transition-all flex items-center justify-center gap-2 cursor-pointer"
+                      >
+                        <FaMicrophone size={12} />
+                        <span>Take Intake Viva</span>
+                      </button>
+                    )}
+                  </div>
+                </div>
+              )}
+
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-                <div className="lg:col-span-6 h-80 w-full flex items-center justify-center">
+                <div className="lg:col-span-6 h-80 w-full flex flex-col items-center justify-center relative">
+                  {!isSignupAssignmentComplete && (
+                    <div className="absolute top-2 px-3 py-1 rounded-full bg-rose-50 dark:bg-rose-950/80 border border-rose-200 dark:border-rose-900 text-rose-600 dark:text-rose-400 text-[11px] font-extrabold flex items-center gap-1.5 z-10 shadow-xs">
+                      <FaExclamationTriangle size={11} />
+                      <span>All Values: 0% • Signup Assignment Incomplete</span>
+                    </div>
+                  )}
                   <ResponsiveContainer width="100%" height="100%">
                     <RadarChart cx="50%" cy="50%" outerRadius="75%" data={radarData}>
                       <PolarGrid stroke="#94a3b8" strokeDasharray="3 3" opacity={0.3} />
@@ -1029,40 +1414,94 @@ const Dashboard = () => {
                 </div>
 
                 <div className="lg:col-span-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {radarData.map((d) => (
-                    <div
-                      key={d.domain}
-                      className="p-5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/70 dark:border-slate-700/70 space-y-2 hover:border-indigo-400 transition-colors"
-                    >
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs font-black text-slate-700 dark:text-slate-300 uppercase tracking-wider">
-                          {d.domain} Domain
-                        </span>
-                        <span
-                          className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-md ${d.score >= 75
-                            ? "bg-emerald-100 dark:bg-emerald-950 text-emerald-600"
-                            : d.score >= 50
-                              ? "bg-blue-100 dark:bg-blue-950 text-blue-600"
-                              : "bg-rose-100 dark:bg-rose-950 text-rose-600"
-                            }`}
-                        >
-                          {d.score >= 75 ? "Benchmark Met" : d.score >= 50 ? "Developing" : "Deficit"}
-                        </span>
-                      </div>
+                  {radarData.map((d) => {
+                    const trend = domainTrends[d.domain] || { delta: "0%", text: "Baseline", isPositive: true, direction: "neutral" };
+                    return (
+                      <div
+                        key={d.domain}
+                        className="p-5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/70 dark:border-slate-700/70 space-y-2.5 hover:border-indigo-400 transition-all shadow-xs"
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-black text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+                            {d.domain} Domain
+                          </span>
+                          <span
+                            className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-md ${!isSignupAssignmentComplete
+                                ? "bg-rose-100 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400"
+                                : d.score >= 75
+                                  ? "bg-emerald-100 dark:bg-emerald-950 text-emerald-600"
+                                  : d.score >= 50
+                                    ? "bg-blue-100 dark:bg-blue-950 text-blue-600"
+                                    : "bg-rose-100 dark:bg-rose-950 text-rose-600"
+                              }`}
+                          >
+                            {!isSignupAssignmentComplete
+                              ? "Assignment Pending"
+                              : d.score >= 75
+                                ? "Benchmark Met"
+                                : d.score >= 50
+                                  ? "Developing"
+                                  : "Deficit"}
+                          </span>
+                        </div>
 
-                      <div className="text-3xl font-black text-slate-900 dark:text-white">
-                        {Math.round(d.score)}%
-                      </div>
+                        <div className="flex items-baseline justify-between">
+                          <div className="text-3xl font-black text-slate-900 dark:text-white">
+                            {Math.round(d.score)}%
+                          </div>
 
-                      <div className="w-full bg-slate-200 dark:bg-slate-700 h-2 rounded-full overflow-hidden">
-                        <div
-                          className={`h-full rounded-full transition-all ${d.score >= 75 ? "bg-emerald-500" : d.score >= 50 ? "bg-blue-500" : "bg-rose-500"
-                            }`}
-                          style={{ width: `${d.score}%` }}
-                        />
+                          {trend.direction === "up" ? (
+                            <span className="inline-flex items-center gap-1 text-[11px] font-black px-2 py-0.5 rounded-lg bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300">
+                              <FaArrowUp size={9} />
+                              <span>{trend.delta}</span>
+                            </span>
+                          ) : trend.direction === "down" ? (
+                            <span className="inline-flex items-center gap-1 text-[11px] font-black px-2 py-0.5 rounded-lg bg-rose-100 dark:bg-rose-950 text-rose-700 dark:text-rose-300">
+                              <FaArrowDown size={9} />
+                              <span>{trend.delta}</span>
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-lg bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300">
+                              <span>{trend.text}</span>
+                            </span>
+                          )}
+                        </div>
+
+                        <div className="w-full bg-slate-200 dark:bg-slate-700 h-2 rounded-full overflow-hidden">
+                          <div
+                            className={`h-full rounded-full transition-all ${!isSignupAssignmentComplete
+                                ? "bg-rose-400"
+                                : d.score >= 75
+                                  ? "bg-emerald-500"
+                                  : d.score >= 50
+                                    ? "bg-blue-500"
+                                    : "bg-rose-500"
+                              }`}
+                            style={{ width: `${Math.max(0, d.score)}%` }}
+                          />
+                        </div>
+
+                        <div className="flex items-center justify-between text-[10px] text-slate-500 dark:text-slate-400 font-semibold pt-0.5">
+                          <span>Cadre Target: 75%</span>
+                          <span
+                            className={
+                              !isSignupAssignmentComplete
+                                ? "text-rose-600 dark:text-rose-400 font-bold"
+                                : d.score >= 75
+                                  ? "text-emerald-600 dark:text-emerald-400"
+                                  : "text-amber-600 dark:text-amber-400"
+                            }
+                          >
+                            {!isSignupAssignmentComplete
+                              ? "Unassessed (0%)"
+                              : d.score >= 75
+                                ? "Target Exceeded"
+                                : `Gap: -${Math.max(0, 75 - Math.round(d.score))}%`}
+                          </span>
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             </div>
@@ -1166,7 +1605,6 @@ const Dashboard = () => {
             </div>
           </ScrollReveal>
 
-          {/* Competency Columns & Action Targets */}
           <ScrollReveal direction="up" delay={0.1}>
             <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-8 shadow-xs space-y-4">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 dark:border-slate-800 pb-3">
@@ -1271,7 +1709,187 @@ const Dashboard = () => {
             </div>
           </ScrollReveal>
 
-          {/* Weakness-Driven AI Curriculum Engine */}
+          <ScrollReveal direction="up" delay={0.1}>
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-8 shadow-xs space-y-6">
+              <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-slate-100 dark:border-slate-800 pb-4">
+                <div>
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-50 dark:bg-rose-950 text-rose-700 dark:text-rose-300 text-xs font-bold uppercase tracking-wider mb-1">
+                    <FaExclamationTriangle size={12} className="text-rose-500" />
+                    <span>Official Cadre Competency Deficit Matrix</span>
+                  </div>
+                  <h2 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white flex items-center gap-2">
+                    <span>All Possible Skill Gap Analysis</span>
+                  </h2>
+                  <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-0.5 max-w-2xl">
+                    Dynamic capability evaluation against the official benchmark for <strong>{profile?.jobRole || userData?.jobRole || "Indian Statistical Service"}</strong>. Scores increase on good test performances & completed modules, or decrease/widen on lower assessment scores.
+                  </p>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-2">
+                  <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-2xl border border-slate-200 dark:border-slate-700 text-xs font-bold">
+                    <button
+                      type="button"
+                      onClick={() => setSkillGapFilter("all")}
+                      className={`px-3 py-1.5 rounded-xl transition cursor-pointer ${skillGapFilter === "all" ? "bg-blue-600 text-white shadow-xs" : "text-slate-600 dark:text-slate-300"}`}
+                    >
+                      All ({allPossibleSkillGaps.length})
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setSkillGapFilter("high")}
+                      className={`px-3 py-1.5 rounded-xl transition cursor-pointer ${skillGapFilter === "high" ? "bg-rose-600 text-white shadow-xs" : "text-slate-600 dark:text-slate-300"}`}
+                    >
+                      Critical ({allPossibleSkillGaps.filter((g) => g.priority === "High").length})
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setSkillGapFilter("medium")}
+                      className={`px-3 py-1.5 rounded-xl transition cursor-pointer ${skillGapFilter === "medium" ? "bg-amber-600 text-white shadow-xs" : "text-slate-600 dark:text-slate-300"}`}
+                    >
+                      Moderate ({allPossibleSkillGaps.filter((g) => g.priority === "Medium").length})
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setSkillGapFilter("strengths")}
+                      className={`px-3 py-1.5 rounded-xl transition cursor-pointer ${skillGapFilter === "strengths" ? "bg-emerald-600 text-white shadow-xs" : "text-slate-600 dark:text-slate-300"}`}
+                    >
+                      Strengths ({allPossibleSkillGaps.filter((g) => g.priority === "Low" || g.gapScore === 0).length})
+                    </button>
+                  </div>
+
+                  <button
+                    onClick={() => navigate("/learning-path")}
+                    className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-xs transition flex items-center gap-1.5 cursor-pointer"
+                  >
+                    <FaGraduationCap size={12} />
+                    <span>View Remedial Path</span>
+                  </button>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/80">
+                  <span className="text-[10px] font-bold text-slate-500 uppercase">Total Tracked Gaps</span>
+                  <div className="text-xl font-black text-slate-900 dark:text-white mt-1">
+                    {allPossibleSkillGaps.length} Competencies
+                  </div>
+                </div>
+                <div className="p-3.5 rounded-2xl bg-rose-50/70 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-900/60">
+                  <span className="text-[10px] font-bold text-rose-600 uppercase">Critical Priority</span>
+                  <div className="text-xl font-black text-rose-600 mt-1">
+                    {allPossibleSkillGaps.filter((g) => g.priority === "High").length} Action Required
+                  </div>
+                </div>
+                <div className="p-3.5 rounded-2xl bg-amber-50/70 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/60">
+                  <span className="text-[10px] font-bold text-amber-600 uppercase">Moderate Priority</span>
+                  <div className="text-xl font-black text-amber-600 mt-1">
+                    {allPossibleSkillGaps.filter((g) => g.priority === "Medium").length} Under Review
+                  </div>
+                </div>
+                <div className="p-3.5 rounded-2xl bg-emerald-50/70 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-900/60">
+                  <span className="text-[10px] font-bold text-emerald-600 uppercase">Benchmark Met</span>
+                  <div className="text-xl font-black text-emerald-600 mt-1">
+                    {allPossibleSkillGaps.filter((g) => g.priority === "Low" || g.gapScore === 0).length} Strengths
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {filteredSkillGaps.map((gap, idx) => {
+                  const isCritical = gap.priority === "High";
+                  const isModerate = gap.priority === "Medium";
+
+                  return (
+                    <div
+                      key={idx}
+                      className={`p-5 rounded-2xl border transition-all flex flex-col justify-between space-y-3.5 ${isCritical
+                          ? "bg-rose-50/40 dark:bg-rose-950/20 border-rose-200 dark:border-rose-900/60 hover:border-rose-400"
+                          : isModerate
+                            ? "bg-amber-50/40 dark:bg-amber-950/20 border-amber-200 dark:border-amber-900/60 hover:border-amber-400"
+                            : "bg-emerald-50/40 dark:bg-emerald-950/20 border-emerald-200 dark:border-emerald-900/60 hover:border-emerald-400"
+                        }`}
+                    >
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
+                            {gap.domain || "Statistical"}
+                          </span>
+                          <span
+                            className={`text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full ${isCritical
+                                ? "bg-rose-100 dark:bg-rose-950 text-rose-700 dark:text-rose-300"
+                                : isModerate
+                                  ? "bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-300"
+                                  : "bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300"
+                              }`}
+                          >
+                            {isCritical ? "Critical Gap" : isModerate ? "Moderate Deficit" : "Benchmark Satisfied"}
+                          </span>
+                        </div>
+
+                        <h4 className="font-bold text-xs sm:text-sm text-slate-900 dark:text-white leading-snug">
+                          {gap.competencyName}
+                        </h4>
+
+                        <div className="grid grid-cols-2 gap-2 p-2.5 rounded-xl bg-white/80 dark:bg-slate-900/80 border border-slate-200/60 dark:border-slate-800 text-xs">
+                          <div>
+                            <span className="text-[10px] text-slate-500 block">Current Level</span>
+                            <span className="font-black text-slate-800 dark:text-slate-200">
+                              {gap.currentLevel || "Novice"}
+                            </span>
+                          </div>
+                          <div>
+                            <span className="text-[10px] text-slate-500 block">Required Benchmark</span>
+                            <span className="font-black text-blue-600 dark:text-blue-400">
+                              {gap.requiredLevel || "Advanced"}
+                            </span>
+                          </div>
+                        </div>
+
+                        <p className="text-[11px] text-slate-600 dark:text-slate-400 leading-relaxed line-clamp-2">
+                          {gap.impact}
+                        </p>
+                      </div>
+
+                      <div className="pt-3 border-t border-slate-200/60 dark:border-slate-800 space-y-2">
+                        <div className="flex items-center justify-between text-xs font-bold">
+                          <span className="text-slate-500 text-[10px]">Gap Deficit Index</span>
+                          <span className={isCritical ? "text-rose-600" : isModerate ? "text-amber-600" : "text-emerald-600"}>
+                            {gap.gapScore > 0 ? `-${gap.gapScore}% Deficit` : "0% (Benchmark Met)"}
+                          </span>
+                        </div>
+
+                        {isCritical ? (
+                          <button
+                            onClick={() => navigate("/learning-path")}
+                            className="w-full py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs transition flex items-center justify-center gap-1.5 cursor-pointer shadow-xs"
+                          >
+                            <BsLightningChargeFill size={11} />
+                            <span>Remediate in iGOT Karmayogi →</span>
+                          </button>
+                        ) : isModerate ? (
+                          <button
+                            onClick={() => navigate("/quizzes")}
+                            className="w-full py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs transition flex items-center justify-center gap-1.5 cursor-pointer shadow-xs"
+                          >
+                            <FaTasks size={11} />
+                            <span>Practice Diagnostic Quiz →</span>
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => navigate("/interview")}
+                            className="w-full py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs transition flex items-center justify-center gap-1.5 cursor-pointer shadow-xs"
+                          >
+                            <FaCheckCircle size={11} />
+                            <span>Validate in Board Viva →</span>
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </ScrollReveal>
           <ScrollReveal direction="up" delay={0.1}>
             <div className="bg-white dark:bg-slate-900 border-2 border-blue-100 dark:border-blue-900/60 rounded-3xl p-6 sm:p-8 shadow-lg space-y-6">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -1416,8 +2034,6 @@ const Dashboard = () => {
               </div>
             </div>
           </ScrollReveal>
-
-          {/* AI Copilot Knowledge Recommendation Card */}
           <ScrollReveal direction="scale" delay={0.1}>
             <div className="p-6 sm:p-8 rounded-3xl bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 dark:from-slate-900 dark:via-blue-950/40 dark:to-slate-900 border border-blue-200/80 dark:border-blue-900/60 shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
               <div className="flex items-start gap-4">

@@ -2,8 +2,8 @@ import Quiz from "../models/quizModel.js";
 import QuizAttempt from "../models/quizAttemptModel.js";
 import User from "../models/userModel.js";
 import { generateQuiz, evaluateQuizSubmission, generateAdaptiveRecommendations } from "../services/aiService.js";
+import { recalculateUserCompetencyAndGaps } from "../services/competencyCalculationService.js";
 
-// 1. Generate On-Demand AI Quiz
 export const generateAiQuiz = async (req, res) => {
     try {
         const { topic = "Sampling Techniques", domain = "Statistical Competencies", difficulty = "Medium", numQuestions = 5 } = req.body;
@@ -59,17 +59,51 @@ export const generateAiQuiz = async (req, res) => {
     }
 };
 
-// 2. List Available Quizzes
 export const getQuizzes = async (req, res) => {
     try {
-        const { domain, difficulty, topic } = req.query;
+        const { domain, difficulty, topic, includeMastered } = req.query;
+        const userId = req.userId || req.user?._id;
         const query = { isPublished: true };
+
+        if (userId) {
+            query.$or = [
+                { isDiagnostic: false },
+                { isDiagnostic: { $exists: false } },
+                { isDiagnostic: true, assignedTo: userId },
+            ];
+
+            if (includeMastered !== "true") {
+                const highScoringAttempts = await QuizAttempt.find({
+                    userId,
+                    $or: [
+                        { score: { $gte: 75 } },
+                        { accuracy: { $gte: 75 } },
+                    ],
+                }).select("quizId quizTitle score accuracy");
+
+                const masteredIds = highScoringAttempts
+                    .map((a) => a.quizId)
+                    .filter(Boolean);
+                const masteredTitles = highScoringAttempts
+                    .map((a) => a.quizTitle?.trim())
+                    .filter(Boolean);
+
+                if (masteredIds.length > 0) {
+                    query._id = { $nin: masteredIds };
+                }
+                if (masteredTitles.length > 0) {
+                    query.title = { $nin: masteredTitles };
+                }
+            }
+        } else {
+            query.isDiagnostic = { $ne: true };
+        }
 
         if (domain) query.domain = domain;
         if (difficulty) query.difficulty = difficulty;
         if (topic) query.topic = { $regex: topic, $options: "i" };
 
-        const quizzes = await Quiz.find(query).sort({ createdAt: -1 }).limit(30);
+        const quizzes = await Quiz.find(query).sort({ isDiagnostic: -1, createdAt: -1 }).limit(50);
 
         return res.status(200).json({
             success: true,
@@ -80,7 +114,6 @@ export const getQuizzes = async (req, res) => {
     }
 };
 
-// 3. Get Single Quiz
 export const getQuizById = async (req, res) => {
     try {
         const { id } = req.params;
@@ -98,11 +131,10 @@ export const getQuizById = async (req, res) => {
     }
 };
 
-// 4. Submit Quiz Attempt & Evaluate
 export const submitQuizAttempt = async (req, res) => {
     try {
         const { id } = req.params;
-        const { userAnswers = [], timeTakenSeconds = 60 } = req.body;
+        const { userAnswers = [], timeTakenSeconds = 60, tabSwitchCount = 0 } = req.body;
         const userId = req.userId || req.user?._id;
 
         const quiz = await Quiz.findById(id);
@@ -127,6 +159,7 @@ export const submitQuizAttempt = async (req, res) => {
             correctCount: evaluation.correctCount,
             accuracy: evaluation.accuracy,
             timeTakenSeconds,
+            tabSwitchCount: Math.max(0, Number(tabSwitchCount) || 0),
             userAnswers: evaluation.evaluatedQuestions,
             topicAnalysis: evaluation.topicAnalysis,
             passed: evaluation.passed,
@@ -135,36 +168,29 @@ export const submitQuizAttempt = async (req, res) => {
                 : `Review recommended in ${quiz.topic}. Focus on foundational formulas and NSSTA methodology standards.`,
         });
 
-        const user = await User.findById(userId);
+        let user = await User.findById(userId);
         let adaptiveRecommendations = [];
         if (user) {
             user.quizzesCompleted = (user.quizzesCompleted || 0) + 1;
             user.learningHours = (user.learningHours || 0) + Math.max(0.25, Math.round((timeTakenSeconds / 3600) * 10) / 10);
+            await user.save();
 
-            if (Array.isArray(user.competencies) && quiz.topic) {
-                const quizTopicLower = String(quiz.topic).toLowerCase();
-                const comp = user.competencies.find(
-                    (c) =>
-                        c?.competencyName &&
-                        (c.competencyName.toLowerCase().includes(quizTopicLower) ||
-                        quizTopicLower.includes(c.competencyName.toLowerCase()))
-                );
-                if (comp) {
-                    comp.score = Math.round((comp.score + evaluation.score) / 2);
-                    comp.source = "assessment-derived";
-                    comp.lastAssessedAt = new Date();
+            try {
+                const recalcResult = await recalculateUserCompetencyAndGaps(userId);
+                if (recalcResult?.user) {
+                    user = recalcResult.user;
                 }
+            } catch (recalcErr) {
+                console.error("[QUIZ RECALCULATION ERROR]", recalcErr.message);
             }
 
-            const weakTopics = evaluation.topicAnalysis.filter((t) => t.status === "Needs Review").map((t) => t.topic);
+            const weakTopics = evaluation.topicAnalysis?.filter((t) => t.status === "Needs Review").map((t) => t.topic) || [];
             if (weakTopics.length) {
                 adaptiveRecommendations = await generateAdaptiveRecommendations({
                     weakTopics,
                     recentScores: [evaluation.score],
                 });
             }
-
-            await user.save();
         }
 
         return res.status(200).json({
@@ -177,6 +203,8 @@ export const submitQuizAttempt = async (req, res) => {
                 name: user.name,
                 email: user.email,
                 role: user.role,
+                isProfileCompleted: Boolean(user.isProfileCompleted),
+                profilePhoto: user.profilePhoto,
                 designation: user.designation,
                 department: user.department,
                 jobRole: user.jobRole,
@@ -196,11 +224,10 @@ export const submitQuizAttempt = async (req, res) => {
     }
 };
 
-// 5. Get Learner Quiz History
 export const getMyQuizAttempts = async (req, res) => {
     try {
         const userId = req.userId || req.user?._id;
-        const attempts = await QuizAttempt.find({ userId }).sort({ createdAt: -1 }).limit(20);
+        const attempts = await QuizAttempt.find({ userId }).sort({ createdAt: -1 }).limit(100);
 
         return res.status(200).json({
             success: true,

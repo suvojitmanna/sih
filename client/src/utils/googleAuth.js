@@ -3,7 +3,6 @@ import axios from "axios";
 const GOOGLE_CLIENT_ID =
   import.meta.env.VITE_GOOGLE_CLIENT_ID
 
-// Helper to dynamically load the Google Identity Services (GSI) script
 const loadGoogleScript = () => {
   return new Promise((resolve, reject) => {
     if (typeof window !== "undefined" && window.google?.accounts?.oauth2) {
@@ -48,7 +47,6 @@ export const signInWithGooglePopup = async () => {
           }
 
           try {
-            // Fetch verified user profile directly from Google
             const userInfoRes = await axios.get(
               "https://www.googleapis.com/oauth2/v3/userinfo",
               {
@@ -82,7 +80,6 @@ export const signInWithGooglePopup = async () => {
         },
       });
 
-      // Launch the Google OAuth popup
       client.requestAccessToken();
     });
   } catch (error) {

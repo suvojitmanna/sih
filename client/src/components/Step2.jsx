@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
 import femaleVideo from "../assets/Videos/female-ai.mp4";
 import maleVideo from "../assets/Videos/male-ai.mp4";
 import Timer from "./Timer";
@@ -15,6 +15,7 @@ const Step2 = ({ interviewData, onFinish }) => {
     interviewId,
     question: questions = [],
     username: userName = "Candidate",
+    isDiagnostic = false,
   } = interviewData || {};
 
   const [isIntroPhase, setIntroPhase] = useState(true);
@@ -85,7 +86,7 @@ const Step2 = ({ interviewData, onFinish }) => {
         recognitionRef.current.onend = null;
         recognitionRef.current.onerror = null;
         recognitionRef.current.stop();
-      } catch { }
+      } catch {}
       recognitionRef.current = null;
     }
   };
@@ -285,7 +286,6 @@ const Step2 = ({ interviewData, onFinish }) => {
     runIntro();
   }, [selectedVoice, isIntroPhase, currentIndex]);
 
-  // Timer Tick
   useEffect(() => {
     if (isIntroPhase || !currentQuestion || isAIPlaying || isSubmitting || feedback) {
       return;
@@ -376,8 +376,8 @@ const Step2 = ({ interviewData, onFinish }) => {
         { withCredentials: true }
       );
 
-      // Notify dashboard and sync metrics in real-time
       window.dispatchEvent(new CustomEvent("assessmentCompleted", { detail: result.data }));
+      window.dispatchEvent(new CustomEvent("diagnostic-updated", { detail: result.data }));
       localStorage.setItem("lastAssessmentUpdate", Date.now().toString());
 
       onFinish(result.data);
@@ -523,9 +523,16 @@ const Step2 = ({ interviewData, onFinish }) => {
                 SankhyaIQ™ <span className="text-blue-600 dark:text-blue-400">Viva Voce Engine</span>
               </h2>
             </div>
-            <span className="px-2.5 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-800 text-[10px] font-bold text-blue-700 dark:text-blue-300">
-              Live Session
-            </span>
+            {isDiagnostic ? (
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-300/50 dark:border-indigo-800 text-[10px] font-extrabold text-indigo-700 dark:text-indigo-300">
+                <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-pulse"></span>
+                <span>Cadre Diagnostic Intake Viva</span>
+              </span>
+            ) : (
+              <span className="px-2.5 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-800 text-[10px] font-bold text-blue-700 dark:text-blue-300">
+                Live Session
+              </span>
+            )}
           </div>
 
           {!isIntroPhase && currentQuestion ? (

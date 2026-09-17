@@ -1,5 +1,4 @@
-import React from "react";
-import { FaArrowLeft, FaTachometerAlt, FaRedo } from "react-icons/fa";
+import { FaTachometerAlt, FaRedo } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import BackButton from "./BackButton";
@@ -56,19 +55,19 @@ const Step3 = ({ report }) => {
     { label: "Correctness", value: correctness },
   ];
 
-  let performanceText = "";
-  let shortTagline = "";
+  const performanceText =
+    finalScore >= 8
+      ? "Ready for job opportunities."
+      : finalScore >= 5
+      ? "Needs minor improvement before interviews."
+      : "Significant improvement required.";
 
-  if (finalScore >= 8) {
-    performanceText = "Ready for job opportunities.";
-    shortTagline = "Excellent clarity and structured response.";
-  } else if (finalScore >= 5) {
-    performanceText = "Needs minor improvement before interviews.";
-    shortTagline = "Good foundation, refine articulation.";
-  } else {
-    performanceText = "Significant improvement required.";
-    shortTagline = "Work on clarity and confidence.";
-  }
+  const shortTagline =
+    finalScore >= 8
+      ? "Excellent clarity and structured response."
+      : finalScore >= 5
+      ? "Good foundation, refine articulation."
+      : "Work on clarity and confidence.";
 
   const score = finalScore;
   const percentage = (score / 10) * 100;
@@ -91,11 +90,9 @@ const Step3 = ({ report }) => {
 
   return (
     <div className="w-full relative overflow-hidden py-4 sm:py-0 transition-colors duration-300">
-      {/* Gradient Blur Background */}
       <div className="absolute top-0 left-0 w-72 h-72 bg-emerald-300/20 dark:bg-emerald-500/10 blur-[120px] rounded-full opacity-40 pointer-events-none"></div>
       <div className="absolute bottom-0 right-0 w-96 h-96 bg-blue-300/20 dark:bg-blue-500/10 blur-[140px] rounded-full opacity-50 pointer-events-none"></div>
 
-      {/* Back Navigation Bar below Navbar */}
       <div className="relative z-10 flex items-center justify-between mb-3">
         <BackButton fallbackUrl="/history" label="Back to Interview History" />
         <span className="text-xs font-bold text-slate-500 dark:text-slate-400 hidden sm:inline-block">
@@ -103,7 +100,6 @@ const Step3 = ({ report }) => {
         </span>
       </div>
 
-      {/* Header */}
       <div className="relative z-10 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 mb-4">
         <div className="flex items-center gap-4 sm:gap-5">
 
@@ -139,11 +135,8 @@ const Step3 = ({ report }) => {
         </div>
       </div>
 
-      {/* Grid */}
       <div className="relative z-10 grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* LEFT */}
         <div className="space-y-8">
-          {/* Performance Card */}
           <motion.div
             initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
@@ -175,7 +168,6 @@ const Step3 = ({ report }) => {
             </div>
           </motion.div>
 
-          {/* Skills */}
           <motion.div
             initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
@@ -211,9 +203,7 @@ const Step3 = ({ report }) => {
           </motion.div>
         </div>
 
-        {/* RIGHT */}
         <div className="lg:col-span-2 space-y-8">
-          {/* Chart */}
           <motion.div
             initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
@@ -297,7 +287,6 @@ const Step3 = ({ report }) => {
                   transition={{ duration: 0.2 }}
                   className="bg-slate-50/70 dark:bg-slate-800/50 border border-slate-200/70 dark:border-slate-700/60 rounded-2xl p-5 hover:shadow-md transition-all"
                 >
-                  {/* Top */}
                   <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-4">
                     <div className="flex-1">
                       <p className="text-[10px] uppercase font-bold tracking-wider text-slate-400 mb-1.5">
@@ -309,7 +298,6 @@ const Step3 = ({ report }) => {
                       </h4>
                     </div>
 
-                    {/* Score Badge */}
                     <div className="bg-gradient-to-r from-emerald-600 to-green-600 text-white px-4 py-2 rounded-xl font-bold text-xs shadow-sm min-w-[75px] text-center shrink-0">
                       {q.score ?? 0}/10
                     </div>
@@ -324,7 +312,6 @@ const Step3 = ({ report }) => {
                     </div>
                   )}
 
-                  {/* Feedback */}
                   <div className="bg-emerald-50/60 dark:bg-emerald-950/40 border border-emerald-100 dark:border-emerald-900/60 rounded-xl p-4">
                     <div className="flex items-center gap-2 mb-2">
                       <div className="w-2 h-2 rounded-full bg-emerald-500"></div>
@@ -345,7 +332,6 @@ const Step3 = ({ report }) => {
             </div>
           </motion.div>
 
-          {/* Action Navigation Banner */}
           <div className="p-6 rounded-3xl bg-gradient-to-r from-slate-900 via-blue-950 to-indigo-950 border border-blue-500/30 text-white shadow-xl flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="space-y-1 text-center sm:text-left">
               <h4 className="text-sm font-bold text-white flex items-center justify-center sm:justify-start gap-2">

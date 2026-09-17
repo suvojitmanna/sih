@@ -1,4 +1,3 @@
-import React from "react";
 import { useNavigate } from "react-router-dom";
 import { HiArrowLeft } from "react-icons/hi2";
 import { motion } from "framer-motion";
@@ -75,7 +74,6 @@ const BackButton = ({
     );
   }
 
-  // Default button style
   return (
     <motion.button
       type="button"

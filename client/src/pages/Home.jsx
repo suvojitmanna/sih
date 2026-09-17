@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { useSelector } from "react-redux";
 import { motion, AnimatePresence } from "framer-motion";
 import CountUpModule from "react-countup";
@@ -22,6 +22,8 @@ import {
   FaLaptopCode,
   FaQuestionCircle,
   FaChevronDown,
+  FaLock,
+  FaMicrophone,
 } from "react-icons/fa";
 import {
   BsFillCameraVideoFill,
@@ -33,9 +35,10 @@ import {
 } from "react-icons/bs";
 import { HiSparkles } from "react-icons/hi";
 import { generateCompetencyPDF } from "../utils/pdfGenerator";
+import { useDiagnostic } from "../context/DiagnosticContext";
 import toast from "react-hot-toast";
 import PageTransition from "../components/PageTransition";
-import { ScrollReveal, ScrollRevealStagger, ScrollRevealItem } from "../components/ScrollReveal";
+import { ScrollReveal } from "../components/ScrollReveal";
 
 const CountUp = CountUpModule.default || CountUpModule;
 
@@ -44,13 +47,23 @@ const Home = () => {
   const [showAuth, setShowAuth] = useState(false);
   const [activeFaq, setActiveFaq] = useState(null);
   const { userData } = useSelector((state) => state.user);
+  const {
+    diagnosticStatus,
+    isIntakePending,
+    isPathLocked,
+    triggerLockedError,
+  } = useDiagnostic();
 
-  const handleProtectedAction = (route) => {
-    if (userData) {
-      navigate(route);
-    } else {
+  const handleProtectedAction = (route, label = "") => {
+    if (!userData) {
       setShowAuth(true);
+      return;
     }
+    if (isPathLocked(route)) {
+      triggerLockedError(label);
+      return;
+    }
+    navigate(route);
   };
 
   const handleDownloadSampleDossier = () => {
@@ -106,14 +119,11 @@ const Home = () => {
 
       <PageTransition>
         <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-20 space-y-24">
-          {/* ======================================================== */}
-          {/* 1. SAAS HERO SECTION                                     */}
-          {/* ======================================================== */}
+          {/* 1. SAAS HERO SECTION*/}
           <section className="relative overflow-hidden pt-8 pb-14 text-center space-y-8">
-            {/* Background Ambient Glows */}
+
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] sm:w-[850px] h-[300px] sm:h-[500px] bg-gradient-to-r from-blue-500/15 via-indigo-500/10 to-teal-500/15 blur-3xl rounded-full pointer-events-none -z-10" />
 
-            {/* Announcement Top Ribbon */}
             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-md shadow-slate-200/50 dark:shadow-none cursor-pointer hover:border-blue-300 transition-all">
               <span className="flex h-2 w-2 relative">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
@@ -124,7 +134,6 @@ const Home = () => {
               </span>
             </div>
 
-            {/* Main SaaS Headline */}
             <div className="max-w-4xl mx-auto space-y-5">
               <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight text-slate-900 dark:text-white leading-[1.12]">
                 The AI Skill Intelligence &{" "}
@@ -139,23 +148,23 @@ const Home = () => {
               </p>
             </div>
 
-            {/* Primary Action Buttons */}
             <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4 pt-3">
               <button
-                onClick={() => handleProtectedAction("/learning-path")}
+                onClick={() => handleProtectedAction("/learning-path", "Learning Path")}
                 className="px-7 py-3.5 rounded-2xl bg-gradient-to-r from-blue-700 via-indigo-700 to-blue-800 hover:from-blue-800 hover:to-indigo-800 text-white font-bold text-xs sm:text-sm shadow-xl shadow-blue-500/25 hover:shadow-blue-500/35 transition-all flex items-center gap-2.5 cursor-pointer active:scale-95"
               >
                 <FaCertificate size={15} />
                 <span>Start Learning (iGOT Pathways)</span>
-                <FaArrowRight size={11} />
+                {isIntakePending ? <FaLock size={11} className="text-amber-300" /> : <FaArrowRight size={11} />}
               </button>
 
               <button
-                onClick={() => handleProtectedAction("/ai-models")}
+                onClick={() => handleProtectedAction("/ai-models", "AI Models Hub")}
                 className="px-6 py-3.5 rounded-2xl bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-black dark:hover:text-white text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-800 font-bold text-xs sm:text-sm shadow-md transition-all flex items-center gap-2 cursor-pointer"
               >
                 <HiSparkles size={15} className="text-amber-500" />
                 <span>Explore AI Models Hub</span>
+                {isIntakePending && <FaLock size={11} className="text-amber-500" />}
               </button>
 
               {!userData ? (
@@ -166,13 +175,22 @@ const Home = () => {
                   <FaUserGraduate size={14} className="text-emerald-400" />
                   <span>Officer Sign Up / Sign In</span>
                 </button>
-              ) : userData.role === "admin" ? (
+              ) : (userData.role === "admin" || userData.role === "trainer") ? (
                 <button
                   onClick={() => navigate("/admin")}
                   className="px-6 py-3.5 rounded-2xl bg-gradient-to-r from-blue-700 via-indigo-700 to-blue-800 hover:from-blue-800 hover:to-indigo-800 text-white font-bold text-xs sm:text-sm shadow-xl shadow-blue-500/25 hover:shadow-blue-500/35 transition-all flex items-center gap-2 cursor-pointer"
                 >
                   <BsShieldLock size={14} className="text-blue-200" />
-                  <span>Open Executive Admin Portal</span>
+                  <span>Open Admin Portal</span>
+                </button>
+              ) : isIntakePending ? (
+                <button
+                  onClick={() => handleProtectedAction("/dashboard", "Officer Dashboard")}
+                  className="px-6 py-3.5 rounded-2xl bg-amber-50 dark:bg-amber-950/40 hover:bg-amber-100/80 text-amber-800 dark:text-amber-300 border border-amber-400/60 dark:border-amber-500/50 font-black text-xs sm:text-sm shadow-md transition-all flex items-center gap-2 cursor-pointer"
+                  title="Locked: Complete Mandatory Intake Viva & Quiz first"
+                >
+                  <FaLock size={13} className="text-amber-600 dark:text-amber-400" />
+                  <span>Officer Dashboard (Locked)</span>
                 </button>
               ) : (
                 <button
@@ -185,7 +203,191 @@ const Home = () => {
               )}
             </div>
 
-            {/* Quick Pillar Ribbon */}
+            {userData && isIntakePending && (
+              <motion.div
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3 }}
+                className="mt-8 text-left relative overflow-hidden rounded-3xl bg-gradient-to-br from-amber-500/10 via-slate-900/5 to-blue-500/10 dark:from-amber-950/40 dark:via-slate-900/80 dark:to-blue-950/40 border-2 border-amber-400/60 dark:border-amber-500/50 shadow-2xl p-5 sm:p-7"
+              >
+                <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#FF9933] via-white to-[#138808]" />
+
+                <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
+                  <div className="space-y-2 max-w-2xl">
+                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-100 dark:bg-amber-950/80 border border-amber-300 dark:border-amber-700/60 text-amber-800 dark:text-amber-300 text-xs font-black uppercase tracking-wider">
+                      <FaLock size={10} className="text-amber-600 dark:text-amber-400 animate-pulse" />
+                      <span>Access Restricted • Mandatory Intake Viva & Quiz Incomplete</span>
+                    </div>
+
+                    <h2 className="text-lg sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight">
+                      Complete Your Cadre Diagnostic Assessments Below
+                    </h2>
+
+                    <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+                      All platform functions (Dashboard, Competency Framework, Skill Gaps, Learning Pathway, Practice Quizzes, Assignments, etc.) show a lock icon 🔒 and cannot be accessed until both the <strong>Diagnostic Quiz</strong> and <strong>Intake Viva Voce</strong> are completed.
+                    </p>
+                  </div>
+
+                  <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-sm min-w-[210px] text-center shrink-0 w-full lg:w-auto">
+                    <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 dark:text-slate-500 block mb-1">
+                      Intake Status
+                    </span>
+                    <div className="text-xl font-black text-slate-900 dark:text-white">
+                      {((diagnosticStatus?.isQuizCompleted ? 1 : 0) + (diagnosticStatus?.isInterviewCompleted ? 1 : 0))}/2 Completed
+                    </div>
+                    <div className="w-full bg-slate-200 dark:bg-slate-800 h-2 rounded-full overflow-hidden mt-2">
+                      <div
+                        className="bg-gradient-to-r from-amber-500 to-emerald-500 h-full transition-all duration-500"
+                        style={{
+                          width: `${(((diagnosticStatus?.isQuizCompleted ? 1 : 0) + (diagnosticStatus?.isInterviewCompleted ? 1 : 0)) / 2) * 100}%`,
+                        }}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-5">
+                  <div
+                    className={`p-4 sm:p-5 rounded-2xl border transition-all ${diagnosticStatus?.isQuizCompleted
+                      ? "bg-emerald-50/70 dark:bg-emerald-950/30 border-emerald-300/80 dark:border-emerald-800/80"
+                      : "bg-white dark:bg-slate-900 border-amber-300/80 dark:border-amber-700/80 shadow-md"
+                      }`}
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex items-center gap-3">
+                        <div
+                          className={`p-3 rounded-2xl ${diagnosticStatus?.isQuizCompleted
+                            ? "bg-emerald-100 dark:bg-emerald-900/60 text-emerald-600 dark:text-emerald-400"
+                            : "bg-blue-100 dark:bg-blue-900/60 text-blue-600 dark:text-blue-400"
+                            }`}
+                        >
+                          <FaTasks size={20} />
+                        </div>
+                        <div>
+                          <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 dark:text-slate-500 block">
+                            Stage 1 • Diagnostic Quiz
+                          </span>
+                          <h3 className="text-sm sm:text-base font-black text-slate-900 dark:text-white">
+                            {diagnosticStatus?.diagnosticQuiz?.title || "Cadre Baseline Diagnostic Quiz"}
+                          </h3>
+                          <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+                            {diagnosticStatus?.diagnosticQuiz?.questions?.length || 10} Conceptual Questions • 15 Mins
+                          </p>
+                        </div>
+                      </div>
+
+                      {diagnosticStatus?.isQuizCompleted ? (
+                        <span className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-100 dark:bg-emerald-900/80 text-emerald-700 dark:text-emerald-300 text-xs font-black shrink-0">
+                          <FaCheckCircle size={11} />
+                          <span>{diagnosticStatus.quizScore}% Score</span>
+                        </span>
+                      ) : (
+                        <span className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-amber-100 dark:bg-amber-950/80 text-amber-700 dark:text-amber-300 text-xs font-black shrink-0">
+                          <FaLock size={10} />
+                          <span>Required</span>
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between gap-2">
+                      <span className="text-[11px] font-medium text-slate-500 dark:text-slate-400">
+                        {diagnosticStatus?.isQuizCompleted
+                          ? "Diagnostic metrics recorded to your profile."
+                          : "Tests foundational statistical & official domain knowledge."}
+                      </span>
+
+                      {diagnosticStatus?.isQuizCompleted ? (
+                        <span className="px-3.5 py-1.5 rounded-xl bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 text-xs font-black flex items-center gap-1.5 cursor-default">
+                          <FaCheckCircle size={11} />
+                          <span>Passed</span>
+                        </span>
+                      ) : (
+                        <button
+                          onClick={() => {
+                            if (diagnosticStatus?.diagnosticQuiz?._id) {
+                              navigate(`/quiz/${diagnosticStatus.diagnosticQuiz._id}`);
+                            } else {
+                              navigate("/quizzes");
+                            }
+                          }}
+                          className="px-4 py-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white text-xs font-black shadow-md transition-all flex items-center gap-1.5 cursor-pointer active:scale-95 shrink-0"
+                        >
+                          <span>Take Diagnostic Quiz</span>
+                          <FaArrowRight size={10} />
+                        </button>
+                      )}
+                    </div>
+                  </div>
+
+                  <div
+                    className={`p-4 sm:p-5 rounded-2xl border transition-all ${diagnosticStatus?.isInterviewCompleted
+                      ? "bg-emerald-50/70 dark:bg-emerald-950/30 border-emerald-300/80 dark:border-emerald-800/80"
+                      : "bg-white dark:bg-slate-900 border-amber-300/80 dark:border-amber-700/80 shadow-md"
+                      }`}
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex items-center gap-3">
+                        <div
+                          className={`p-3 rounded-2xl ${diagnosticStatus?.isInterviewCompleted
+                            ? "bg-emerald-100 dark:bg-emerald-900/60 text-emerald-600 dark:text-emerald-400"
+                            : "bg-indigo-100 dark:bg-indigo-900/60 text-indigo-600 dark:text-indigo-400"
+                            }`}
+                        >
+                          <FaMicrophone size={20} />
+                        </div>
+                        <div>
+                          <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 dark:text-slate-500 block">
+                            Stage 2 • Intake Viva Voce
+                          </span>
+                          <h3 className="text-sm sm:text-base font-black text-slate-900 dark:text-white">
+                            {diagnosticStatus?.diagnosticInterview?.role || "Cadre Oral Board Viva Simulation"}
+                          </h3>
+                          <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+                            Real-time Oral Viva Voce • Voice Speech Recognition
+                          </p>
+                        </div>
+                      </div>
+
+                      {diagnosticStatus?.isInterviewCompleted ? (
+                        <span className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-100 dark:bg-emerald-900/80 text-emerald-700 dark:text-emerald-300 text-xs font-black shrink-0">
+                          <FaCheckCircle size={11} />
+                          <span>Viva Evaluated</span>
+                        </span>
+                      ) : (
+                        <span className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-amber-100 dark:bg-amber-950/80 text-amber-700 dark:text-amber-300 text-xs font-black shrink-0">
+                          <FaLock size={10} />
+                          <span>Required</span>
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between gap-2">
+                      <span className="text-[11px] font-medium text-slate-500 dark:text-slate-400">
+                        {diagnosticStatus?.isInterviewCompleted
+                          ? "Viva voce completed and officially evaluated."
+                          : "Direct AI oral board examination (skips step 1 setup)."}
+                      </span>
+
+                      {diagnosticStatus?.isInterviewCompleted ? (
+                        <span className="px-3.5 py-1.5 rounded-xl bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 text-xs font-black flex items-center gap-1.5 cursor-default">
+                          <FaCheckCircle size={11} />
+                          <span>Passed</span>
+                        </span>
+                      ) : (
+                        <button
+                          onClick={() => navigate("/interview?type=intake")}
+                          className="px-4 py-2 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white text-xs font-black shadow-md transition-all flex items-center gap-1.5 cursor-pointer active:scale-95 shrink-0"
+                        >
+                          <span>Take Intake Viva</span>
+                          <FaArrowRight size={10} />
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+
             <div className="pt-8 flex flex-wrap items-center justify-center gap-6 text-xs font-semibold text-slate-500 dark:text-slate-400">
               <span className="flex items-center gap-1.5">
                 <FaCheckCircle className="text-emerald-500" size={13} />
@@ -261,7 +463,6 @@ const Home = () => {
                 </p>
               </div>
 
-              {/* 6 Lifecycle Steps Grid */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
                 <div className="p-5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/70 dark:border-slate-700 space-y-2.5">
                   <div className="w-8 h-8 rounded-xl bg-blue-600 text-white flex items-center justify-center font-black text-xs shadow-md">
@@ -354,7 +555,7 @@ const Home = () => {
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Domain 1 */}
+
                 <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-7 shadow-xs space-y-4">
                   <div className="flex items-center gap-3">
                     <div className="p-3 rounded-2xl bg-blue-50 dark:bg-blue-950/60 text-blue-600">
@@ -402,7 +603,6 @@ const Home = () => {
                   </div>
                 </div>
 
-                {/* Domain 2 */}
                 <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-7 shadow-xs space-y-4">
                   <div className="flex items-center gap-3">
                     <div className="p-3 rounded-2xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600">
@@ -450,7 +650,6 @@ const Home = () => {
                   </div>
                 </div>
 
-                {/* Domain 3 */}
                 <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-7 shadow-xs space-y-4">
                   <div className="flex items-center gap-3">
                     <div className="p-3 rounded-2xl bg-teal-50 dark:bg-teal-950/60 text-teal-600">
@@ -498,7 +697,6 @@ const Home = () => {
                   </div>
                 </div>
 
-                {/* Domain 4 */}
                 <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-7 shadow-xs space-y-4">
                   <div className="flex items-center gap-3">
                     <div className="p-3 rounded-2xl bg-amber-50 dark:bg-amber-950/60 text-amber-600">
@@ -565,7 +763,6 @@ const Home = () => {
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {/* Pillar 1: Quizzes */}
                 <div
                   onClick={() => handleProtectedAction("/quizzes")}
                   className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-xs hover:shadow-xl hover:border-emerald-400 transition-all space-y-4 cursor-pointer group flex flex-col justify-between"
@@ -591,7 +788,7 @@ const Home = () => {
                 </div>
 
                 <div
-                  onClick={() => handleProtectedAction("/assignments")}
+                  onClick={() => handleProtectedAction("/assignments", "Assignments & Case Studies")}
                   className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-xs hover:shadow-xl hover:border-amber-400 transition-all space-y-4 cursor-pointer group flex flex-col justify-between"
                 >
                   <div className="space-y-3">
@@ -599,13 +796,13 @@ const Home = () => {
                       <FaFileAlt size={20} />
                     </div>
                     <h3 className="font-bold text-base text-slate-900 dark:text-white flex items-center justify-between">
-                      <span>2. Case Study Assignments</span>
+                      <span>2. Practicum & Case Studies</span>
                       <span className="text-[10px] font-extrabold text-amber-600 bg-amber-50 dark:bg-amber-950 px-2 py-0.5 rounded-full">
-                        Rubric Scoring
+                        AI Rubric
                       </span>
                     </h3>
                     <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
-                      Solve real-world MoSPI operational assignments (sampling frames, SNA GVA revision, DPDP anonymization) with instant rubric-based AI grading.
+                      Submit methodology briefs for real-world scenarios evaluated against a 4-criterion 100-mark rubric with instant competency score updates.
                     </p>
                   </div>
                   <span className="text-xs font-bold text-amber-600 dark:text-amber-400 flex items-center gap-1.5 pt-2">
@@ -615,7 +812,7 @@ const Home = () => {
                 </div>
 
                 <div
-                  onClick={() => handleProtectedAction("/materials")}
+                  onClick={() => handleProtectedAction("/materials", "MCQ Studio & Materials")}
                   className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-xs hover:shadow-xl hover:border-purple-400 transition-all space-y-4 cursor-pointer group flex flex-col justify-between"
                 >
                   <div className="space-y-3">
@@ -639,7 +836,7 @@ const Home = () => {
                 </div>
 
                 <div
-                  onClick={() => handleProtectedAction("/interview")}
+                  onClick={() => handleProtectedAction("/interview", "Interview Viva")}
                   className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-xs hover:shadow-xl hover:border-blue-400 transition-all space-y-4 cursor-pointer group flex flex-col justify-between"
                 >
                   <div className="space-y-3">
@@ -663,7 +860,7 @@ const Home = () => {
                 </div>
 
                 <div
-                  onClick={() => handleProtectedAction("/chat")}
+                  onClick={() => handleProtectedAction("/chat", "AI Copilot")}
                   className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-xs hover:shadow-xl hover:border-indigo-400 transition-all space-y-4 cursor-pointer group flex flex-col justify-between"
                 >
                   <div className="space-y-3">
@@ -687,7 +884,7 @@ const Home = () => {
                 </div>
 
                 <div
-                  onClick={() => handleProtectedAction("/ai-models")}
+                  onClick={() => handleProtectedAction("/ai-models", "AI Models Hub")}
                   className="bg-gradient-to-br from-blue-900 via-indigo-900 to-slate-900 text-white rounded-3xl p-6 shadow-lg hover:shadow-2xl transition-all space-y-4 cursor-pointer group flex flex-col justify-between"
                 >
                   <div className="space-y-3">
@@ -736,7 +933,7 @@ const Home = () => {
                   </button>
 
                   <button
-                    onClick={() => handleProtectedAction("/competencies")}
+                    onClick={() => handleProtectedAction("/competencies", "Competency Assessment")}
                     className="px-5 py-3 rounded-2xl bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700 font-bold text-xs hover:bg-slate-50 transition-all flex items-center gap-1.5 cursor-pointer shadow-xs"
                   >
                     <span>Assess My Competencies</span>
@@ -763,6 +960,97 @@ const Home = () => {
                   <div className="flex justify-between">
                     <span>Training Framework:</span>
                     <span className="font-bold">iGOT & NSSTA TPAC</span>
+                  </div>
+                </div>
+              </div>
+            </section>
+          </ScrollReveal>
+
+          {/* PORTAL DIFFERENCE: LEGACY VS SANKHYAIQ AI SHOWCASE       */}
+          <ScrollReveal direction="up" delay={0.1}>
+            <section className="bg-gradient-to-br from-slate-900 via-blue-950 to-slate-900 text-white rounded-3xl p-6 sm:p-10 shadow-2xl border border-blue-900/60 relative overflow-hidden space-y-8">
+              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#FF9933] via-white to-[#138808]" />
+
+              <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
+                <div className="space-y-3 max-w-2xl">
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-500/20 text-blue-300 text-xs font-bold uppercase tracking-wider border border-blue-400/30">
+                    <BsShieldCheck size={13} className="text-emerald-400" />
+                    <span>Comparative Architecture Audit</span>
+                  </div>
+                  <h2 className="text-2xl sm:text-4xl font-black tracking-tight">
+                    Portal Difference: Legacy Systems vs SankhyaIQ™ AI
+                  </h2>
+                  <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                    Why traditional government training portals fall short — and how our closed-loop AI skill intelligence OS bridges the gap between official statistical cadres, competency diagnostics, and iGOT Karmayogi.
+                  </p>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-3 shrink-0">
+                  <button
+                    onClick={() => navigate("/portal-comparison")}
+                    className="px-6 py-3 rounded-2xl bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-xs sm:text-sm shadow-xl shadow-blue-500/25 transition-all flex items-center gap-2 cursor-pointer active:scale-95"
+                  >
+                    <BsShieldCheck size={14} />
+                    <span>View Full 12-Point Matrix</span>
+                    <FaArrowRight size={11} />
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      toast.success("Generating Comparative Audit (PDF)... 📄");
+                      generateCompetencyPDF({
+                        user: userData || { name: "Cadre Statistical Officer", jobRole: "Indian Statistical Service (ISS) Officer" },
+                        profile: userData || { name: "Cadre Statistical Officer", jobRole: "Indian Statistical Service (ISS) Officer" },
+                      });
+                    }}
+                    className="px-5 py-3 rounded-2xl bg-white/10 hover:bg-white/20 text-white border border-white/20 font-bold text-xs sm:text-sm backdrop-blur-md transition-all flex items-center gap-2 cursor-pointer"
+                  >
+                    <FaFilePdf size={13} className="text-rose-400" />
+                    <span>Export Audit (PDF)</span>
+                  </button>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-5 pt-2">
+                <div className="bg-white/5 border border-white/10 rounded-2xl p-5 space-y-3">
+                  <span className="text-[10px] font-black uppercase tracking-wider text-amber-300 block">
+                    1. Competency Diagnostics
+                  </span>
+                  <div className="text-xs space-y-2">
+                    <p className="text-rose-300 line-through">
+                      Legacy: Annual subjective ACR/APAR forms (6-month lag).
+                    </p>
+                    <p className="text-emerald-300 font-bold">
+                      SankhyaIQ: AI Neural Engine calculates exact domain deficits against 75% benchmark in 15 seconds.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="bg-white/5 border border-white/10 rounded-2xl p-5 space-y-3">
+                  <span className="text-[10px] font-black uppercase tracking-wider text-blue-300 block">
+                    2. Learning Pathways
+                  </span>
+                  <div className="text-xs space-y-2">
+                    <p className="text-rose-300 line-through">
+                      Legacy: Passive keyword search in thousands of generic videos.
+                    </p>
+                    <p className="text-emerald-300 font-bold">
+                      SankhyaIQ: Weakness-driven roadmaps dynamically linking iGOT digital & NSSTA in-service workshops.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="bg-white/5 border border-white/10 rounded-2xl p-5 space-y-3">
+                  <span className="text-[10px] font-black uppercase tracking-wider text-emerald-300 block">
+                    3. Assessment & Viva Voce
+                  </span>
+                  <div className="text-xs space-y-2">
+                    <p className="text-rose-300 line-through">
+                      Legacy: Only static text MCQs; no oral viva voice boards.
+                    </p>
+                    <p className="text-emerald-300 font-bold">
+                      SankhyaIQ: Real-time speech recognition AI oral viva board with Gemini AI and video avatars.
+                    </p>
                   </div>
                 </div>
               </div>

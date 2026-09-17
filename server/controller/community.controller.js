@@ -1,6 +1,5 @@
 import Chat from "../models/chatModel.js";
 
-// Fetch All Published AI Artwork
 export const getPublishedImages = async (req, res) => {
     try {
         const publishedImageMessages = await Chat.aggregate([

@@ -1,15 +1,17 @@
-import React, { useEffect, useState } from "react";
-import { Route, Routes, Navigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Route, Routes, Navigate, useLocation } from "react-router-dom";
+import { useDiagnostic } from "./context/DiagnosticContext";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import CompetencyAssessment from "./pages/CompetencyAssessment";
+import SkillGapAnalysis from "./pages/SkillGapAnalysis";
+import JobReadinessReport from "./pages/JobReadinessReport";
 import LearningPath from "./pages/LearningPath";
 import Quizzes from "./pages/Quizzes";
 import QuizPage from "./pages/QuizPage";
 import Assignments from "./pages/Assignments";
 import AssignmentDetails from "./pages/AssignmentDetails";
 import MaterialsUpload from "./pages/MaterialsUpload";
-import AiModelsHub from "./pages/AiModelsHub";
 import AdminDashboard from "./pages/AdminDashboard";
 import ChatPage from "./pages/ChatPage";
 import Community from "./pages/Community";
@@ -18,8 +20,9 @@ import PrivacyPolicy from "./pages/Privacy";
 import TermsOfService from "./pages/Terms";
 import InterviewPage from "./pages/InterviewPage";
 import InterviewHistory from "./pages/InterviewHistory";
-import Pricing from "./pages/Pricing";
 import InterviewReport from "./pages/InterviewReport";
+import Settings from "./pages/Settings";
+import PortalDifference from "./pages/PortalDifference";
 import axios from "axios";
 import { useDispatch, useSelector } from "react-redux";
 import { setUserData } from "./redux/userSlice";
@@ -32,6 +35,8 @@ export const ServerUrl = import.meta.env.VITE_BASE_URL || "http://localhost:5000
 
 const ProtectedRoute = ({ children, loading, requireAdmin = false }) => {
   const userData = useSelector((state) => state.user.userData);
+  const location = useLocation();
+  const { isAssessmentAllowed, triggerLockedError } = useDiagnostic();
 
   if (loading) {
     return (
@@ -48,11 +53,78 @@ const ProtectedRoute = ({ children, loading, requireAdmin = false }) => {
     return <Navigate to="/auth" replace />;
   }
 
-  if (requireAdmin && userData.role !== "admin") {
+  if (!userData.isProfileCompleted) {
+    return <Navigate to="/auth" replace />;
+  }
+
+  if (requireAdmin && userData.role !== "admin" && userData.role !== "trainer") {
+    return <Navigate to="/" replace />;
+  }
+
+  if (userData.role === "trainer" && location.pathname !== "/admin" && location.pathname !== "/settings") {
+    return <Navigate to="/admin" replace />;
+  }
+
+  if (!isAssessmentAllowed(location.pathname)) {
+    triggerLockedError();
     return <Navigate to="/" replace />;
   }
 
   return children;
+};
+
+const PublicRoute = ({ children, loading }) => {
+  const userData = useSelector((state) => state.user.userData);
+  const location = useLocation();
+
+  if (loading) {
+    return (
+      <div className="h-screen flex items-center justify-center bg-slate-900 text-white font-bold text-sm">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
+          <span>Authenticating Session...</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (userData && !userData.isProfileCompleted) {
+    return <Navigate to="/auth" replace />;
+  }
+
+  if (userData?.role === "trainer" && (location.pathname === "/" || location.pathname === "/welcome")) {
+    return <Navigate to="/admin" replace />;
+  }
+
+  return children;
+};
+
+const AuthRoute = ({ loading }) => {
+  const userData = useSelector((state) => state.user.userData);
+  const { isIntakePending } = useDiagnostic();
+
+  if (loading) {
+    return (
+      <div className="h-screen flex items-center justify-center bg-slate-900 text-white font-bold text-sm">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
+          <span>Authenticating Session...</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (userData && userData.isProfileCompleted) {
+    if (userData.role === "trainer" || userData.role === "admin") {
+      return <Navigate to="/admin" replace />;
+    }
+    if (isIntakePending) {
+      return <Navigate to="/" replace />;
+    }
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  return <Auth />;
 };
 
 const App = () => {
@@ -85,10 +157,15 @@ const App = () => {
       <Toaster position="top-center" reverseOrder={false} />
       <ScrollProgressBar />
       <Routes>
-        {/* Public SaaS Landing Page */}
-        <Route path="/" element={<Home />} />
+        <Route
+          path="/"
+          element={
+            <PublicRoute loading={loading}>
+              <Home />
+            </PublicRoute>
+          }
+        />
 
-        {/* Protected Dashboard */}
         <Route
           path="/dashboard"
           element={
@@ -107,6 +184,30 @@ const App = () => {
           }
         />
         <Route
+          path="/skill-gaps"
+          element={
+            <ProtectedRoute loading={loading}>
+              <SkillGapAnalysis />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/skill-gap-analysis"
+          element={
+            <ProtectedRoute loading={loading}>
+              <SkillGapAnalysis />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/job-readiness"
+          element={
+            <ProtectedRoute loading={loading}>
+              <JobReadinessReport />
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="/learning-path"
           element={
             <ProtectedRoute loading={loading}>
@@ -119,6 +220,14 @@ const App = () => {
           element={
             <ProtectedRoute loading={loading}>
               <Quizzes />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/quiz"
+          element={
+            <ProtectedRoute loading={loading}>
+              <Navigate to="/quizzes" replace />
             </ProtectedRoute>
           }
         />
@@ -150,12 +259,19 @@ const App = () => {
           path="/materials"
           element={
             <ProtectedRoute loading={loading}>
-              <MaterialsUpload />
+              <MaterialsUpload initialTab="material-request" />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/mcq-create"
+          element={
+            <ProtectedRoute loading={loading}>
+              <MaterialsUpload initialTab="mcq-create" />
             </ProtectedRoute>
           }
         />
 
-        {/* Administrator Executive Analytics */}
         <Route
           path="/admin"
           element={
@@ -165,17 +281,6 @@ const App = () => {
           }
         />
 
-        {/* AI Models Workflow Hub */}
-        <Route
-          path="/ai-models"
-          element={
-            <ProtectedRoute loading={loading}>
-              <AiModelsHub />
-            </ProtectedRoute>
-          }
-        />
-
-        {/* AI Copilot & Community */}
         <Route
           path="/chat"
           element={
@@ -184,12 +289,17 @@ const App = () => {
             </ProtectedRoute>
           }
         />
-        <Route path="/community" element={<Community />} />
+        <Route
+          path="/community"
+          element={
+            <PublicRoute loading={loading}>
+              <Community />
+            </PublicRoute>
+          }
+        />
 
-        {/* Authentication */}
-        <Route path="/auth" element={<Auth />} />
+        <Route path="/auth" element={<AuthRoute loading={loading} />} />
 
-        {/* Preserved Mock Interview Features */}
         <Route
           path="/interview"
           element={
@@ -207,14 +317,6 @@ const App = () => {
           }
         />
         <Route
-          path="/pricing"
-          element={
-            <ProtectedRoute loading={loading}>
-              <Pricing />
-            </ProtectedRoute>
-          }
-        />
-        <Route
           path="/report/:id"
           element={
             <ProtectedRoute loading={loading}>
@@ -222,13 +324,66 @@ const App = () => {
             </ProtectedRoute>
           }
         />
+        <Route
+          path="/settings"
+          element={
+            <ProtectedRoute loading={loading}>
+              <Settings />
+            </ProtectedRoute>
+          }
+        />
 
-        {/* Legal & Static Pages */}
-        <Route path="/terms" element={<TermsOfService />} />
-        <Route path="/privacy" element={<PrivacyPolicy />} />
-        <Route path="/welcome" element={<Home />} />
+        <Route
+          path="/terms"
+          element={
+            <PublicRoute loading={loading}>
+              <TermsOfService />
+            </PublicRoute>
+          }
+        />
+        <Route
+          path="/privacy"
+          element={
+            <PublicRoute loading={loading}>
+              <PrivacyPolicy />
+            </PublicRoute>
+          }
+        />
+        <Route
+          path="/welcome"
+          element={
+            <PublicRoute loading={loading}>
+              <Home />
+            </PublicRoute>
+          }
+        />
+        <Route
+          path="/portal-comparison"
+          element={
+            <PublicRoute loading={loading}>
+              <PortalDifference />
+            </PublicRoute>
+          }
+        />
+        <Route
+          path="/portal-difference"
+          element={
+            <PublicRoute loading={loading}>
+              <PortalDifference />
+            </PublicRoute>
+          }
+        />
+
+        <Route
+          path="*"
+          element={
+            <PublicRoute loading={loading}>
+              <Navigate to="/" replace />
+            </PublicRoute>
+          }
+        />
       </Routes>
-      <LiveAdminChatWidget />
+      {userData && userData.isProfileCompleted && userData.role !== "trainer" && <LiveAdminChatWidget />}
     </>
   );
 };

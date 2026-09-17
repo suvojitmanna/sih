@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import BackButton from "../components/BackButton";
+import ExamProctoringModal from "../components/ExamProctoringModal";
 import { useParams, useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { setUserData } from "../redux/userSlice";
@@ -18,11 +19,14 @@ import {
   FaBookOpen,
   FaHandSparkles,
   FaTachometerAlt,
+  FaExclamationTriangle,
 } from "react-icons/fa";
+import { BsShieldCheck, BsShieldExclamation } from "react-icons/bs";
 
 const QuizPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const [quiz, setQuiz] = useState(null);
   const [currentIdx, setCurrentIdx] = useState(0);
@@ -33,7 +37,22 @@ const QuizPage = () => {
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Fetch Quiz
+  const [tabSwitchCount, setTabSwitchCount] = useState(0);
+  const [showTabSwitchModal, setShowTabSwitchModal] = useState(false);
+  const tabSwitchCountRef = useRef(0);
+  const isAwayRef = useRef(false);
+  const lastViolationTimeRef = useRef(0);
+  const maxTabSwitches = 5;
+
+  const userAnswersRef = useRef(userAnswers);
+  userAnswersRef.current = userAnswers;
+  const timeLeftRef = useRef(timeLeft);
+  timeLeftRef.current = timeLeft;
+  const submittedRef = useRef(submitted);
+  submittedRef.current = submitted;
+  const submittingRef = useRef(submitting);
+  submittingRef.current = submitting;
+
   useEffect(() => {
     const fetchQuiz = async () => {
       try {
@@ -48,7 +67,7 @@ const QuizPage = () => {
           toast.error("Assessment not found.");
           navigate("/quizzes");
         }
-      } catch (error) {
+      } catch {
         toast.error("Failed to load quiz.");
         navigate("/quizzes");
       } finally {
@@ -56,9 +75,251 @@ const QuizPage = () => {
       }
     };
     fetchQuiz();
-  }, [id]);
+  }, [id, navigate]);
 
-  // Timer Tick
+  const handleSubmitQuiz = async (isAuto = false) => {
+    if (submittedRef.current || submittingRef.current) return;
+    submittingRef.current = true;
+    setSubmitting(true);
+
+    const totalTime = (quiz?.timeLimitMinutes || 10) * 60;
+    const timeTaken = totalTime - timeLeftRef.current;
+
+    try {
+      const { data } = await axios.post(
+        `${ServerUrl}/api/quizzes/${id}/submit`,
+        {
+          userAnswers: userAnswersRef.current,
+          timeTakenSeconds: Math.max(15, timeTaken),
+          tabSwitchCount: tabSwitchCountRef.current,
+        },
+        { withCredentials: true },
+      );
+
+      if (data.success) {
+        if (isAuto || tabSwitchCountRef.current >= maxTabSwitches) {
+          toast.error(
+            "🚨 Assessment auto-submitted due to 5 tab switch violations! Redirecting to quizzes...",
+            {
+              id: "auto-submit-done",
+              duration: 5000,
+            }
+          );
+          setTimeout(() => {
+            navigate("/quizzes");
+          }, 1200);
+        } else {
+          toast.success("Assessment evaluated successfully! 🎉");
+        }
+        setResult(data);
+        submittedRef.current = true;
+        setSubmitted(true);
+        setShowTabSwitchModal(false);
+
+        if (data.user) {
+          dispatch(
+            setUserData({
+              ...data.user,
+              isProfileCompleted:
+                data.user.isProfileCompleted !== undefined
+                  ? Boolean(data.user.isProfileCompleted)
+                  : true,
+            })
+          );
+        }
+        window.dispatchEvent(new CustomEvent("assessmentCompleted", { detail: data }));
+        window.dispatchEvent(new CustomEvent("diagnostic-updated", { detail: data }));
+        localStorage.setItem("lastAssessmentUpdate", Date.now().toString());
+      }
+    } catch (error) {
+      toast.error(
+        error.response?.data?.message || "Failed to submit assessment.",
+      );
+    } finally {
+      submittingRef.current = false;
+      setSubmitting(false);
+    }
+  };
+
+  const handleSubmitRef = useRef();
+  handleSubmitRef.current = handleSubmitQuiz;
+
+  useEffect(() => {
+    if (submitted || loading || !quiz) return;
+
+    const handleContextMenu = (e) => {
+      e.preventDefault();
+      toast.error(
+        "⚠️ Right-click is disabled during the assessment to maintain exam integrity!",
+        {
+          id: "proctor-rc",
+          duration: 4000,
+        }
+      );
+    };
+
+    const handleCopy = (e) => {
+      e.preventDefault();
+      toast.error(
+        "⚠️ Copying text is strictly prohibited during the assessment!",
+        {
+          id: "proctor-copy",
+          duration: 4000,
+        }
+      );
+    };
+
+    const handleCut = (e) => {
+      e.preventDefault();
+      toast.error(
+        "⚠️ Cutting text is strictly prohibited during the assessment!",
+        {
+          id: "proctor-cut",
+          duration: 4000,
+        }
+      );
+    };
+
+    const handlePaste = (e) => {
+      e.preventDefault();
+      toast.error(
+        "⚠️ Pasting content is strictly prohibited during the assessment!",
+        {
+          id: "proctor-paste",
+          duration: 4000,
+        }
+      );
+    };
+
+    const handleKeyDown = (e) => {
+      const isCtrlOrCmd = e.ctrlKey || e.metaKey;
+      const key = (e.key || "").toLowerCase();
+
+      if (isCtrlOrCmd && key === "c") {
+        e.preventDefault();
+        toast.error("⚠️ Copy shortcut (Ctrl+C / Cmd+C) is disabled!", {
+          id: "proctor-key-c",
+          duration: 3500,
+        });
+      } else if (isCtrlOrCmd && key === "v") {
+        e.preventDefault();
+        toast.error("⚠️ Paste shortcut (Ctrl+V / Cmd+V) is disabled!", {
+          id: "proctor-key-v",
+          duration: 3500,
+        });
+      } else if (isCtrlOrCmd && key === "x") {
+        e.preventDefault();
+        toast.error("⚠️ Cut shortcut (Ctrl+X / Cmd+X) is disabled!", {
+          id: "proctor-key-x",
+          duration: 3500,
+        });
+      } else if (isCtrlOrCmd && key === "a") {
+        e.preventDefault();
+        toast.error("⚠️ Select-All shortcut is disabled during the assessment!", {
+          id: "proctor-key-a",
+          duration: 3500,
+        });
+      } else if (isCtrlOrCmd && key === "u") {
+        e.preventDefault();
+        toast.error("⚠️ View Source shortcut is disabled!", {
+          id: "proctor-key-u",
+          duration: 3500,
+        });
+      } else if (isCtrlOrCmd && key === "p") {
+        e.preventDefault();
+        toast.error("⚠️ Printing is disabled during the assessment!", {
+          id: "proctor-key-p",
+          duration: 3500,
+        });
+      } else if (
+        e.key === "F12" ||
+        (isCtrlOrCmd && e.shiftKey && (key === "i" || key === "j" || key === "c"))
+      ) {
+        e.preventDefault();
+        toast.error("⚠️ Developer Tools shortcut is disabled!", {
+          id: "proctor-devtools",
+          duration: 3500,
+        });
+      }
+    };
+
+    const triggerTabSwitchViolation = () => {
+      const now = Date.now();
+      if (now - lastViolationTimeRef.current < 700) return;
+      lastViolationTimeRef.current = now;
+
+      const newCount = tabSwitchCountRef.current + 1;
+      tabSwitchCountRef.current = newCount;
+      setTabSwitchCount(newCount);
+      setShowTabSwitchModal(true);
+
+      toast.error(
+        `⚠️ Tab change detected! Warning count: ${newCount} of ${maxTabSwitches}`,
+        {
+          id: "proctor-tab-switch",
+          duration: 6000,
+        }
+      );
+
+      if (newCount >= maxTabSwitches) {
+        toast.error(
+          "🚨 Maximum tab switch limit (5) reached! Automatically evaluating and submitting your assessment...",
+          {
+            id: "proctor-max-limit",
+            duration: 7000,
+          }
+        );
+        setTimeout(() => {
+          if (handleSubmitRef.current) {
+            handleSubmitRef.current(true);
+          }
+        }, 800);
+      }
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "hidden") {
+        isAwayRef.current = true;
+      } else if (document.visibilityState === "visible") {
+        if (isAwayRef.current) {
+          isAwayRef.current = false;
+          triggerTabSwitchViolation();
+        }
+      }
+    };
+
+    const handleWindowBlur = () => {
+      isAwayRef.current = true;
+    };
+
+    const handleWindowFocus = () => {
+      if (isAwayRef.current) {
+        isAwayRef.current = false;
+        triggerTabSwitchViolation();
+      }
+    };
+
+    window.addEventListener("contextmenu", handleContextMenu);
+    window.addEventListener("copy", handleCopy);
+    window.addEventListener("cut", handleCut);
+    window.addEventListener("paste", handlePaste);
+    window.addEventListener("keydown", handleKeyDown);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    window.addEventListener("blur", handleWindowBlur);
+    window.addEventListener("focus", handleWindowFocus);
+
+    return () => {
+      window.removeEventListener("contextmenu", handleContextMenu);
+      window.removeEventListener("copy", handleCopy);
+      window.removeEventListener("cut", handleCut);
+      window.removeEventListener("paste", handlePaste);
+      window.removeEventListener("keydown", handleKeyDown);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      window.removeEventListener("blur", handleWindowBlur);
+      window.removeEventListener("focus", handleWindowFocus);
+    };
+  }, [submitted, loading, quiz]);
+
   useEffect(() => {
     if (!submitted && timeLeft > 0 && !loading) {
       const interval = setInterval(() => {
@@ -79,42 +340,6 @@ const QuizPage = () => {
     const updated = [...userAnswers];
     updated[currentIdx] = opt;
     setUserAnswers(updated);
-  };
-
-  const handleSubmitQuiz = async () => {
-    if (submitted) return;
-    setSubmitting(true);
-
-    const totalTime = (quiz?.timeLimitMinutes || 10) * 60;
-    const timeTaken = totalTime - timeLeft;
-
-    try {
-      const { data } = await axios.post(
-        `${ServerUrl}/api/quizzes/${id}/submit`,
-        {
-          userAnswers,
-          timeTakenSeconds: Math.max(15, timeTaken),
-        },
-        { withCredentials: true },
-      );
-
-      if (data.success) {
-        toast.success("Assessment evaluated successfully! 🎉");
-        setResult(data);
-        setSubmitted(true);
-        if (data.user) {
-          dispatch(setUserData(data.user));
-        }
-        window.dispatchEvent(new CustomEvent("assessmentCompleted", { detail: data }));
-        localStorage.setItem("lastAssessmentUpdate", Date.now().toString());
-      }
-    } catch (error) {
-      toast.error(
-        error.response?.data?.message || "Failed to submit assessment.",
-      );
-    } finally {
-      setSubmitting(false);
-    }
   };
 
   const formatTime = (secs) => {
@@ -143,7 +368,6 @@ const QuizPage = () => {
       <Navbar />
 
       <main className="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-16 space-y-6">
-        {/* Back Navigation Bar */}
         <div className="flex items-center justify-between">
           <BackButton
             to="/quizzes"
@@ -151,14 +375,14 @@ const QuizPage = () => {
             onClick={
               !submitted
                 ? () => {
-                    if (
-                      window.confirm(
-                        "Are you sure you want to exit this assessment? Unsaved answers will be discarded.",
-                      )
-                    ) {
-                      navigate("/quizzes");
-                    }
+                  if (
+                    window.confirm(
+                      "Are you sure you want to exit this assessment? Unsaved answers will be discarded.",
+                    )
+                  ) {
+                    navigate("/quizzes");
                   }
+                }
                 : undefined
             }
           />
@@ -179,13 +403,31 @@ const QuizPage = () => {
                 </h1>
               </div>
 
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2.5 sm:gap-3">
                 <div
-                  className={`flex items-center gap-2 px-4 py-2 rounded-2xl font-mono font-bold text-sm border ${
-                    timeLeft < 120
-                      ? "bg-rose-50 border-rose-200 text-rose-600 animate-pulse"
-                      : "bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200"
-                  }`}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-2xl text-xs font-bold border transition-all ${tabSwitchCount === 0
+                      ? "bg-emerald-50 dark:bg-emerald-950/50 border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300"
+                      : tabSwitchCount < 3
+                        ? "bg-amber-50 dark:bg-amber-950/50 border-amber-200 dark:border-amber-800 text-amber-700 dark:text-amber-300 animate-pulse"
+                        : "bg-rose-50 dark:bg-rose-950/60 border-rose-200 dark:border-rose-800 text-rose-600 dark:text-rose-400 animate-bounce"
+                    }`}
+                  title={`Proctoring Security: ${tabSwitchCount} tab switch violations detected`}
+                >
+                  {tabSwitchCount === 0 ? (
+                    <BsShieldCheck size={14} className="text-emerald-500" />
+                  ) : (
+                    <BsShieldExclamation size={14} className="text-rose-500" />
+                  )}
+                  <span className="hidden xs:inline text-[11px]">Tab Switches:</span>
+                  <span className="font-mono font-black">{tabSwitchCount}</span>
+                  <span className="text-[10px] text-slate-400">/ {maxTabSwitches}</span>
+                </div>
+
+                <div
+                  className={`flex items-center gap-2 px-4 py-2 rounded-2xl font-mono font-bold text-sm border ${timeLeft < 120
+                    ? "bg-rose-50 border-rose-200 text-rose-600 animate-pulse"
+                    : "bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200"
+                    }`}
                 >
                   <FaClock size={14} />
                   <span>{formatTime(timeLeft)}</span>
@@ -201,6 +443,21 @@ const QuizPage = () => {
               </div>
             </div>
 
+            {tabSwitchCount > 0 && (
+              <div className="flex items-center justify-between p-3.5 sm:p-4 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-300 dark:border-amber-800 text-amber-900 dark:text-amber-200 text-xs shadow-xs animate-fadeIn">
+                <div className="flex items-center gap-2.5">
+                  <FaExclamationTriangle className="text-amber-600 dark:text-amber-400 shrink-0" size={15} />
+                  <div>
+                    <span className="font-black">Security Proctoring Alert:</span>{" "}
+                    Tab changes detected (<strong>{tabSwitchCount}</strong> / {maxTabSwitches}). Do not leave this tab.
+                  </div>
+                </div>
+                <span className="text-[11px] font-mono font-black px-2.5 py-1 rounded-xl bg-amber-200/80 dark:bg-amber-900/80 text-amber-900 dark:text-amber-100 shrink-0">
+                  {maxTabSwitches - tabSwitchCount} remaining
+                </span>
+              </div>
+            )}
+
             <div className="h-1.5 w-full bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
               <div
                 className="h-full bg-blue-600 transition-all duration-300 rounded-full"
@@ -215,20 +472,19 @@ const QuizPage = () => {
                 <button
                   key={i}
                   onClick={() => setCurrentIdx(i)}
-                  className={`w-8 h-8 rounded-xl font-bold text-xs flex items-center justify-center transition-all cursor-pointer shrink-0 ${
-                    currentIdx === i
-                      ? "bg-blue-600 text-white shadow-sm ring-2 ring-blue-400"
-                      : userAnswers[i]
-                        ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300"
-                        : "bg-slate-100 dark:bg-slate-800 text-slate-500 hover:bg-slate-200"
-                  }`}
+                  className={`w-8 h-8 rounded-xl font-bold text-xs flex items-center justify-center transition-all cursor-pointer shrink-0 ${currentIdx === i
+                    ? "bg-blue-600 text-white shadow-sm ring-2 ring-blue-400"
+                    : userAnswers[i]
+                      ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300"
+                      : "bg-slate-100 dark:bg-slate-800 text-slate-500 hover:bg-slate-200"
+                    }`}
                 >
                   {i + 1}
                 </button>
               ))}
             </div>
 
-            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-8 shadow-xs space-y-6">
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-8 shadow-xs space-y-6 select-none">
               <div className="flex items-center justify-between text-xs text-slate-500 pb-3 border-b border-slate-100 dark:border-slate-800">
                 <span>
                   Question <strong>{currentIdx + 1}</strong> of{" "}
@@ -250,21 +506,19 @@ const QuizPage = () => {
                     <div
                       key={optIdx}
                       onClick={() => handleSelectOption(option)}
-                      className={`p-4 rounded-2xl border-2 transition-all cursor-pointer flex items-center justify-between ${
-                        isSelected
-                          ? "border-blue-600 bg-blue-50/80 dark:bg-blue-950/60 shadow-xs"
-                          : "border-slate-200 dark:border-slate-800 hover:border-slate-300 bg-slate-50/50 dark:bg-slate-800/40"
-                      }`}
+                      className={`p-4 rounded-2xl border-2 transition-all cursor-pointer flex items-center justify-between ${isSelected
+                        ? "border-blue-600 bg-blue-50/80 dark:bg-blue-950/60 shadow-xs"
+                        : "border-slate-200 dark:border-slate-800 hover:border-slate-300 bg-slate-50/50 dark:bg-slate-800/40"
+                        }`}
                     >
                       <span className="text-xs sm:text-sm font-medium text-slate-800 dark:text-slate-200">
                         {option}
                       </span>
                       <div
-                        className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${
-                          isSelected
-                            ? "border-blue-600 bg-blue-600 text-white"
-                            : "border-slate-300 dark:border-slate-600"
-                        }`}
+                        className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${isSelected
+                          ? "border-blue-600 bg-blue-600 text-white"
+                          : "border-slate-300 dark:border-slate-600"
+                          }`}
                       >
                         {isSelected && (
                           <span className="w-2 h-2 rounded-full bg-white" />
@@ -313,22 +567,27 @@ const QuizPage = () => {
           <div className="space-y-6">
             <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-8 shadow-xs text-center space-y-4">
               <div
-                className={`w-16 h-16 rounded-3xl mx-auto flex items-center justify-center font-black text-2xl shadow-lg ${
-                  result?.attempt?.passed
-                    ? "bg-emerald-500 text-white"
-                    : "bg-amber-500 text-white"
-                }`}
+                className={`w-16 h-16 rounded-3xl mx-auto flex items-center justify-center font-black text-2xl shadow-lg ${result?.attempt?.passed
+                  ? "bg-emerald-500 text-white"
+                  : "bg-amber-500 text-white"
+                  }`}
               >
                 {result?.attempt?.score}%
               </div>
 
               <div>
+                {(result?.attempt?.tabSwitchCount ?? tabSwitchCount) >= maxTabSwitches && (
+                  <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-rose-100 dark:bg-rose-950/70 border border-rose-300 dark:border-rose-800 text-rose-700 dark:text-rose-300 text-xs font-bold mb-2.5">
+                    <BsShieldExclamation size={14} className="text-rose-600 dark:text-rose-400" />
+                    <span>Auto-Submitted: Maximum Tab Switches ({maxTabSwitches}) Reached</span>
+                  </div>
+                )}
+
                 <span
-                  className={`inline-block px-3 py-1 rounded-full text-xs font-extrabold uppercase tracking-wide mb-2 ${
-                    result?.attempt?.passed
-                      ? "bg-emerald-100 text-emerald-700"
-                      : "bg-amber-100 text-amber-700"
-                  }`}
+                  className={`inline-block px-3 py-1 rounded-full text-xs font-extrabold uppercase tracking-wide mb-2 ${result?.attempt?.passed
+                    ? "bg-emerald-100 text-emerald-700"
+                    : "bg-amber-100 text-amber-700"
+                    }`}
                 >
                   {result?.attempt?.passed
                     ? "Assessment Passed"
@@ -345,7 +604,7 @@ const QuizPage = () => {
                 </p>
               </div>
 
-              <div className="grid grid-cols-3 gap-3 max-w-md mx-auto pt-2">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 max-w-xl mx-auto pt-2">
                 <div className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800">
                   <span className="text-[10px] font-bold text-slate-400 block uppercase">
                     Correct
@@ -371,6 +630,22 @@ const QuizPage = () => {
                   </span>
                   <span className="text-base font-black text-slate-700 dark:text-slate-200">
                     {formatTime(result?.attempt?.timeTakenSeconds || 60)}
+                  </span>
+                </div>
+
+                <div className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800">
+                  <span className="text-[10px] font-bold text-slate-400 block uppercase">
+                    Tab Switches
+                  </span>
+                  <span
+                    className={`text-base font-black ${(result?.attempt?.tabSwitchCount ?? tabSwitchCount) === 0
+                        ? "text-emerald-600"
+                        : "text-amber-600"
+                      }`}
+                  >
+                    {(result?.attempt?.tabSwitchCount ?? tabSwitchCount) === 0
+                      ? "0 (Clean)"
+                      : `${result?.attempt?.tabSwitchCount ?? tabSwitchCount} Logged`}
                   </span>
                 </div>
               </div>
@@ -423,13 +698,12 @@ const QuizPage = () => {
                           {t.topic}
                         </span>
                         <span
-                          className={`text-[11px] font-black px-2 py-0.5 rounded-full ${
-                            t.status === "Mastered"
-                              ? "bg-emerald-100 text-emerald-700"
-                              : t.status === "Developing"
-                                ? "bg-blue-100 text-blue-700"
-                                : "bg-rose-100 text-rose-700"
-                          }`}
+                          className={`text-[11px] font-black px-2 py-0.5 rounded-full ${t.status === "Mastered"
+                            ? "bg-emerald-100 text-emerald-700"
+                            : t.status === "Developing"
+                              ? "bg-blue-100 text-blue-700"
+                              : "bg-rose-100 text-rose-700"
+                            }`}
                         >
                           {t.status} ({t.score}%)
                         </span>
@@ -448,11 +722,10 @@ const QuizPage = () => {
                 {(result?.attempt?.userAnswers || []).map((ans, idx) => (
                   <div
                     key={idx}
-                    className={`p-4 rounded-2xl border-2 space-y-2.5 ${
-                      ans.isCorrect
-                        ? "border-emerald-200 bg-emerald-50/40 dark:bg-emerald-950/20 dark:border-emerald-900"
-                        : "border-rose-200 bg-rose-50/40 dark:bg-rose-950/20 dark:border-rose-900"
-                    }`}
+                    className={`p-4 rounded-2xl border-2 space-y-2.5 ${ans.isCorrect
+                      ? "border-emerald-200 bg-emerald-50/40 dark:bg-emerald-950/20 dark:border-emerald-900"
+                      : "border-rose-200 bg-rose-50/40 dark:bg-rose-950/20 dark:border-rose-900"
+                      }`}
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex items-start gap-2">
@@ -507,6 +780,19 @@ const QuizPage = () => {
           </div>
         )}
       </main>
+
+      <ExamProctoringModal
+        isOpen={showTabSwitchModal && !submitted}
+        tabSwitchCount={tabSwitchCount}
+        maxAllowed={maxTabSwitches}
+        onAcknowledge={() => {
+          setShowTabSwitchModal(false);
+          if (tabSwitchCount >= maxTabSwitches) {
+            navigate("/quizzes");
+          }
+        }}
+      />
+
       <Footer />
     </div>
   );

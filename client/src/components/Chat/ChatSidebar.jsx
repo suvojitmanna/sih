@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import moment from "moment";
 import { useNavigate } from "react-router-dom";
 import {
@@ -6,7 +6,6 @@ import {
   FaSearch,
   FaTrashAlt,
   FaImages,
-  FaCoins,
   FaMoon,
   FaSun,
   FaTimes,
@@ -24,14 +23,11 @@ const ChatSidebar = ({
   setSelectedChat,
   createNewChat,
   deleteChat,
-  userData,
   theme: propTheme,
-  setTheme: propSetTheme,
 }) => {
   const navigate = useNavigate();
   const themeContext = useTheme();
   const theme = propTheme || themeContext?.theme || "system";
-  const setTheme = propSetTheme || themeContext?.setTheme;
   const resolvedTheme = themeContext?.resolvedTheme || (theme === "dark" ? "dark" : "light");
   const toggleTheme = themeContext?.toggleTheme;
   const [search, setSearch] = useState("");
@@ -89,7 +85,6 @@ const ChatSidebar = ({
           </div>
         </div>
 
-        
         <button
           onClick={createNewChat}
           className="flex items-center justify-center gap-2 w-full py-3 mt-4 text-white bg-gradient-to-r from-indigo-600 via-violet-600 to-fuchsia-600 hover:opacity-95 text-sm font-semibold rounded-2xl shadow-[0_8px_20px_rgba(79,70,229,0.25)] hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer shrink-0"
@@ -170,19 +165,6 @@ const ChatSidebar = ({
           >
             <FaImages className="text-indigo-500" size={14} />
             <span>Community Gallery</span>
-          </div>
-
-          <div
-            onClick={() => navigate("/pricing")}
-            className="flex items-center justify-between p-2.5 rounded-xl bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-500/20 text-slate-700 dark:text-slate-200 cursor-pointer hover:border-amber-500/40 transition-all"
-          >
-            <div className="flex items-center gap-2 text-xs">
-              <FaCoins className="text-amber-500" size={14} />
-              <span className="font-semibold">{userData?.credits || 0} Credits</span>
-            </div>
-            <span className="text-[10px] bg-amber-500 text-white font-bold px-2 py-0.5 rounded-full">
-              Get More
-            </span>
           </div>
 
           <div className="flex items-center justify-between p-2 rounded-xl bg-slate-50 dark:bg-slate-800/50 text-xs text-slate-600 dark:text-slate-300">

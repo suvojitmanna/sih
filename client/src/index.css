@@ -42,7 +42,6 @@
   animation: shimmer 1.8s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
-/* Recharts Tooltip & Bar Hover Background Styling */
 .recharts-tooltip-cursor {
   fill: rgba(59, 130, 246, 0.08) !important;
   rx: 8px;
@@ -66,4 +65,25 @@
   border: 1px solid #334155 !important;
   color: #f8fafc !important;
 }
+
+body.layout-mode-sidebar {
+  --sidebar-w: 260px;
+}
+
+body.layout-mode-sidebar.sidebar-collapsed {
+  --sidebar-w: 76px;
+}
+
+@media (min-width: 768px) {
+  body.layout-mode-sidebar #root {
+    padding-left: var(--sidebar-w) !important;
+    transition: padding-left 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  body.layout-mode-sidebar main.max-w-7xl,
+  body.layout-mode-sidebar main {
+    max-width: 100% !important;
+  }
+}
+
 

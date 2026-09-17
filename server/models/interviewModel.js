@@ -1,50 +1,61 @@
 import mongoose from "mongoose";
 
 const questionSchema = new mongoose.Schema({
-    question: String,
-    difficulty: String,
-    timeLimit: Number,
-    answer: String,
-    feedback: String,
-    score: { type: Number, default: 0 },
-    confidence: { type: Number, default: 0 },
-    communication: { type: Number, default: 0 },
-    correctness: { type: Number, default: 0 }
-})
+  question: String,
+  difficulty: String,
+  timeLimit: Number,
+  answer: String,
+  feedback: String,
+  score: { type: Number, default: 0 },
+  confidence: { type: Number, default: 0 },
+  communication: { type: Number, default: 0 },
+  correctness: { type: Number, default: 0 },
+});
 
-const interviewSchema = new mongoose.Schema({
+const interviewSchema = new mongoose.Schema(
+  {
     userId: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "User",
-        required: true
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
     },
     role: {
-        type: String,
-        required: true
+      type: String,
+      required: true,
     },
     experience: {
-        type: String,
-        required: true
+      type: String,
+      required: true,
     },
     mode: {
-        type: String,
-        enum: ["HR", "Technical"],
-        required: true
+      type: String,
+      enum: ["HR", "Technical"],
+      required: true,
     },
     resumeText: {
-        type: String
+      type: String,
     },
     question: [questionSchema],
 
     finalScore: { type: Number, default: 0 },
 
     status: {
-        type: String,
-        enum: ["Incompleted", "completed"],
-        default: "Incompleted",
+      type: String,
+      enum: ["Incompleted", "completed"],
+      default: "Incompleted",
     },
 
-}, { timestamps: true })
+    isDiagnostic: {
+      type: Boolean,
+      default: false,
+    },
+    targetCadre: {
+      type: String,
+      default: "",
+    },
+  },
+  { timestamps: true },
+);
 
-const Interview = mongoose.model("Interview", interviewSchema)
-export default Interview
+const Interview = mongoose.model("Interview", interviewSchema);
+export default Interview;
