@@ -1,466 +1,532 @@
-# 🏛️ MoSPI • NSSTA — AI-Enabled Skill Intelligence & Learning Platform
+# 🏛️ SankhyaIQ™ — AI-Enabled Skill Intelligence & Capacity Building Platform
+### Smart India Hackathon (SIH) 2026 • Problem Statement: 26101
+#### Ministry of Statistics and Programme Implementation (MoSPI) • Government of India
 
 <p align="center">
-  <img src="https://capsule-render.vercel.app/api?type=waving&color=0:1E3A8A,100:2563EB&height=220&section=header&text=MoSPI%20•%20NSSTA%20SkillIQ&fontSize=42&fontColor=ffffff&animation=fadeIn&desc=AI-Enabled%20Skill%20Intelligence%20%26%20Capacity%20Building%20Platform&descAlignY=75" />
+  <img src="https://capsule-render.vercel.app/api?type=waving&color=0:0f172a,50:1e3a8a,100:2563eb&height=220&section=header&text=SankhyaIQ%E2%84%A2%20%E2%80%A2%20MoSPI&fontSize=40&fontColor=ffffff&animation=fadeIn&desc=SIH%202026%20Problem%20Statement%2026101%20%7C%20Official%20Statistical%20System%20Capacity%20Building&descAlignY=72" width="100%" />
 </p>
 
 <p align="center">
-  <img src="https://readme-typing-svg.herokuapp.com?color=00FFB3&size=26&center=true&vCenter=true&width=900&lines=AI+Powered+Interview+Preparation;Real-time+Voice+Interview+System;MERN+Stack+Project;Modern+Premium+UI+Design;AI+Feedback+and+Analytics;Secure+Razorpay+Payment+Integration" />
-</p>
-
----
-
-# 🏆 Badges
-
-<p align="center">
-
-<img src="https://img.shields.io/badge/MERN-Stack-4CAF50?style=for-the-badge"/>
-
-<img src="https://img.shields.io/badge/AI-Powered-black?style=for-the-badge"/>
-
-<img src="https://img.shields.io/badge/Razorpay-Payment-blue?style=for-the-badge"/>
-
-<img src="https://img.shields.io/badge/Status-Production-success?style=for-the-badge"/>
-
-<img src="https://img.shields.io/badge/Responsive-UI-purple?style=for-the-badge"/>
-
+  <img src="https://readme-typing-svg.herokuapp.com?color=38BDF8&size=24&center=true&vCenter=true&width=950&lines=SIH+2026+Problem+Statement+26101+Official+Implementation;AI-Enabled+Competency+Profiling+for+India's+Official+Statistical+System;4-Domain+MoSPI+Knowledge+Taxonomy+and+Cadre+Benchmarking;Dynamic+Skill+Gap+Analysis+with+iGOT+Karmayogi+Integration;Automated+Document-to-MCQ+Generation+from+Survey+Manuals;AI+Mock+Oral+Viva+Voce+and+Practicum+Rubrics+Engine" />
 </p>
 
 ---
 
-# 🌍 Live Demo
-
-## 🚀 Live App
-
-👉 https://ai-interview-two-sigma.vercel.app
-
----
-
-## 💻 GitHub Repository
-
-👉 https://github.com/suvojitmanna/AI-Interview
-
----
-
-# 🧠 Project Overview
-
-An enterprise-grade, **AI-Enabled Skill Intelligence and Learning Platform** built for capacity building in India's Official Statistical System (Ministry of Statistics and Programme Implementation - MoSPI & National Statistical Systems Training Academy - NSSTA).
-
-Powered by the **SankhyaIQ™ AI Neural Engine**, the platform assesses learner competencies across 4 official domains (Statistical, Technical & Computational, Digital Governance, Behavioural/Managerial), identifies prioritized skill gaps against cadre benchmarks (ISS, SSS, FOD, DES), constructs personalized pathways integrating **iGOT Karmayogi** and **NSSTA TPAC programmes**, and automatically generates structured MCQs and quizzes from uploaded training materials.
-
----
-
-# ✨ Core Capabilities
-
-⚡ **SankhyaIQ™ AI Neural Engine**: Structured JSON-driven competency assessment, skill gap detection, and adaptive remediation.  
-🔐 **Secure Email OTP Authentication**: 2-step 2FA signup and login verification with 6-digit cryptographic codes and rate limiting.  
-📊 **Official Statistics Competency Framework**: Mapping across Survey Design, Sampling, National Accounts (SNA), Price Statistics (CPI/WPI), Labour Statistics (PLFS), Statistical Computing, and Governance.  
-🗺️ **Personalized Learning Pathways**: Sequential career development connecting iGOT Karmayogi digital courses with NSSTA TPAC in-service training.  
-📂 **Learning Material Upload & MCQ Generator**: Automated text extraction from PDFs and training notes to generate 4-option MCQs with pedagogical explanations.  
-📝 **Interactive Assessment Engine**: Timed quizzes, question palette, real-time score calculation, and topic-level diagnostics.  
-💬 **SankhyaCopilot AI Assistant**: Official statistics domain tutor for methodologies, microdata analysis, and circular guidance.  
-🛡️ **Executive Administrator Portal**: Cadre-wise distributions, departmental competency heatmaps, and system-wide deficit tracking.  
-
----
-
-# 🧱 MERN Stack
+## 🏆 Badges & Standards
 
 <p align="center">
-
-<img src="https://skillicons.dev/icons?i=mongodb,express,react,nodejs" />
-
+  <img src="https://img.shields.io/badge/SIH-2026%20Problem%2026101-FF9933?style=for-the-badge&logo=gov.in&logoColor=white"/>
+  <img src="https://img.shields.io/badge/Ministry-MoSPI%20%7C%20Govt%20of%20India-138808?style=for-the-badge&logoColor=white"/>
+  <img src="https://img.shields.io/badge/Framework-Mission%20Karmayogi%20(FRAC)-000088?style=for-the-badge"/>
+  <img src="https://img.shields.io/badge/Stack-MERN%20(React%2019%20%2B%20Node%205)-61DAFB?style=for-the-badge&logo=react&logoColor=black"/>
+  <img src="https://img.shields.io/badge/AI%20Engine-Gemini%20%26%20OpenRouter-8B5CF6?style=for-the-badge&logo=google&logoColor=white"/>
+  <img src="https://img.shields.io/badge/Database-MongoDB%20Atlas-47A248?style=for-the-badge&logo=mongodb&logoColor=white"/>
+  <img src="https://img.shields.io/badge/Security-2FA%20OTP%20%26%20JWT-red?style=for-the-badge&logo=auth0&logoColor=white"/>
 </p>
 
 ---
 
-# 🧠 System Design (High-Level)
+## 🌍 Live Deployment & Links
+
+| Asset | Resource Link |
+| :--- | :--- |
+| **🚀 Production Web Application** | [https://ai-interview-two-sigma.vercel.app](https://ai-interview-two-sigma.vercel.app) |
+| **💻 GitHub Source Repository** | [https://github.com/suvojitmanna/sih](https://github.com/suvojitmanna/sih) |
+| **🏛️ Target Ministry Portal** | [Ministry of Statistics and Programme Implementation (MoSPI)](https://www.mospi.gov.in) |
+| **🎓 Integrated Training Ecosystem** | [iGOT Karmayogi](https://igotkarmayogi.gov.in) • [NSSTA Academy](https://www.mospi.gov.in/national-statistical-systems-training-academy-nssta) |
+
+---
+
+## 🧠 Project Overview (SIH Problem Statement 26101)
+
+### The Challenge
+The **Official Statistical System of India**—spearheaded by the Ministry of Statistics and Programme Implementation (**MoSPI**) and the National Statistical Systems Training Academy (**NSSTA**)—coordinates critical nationwide statistical operations, including the **National Accounts Statistics (SNA 2008 / GDP compilation)**, **Consumer Price Index (CPI)**, **Index of Industrial Production (IIP)**, **Periodic Labour Force Survey (PLFS)**, **Annual Survey of Industries (ASI)**, and economic censuses.
+
+**Problem Statement 26101** calls for an enterprise **AI-enabled learning platform** to strengthen capacity building across statistical cadres (**ISS, SSS, FOD, DES**) by:
+1. Creating comprehensive competency profiles based on role, cadre, qualifications, and past performance.
+2. Identifying granular skill gaps through dynamic assessment analytics.
+3. Recommending tailored learning pathways directly integrated with **iGOT Karmayogi** and **NSSTA TPAC** training programmes.
+4. Generating interactive quizzes and multiple-choice questions (MCQs) on-demand from uploaded survey manuals, administrative circulars, and study materials.
+
+### The Solution: SankhyaIQ™
+**SankhyaIQ™** is an end-to-end AI-powered skill intelligence platform engineered to fulfill the mandate of Problem Statement 26101. Grounded in the **Mission Karmayogi FRAC (Framework for Roles, Activities, and Competencies)** standard, SankhyaIQ provides real-time competency calculation across a 4-domain knowledge taxonomy, automated skill gap ranking, AI document-to-MCQ generation, voice-assisted oral vivas, practical assignments, and executive cadre analytics.
+
+---
+
+## ✨ Key Capabilities & Features
+
+### 1. 📊 Official MoSPI 4-Domain Knowledge Taxonomy
+Measures and tracks capability across the four pillars of India's statistical infrastructure:
+* **Statistical Competencies:** Sampling Design, Stratification, Variance Estimation, Multipliers, SNA 2008 GVA, CPI/WPI Index Numbers, Demography.
+* **Technical & Computational Rigor:** Official Statistical Computing (R, Python, STATA), Big Data pipelines, CAPI (Computer-Assisted Personal Interviewing) data hygiene, Database queries.
+* **Digital Governance & Ethics:** Official Statistics Act, Data Confidentiality, National Data Governance Framework Policy (NDGFP), Open Government Data (OGD) publishing.
+* **Managerial & Field Leadership:** Field Operations Division (FOD) logistics, Enumerator oversight, Quality control audits, Cross-cadre coordination.
+
+### 2. 🎯 Dynamic Skill Gap Analysis & Cadre Benchmarking
+* Automatically evaluates learner performance across quizzes, practicum assignments, and oral vivas.
+* Compares scores against official benchmark profiles for:
+  * **Indian Statistical Service (ISS) Officers**
+  * **Subordinate Statistical Service (SSS) Officers**
+  * **Field Operations Division (FOD) Senior Investigators**
+  * **State Directorate of Economics and Statistics (DES) Personnel**
+* Classifies skill gaps by severity (**Critical / High Priority**, **Moderate**, **Low / Maintenance**) with operational impact rationale.
+
+### 3. 🗺️ Adaptive Learning Pathways (iGOT Karmayogi & NSSTA Integration)
+* Resolves identified skill gaps by dynamically mapping them to official digital modules from **iGOT Karmayogi** and residential/hybrid training from **NSSTA TPAC**.
+* Constructs sequential milestone learning tracks with duration, skill addressed, target level, and completion tracking.
+
+### 4. 📄 AI Document-to-MCQ & Quiz Studio
+* Allows trainers and officials to upload official MoSPI documents (PDF, DOCX, TXT, PPTX).
+* Extracts core text using `pdfjs-dist` and `mammoth` parsing engines.
+* The **SankhyaIQ Neural Engine** generates validated 4-option MCQs with pedagogical explanations, correct answer validation, and source citations directly traceable to the manual.
+
+### 5. 🎙️ Multi-Modal Assessment Engine
+* **Diagnostic Cadre Assessments:** Instant baseline evaluation upon cadre selection.
+* **Topic & Domain Quizzes:** Timed assessments with interactive question palettes and instant analytics.
+* **AI Oral Viva Voce:** Speech-to-text enabled simulated oral examinations evaluating communication and procedural clarity.
+* **Assignment Practicums:** Real-world statistical problem statements with multi-parameter automated AI rubric grading.
+
+### 6. 💬 SankhyaCopilot AI Domain Tutor
+* Context-aware conversational AI assistant specializing in Indian official statistics, survey methodologies, sampling manuals, and administrative guidelines.
+
+### 7. 🛡️ Executive Cadre Training Portal
+* Cadre-wide skill distributions, department-wise radar comparisons, and deficit tracking for NSSTA decision-makers.
+
+---
+
+## 🛠️ Languages, Tools & Technology Stack
+
+```
+                                  SANKHYAIQ TECH STACK
+┌────────────────────────────────────────────────────────────────────────────────────────┐
+│  FRONTEND            React 19  •  Vite 8  •  Tailwind CSS v4  •  Redux Toolkit         │
+│  UI & VISUALIZATION  Framer Motion  •  Recharts  •  React-Icons  •  Prism.js          │
+│  BACKEND RUNTIME     Node.js (v20+)  •  Express.js (v5)  •  ES Modules (ESM)           │
+│  DATABASE            MongoDB Atlas  •  Mongoose ODM (v9)                               │
+│  AI NEURAL ENGINES   Google Gemini API (@google/genai)  •  OpenRouter (Meta/DeepSeek)  │
+│  DOCUMENT PARSING    pdfjs-dist  •  adm-zip  •  Multer file streaming                  │
+│  SECURITY & AUTH     2FA Crypto OTP  •  Nodemailer  •  JWT  •  BcryptJS  •  CORS       │
+└────────────────────────────────────────────────────────────────────────────────────────┘
+```
+
+### Frontend
+* **Core:** React.js 19, Vite 8, JavaScript (ES6+)
+* **Styling & Motion:** Tailwind CSS v4, Framer Motion
+* **State Management:** Redux Toolkit (`@reduxjs/toolkit`), React-Redux
+* **Routing & Utilities:** React Router DOM v7, Axios, React Hot Toast
+* **Visualization & Reporting:** Recharts (Radar, Bar, Line Charts), jsPDF, jsPDF-AutoTable
+
+### Backend
+* **Runtime & Framework:** Node.js, Express.js v5 (Modern REST Architecture)
+* **Database & ODM:** MongoDB Atlas, Mongoose v9
+* **Document Extraction:** `pdfjs-dist`, `adm-zip`, `multer`
+* **Security & Communications:** JSON Web Tokens (JWT), BcryptJS, Cookie-Parser, Nodemailer (Crypto 6-digit OTP delivery)
+
+### AI & Neural Capabilities
+* **AI Frameworks:** Google Gemini API (`@google/genai`), OpenRouter Multi-Model Inference
+* **Pedagogical Safeguards:** Built-in curated MoSPI cadre diagnostic fallback presets ensuring zero-latency and 100% uptime during network throttling.
+
+---
+
+## 🏗️ System Architecture & Data Flow
 
 ```mermaid
-flowchart LR
+flowchart TD
+    subgraph ClientLayer["🖥️ Frontend Presentation Tier (React 19 + Vite)"]
+        UI["Learner & Officer Portal"]
+        Radar["4-Domain Competency Radar"]
+        Studio["Document Upload & MCQ Studio"]
+        Viva["AI Mock Oral Viva (Voice-Enabled)"]
+        LPath["iGOT Adaptive Learning Path"]
+        AdminUI["Executive Cadre Analytics"]
+    end
 
-    U[User] --> F[React Frontend]
+    subgraph APILayer["⚙️ Backend Application Tier (Express 5 + Node.js)"]
+        AuthMid["2FA OTP Authentication & RBAC Middleware"]
+        CompService["Competency Calculation & Skill Gap Service"]
+        DocService["Document Extraction Engine (PDF / DOCX)"]
+        AIService["SankhyaIQ AI Neural Orchestrator"]
+        ReportService["Analytics & Job Readiness Aggregator"]
+    end
 
-    F -->|REST API| B[Express Backend]
+    subgraph DataLayer["🗄️ Database & Storage Tier"]
+        MongoDB[("MongoDB Atlas Cloud Database")]
+        UserModel["User & Cadre Profile Schema"]
+        QuizModel["Quiz & Question Bank Schema"]
+        AttemptModel["Assessment Evaluations & Attempts"]
+        AssignModel["Assignment Practicum Schema"]
+    end
 
-    B --> DB[(MongoDB)]
+    subgraph ExternalServices["☁️ External Government & AI Ecosystem"]
+        Gemini["Google Gemini / OpenRouter Neural API"]
+        iGOTCatalog["iGOT Karmayogi Course Registry"]
+        TpacCatalog["NSSTA TPAC In-Service Programmes"]
+        EmailService["Government / SMTP Relay (2FA OTP)"]
+    end
 
-    B --> AI[AI Processing Engine]
-
-    B --> RP[Razorpay API]
-
-    AI --> F
-
-    RP --> F
+    UI --> AuthMid
+    Radar --> CompService
+    Studio --> DocService
+    DocService --> AIService
+    AIService --> Gemini
+    Viva --> AIService
+    CompService --> UserModel
+    CompService --> AttemptModel
+    CompService --> iGOTCatalog
+    CompService --> TpacCatalog
+    iGOTCatalog --> LPath
+    AuthMid --> EmailService
+    AuthMid --> MongoDB
+    AdminUI --> ReportService
+    ReportService --> MongoDB
+    MongoDB --- UserModel
+    MongoDB --- QuizModel
+    MongoDB --- AttemptModel
+    MongoDB --- AssignModel
 ```
 
 ---
 
-# ⚙️ AI Interview Flow
+## 🔄 Sequence Diagrams
+
+### 1. Competency Assessment & Dynamic Skill Gap Engine
 
 ```mermaid
 sequenceDiagram
+    autonumber
+    actor Official as Cadre Officer
+    participant Client as React Client (SankhyaIQ)
+    participant API as Express API Server
+    participant Calc as Competency Service
+    participant AI as SankhyaIQ Neural Engine
+    participant DB as MongoDB Atlas
 
-    participant User
-    participant Frontend
-    participant Backend
-    participant AI
-    participant DB
-
-    User->>Frontend: Start Interview
-
-    Frontend->>Backend: Request Questions
-
-    Backend->>AI: Generate Questions
-
-    AI-->>Backend: AI Questions
-
-    Backend->>Frontend: Send Questions
-
-    User->>Frontend: Submit Answer
-
-    Frontend->>Backend: Answer Data
-
-    Backend->>AI: Analyze Answer
-
-    AI-->>Backend: Feedback + Score
-
-    Backend->>DB: Save Result
-
-    Backend-->>Frontend: Final Report
+    Official->>Client: Completes Quiz / Practicum / Oral Viva
+    Client->>API: POST /api/competency/recalculate
+    API->>DB: Fetch all Quiz, Interview & Assignment evaluations
+    DB-->>API: Historical attempts & scores
+    API->>Calc: Recalculate 4-Domain Taxonomy Scores
+    Calc->>Calc: Map scores into Statistical, Technical, Governance, Managerial
+    Calc->>Calc: Compare against Cadre Benchmark (e.g. ISS Officer)
+    Calc->>Calc: Compute Gap Score & Priority (High, Medium, Low)
+    Calc->>AI: Map top gaps to iGOT Karmayogi & NSSTA TPAC modules
+    AI-->>Calc: Return tailored sequence of learning modules
+    Calc->>DB: Save updated competencies, skill gaps & learning path
+    DB-->>API: Confirmed updated User document
+    API-->>Client: Return 4-Domain Radar, Skill Gaps & Adaptive Path
+    Client-->>Official: Visual Competency Dashboard & Readiness Score
 ```
 
 ---
 
-# 🔥 Features
+### 2. Document-to-MCQ AI Extraction & Studio Pipeline
 
-# 🤖 AI Interview System
-
-- AI Generated Questions
-- Technical + HR Interviews
-- Voice Recognition Support
-- AI Feedback & Suggestions
-- Live Interview Experience
-- Smart Scoring System
-
----
-
-# 💬 Smart AI Assistant & Image Studio
-
-- Multi-turn Conversational AI Assistant (powered by Google Gemini `@google/genai` & OpenRouter)
-- Speech-to-Text Voice Input & Karaoke Text-to-Speech Audio Output
-- Markdown Rendering with Prism.js Code Syntax Highlighting
-- AI Image Generation (ClipDrop & ImageKit hosting)
-- Community AI Artwork Gallery with Public Sharing
-- Session History & Instant Fuzzy Search
+```mermaid
+flowchart LR
+    A["Official Survey Manual\n(PDF / DOCX / TXT)"] --> B["Multipart Multer\nUpload Stream"]
+    B --> C["Document Extractor\n(pdfjs-dist / mammoth)"]
+    C --> D["Structured Domain\nText Cleaning"]
+    D --> E["SankhyaIQ AI\nNeural Prompting"]
+    E --> F["JSON Structured\nValidation Gate"]
+    F --> G["4-Option MCQs +\nDetailed Explanations +\nDocument Citations"]
+    G --> H["Quiz Studio UI &\nInstant Learner Practice"]
+```
 
 ---
 
-# 📊 Analytics Dashboard
+### 3. MoSPI 4-Domain Framework & Cadre Benchmarking
 
-- Performance Tracking
-- Skill Analysis
-- Score Graphs
-- Interview History
-- Progress Monitoring
+```mermaid
+flowchart TD
+    subgraph Taxonomy["MoSPI 4-Domain Competency Framework"]
+        D1["Domain 1: Statistical Competencies\n(Sampling, National Accounts, Index Numbers, Surveys)"]
+        D2["Domain 2: Technical & Computational\n(R, Python, STATA, Data Engineering, CAPI Tools)"]
+        D3["Domain 3: Digital Governance & Policy\n(Official Statistics Act, Privacy, NDGFP, Ethics)"]
+        D4["Domain 4: Managerial & Field Rigor\n(FOD Operations, Team Leadership, Quality Auditing)"]
+    end
 
----
+    subgraph Profiling["Weighted Evaluation Engine"]
+        Quizzes["Quizzes & MCQs (40% Weight)"]
+        Assignments["Practicum Assignments (35% Weight)"]
+        Vivas["Oral Viva Voce (25% Weight)"]
+    end
 
-# 💳 Payment System
+    subgraph Benchmarking["Cadre Benchmark Comparison"]
+        ISS["Indian Statistical Service (ISS)"]
+        SSS["Subordinate Statistical Service (SSS)"]
+        FOD["Field Operations Division (FOD)"]
+    end
 
-- Razorpay Integration
-- Secure Online Payment
-- Credits Based Plans
-- Premium Subscription System
+    subgraph Outcome["Actionable Output"]
+        Gap["Prioritized Skill Gaps (High / Med / Low)"]
+        Path["Personalized iGOT / TPAC Pathway"]
+    end
 
----
-
-# 🎨 UI/UX
-
-- Modern Premium UI
-- Glassmorphism Effects
-- Responsive Design
-- Smooth Animations
-- Interactive Components
-
----
-
-# 🖼 Demo Preview
-
-<p align="center">
-  <img width="1742" height="788" alt="Screenshot 2026-05-09 235327" src="https://github.com/user-attachments/assets/9d651cf0-3b60-418e-8aea-1dd52ec042d7" />
-</p>
-
----
-
-# 📊 GitHub Insights
-
-<p align="center">
-
-<img src="https://github-readme-stats.vercel.app/api?username=suvojitmanna&show_icons=true&theme=tokyonight&hide_border=true"/>
-
-<img src="https://github-readme-streak-stats.herokuapp.com/?user=suvojitmanna&theme=tokyonight&hide_border=true"/>
-
-</p>
+    Profiling --> Taxonomy
+    Taxonomy --> Benchmarking
+    Benchmarking --> Gap
+    Gap --> Path
+```
 
 ---
 
-# 📈 Contribution Activity
-
-<p align="center">
-
-<img src="https://github-readme-activity-graph.vercel.app/graph?username=suvojitmanna&theme=react-dark&hide_border=true&area=true"/>
-
-</p>
-
----
-
-# 🏆 Achievements
-
-<p align="center">
-
-<img src="https://github-profile-trophy.vercel.app/?username=suvojitmanna&theme=onedark&no-frame=true&margin-w=10"/>
-
-</p>
-
----
-
-# 🧩 Project Structure
+## 📁 Project Directory Structure
 
 ```bash
-client/
+sih/
+├── client/                               # Frontend Single Page Application
+│   ├── public/                           # Static assets and icons
+│   ├── src/
+│   │   ├── assets/                       # Images, logos, and graphics
+│   │   ├── components/                   # Reusable UI components
+│   │   │   ├── Navbar.jsx                # Government & platform navigation header
+│   │   │   ├── Footer.jsx                # MoSPI & NSSTA footer
+│   │   │   ├── ProtectedRoute.jsx        # JWT auth guard wrapper
+│   │   │   └── ...                       # Modals, buttons, cards, skeletons
+│   │   ├── context/                      # React Context providers (Auth, Theme)
+│   │   ├── pages/                        # View Pages
+│   │   │   ├── Home.jsx                  # Hero landing page & MoSPI portal overview
+│   │   │   ├── Dashboard.jsx             # 4-Domain Competency radar & gap summary
+│   │   │   ├── Auth.jsx                  # 2FA OTP Signup, Login & Password Reset
+│   │   │   ├── LearningPath.jsx          # iGOT & NSSTA adaptive pathway tracker
+│   │   │   ├── Quizzes.jsx               # Statistical quizzes exploration
+│   │   │   ├── QuizPage.jsx              # Interactive timed quiz engine
+│   │   │   ├── MaterialsUpload.jsx       # AI Document-to-MCQ Studio view
+│   │   │   ├── Interview.jsx             # AI Speech-to-Text Mock Oral Viva Voce
+│   │   │   ├── InterviewHistory.jsx      # Oral assessment evaluations archive
+│   │   │   ├── AssignmentDetails.jsx     # Practical assignments & rubric evaluation
+│   │   │   ├── JobReadinessReport.jsx    # Comprehensive cadre benchmark audit
+│   │   │   ├── AdminDashboard.jsx        # Executive NSSTA Cadre Training Portal
+│   │   │   ├── Community.jsx             # Statistical peer discussions & Q&A
+│   │   │   ├── Settings.jsx              # User profile & cadre configuration
+│   │   │   └── ...                       # Terms, Privacy, Difference pages
+│   │   ├── redux/                        # Redux state slices & store
+│   │   ├── utils/                        # Frontend helpers & API Axios client
+│   │   ├── App.jsx                       # Master route declarations
+│   │   ├── main.jsx                      # Application bootstrap
+│   │   └── index.css                     # Tailwind CSS entrypoint
+│   ├── index.html                        # HTML template
+│   ├── package.json                      # Client dependencies & scripts
+│   └── vite.config.js                    # Vite configuration
 │
-├── components/
-├── pages/
-├── redux/
-├── assets/
-├── hooks/
-└── App.jsx
-
-server/
+├── server/                               # Backend REST API Server
+│   ├── config/                           # System Configurations
+│   │   ├── db.js                         # MongoDB Mongoose connection
+│   │   ├── competencyFramework.js        # 4-Domain taxonomy & cadre benchmarks
+│   │   ├── gemini.js                     # Google Gemini SDK configuration
+│   │   ├── token.js                      # JWT token utilities
+│   │   └── imageKit.js                   # Media hosting configuration
+│   ├── controller/                       # Route Business Controllers
+│   │   ├── auth.controller.js            # 2FA OTP Registration, Login & Session
+│   │   ├── competency.controller.js      # Dynamic scoring & skill gap recalculation
+│   │   ├── material.controller.js        # Document upload & MCQ studio handler
+│   │   ├── quiz.controller.js            # Quiz generation, retrieval & attempts
+│   │   ├── interview.controller.js       # AI Voice Oral Viva evaluations
+│   │   ├── assignment.controller.js      # Practicum submission & AI rubric grading
+│   │   ├── admin.controller.js           # Cadre-wide analytics & distribution
+│   │   ├── chat.controller.js            # SankhyaCopilot AI multi-turn tutor
+│   │   ├── community.controller.js       # Peer discussions & posts
+│   │   ├── supportMessage.controller.js  # User support messaging
+│   │   └── user.controller.js            # Profile updates & cadre preferences
+│   ├── middleware/                       # Request Interceptors
+│   │   ├── isAuth.js                     # JWT authorization verification
+│   │   └── multer.js                     # In-memory document buffer handling
+│   ├── models/                           # Mongoose Database Schemas
+│   │   ├── userModel.js                  # User, cadre, competency scores & gaps
+│   │   ├── quizModel.js                  # Quizzes & generated MCQ questions
+│   │   ├── quizAttemptModel.js           # Attempt records & domain analytics
+│   │   ├── interviewModel.js             # Voice oral viva transcripts & feedback
+│   │   ├── assignmentModel.js            # Practicums, submissions & AI rubrics
+│   │   ├── materialModel.js              # Uploaded documents & extracted MCQs
+│   │   ├── communityModel.js             # Forum posts & replies
+│   │   └── supportMessageModel.js        # Feedback messages
+│   ├── routes/                           # API Route Definitions
+│   │   ├── auth.route.js                 # /api/auth endpoints
+│   │   ├── competency.route.js           # /api/competency endpoints
+│   │   ├── material.route.js             # /api/material endpoints
+│   │   ├── quiz.route.js                 # /api/quiz endpoints
+│   │   ├── interview.route.js            # /api/interview endpoints
+│   │   ├── assignment.route.js           # /api/assignment endpoints
+│   │   ├── admin.route.js                # /api/admin endpoints
+│   │   ├── chat.route.js                 # /api/chat endpoints
+│   │   └── user.route.js                 # /api/user endpoints
+│   ├── services/                         # Business & AI Logic Services
+│   │   ├── aiService.js                  # Gemini/OpenRouter AI generation engine
+│   │   ├── competencyCalculationService.js# Dynamic scoring & gap analysis algorithms
+│   │   ├── diagnosticAssessmentService.js # Cadre baseline assessment presets
+│   │   ├── emailService.js               # Crypto OTP generation & 2FA emails
+│   │   ├── igotService.js                # iGOT Karmayogi course catalog integration
+│   │   ├── openRouter.service.js         # Secondary AI neural fallback engine
+│   │   └── tpacService.js                # NSSTA TPAC programme registry
+│   ├── utils/                            # Helper Utilities
+│   │   └── documentExtractor.js          # PDF & Word text extraction routines
+│   ├── index.js                          # Express app entrypoint & middleware
+│   └── package.json                      # Server dependencies & scripts
 │
-├── controllers/
-├── routes/
-├── middleware/
-├── models/
-├── config/
-├── utils/
-└── server.js
+└── README.md                             # Project documentation
 ```
 
 ---
 
-# ⚙️ Installation
+## 🔐 Environment Variables (`.env`)
 
-## Clone Repository
+### 1. Server Environment Configuration (`server/.env`)
 
-```bash
-git clone https://github.com/suvojitmanna/AI-Interview.git
+```env
+# Server Network Settings
+PORT=5000
+NODE_ENV=development
+CLIENT_URL=http://localhost:5173
+
+# Database Connection
+MONGODB_URL=mongodb+srv://<username>:<password>@cluster.mongodb.net/sankhyaiq?retryWrites=true&w=majority
+
+# Security & Session Authentication
+JWT_SECRET=your_super_secret_jwt_encryption_key_min_32_chars
+
+# Artificial Intelligence Neural Engines (Primary & Secondary)
+GEMINI_API_KEY=your_google_gemini_api_key_here
+OPENROUTER_API_KEY=your_openrouter_api_key_here
+
+# 2FA Crypto OTP Email Service (SMTP)
+EMAIL_HOST=smtp.gmail.com
+EMAIL_PORT=587
+EMAIL_USER=your_official_email@gmail.com
+EMAIL_PASSWORD=your_email_app_specific_password
+EMAIL_FROM=no-reply@mospi.gov.in
+EMAIL_FROM_NAME="MoSPI-NSSTA Skill Intelligence"
+
+# Media Storage Configuration (Optional / Image Generation)
+IMAGEKIT_PUBLIC_KEY=your_imagekit_public_key
+IMAGEKIT_PRIVATE_KEY=your_imagekit_private_key
+IMAGEKIT_URL_ENDPOINT=https://ik.imagekit.io/your_account
+CLIPDROP_API_KEY=your_clipdrop_api_key_if_used
+```
+
+### 2. Client Environment Configuration (`client/.env`)
+
+```env
+# Backend API Base URL
+VITE_BASE_URL=http://localhost:5000
+
+# Google OAuth Client ID (Optional)
+VITE_GOOGLE_CLIENT_ID=your_google_oauth_client_id_here
 ```
 
 ---
 
-# 📦 Install Dependencies
+## ⚡ Installation & Local Setup Guide
 
-## Frontend
+### Prerequisites
+* **Node.js**: v18.0.0 or higher
+* **npm**: v9.0.0 or higher
+* **MongoDB**: Local MongoDB instance or MongoDB Atlas URI
 
+### Step 1: Clone Repository
 ```bash
-cd client
-npm install
+git clone https://github.com/suvojitmanna/sih.git
+cd sih
 ```
 
----
-
-## Backend
-
+### Step 2: Configure & Run Server
 ```bash
+# Navigate to server directory
 cd server
+
+# Install backend dependencies
 npm install
-```
 
----
+# Create and configure .env file
+cp .env.example .env # or create .env using the template above
 
-# ▶️ Run Application
-
-## Start Backend
-
-```bash
-npm run server
-```
-
----
-
-## Start Frontend
-
-```bash
+# Start backend development server (runs on http://localhost:5000)
 npm run dev
 ```
 
----
-
-# 🔐 Environment Variables
-
-# Frontend `.env`
-
-```env
-VITE_SERVER_URL=http://localhost:8000
-
-VITE_RAZORPAY_KEY=your_razorpay_key
-```
-
----
-
-# Backend `.env`
-
-```env
-PORT=8000
-
-MONGO_URI=your_mongodb_uri
-
-JWT_SECRET=your_secret
-
-RAZORPAY_KEY_ID=your_key
-
-RAZORPAY_KEY_SECRET=your_secret
-```
-
----
-
-# 💳 Razorpay Setup
-
-## Install Razorpay
-
+### Step 3: Configure & Run Client
 ```bash
-npm install razorpay
+# Open a new terminal and navigate to client directory
+cd ../client
+
+# Install frontend dependencies
+npm install
+
+# Create and configure .env file
+# Ensure VITE_BASE_URL is set to http://localhost:5000
+
+# Start frontend development server (runs on http://localhost:5173)
+npm run dev
 ```
 
----
-
-## Add Razorpay Script
-
-Inside `index.html`
-
-```html
-<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
-```
+Open your browser and navigate to **`http://localhost:5173`**.
 
 ---
 
-# 🔗 API Endpoints
+## 🔗 Key API Endpoints Reference
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | /api/auth/register | Register User |
-| POST | /api/auth/login | Login User |
-| GET | /api/interview | Fetch Interviews |
-| POST | /api/interview/start | Start Interview |
-| POST | /api/payment/order | Create Payment Order |
-| POST | /api/payment/verify | Verify Payment |
-
----
-
-# 📦 Important Packages
-
-```bash
-npm install axios react-router-dom react-hot-toast framer-motion react-icons
-```
-
----
-
-# 🚀 Deployment
-
-# Frontend Deploy
-
-- Vercel
-- Netlify
+| Module | Method | Endpoint | Description |
+| :--- | :--- | :--- | :--- |
+| **Authentication** | `POST` | `/api/auth/register` | Register new official & dispatch 6-digit 2FA OTP |
+| **Authentication** | `POST` | `/api/auth/verify-otp` | Verify registration OTP & issue secure JWT |
+| **Authentication** | `POST` | `/api/auth/login` | Authenticate official credentials & trigger 2FA |
+| **Authentication** | `POST` | `/api/auth/verify-login-otp`| Complete 2FA login verification |
+| **Competency Engine**| `GET` | `/api/competency/overview` | Fetch 4-domain scores, gaps, & radar metrics |
+| **Competency Engine**| `POST`| `/api/competency/recalculate` | Dynamic multi-assessment score recalculation |
+| **Materials / Studio**| `POST`| `/api/material/upload-and-generate` | Upload PDF/DOCX & auto-generate verified MCQs |
+| **Materials / Studio**| `GET` | `/api/material/my-materials`| Retrieve uploaded manuals & extracted question sets |
+| **Quiz Engine** | `GET` | `/api/quiz/catalog` | Retrieve available statistical quizzes by topic |
+| **Quiz Engine** | `POST`| `/api/quiz/generate` | On-demand AI quiz generator for target topics |
+| **Quiz Engine** | `POST`| `/api/quiz/submit` | Submit answers, calculate score & update competency |
+| **AI Oral Viva** | `POST`| `/api/interview/start` | Initialize AI speech-to-text oral interview |
+| **AI Oral Viva** | `POST`| `/api/interview/evaluate` | Submit voice transcript & receive AI rubric evaluation |
+| **Assignments** | `GET` | `/api/assignment` | Fetch practical statistical assignments |
+| **Assignments** | `POST`| `/api/assignment/:id/submit`| Submit practicum solution for automated grading |
+| **SankhyaCopilot** | `POST`| `/api/chat/message` | Multi-turn conversational domain AI assistant |
+| **Admin Analytics** | `GET` | `/api/admin/analytics` | Cadre-wide skill distributions & institutional gap data |
 
 ---
 
-# Backend Deploy
+## 🎯 Alignment with SIH Problem Statement 26101
 
-- Render
-- Railway
-- Cyclic
-
----
-
-# 🔒 Authentication
-
-- JWT Authentication
-- Protected Routes
-- Secure Cookies
-- Google Authentication
+| SIH 26101 Mandate | How SankhyaIQ Solves It | Source Code Proof |
+| :--- | :--- | :--- |
+| **1. Comprehensive Competency Profiling** | Maps officials across Designation, Cadre, and the official 4-Domain Knowledge Taxonomy (Statistical, Technical, Governance, Managerial). | [`competencyFramework.js`](server/config/competencyFramework.js) |
+| **2. Dynamic Gap Identification** | Compares real-time evaluation performance against Cadre Benchmarks (ISS, SSS, FOD) to compute weighted severity scores. | [`competencyCalculationService.js`](server/services/competencyCalculationService.js) |
+| **3. iGOT Karmayogi Integration** | Connects identified skill deficits directly to digital modules from iGOT Karmayogi and training from NSSTA TPAC. | [`igotService.js`](server/services/igotService.js) & [`tpacService.js`](server/services/tpacService.js) |
+| **4. Automated Content & MCQ Generation** | Parses uploaded survey manuals and circulars (PDF/DOCX) using AI to extract structured 4-option MCQs with pedagogical reasoning. | [`documentExtractor.js`](server/utils/documentExtractor.js) & [`aiService.js`](server/services/aiService.js) |
+| **5. Continuous Capacity Building** | Combines Quizzes, Practical Assignments, and Voice-Enabled Oral Viva Voce with built-in zero-latency fallback presets. | [`diagnosticAssessmentService.js`](server/services/diagnosticAssessmentService.js) |
 
 ---
 
-# 🎯 Future Enhancements
-
-🤖 AI Video Interview  
-📄 Resume Upload Analysis  
-🌐 Multi Language Support  
-🎙 AI Voice Assistant  
-📈 Advanced Analytics  
-🏆 Leaderboard System  
-📱 Mobile Application  
-
----
-
-# 🤝 Contributing
-
-```bash
-git checkout -b feature-name
-
-git commit -m "Add new feature"
-
-git push origin feature-name
-```
-
----
-
-# ⭐ Support
-
-If you like this project:
-
-⭐ Star the Repository  
-🍴 Fork the Project  
-📢 Share with Friends  
-
----
-
-# 👨‍💻 Author
-
-# Suvojit Manna
-
-### Full Stack MERN Developer
-
-💻 React Developer  
-⚙️ Backend Developer  
-🎨 UI/UX Designer  
-
----
-
-# 📜 License
-
-MIT License
-
----
-
-# 👁 Visitors
+## 👨‍💻 Project Author & Team
 
 <p align="center">
+  <b>Developed with dedication for Smart India Hackathon (SIH) 2026</b><br/>
+  <b>Lead Developer:</b> Suvojit Manna<br/>
+  <i>Full Stack MERN Developer • AI & System Architect</i>
+</p>
 
-<img src="https://komarev.com/ghpvc/?username=suvojitmanna&label=Profile%20Views&color=brightgreen&style=for-the-badge"/>
-
+<p align="center">
+  <a href="https://github.com/suvojitmanna"><img src="https://img.shields.io/badge/GitHub-100000?style=for-the-badge&logo=github&logoColor=white" /></a>
+  <a href="https://linkedin.com/in/suvojit-manna"><img src="https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white" /></a>
 </p>
 
 ---
 
-# 🎯 Footer
+## 📜 License
+
+This project is licensed under the **MIT License** — feel free to use, modify, and distribute with attribution.
+
+---
+
+## 👁️ Visitor Statistics
 
 <p align="center">
-
-<img src="https://capsule-render.vercel.app/api?type=waving&color=0:6366F1,100:10B981&height=140&section=footer"/>
-
+  <img src="https://komarev.com/ghpvc/?username=suvojitmanna-sih&label=Project%20Views&color=blue&style=for-the-badge"/>
 </p>
-#   s i h  
- #   s i h  
- 
+
+---
+
+<p align="center">
+  <img src="https://capsule-render.vercel.app/api?type=waving&color=0:2563eb,50:1e3a8a,100:0f172a&height=140&section=footer" width="100%" />
+</p>
