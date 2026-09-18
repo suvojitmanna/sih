@@ -1,7 +1,13 @@
+import i18n from "../i18n";
+
 export const setGlobalLanguage = (lang) => {
   try {
     const targetLang = lang === "hi" ? "hi" : "en";
     localStorage.setItem("sankhya_lang", targetLang);
+
+    if (i18n && i18n.changeLanguage && i18n.language !== targetLang) {
+      i18n.changeLanguage(targetLang);
+    }
 
     const hostname = window.location.hostname;
     const cookieVal = `/en/${targetLang}`;
