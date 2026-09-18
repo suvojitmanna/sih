@@ -1005,16 +1005,39 @@ export const generateAIAssistantResponse = async ({
   userMessage = "",
   learnerContext = {},
 }) => {
+  const userName = learnerContext.userName || learnerContext.name || "Officer";
+  const trimmed = userMessage.trim().toLowerCase();
+
+  const isGreeting =
+    /^(hi|hello|hey|namaste|helo|hlo|greetings|good\s+(morning|afternoon|evening))(\s+(copilot|sankhya|sankhyacopilot|ai|there|bot))?[!.?\s]*$/i.test(
+      trimmed
+    );
+
+  if (isGreeting) {
+    return `Hi ${userName}, I am SankhyaCopilot. How can I help you today?`;
+  }
+
+  const isCreatorQuestion =
+    /(who\s+(created|made|built|developed|designed|coded)\s+you|who\s+is\s+your\s+(creator|developer|maker|owner|author|team|leader)|who\s+are\s+your\s+(creators|developers)|tell\s+me\s+who\s+created\s+you|who\s+is\s+(the\s+)?(creator|developer)\s+of\s+(this\s+)?(ai|copilot|bot|app))/i.test(
+      userMessage
+    );
+
+  if (isCreatorQuestion) {
+    return "I was created by **Team ZYPHOR**, led by Team Leader **Srijan Murmu** and Lead Developer **Suvojit Manna**.";
+  }
+
   const systemPrompt = `
 You are "SankhyaCopilot", the dedicated AI Learning and Statistical Intelligence Copilot powered by the SankhyaIQ AI Neural Engine for the National Statistical Systems Training Academy (NSSTA), Ministry of Statistics & Programme Implementation (MoSPI), Government of India.
 
 Your core mission:
+- If the user greets you, welcome them with: "Hi ${userName}, I am SankhyaCopilot. How can I help you today?"
 - Provide clear, mathematically rigorous, yet accessible explanations of Official Statistics methodologies (Sampling, National Accounts, CPI/WPI, PLFS, ASI, IIP, SDG Indicators).
 - Guide officers on automated statistical computing, microdata analysis, and registry management for official statistical data processing.
 - Clarify MoSPI circulars, metadata standards (NIC-2008, NPC-2011), and the National Quality Assurance Framework (NQAF).
 - Encourage career capacity building via iGOT Karmayogi and NSSTA TPAC training pathways.
 - Maintain a polite, professional, encouraging, and authoritative tone suitable for government officers and statistical professionals.
 - Do not mention external company names or proprietary commercial brandings.
+- If the user asks who created you, who made you, who is your developer, team, or creator, reply clearly: "I was created by Team ZYPHOR, led by Team Leader Srijan Murmu and Lead Developer Suvojit Manna."
 
 Learner Profile Context:
 - Cadre: ${learnerContext.jobRole || "Statistical Officer"}

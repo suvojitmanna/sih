@@ -18,23 +18,86 @@
   <img src="https://img.shields.io/badge/SIH-2026%20Problem%2026101-FF9933?style=for-the-badge&logo=gov.in&logoColor=white"/>
   <img src="https://img.shields.io/badge/Ministry-MoSPI%20%7C%20Govt%20of%20India-138808?style=for-the-badge&logoColor=white"/>
   <img src="https://img.shields.io/badge/Framework-Mission%20Karmayogi%20(FRAC)-000088?style=for-the-badge"/>
-  <img src="https://img.shields.io/badge/Languages-English%20%7C%20%E0%A4%B9%E0%A4%BF%E0%A4%A8%E0%A5%8D%E0%A4%A6%E0%A5%80%20(Bhashini)-FF6B00?style=for-the-badge&logoColor=white"/>
+  <img src="https://img.shields.io/badge/Languages-English%20%7C%20%E0%A4%B9%E0%A4%BF%E0%A4%A8%E0%A5%8D%E0%A4%A6%E0%A5%80%20(Bhashini)-FF6B00?style=for-the-badge&logo=google-translate&logoColor=white"/>
   <img src="https://img.shields.io/badge/Stack-MERN%20(React%2019%20%2B%20Node%205)-61DAFB?style=for-the-badge&logo=react&logoColor=black"/>
   <img src="https://img.shields.io/badge/AI%20Engine-Gemini%20%26%20OpenRouter-8B5CF6?style=for-the-badge&logo=google&logoColor=white"/>
   <img src="https://img.shields.io/badge/Database-MongoDB%20Atlas-47A248?style=for-the-badge&logo=mongodb&logoColor=white"/>
   <img src="https://img.shields.io/badge/Security-2FA%20OTP%20%26%20JWT-red?style=for-the-badge&logo=auth0&logoColor=white"/>
 </p>
 
+### 💻 Programming Languages & Technologies Used
+
+<p align="center">
+  <a href="https://skillicons.dev">
+    <img src="https://skillicons.dev/icons?i=js,html,css,python,r,react,nodejs,express,mongodb,tailwind,vite,redux,git,github,postman" alt="Languages and Technologies" />
+  </a>
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black" alt="JavaScript" />
+  <img src="https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python" />
+  <img src="https://img.shields.io/badge/R%20Language-276DC3?style=for-the-badge&logo=r&logoColor=white" alt="R" />
+  <img src="https://img.shields.io/badge/HTML5-E34F26?style=for-the-badge&logo=html5&logoColor=white" alt="HTML5" />
+  <img src="https://img.shields.io/badge/CSS3-1572B6?style=for-the-badge&logo=css3&logoColor=white" alt="CSS3" />
+  <img src="https://img.shields.io/badge/React%2019-20232A?style=for-the-badge&logo=react&logoColor=61DAFB" alt="React 19" />
+  <img src="https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=node.js&logoColor=white" alt="Node.js" />
+  <img src="https://img.shields.io/badge/Express.js-000000?style=for-the-badge&logo=express&logoColor=white" alt="Express.js" />
+  <img src="https://img.shields.io/badge/MongoDB-47A248?style=for-the-badge&logo=mongodb&logoColor=white" alt="MongoDB Atlas" />
+  <img src="https://img.shields.io/badge/Tailwind_CSS_v4-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white" alt="Tailwind CSS v4" />
+  <img src="https://img.shields.io/badge/Redux%20Toolkit-764ABC?style=for-the-badge&logo=redux&logoColor=white" alt="Redux Toolkit" />
+  <img src="https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white" alt="Vite" />
+  <img src="https://img.shields.io/badge/Google%20Gemini-8E75C2?style=for-the-badge&logo=google&logoColor=white" alt="Google Gemini" />
+</p>
+
 ---
 
 ## 🌐 Multilingual Accessibility (English & हिन्दी Available)
 
+<p align="center">
+  <img src="https://img.shields.io/badge/Language%20Support-English%20%7C%20%E0%A4%B9%E0%A4%BF%E0%A4%A8%E0%A5%8D%E0%A4%A6%E0%A5%80-FF9933?style=for-the-badge&logo=google-translate&logoColor=white" alt="Language Support" />
+  <img src="https://img.shields.io/badge/English-Default%20%7C%20Standard%20Cadre-1E40AF?style=for-the-badge&logo=google-translate&logoColor=white" alt="English Language" />
+  <img src="https://img.shields.io/badge/%E0%A4%B9%E0%A4%BF%E0%A4%A8%E0%A5%8D%E0%A4%A6%E0%A5%80-Bhashini%20%7C%20%E0%A4%AD%E0%A4%BE%E0%A4%B7%E0%A4%BF%E0%A4%A3%E0%A5%80%20%E0%A4%B8%E0%A4%82%E0%A4%B5%E0%A4%B0%E0%A5%8D%E0%A4%97-EA580C?style=for-the-badge&logo=google-translate&logoColor=white" alt="Hindi Language" />
+  <img src="https://img.shields.io/badge/Digital%20India-Bhashini%20Mission-138808?style=for-the-badge&logo=gov.in&logoColor=white" alt="Digital India Bhashini" />
+  <img src="https://img.shields.io/badge/Numerals-Western%20(0--9)%20%26%20Devanagari%20(%E0%A5%A6--%E0%A5%AF)-7C3AED?style=for-the-badge&logo=math&logoColor=white" alt="Numerals Support" />
+</p>
+
+<div align="center">
+  <table>
+    <tr>
+      <td align="center" width="50%">
+        <img src="https://flagcdn.com/w80/gb.png" width="50" alt="English Flag" /><br/>
+        <b>🇬🇧 English (Default)</b><br/>
+        <img src="https://img.shields.io/badge/Cadre-ISS%20%26%20SSS-1E40AF?style=flat-square" alt="ISS Cadre" />
+        <img src="https://img.shields.io/badge/Digits-0--9-blue?style=flat-square" alt="Western Digits" /><br/>
+        <sub>Headquarters, ISS Leadership, SSS Data Analysts</sub>
+      </td>
+      <td align="center" width="50%">
+        <img src="https://flagcdn.com/w80/in.png" width="50" alt="India Flag" /><br/>
+        <b>🇮🇳 हिन्दी (भाषिणी संवर्ग)</b><br/>
+        <img src="https://img.shields.io/badge/Cadre-FOD%20%26%20DES-EA580C?style=flat-square" alt="FOD Cadre" />
+        <img src="https://img.shields.io/badge/%E0%A4%85%E0%A4%82%E0%A4%95-%E0%A5%A6--%E0%A5%AF-orange?style=flat-square" alt="Devanagari Numerals" /><br/>
+        <sub>Field Operations Division (FOD), State DES Enumerators</sub>
+      </td>
+    </tr>
+  </table>
+</div>
+
 To ensure nationwide inclusivity across all statistical directorates and regional survey field offices:
 * **Languages Available:** **English (`en`)** and **हिन्दी (`hi`)**.
+* **Language-Aware Dynamic Numerals:** The portal automatically switches between Western digits (`0%` - `100%`) and Devanagari Hindi digits (`०%` - `१००%`) across progress bars and interactive widgets.
 * **Configurable in Settings:** Seamless language selection via the **System Settings Portal** and quick settings modal with persistent local storage.
 * **Target Inclusivity:** Tailored for **Field Operations Division (FOD)** investigators, enumerators, and regional statistical staff across Indian states who conduct ground-level surveys (PLFS, Consumer Expenditure, Agriculture Census) in Hindi and regional dialects.
 * **Government Alignment:** Direct adherence to Government of India's **Digital India Bhashini Mission** for vernacular language enablement in public systems.
 * **State Persistence:** Preserves selected language preferences across sessions in local client storage with instant reactive updates.
+
+| Localization Aspect | 🇬🇧 English (`en`) | 🇮🇳 हिन्दी / Hindi (`hi`) |
+| :--- | :--- | :--- |
+| **Target Cadre** | Headquarters ISS Leadership, SSS Analysts | Field Operations Division (FOD) Enumerators, State DES Staff |
+| **Portal Interface** | Standard English MoSPI & NSSTA Cadre Terminology | Native Hindi (`भाषिणी संवर्ग`) with Omnipresent Translation |
+| **Progress Metrics & Numerals** | Standard Western Digits (`0%` to `100%`) | Devanagari Hindi Numerals (`०%` to `१००%`) |
+| **SankhyaCopilot AI** | Conversational English Statistical Tutor | Conversational Hindi AI Tutor with Cadre-Aware Greetings |
+| **Document / MCQ Studio** | English Statistical Survey Questionnaires | Bilingual Multi-Language Circular and Document Processing |
+| **Assessment & Vivas** | English Audio & Speech Recognition | Speech-to-Text with Multilingual Voice Feedback |
 
 ---
 
@@ -42,7 +105,7 @@ To ensure nationwide inclusivity across all statistical directorates and regiona
 
 | Asset | Resource Link |
 | :--- | :--- |
-| **🚀 Production Web Application** | [https://ai-interview-two-sigma.vercel.app](https://sih-six-swart.vercel.app/) |
+| **🚀 Production Web Application** | [https://ai-interview-two-sigma.vercel.app](https://ai-interview-two-sigma.vercel.app) |
 | **💻 GitHub Source Repository** | [https://github.com/suvojitmanna/sih](https://github.com/suvojitmanna/sih) |
 | **🏛️ Target Ministry Portal** | [Ministry of Statistics and Programme Implementation (MoSPI)](https://www.mospi.gov.in) |
 | **🎓 Integrated Training Ecosystem** | [iGOT Karmayogi](https://igotkarmayogi.gov.in) • [NSSTA Academy](https://www.mospi.gov.in/national-statistical-systems-training-academy-nssta) |
@@ -525,8 +588,8 @@ Open your browser and navigate to **`http://localhost:5173`**.
 
 <p align="center">
   <b>Developed with dedication for Smart India Hackathon (SIH) 2026</b><br/>
-  <b>Team Name:</b> ZYPHOR<br/>
-  <b>Team Leader:</b>Srijan Murmu<br/>
+  <b>Team:</b> ZYPHOR<br/>
+  <b>Team Leader:</b> Srijan Murmu<br/>
   <b>Lead Developer:</b> Suvojit Manna<br/>
   <i>Full Stack MERN Developer • AI & System Architect</i>
 </p>

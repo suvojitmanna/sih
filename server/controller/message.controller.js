@@ -36,15 +36,33 @@ export const textMessageController = async (req, res) => {
             chat.name = prompt.slice(0, 35);
         }
 
-        const systemPrompt = `You are a helpful AI assistant.
+        const lowerPrompt = prompt.toLowerCase().trim();
+        const isCreatorQuestion =
+            /(who\s+(created|made|built|developed|designed|coded)\s+you|who\s+is\s+your\s+(creator|developer|maker|owner|author|team|leader)|who\s+are\s+your\s+(creators|developers)|tell\s+me\s+who\s+created\s+you|who\s+is\s+(the\s+)?(creator|developer)\s+of\s+(this\s+)?(ai|copilot|bot|app))/i.test(
+                lowerPrompt
+            );
+
+        const isGreeting =
+            /^(hi|hello|hey|namaste|helo|hlo|greetings|good\s+(morning|afternoon|evening))(\s+(copilot|sankhya|sankhyacopilot|ai|there|bot))?[!.?\s]*$/i.test(
+                lowerPrompt
+            );
+
+        const displayName = user.name || "there";
+
+        const systemPrompt = `You are SankhyaCopilot, the dedicated and intelligent AI Copilot.
 Rules:
-- If the user asks who created you, who is your developer, or owner, reply exactly: "I was created by Suvojit Manna."
+- If the user greets you (e.g. "hi", "hello", "hey"), greet them warmly: "Hi ${displayName}, I am SankhyaCopilot. How can I help you today?"
+- If the user asks who created you, who made you, who is your developer, team, or creator, reply clearly: "I was created by Team ZYPHOR, led by Team Leader Srijan Murmu and Lead Developer Suvojit Manna."
 - Do not mention Google, Gemini, OpenAI, or any competing company branding.
 - Answer clearly, helpfully, and with formatted Markdown when presenting code, lists, or structured data.`;
 
         let replyText = "";
 
-        if (ai) {
+        if (isGreeting) {
+            replyText = `Hi ${displayName}, I am SankhyaCopilot. How can I help you today?`;
+        } else if (isCreatorQuestion) {
+            replyText = "I was created by **Team ZYPHOR**, led by Team Leader **Srijan Murmu** and Lead Developer **Suvojit Manna**.";
+        } else if (ai) {
             try {
                 const response = await ai.models.generateContent({
                     model: "gemini-3.6-flash",

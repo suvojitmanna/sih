@@ -11,6 +11,8 @@ import {
 import { FaArrowUp } from "react-icons/fa";
 import { MdDragIndicator } from "react-icons/md";
 
+import { useTranslation } from "react-i18next";
+
 const HELPDESK_ROUTES = new Set([
   "",
   "/",
@@ -25,11 +27,20 @@ const isHelpdeskRoute = (pathname) => {
   return HELPDESK_ROUTES.has(clean) || clean.startsWith("/admin");
 };
 
+const toHindiDigits = (num) => {
+  const hindiDigits = ["०", "१", "२", "३", "४", "५", "६", "७", "८", "९"];
+  return String(num).replace(/[0-9]/g, (d) => hindiDigits[Number(d)]);
+};
+
 const ScrollProgressBar = () => {
   const location = useLocation();
+  const { i18n } = useTranslation();
   const { scrollYProgress } = useScroll();
   const [scrollPercent, setScrollPercent] = useState(0);
   const [isVisible, setIsVisible] = useState(false);
+  const [currentLang, setCurrentLang] = useState(
+    () => localStorage.getItem("sankhya_lang") || i18n?.language || "en"
+  );
 
   const boundaryRef = useRef(null);
   const isDraggingRef = useRef(false);
@@ -110,15 +121,35 @@ const ScrollProgressBar = () => {
     const t1 = setTimeout(updateScroll, 100);
     const t2 = setTimeout(updateScroll, 500);
 
+    const onLangChange = (e) => {
+      const nextLang =
+        e?.detail?.language ||
+        localStorage.getItem("sankhya_lang") ||
+        i18n?.language ||
+        "en";
+      setCurrentLang(nextLang);
+      setTimeout(updateScroll, 150);
+      setTimeout(updateScroll, 500);
+    };
+    window.addEventListener("sankhyaLanguageChange", onLangChange);
+
     return () => {
       unsubscribe();
       window.removeEventListener("scroll", updateScroll);
       window.removeEventListener("resize", updateScroll);
+      window.removeEventListener("sankhyaLanguageChange", onLangChange);
       if (observer) observer.disconnect();
       clearTimeout(t1);
       clearTimeout(t2);
     };
-  }, [location.pathname, scrollYProgress, updateScroll]);
+  }, [location.pathname, scrollYProgress, updateScroll, i18n?.language]);
+
+  useEffect(() => {
+    const active =
+      localStorage.getItem("sankhya_lang") ||
+      (i18n?.language?.startsWith("hi") ? "hi" : "en");
+    if (active) setCurrentLang(active);
+  }, [i18n?.language]);
 
   const scrollToTop = () => {
     if (isDraggingRef.current) return;
@@ -131,9 +162,24 @@ const ScrollProgressBar = () => {
     animate(y, 0, { type: "spring", stiffness: 350, damping: 25 });
   };
 
+  const isHindi = currentLang === "hi" || i18n?.language?.startsWith("hi");
+  const displayValue = isHindi ? toHindiDigits(scrollPercent) : scrollPercent;
+  const displayText = `${displayValue}%`;
+
+  const tooltipTitle = isHindi
+    ? `शीर्ष पर जाएं (${displayText}) • स्क्रीन पर कहीं भी खींचें • रीसेट के लिए डबल-क्लिक करें`
+    : `Scroll to top (${displayText}) • Drag to move anywhere on screen • Double-click to reset`;
+
+  const ariaText = isHindi
+    ? `स्क्रॉल प्रगति ${displayText}, ऊपर जाने के लिए क्लिक करें या खींचें`
+    : `Scroll progress ${displayText}, drag to move or click to scroll to top`;
+
   return (
     <>
-      <div className="fixed top-0 left-0 right-0 z-[120] pointer-events-none h-1 bg-transparent">
+      <div
+        translate="no"
+        className="notranslate fixed top-0 left-0 right-0 z-[120] pointer-events-none h-1 bg-transparent"
+      >
         <motion.div
           className="h-full bg-gradient-to-r from-blue-600 via-indigo-500 to-cyan-400 origin-left shadow-xs shadow-blue-500/50"
           style={{ scaleX }}
@@ -142,11 +188,14 @@ const ScrollProgressBar = () => {
 
       <div
         ref={boundaryRef}
-        className="fixed inset-1 pointer-events-none z-40"
+        translate="no"
+        className="notranslate fixed inset-1 pointer-events-none z-40"
       >
         <AnimatePresence>
           {isVisible && (
             <motion.div
+              key="scroll-progress-pill"
+              translate="no"
               drag
               style={{ x, y }}
               dragConstraints={boundaryRef}
@@ -169,15 +218,15 @@ const ScrollProgressBar = () => {
               whileTap={{ scale: 0.95 }}
               onClick={scrollToTop}
               onDoubleClick={resetPosition}
-              title={`Scroll to top (${scrollPercent}%) • Drag to move anywhere on screen • Double-click to reset`}
-              aria-label={`Scroll progress ${scrollPercent}%, drag to move or click to scroll to top`}
-              className={`pointer-events-auto absolute ${
+              title={tooltipTitle}
+              aria-label={ariaText}
+              className={`notranslate pointer-events-auto absolute ${
                 hasHelpdesk ? "bottom-20" : "bottom-2"
               } right-2 flex items-center gap-1.5 sm:gap-2 py-2 px-2.5 sm:py-2.5 sm:px-3 rounded-2xl bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-slate-200/90 dark:border-slate-800 shadow-xl dark:shadow-2xl text-slate-700 dark:text-slate-200 hover:border-blue-500 hover:text-blue-600 dark:hover:text-blue-400 transition-colors cursor-grab active:cursor-grabbing group select-none`}
             >
               <div
                 className="text-slate-400 dark:text-slate-500 group-hover:text-blue-500 transition-colors"
-                title="Drag to move anywhere"
+                title={isHindi ? "कहीं भी खींचें" : "Drag to move anywhere"}
               >
                 <MdDragIndicator size={16} />
               </div>
@@ -207,8 +256,11 @@ const ScrollProgressBar = () => {
                 />
               </div>
 
-              <span className="text-xs font-mono font-black tracking-tight pr-1">
-                {scrollPercent}%
+              <span
+                translate="no"
+                className="notranslate text-xs font-mono font-black tracking-tight pr-1"
+              >
+                {displayText}
               </span>
             </motion.div>
           )}
