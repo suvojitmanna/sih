@@ -525,6 +525,8 @@ Open your browser and navigate to **`http://localhost:5173`**.
 
 <p align="center">
   <b>Developed with dedication for Smart India Hackathon (SIH) 2026</b><br/>
+  <b>Team Name:</b> ZYPHOR<br/>
+  <b>Team Leader:</b>Srijan Murmu<br/>
   <b>Lead Developer:</b> Suvojit Manna<br/>
   <i>Full Stack MERN Developer • AI & System Architect</i>
 </p>
