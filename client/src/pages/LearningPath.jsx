@@ -17,8 +17,10 @@ import {
 } from "react-icons/fa";
 import { BsShieldCheck, BsJournalBookmarkFill } from "react-icons/bs";
 import { CardGridSkeleton } from "../components/SkeletonLoader";
+import { useTranslation } from "react-i18next";
 
 const LearningPath = () => {
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState("personalized");
   const [profile, setProfile] = useState(null);
   const [igotCourses, setIgotCourses] = useState([]);
@@ -123,13 +125,13 @@ const LearningPath = () => {
           <div>
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 dark:bg-blue-950 text-blue-700 dark:text-blue-300 text-xs font-bold uppercase tracking-wider mb-2">
               <BsShieldCheck size={13} />
-              <span>National Capacity Building</span>
+              <span>{t("learningPath.badge", "National Capacity Building")}</span>
             </div>
             <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-slate-900 dark:text-white">
-              Official Statistics Learning Pathways
+              {t("learningPath.title", "Official Statistics Learning Pathways")}
             </h1>
             <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
-              Curated training pathways combining iGOT Karmayogi digital courses & NSSTA in-service residential programmes.
+              {t("learningPath.subtitle", "Curated training pathways combining iGOT Karmayogi digital courses & NSSTA in-service residential programmes.")}
             </p>
           </div>
 
@@ -142,7 +144,7 @@ const LearningPath = () => {
                   : "text-slate-500 hover:text-slate-900 dark:hover:text-white"
               }`}
             >
-              My Pathway
+              {t("learningPath.tabPersonalized", "My Pathway")}
             </button>
             <button
               onClick={() => setActiveTab("igot")}
@@ -152,7 +154,7 @@ const LearningPath = () => {
                   : "text-slate-500 hover:text-slate-900 dark:hover:text-white"
               }`}
             >
-              iGOT Karmayogi
+              {t("learningPath.tabIgot", "iGOT Karmayogi")}
             </button>
             <button
               onClick={() => setActiveTab("tpac")}
@@ -162,7 +164,7 @@ const LearningPath = () => {
                   : "text-slate-500 hover:text-slate-900 dark:hover:text-white"
               }`}
             >
-              NSSTA TPAC Calendar
+              {t("learningPath.tabTpac", "NSSTA TPAC Calendar")}
             </button>
           </div>
         </div>
@@ -173,7 +175,7 @@ const LearningPath = () => {
               <div>
                 <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
                   <FaCertificate className="text-blue-600" />
-                  <span>Your Sequential Capacity Roadmap</span>
+                  <span>{t("learningPath.roadmapTitle", "Your Sequential Capacity Roadmap")}</span>
                 </h3>
                 <p className="text-xs text-slate-500">
                   Targeted sequence generated to bridge high & medium priority competency gaps for <strong>{profile?.jobRole || "ISS Officer"}</strong>.

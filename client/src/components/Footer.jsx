@@ -1,9 +1,11 @@
 import { BsShieldCheck } from "react-icons/bs";
 import { HiSparkles } from "react-icons/hi";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
 const Footer = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   return (
     <footer className="relative bg-slate-100/70 dark:bg-slate-950 border-t border-slate-200/80 dark:border-slate-800/80 pt-16 pb-12 overflow-hidden transition-colors duration-300">
@@ -33,13 +35,13 @@ const Footer = () => {
                     SankhyaIQ <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-600 dark:from-blue-400 dark:via-indigo-300 dark:to-violet-400">AI</span>
                   </h2>
                   <p className="text-xs text-slate-500 dark:text-slate-400 font-medium mt-0.5">
-                    National Statistical Systems Training Academy
+                    {t("footer.academy", "National Statistical Systems Training Academy")}
                   </p>
                 </div>
               </div>
 
               <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
-                Empowering India's Official Statistical Cadre with AI-driven competency gap analytics, automated survey training workflows, and personalized iGOT Karmayogi learning pathways.
+                {t("footer.tagline", "Empowering India's Official Statistical Cadre with AI-driven competency gap analytics, automated survey training workflows, and personalized iGOT Karmayogi learning pathways.")}
               </p>
 
               <div className="flex items-center gap-2 text-xs font-bold text-slate-500 dark:text-slate-400">
@@ -117,9 +119,14 @@ const Footer = () => {
           <div className="my-8 h-[1px] bg-slate-200/80 dark:bg-slate-800" />
 
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500 dark:text-slate-400">
-            <p>
-              © {new Date().getFullYear()} Ministry of Statistics and Programme Implementation (MoSPI), Government of India.
-            </p>
+            <div className="space-y-1 text-center sm:text-left">
+              <p>
+                © {new Date().getFullYear()} {t("footer.ministry", "Ministry of Statistics and Programme Implementation (MoSPI), Government of India.")}
+              </p>
+              <p className="text-[10.5px] text-slate-400 dark:text-slate-500">
+                {t("footer.bhashini", "Digital India Bhashini Language Localization Initiative (English | हिन्दी)")}
+              </p>
+            </div>
 
             <div className="flex items-center gap-5">
               <span onClick={() => navigate("/terms")} className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors cursor-pointer">

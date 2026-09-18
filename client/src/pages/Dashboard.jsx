@@ -63,6 +63,7 @@ import {
 import { generateCompetencyPDF } from "../utils/pdfGenerator";
 import PageTransition from "../components/PageTransition";
 import { ScrollReveal } from "../components/ScrollReveal";
+import { useTranslation } from "react-i18next";
 
 const CustomXAxisTick = ({ x, y, payload }) => {
   if (!payload || !payload.value) return null;
@@ -123,6 +124,7 @@ const DOMAIN_CATEGORIES = [
 ];
 
 const Dashboard = () => {
+  const { t } = useTranslation();
   const { userData } = useSelector((state) => state.user);
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -793,10 +795,10 @@ const Dashboard = () => {
                 </div>
 
                 <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight">
-                  Namaste, {profile?.name || userData?.name || "Statistical Officer"}
+                  {t("dashboard.welcome", "Namaste")}, {profile?.name || userData?.name || "Statistical Officer"}
                 </h1>
                 <p className="text-slate-300 text-xs sm:text-sm leading-relaxed">
-                  <strong>{profile?.jobRole || "Indian Statistical Service (ISS) Officer"}</strong> — {profile?.department || "National Sample Survey Office (NSSO)"}
+                  <strong>{profile?.jobRole || t("dashboard.officialCadre", "Indian Statistical Service (ISS) Officer")}</strong> — {profile?.department || "National Sample Survey Office (NSSO)"}
                 </p>
               </div>
 
@@ -806,11 +808,11 @@ const Dashboard = () => {
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                     <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
                   </span>
-                  <span>Live Real-Time Sync</span>
+                  <span>{t("dashboard.liveSync", "Live Real-Time Sync")}</span>
                   <button
                     type="button"
                     onClick={() => fetchDashboardData(false)}
-                    title="Force Refresh Live Data"
+                    title={t("dashboard.refreshTooltip", "Force Refresh Live Data")}
                     className="ml-1 p-1 hover:text-white transition rounded-lg hover:bg-emerald-500/20 cursor-pointer"
                   >
                     <FaSyncAlt size={11} className={isSyncing ? "animate-spin text-white" : ""} />
@@ -983,16 +985,16 @@ const Dashboard = () => {
                 <div className="space-y-3 max-w-3xl">
                   <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/20 border border-blue-400/30 text-blue-300 text-xs font-bold uppercase tracking-wider">
                     <BsFillCameraVideoFill size={13} className="text-emerald-400" />
-                    <span>Cadre Viva Voce & Oral Assessment Board</span>
+                    <span>{t("dashboard.vivaStudioBadge", "Cadre Viva Voce & Oral Assessment Board")}</span>
                   </div>
 
                   <h2 className="text-xl sm:text-2xl lg:text-3xl font-black tracking-tight flex items-center gap-2.5">
                     <FaUserTie className="text-blue-400" />
-                    <span>Cadre Mock Interview & Viva Voce Studio</span>
+                    <span>{t("dashboard.vivaStudioTitle", "Cadre Mock Interview & Viva Voce Studio")}</span>
                   </h2>
 
                   <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
-                    Simulate high-stakes board interviews for <strong>Indian Statistical Service (ISS)</strong>, <strong>Subordinate Statistical Service (SSS)</strong>, and technical roles. Features realistic video avatars, instant speech-to-text response capture, resume tailoring, and in-depth performance scorecards with answer suggestions.
+                    {t("dashboard.vivaStudioDesc", "Simulate high-stakes board interviews for Indian Statistical Service (ISS), Subordinate Statistical Service (SSS), and technical roles. Features instant speech-to-text response capture and scorecards.")}
                   </p>
 
                   <div className="flex flex-wrap items-center gap-4 text-xs text-slate-300 pt-1">
@@ -1017,7 +1019,7 @@ const Dashboard = () => {
                     className="px-6 py-3 rounded-2xl bg-white text-blue-900 hover:bg-blue-50 font-black text-xs shadow-xl hover:scale-105 transition-all flex items-center justify-center gap-2 cursor-pointer"
                   >
                     <BsFillCameraVideoFill size={14} />
-                    <span>Start New AI Interview</span>
+                    <span>{t("dashboard.startInterviewBtn", "Start New AI Interview")}</span>
                   </button>
 
                   <button
@@ -1025,7 +1027,7 @@ const Dashboard = () => {
                     className="px-6 py-3 rounded-2xl bg-white/10 hover:bg-white/20 text-white border border-white/20 font-bold text-xs backdrop-blur-md transition-all flex items-center justify-center gap-2 cursor-pointer"
                   >
                     <FaHistory size={13} />
-                    <span>View Past Interview Reports</span>
+                    <span>{t("dashboard.viewInterviewHistoryBtn", "View Past Interview Reports")}</span>
                   </button>
                 </div>
               </div>

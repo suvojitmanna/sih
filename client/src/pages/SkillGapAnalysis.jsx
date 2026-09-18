@@ -40,6 +40,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { generateCompetencyPDF } from "../utils/pdfGenerator";
 import PageTransition from "../components/PageTransition";
 import { useDiagnostic } from "../context/DiagnosticContext";
+import { useTranslation } from "react-i18next";
 
 const DOMAIN_OPTIONS = [
   { id: "all", label: "All Domains" },
@@ -161,6 +162,7 @@ const CIRCULAR_PALETTES = [
 ];
 
 const SkillGapAnalysis = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { userData } = useSelector((state) => state.user);
   const { isIntakePending, triggerLockedError } = useDiagnostic();
@@ -340,20 +342,20 @@ const SkillGapAnalysis = () => {
               <div className="space-y-2">
                 <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 dark:bg-blue-950/80 text-blue-700 dark:text-blue-300 text-xs font-bold uppercase tracking-wider">
                   <BsShieldCheck size={14} className="text-blue-600" />
-                  <span>Official Cadre Benchmark Matrix</span>
+                  <span>{t("skillGap.badge", "Official Cadre Benchmark Matrix")}</span>
                 </div>
                 <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight text-slate-900 dark:text-white">
-                  Cadre Skill Gap Analysis & Target Audit
+                  {t("skillGap.title", "Cadre Skill Gap Analysis & Target Audit")}
                 </h1>
                 <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 max-w-2xl leading-relaxed">
-                  Deep comparative analysis between officer current assessed proficiencies and statutory MoSPI cadre benchmarks. Identify skills on target, critical deficiencies, and targeted learning interventions.
+                  {t("skillGap.subtitle", "Deep comparative analysis between officer current assessed proficiencies and statutory MoSPI cadre benchmarks.")}
                 </p>
               </div>
 
               <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 shrink-0">
                 <div className="bg-slate-50 dark:bg-slate-800/90 p-2 rounded-2xl border border-slate-200 dark:border-slate-700 flex flex-col gap-1">
                   <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 px-1">
-                    Benchmark Cadre Role
+                    {t("skillGap.benchmarkRole", "Benchmark Cadre Role")}
                   </label>
                   <select
                     value={selectedCadre}
@@ -376,7 +378,7 @@ const SkillGapAnalysis = () => {
                     className="px-4 py-3 rounded-2xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold transition-all flex items-center gap-2 cursor-pointer disabled:opacity-50"
                   >
                     <FaSyncAlt className={`text-blue-600 ${syncing ? "animate-spin" : ""}`} />
-                    <span className="hidden sm:inline">Sync Gaps</span>
+                    <span className="hidden sm:inline">{t("skillGap.syncBtn", "Sync Gaps")}</span>
                   </button>
 
                   <button
@@ -387,7 +389,7 @@ const SkillGapAnalysis = () => {
                       }`}
                   >
                     <FaFilePdf size={13} className={isIntakePending ? "text-slate-400" : "text-white"} />
-                    <span>Export Dossier (PDF)</span>
+                    <span>{t("skillGap.exportDossier", "Export Dossier (PDF)")}</span>
                     {isIntakePending && (
                       <span className="flex items-center gap-1 text-[9px] font-black px-1.5 py-0.5 rounded-md bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
                         <FaLock size={8} /> LOCKED

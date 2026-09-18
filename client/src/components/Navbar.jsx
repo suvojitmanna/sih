@@ -41,6 +41,7 @@ import { generateCompetencyPDF } from "../utils/pdfGenerator";
 import { useTheme } from "../context/ThemeContext";
 import { useNavigation } from "../context/NavigationContext";
 import { useDiagnostic } from "../context/DiagnosticContext";
+import { useTranslation } from "react-i18next";
 import Sidebar from "./Sidebar";
 import AuthModel from "./AuthModel";
 import SettingsModal from "./SettingsModal";
@@ -48,6 +49,7 @@ import NotificationBell from "./NotificationBell";
 import toast from "react-hot-toast";
 
 const Navbar = () => {
+  const { t } = useTranslation();
   const { userData } = useSelector((state) => state.user);
   const isTrainer = userData?.role === "trainer";
   const userPhoto = userData?.image || userData?.picture || userData?.avatar || userData?.photoUrl || userData?.avatarUrl || userData?.profilePicture;
@@ -125,42 +127,42 @@ const Navbar = () => {
   const navSections = isTrainer
     ? [
       {
-        title: "Governance",
+        title: t("nav.governance", "Governance"),
         links: [
-          { label: "Admin Portal", path: "/admin", icon: BsShieldLock, badge: "Trainer", desc: "Executive Analytics, Study Material Dispatch & Learner Oversight" },
+          { label: t("nav.admin", "Admin Portal"), path: "/admin", icon: BsShieldLock, badge: "Trainer", desc: "Executive Analytics, Study Material Dispatch & Learner Oversight" },
         ],
       },
     ]
     : [
       {
-        title: "Core Portal",
+        title: t("nav.corePortal", "Core Portal"),
         links: [
-          { label: "Home", path: "/", icon: FaHome, isPublic: true, desc: "National Statistical Portal Overview" },
+          { label: t("nav.home", "Home"), path: "/", icon: FaHome, isPublic: true, desc: "National Statistical Portal Overview" },
           ...(userData?.role !== "admin"
-            ? [{ label: "Dashboard", path: "/dashboard", icon: BsBarChartLine, desc: "Performance & Gap Analytics" }]
+            ? [{ label: t("nav.dashboard", "Dashboard"), path: "/dashboard", icon: BsBarChartLine, desc: "Performance & Gap Analytics" }]
             : []),
-          { label: "Competency", path: "/competencies", icon: FaBrain, desc: "Statistical Competency Framework" },
-          { label: "Skill Gaps", path: "/skill-gaps", icon: BsBarChartSteps, badge: "Cadre AI", desc: "Cadre Benchmark & Gap Analysis" },
-          { label: "Job Readiness", path: "/job-readiness", icon: FaUserTie, badge: "Report", desc: "Target Cadre Readiness & Deployment Audit" },
-          { label: "Portal Difference", path: "/portal-comparison", icon: BsShieldCheck, isPublic: true, badge: "VS", desc: "Compare Legacy Portals vs SankhyaIQ AI Platform" },
-          { label: "History", path: "/history", icon: FaHistory, desc: "Viva Records & Evaluation Logs" },
+          { label: t("nav.competency", "Competency"), path: "/competencies", icon: FaBrain, desc: "Statistical Competency Framework" },
+          { label: t("nav.skillGaps", "Skill Gaps"), path: "/skill-gaps", icon: BsBarChartSteps, badge: "Cadre AI", desc: "Cadre Benchmark & Gap Analysis" },
+          { label: t("nav.jobReadiness", "Job Readiness"), path: "/job-readiness", icon: FaUserTie, badge: "Report", desc: "Target Cadre Readiness & Deployment Audit" },
+          { label: t("nav.portalDifference", "Portal Difference"), path: "/portal-comparison", icon: BsShieldCheck, isPublic: true, badge: "VS", desc: "Compare Legacy Portals vs SankhyaIQ AI Platform" },
+          { label: t("nav.history", "History"), path: "/history", icon: FaHistory, desc: "Viva Records & Evaluation Logs" },
         ],
       },
       {
-        title: "Capacity Building",
+        title: t("nav.capacityBuilding", "Capacity Building"),
         links: [
-          { label: "Learning Path", path: "/learning-path", icon: BsBookHalf, desc: "Adaptive Statistical Curriculum" },
-          { label: "Quizzes", path: "/quizzes", icon: FaTasks, desc: "Cadre Knowledge Practice" },
-          { label: "Assignment", path: "/assignments", icon: FaFilePdf, desc: "Survey & Data Practicum Tasks" },
-          { label: "Material Request", path: "/materials", icon: FaBookOpen, desc: "NSSTA Study Material Requisitions" },
-          { label: "MCQ Create", path: "/mcq-create", icon: BsStars, isAi: true, badge: "AI Gen", desc: "Diagnostic MCQ Studio" },
+          { label: t("nav.learningPath", "Learning Path"), path: "/learning-path", icon: BsBookHalf, desc: "Adaptive Statistical Curriculum" },
+          { label: t("nav.quizzes", "Quizzes"), path: "/quizzes", icon: FaTasks, desc: "Cadre Knowledge Practice" },
+          { label: t("nav.assignments", "Assignment"), path: "/assignments", icon: FaFilePdf, desc: "Survey & Data Practicum Tasks" },
+          { label: t("nav.materials", "Material Request"), path: "/materials", icon: FaBookOpen, desc: "NSSTA Study Material Requisitions" },
+          { label: t("nav.mcqCreate", "MCQ Create"), path: "/mcq-create", icon: BsStars, isAi: true, badge: "AI Gen", desc: "Diagnostic MCQ Studio" },
         ],
       },
       {
-        title: "Intelligence Board",
+        title: t("nav.intelligenceBoard", "Intelligence Board"),
         links: [
           {
-            label: "AI Copilot",
+            label: t("nav.copilot", "AI Copilot"),
             path: "/chat",
             icon: BsRobot,
             isAi: true,
@@ -168,7 +170,7 @@ const Navbar = () => {
             desc: "Statistical Copilot & Assistant",
           },
           {
-            label: "Interview Viva",
+            label: t("nav.interviews", "Interview Viva"),
             path: "/interview",
             icon: FaMicrophone,
             badge: "Oral Board",
@@ -179,10 +181,10 @@ const Navbar = () => {
       ...(userData?.role === "admin"
         ? [
           {
-            title: "Governance",
+            title: t("nav.governance", "Governance"),
             align: "right",
             links: [
-              { label: "Admin Portal", path: "/admin", icon: BsShieldLock, badge: "Officer", desc: "Executive Analytics & Cadre Management" },
+              { label: t("nav.admin", "Admin Portal"), path: "/admin", icon: BsShieldLock, badge: "Officer", desc: "Executive Analytics & Cadre Management" },
             ],
           },
         ]
@@ -197,24 +199,24 @@ const Navbar = () => {
 
   const getPageTitle = () => {
     const path = location.pathname;
-    if (path === "/") return "National Statistical Portal • Overview";
-    if (path === "/dashboard") return "Officer Performance Dashboard";
-    if (path === "/competencies") return "Official Statistical Competency Assessment";
-    if (path === "/skill-gaps" || path === "/skill-gap-analysis") return "Official Cadre Skill Gap Analysis & Target Audit";
-    if (path === "/job-readiness") return "Target Job Readiness & Cadre Deployment Audit";
-    if (path === "/learning-path") return "AI Adaptive Learning Pathway";
-    if (path === "/quizzes") return "Cadre Statistical Assessments & Quizzes";
-    if (path === "/assignments") return "Survey & Data Practicum Assignments";
-    if (path === "/materials") return "NSSTA Official Study Material Requisition";
-    if (path === "/mcq-create") return "AI Diagnostic MCQ Creation Studio";
-    if (path === "/ai-models") return "SankhyaIQ AI Models & Workflows Hub";
-    if (path === "/admin") return "Executive Administrative Analytics";
-    if (path === "/chat") return "AI Copilot & Statistical Assistant";
-    if (path === "/community") return "National Statistical Officer Community";
-    if (path === "/interview") return "Cadre Board Oral Viva Simulation";
-    if (path === "/history") return "Viva Evaluation Records & History";
-    if (path === "/portal-comparison" || path === "/portal-difference") return "Comparative Architectural Audit • Legacy vs SankhyaIQ AI";
-    if (path === "/settings") return "System Settings • Profile & Layout Options";
+    if (path === "/") return `${t("nav.home", "Home")} • MoSPI NSSTA`;
+    if (path === "/dashboard") return t("dashboard.title", "Officer Performance Dashboard");
+    if (path === "/competencies") return t("competency.title", "Official Statistical Competency Assessment");
+    if (path === "/skill-gaps" || path === "/skill-gap-analysis") return t("skillGap.title", "Official Cadre Skill Gap Analysis & Target Audit");
+    if (path === "/job-readiness") return t("jobReadiness.title", "Target Job Readiness & Cadre Deployment Audit");
+    if (path === "/learning-path") return t("learningPath.title", "AI Adaptive Learning Pathway");
+    if (path === "/quizzes") return t("quiz.title", "Cadre Statistical Assessments & Quizzes");
+    if (path === "/assignments") return t("nav.assignments", "Survey & Data Practicum Assignments");
+    if (path === "/materials") return t("materials.title", "NSSTA Official Study Material Requisition");
+    if (path === "/mcq-create") return t("materials.title", "AI Diagnostic MCQ Creation Studio");
+    if (path === "/ai-models") return t("nav.aiModels", "SankhyaIQ AI Models & Workflows Hub");
+    if (path === "/admin") return t("nav.admin", "Executive Administrative Analytics");
+    if (path === "/chat") return t("nav.copilot", "AI Copilot & Statistical Assistant");
+    if (path === "/community") return t("nav.community", "National Statistical Officer Community");
+    if (path === "/interview") return t("interview.title", "Cadre Board Oral Viva Simulation");
+    if (path === "/history") return t("nav.history", "Viva Evaluation Records & History");
+    if (path === "/portal-comparison" || path === "/portal-difference") return t("portalDiff.title", "Comparative Architectural Audit • Legacy vs SankhyaIQ AI");
+    if (path === "/settings") return t("settings.title", "System Settings • Profile & Layout Options");
     return "SankhyaIQ AI • National Statistical Systems Training Academy";
   };
 
@@ -342,7 +344,7 @@ const Navbar = () => {
                   className="flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-blue-700 to-indigo-700 text-white rounded-xl text-xs font-black shadow-md transition-all cursor-pointer"
                 >
                   <FaUserGraduate size={12} />
-                  <span>Sign In</span>
+                  <span>{t("nav.login", "Sign In")}</span>
                 </button>
               )}
             </div>
@@ -621,7 +623,7 @@ const Navbar = () => {
                     className="flex items-center gap-1.5 px-4 py-2 bg-gradient-to-r from-blue-700 to-indigo-700 hover:from-blue-800 hover:to-indigo-800 text-white rounded-xl text-xs font-black shadow-md transition-all cursor-pointer"
                   >
                     <FaUserGraduate size={13} />
-                    <span>Officer Sign In</span>
+                    <span>{t("nav.login", "Officer Sign In")}</span>
                   </button>
                 )}
 
@@ -692,7 +694,7 @@ const Navbar = () => {
                               <BsGearFill size={14} />
                             </div>
                             <div>
-                              <span className="block font-black text-slate-900 dark:text-white">Settings</span>
+                              <span className="block font-black text-slate-900 dark:text-white">{t("nav.settings", "Settings")}</span>
                               <span className="block text-[10px] text-slate-500 dark:text-slate-400 font-medium">Layout & Theme Preferences</span>
                             </div>
                           </div>
@@ -842,7 +844,7 @@ const Navbar = () => {
                           className="w-full px-3.5 py-2 rounded-2xl hover:bg-rose-50 dark:hover:bg-rose-950/60 text-xs font-bold text-rose-600 dark:text-rose-400 flex items-center gap-2.5 transition-colors cursor-pointer"
                         >
                           <HiOutlineLogout size={16} />
-                          <span>Sign Out</span>
+                          <span>{t("nav.logout", "Sign Out")}</span>
                         </button>
                       </div>
                     </motion.div>

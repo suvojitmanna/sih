@@ -30,6 +30,7 @@ import { Toaster } from "react-hot-toast";
 import ScrollToTop from "./components/ScrollToTop";
 import ScrollProgressBar from "./components/ScrollProgressBar";
 import LiveAdminChatWidget from "./components/LiveAdminChatWidget";
+import { syncPageTranslation } from "./utils/translator";
 
 export const ServerUrl = import.meta.env.VITE_BASE_URL || "http://localhost:5000";
 
@@ -129,8 +130,19 @@ const AuthRoute = ({ loading }) => {
 
 const App = () => {
   const dispatch = useDispatch();
+  const location = useLocation();
   const [loading, setLoading] = useState(true);
   const { userData } = useSelector((state) => state.user);
+
+  useEffect(() => {
+    const currentLang = localStorage.getItem("sankhya_lang");
+    if (currentLang === "hi") {
+      const timer = setTimeout(() => {
+        syncPageTranslation("hi");
+      }, 200);
+      return () => clearTimeout(timer);
+    }
+  }, [location.pathname]);
 
   useEffect(() => {
     const getUser = async () => {

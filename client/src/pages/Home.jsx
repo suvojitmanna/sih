@@ -39,10 +39,12 @@ import { useDiagnostic } from "../context/DiagnosticContext";
 import toast from "react-hot-toast";
 import PageTransition from "../components/PageTransition";
 import { ScrollReveal } from "../components/ScrollReveal";
+import { useTranslation } from "react-i18next";
 
 const CountUp = CountUpModule.default || CountUpModule;
 
 const Home = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [showAuth, setShowAuth] = useState(false);
   const [activeFaq, setActiveFaq] = useState(null);
@@ -119,7 +121,6 @@ const Home = () => {
 
       <PageTransition>
         <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-20 space-y-24">
-          {/* 1. SAAS HERO SECTION*/}
           <section className="relative overflow-hidden pt-8 pb-14 text-center space-y-8">
 
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] sm:w-[850px] h-[300px] sm:h-[500px] bg-gradient-to-r from-blue-500/15 via-indigo-500/10 to-teal-500/15 blur-3xl rounded-full pointer-events-none -z-10" />
@@ -130,21 +131,21 @@ const Home = () => {
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
               </span>
               <span className="text-[11px] sm:text-xs font-bold text-slate-700 dark:text-slate-300">
-                National Statistical Capacity Building Mandate • MoSPI & NSSTA
+                {t("home.mandate", "National Statistical Capacity Building Mandate • MoSPI & NSSTA")}
               </span>
             </div>
 
             <div className="max-w-4xl mx-auto space-y-5">
               <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight text-slate-900 dark:text-white leading-[1.12]">
-                The AI Skill Intelligence &{" "}
+                {t("home.heroTitle1", "The AI Skill Intelligence &")}{" "}
                 <span className="bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-600 bg-clip-text text-transparent">
-                  Capacity Building OS
+                  {t("home.heroTitle2", "Capacity Building OS")}
                 </span>{" "}
-                for Official Statistics
+                {t("home.heroTitle3", "for Official Statistics")}
               </h1>
 
               <p className="text-sm sm:text-base lg:text-lg text-slate-600 dark:text-slate-400 max-w-3xl mx-auto leading-relaxed">
-                Empowering India's Official Statistical System with multi-domain competency mapping, automated skill-gap analysis, curated <strong>iGOT Karmayogi</strong> and <strong>NSSTA residential learning pathways</strong>, real-world case studies, and live mock viva voce boards.
+                {t("home.heroSubtitle", "Empowering India's Official Statistical System with multi-domain competency mapping, automated skill-gap analysis, curated iGOT Karmayogi and NSSTA residential learning pathways, real-world case studies, and live mock viva voce boards.")}
               </p>
             </div>
 
@@ -154,7 +155,7 @@ const Home = () => {
                 className="px-7 py-3.5 rounded-2xl bg-gradient-to-r from-blue-700 via-indigo-700 to-blue-800 hover:from-blue-800 hover:to-indigo-800 text-white font-bold text-xs sm:text-sm shadow-xl shadow-blue-500/25 hover:shadow-blue-500/35 transition-all flex items-center gap-2.5 cursor-pointer active:scale-95"
               >
                 <FaCertificate size={15} />
-                <span>Start Learning (iGOT Pathways)</span>
+                <span>{t("home.startLearning", "Start Learning (iGOT Pathways)")}</span>
                 {isIntakePending ? <FaLock size={11} className="text-amber-300" /> : <FaArrowRight size={11} />}
               </button>
 
@@ -163,7 +164,7 @@ const Home = () => {
                 className="px-6 py-3.5 rounded-2xl bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-black dark:hover:text-white text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-800 font-bold text-xs sm:text-sm shadow-md transition-all flex items-center gap-2 cursor-pointer"
               >
                 <HiSparkles size={15} className="text-amber-500" />
-                <span>Explore AI Models Hub</span>
+                <span>{t("home.exploreModels", "Explore AI Models Hub")}</span>
                 {isIntakePending && <FaLock size={11} className="text-amber-500" />}
               </button>
 
@@ -173,7 +174,7 @@ const Home = () => {
                   className="px-6 py-3.5 rounded-2xl bg-slate-900 hover:bg-slate-800 text-white dark:bg-slate-800 dark:hover:bg-slate-700 font-bold text-xs sm:text-sm shadow-md transition-all flex items-center gap-2 cursor-pointer"
                 >
                   <FaUserGraduate size={14} className="text-emerald-400" />
-                  <span>Officer Sign Up / Sign In</span>
+                  <span>{t("home.signInBtn", "Officer Sign Up / Sign In")}</span>
                 </button>
               ) : (userData.role === "admin" || userData.role === "trainer") ? (
                 <button
@@ -181,7 +182,7 @@ const Home = () => {
                   className="px-6 py-3.5 rounded-2xl bg-gradient-to-r from-blue-700 via-indigo-700 to-blue-800 hover:from-blue-800 hover:to-indigo-800 text-white font-bold text-xs sm:text-sm shadow-xl shadow-blue-500/25 hover:shadow-blue-500/35 transition-all flex items-center gap-2 cursor-pointer"
                 >
                   <BsShieldLock size={14} className="text-blue-200" />
-                  <span>Open Admin Portal</span>
+                  <span>{t("home.openAdmin", "Open Admin Portal")}</span>
                 </button>
               ) : isIntakePending ? (
                 <button
@@ -190,7 +191,7 @@ const Home = () => {
                   title="Locked: Complete Mandatory Intake Viva & Quiz first"
                 >
                   <FaLock size={13} className="text-amber-600 dark:text-amber-400" />
-                  <span>Officer Dashboard (Locked)</span>
+                  <span>{t("home.dashboardLocked", "Officer Dashboard (Locked)")}</span>
                 </button>
               ) : (
                 <button
@@ -198,7 +199,7 @@ const Home = () => {
                   className="px-6 py-3.5 rounded-2xl bg-slate-900 hover:bg-slate-800 text-white dark:bg-slate-800 dark:hover:bg-slate-700 font-bold text-xs sm:text-sm shadow-md transition-all flex items-center gap-2 cursor-pointer"
                 >
                   <BsBarChartLine size={13} className="text-emerald-400" />
-                  <span>Open Officer Dashboard</span>
+                  <span>{t("home.openDashboard", "Open Officer Dashboard")}</span>
                 </button>
               )}
             </div>
@@ -216,24 +217,24 @@ const Home = () => {
                   <div className="space-y-2 max-w-2xl">
                     <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-100 dark:bg-amber-950/80 border border-amber-300 dark:border-amber-700/60 text-amber-800 dark:text-amber-300 text-xs font-black uppercase tracking-wider">
                       <FaLock size={10} className="text-amber-600 dark:text-amber-400 animate-pulse" />
-                      <span>Access Restricted • Mandatory Intake Viva & Quiz Incomplete</span>
+                      <span>{t("home.intakeRestricted", "Access Restricted • Mandatory Intake Viva & Quiz Incomplete")}</span>
                     </div>
 
                     <h2 className="text-lg sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight">
-                      Complete Your Cadre Diagnostic Assessments Below
+                      {t("home.intakeTitle", "Complete Your Cadre Diagnostic Assessments Below")}
                     </h2>
 
                     <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
-                      All platform functions (Dashboard, Competency Framework, Skill Gaps, Learning Pathway, Practice Quizzes, Assignments, etc.) show a lock icon 🔒 and cannot be accessed until both the <strong>Diagnostic Quiz</strong> and <strong>Intake Viva Voce</strong> are completed.
+                      {t("home.intakeDesc", "All platform functions (Dashboard, Competency Framework, Skill Gaps, Learning Pathway, Practice Quizzes, Assignments, etc.) show a lock icon 🔒 and cannot be accessed until both the Diagnostic Quiz and Intake Viva Voce are completed.")}
                     </p>
                   </div>
 
                   <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-sm min-w-[210px] text-center shrink-0 w-full lg:w-auto">
                     <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 dark:text-slate-500 block mb-1">
-                      Intake Status
+                      {t("home.intakeStatus", "Intake Status")}
                     </span>
                     <div className="text-xl font-black text-slate-900 dark:text-white">
-                      {((diagnosticStatus?.isQuizCompleted ? 1 : 0) + (diagnosticStatus?.isInterviewCompleted ? 1 : 0))}/2 Completed
+                      {((diagnosticStatus?.isQuizCompleted ? 1 : 0) + (diagnosticStatus?.isInterviewCompleted ? 1 : 0))}/2 {t("home.completed", "Completed")}
                     </div>
                     <div className="w-full bg-slate-200 dark:bg-slate-800 h-2 rounded-full overflow-hidden mt-2">
                       <div
@@ -966,7 +967,6 @@ const Home = () => {
             </section>
           </ScrollReveal>
 
-          {/* PORTAL DIFFERENCE: LEGACY VS SANKHYAIQ AI SHOWCASE       */}
           <ScrollReveal direction="up" delay={0.1}>
             <section className="bg-gradient-to-br from-slate-900 via-blue-950 to-slate-900 text-white rounded-3xl p-6 sm:p-10 shadow-2xl border border-blue-900/60 relative overflow-hidden space-y-8">
               <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#FF9933] via-white to-[#138808]" />

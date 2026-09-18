@@ -39,9 +39,11 @@ import { generateCompetencyPDF } from "../utils/pdfGenerator";
 import { useNavigation } from "../context/NavigationContext";
 import { useDiagnostic } from "../context/DiagnosticContext";
 import { useOutsideClick } from "../utils/outsideClick";
+import { useTranslation } from "react-i18next";
 import toast from "react-hot-toast";
 
 const Sidebar = ({ onOpenAuth }) => {
+  const { t } = useTranslation();
   const { userData } = useSelector((state) => state.user);
   const {
     isCollapsed,
@@ -113,46 +115,46 @@ const Sidebar = ({ onOpenAuth }) => {
   const navSections = isTrainer
     ? [
       {
-        title: "Governance",
+        title: t("nav.governance", "Governance"),
         links: [
-          { label: "Admin Portal", path: "/admin", icon: BsShieldLock, badge: "Trainer" },
+          { label: t("nav.admin", "Admin Portal"), path: "/admin", icon: BsShieldLock, badge: "Trainer" },
         ],
       },
     ]
     : [
       {
-        title: "Core Portal",
+        title: t("nav.corePortal", "Core Portal"),
         links: [
-          { label: "Home", path: "/", icon: FaHome, isPublic: true },
+          { label: t("nav.home", "Home"), path: "/", icon: FaHome, isPublic: true },
           ...(userData?.role !== "admin"
-            ? [{ label: "Dashboard", path: "/dashboard", icon: BsBarChartLine }]
+            ? [{ label: t("nav.dashboard", "Dashboard"), path: "/dashboard", icon: BsBarChartLine }]
             : []),
-          { label: "Competency", path: "/competencies", icon: FaBrain },
-          { label: "Skill Gaps", path: "/skill-gaps", icon: BsBarChartSteps, badge: "Cadre AI" },
-          { label: "Job Readiness", path: "/job-readiness", icon: FaUserTie, badge: "Report" },
-          { label: "History", path: "/history", icon: FaHistory },
+          { label: t("nav.competency", "Competency"), path: "/competencies", icon: FaBrain },
+          { label: t("nav.skillGaps", "Skill Gaps"), path: "/skill-gaps", icon: BsBarChartSteps, badge: "Cadre AI" },
+          { label: t("nav.jobReadiness", "Job Readiness"), path: "/job-readiness", icon: FaUserTie, badge: "Report" },
+          { label: t("nav.history", "History"), path: "/history", icon: FaHistory },
         ],
       },
       {
-        title: "Capacity Building",
+        title: t("nav.capacityBuilding", "Capacity Building"),
         links: [
-          { label: "Learning Path", path: "/learning-path", icon: BsBookHalf },
-          { label: "Quizzes", path: "/quizzes", icon: FaTasks },
-          { label: "Assignment", path: "/assignments", icon: FaFilePdf },
-          { label: "Material Request", path: "/materials", icon: FaBookOpen },
-          { label: "MCQ Create", path: "/mcq-create", icon: BsStars, isAi: true, badge: "AI Gen" },
+          { label: t("nav.learningPath", "Learning Path"), path: "/learning-path", icon: BsBookHalf },
+          { label: t("nav.quizzes", "Quizzes"), path: "/quizzes", icon: FaTasks },
+          { label: t("nav.assignments", "Assignment"), path: "/assignments", icon: FaFilePdf },
+          { label: t("nav.materials", "Material Request"), path: "/materials", icon: FaBookOpen },
+          { label: t("nav.mcqCreate", "MCQ Create"), path: "/mcq-create", icon: BsStars, isAi: true, badge: "AI Gen" },
         ],
       },
       {
-        title: "Intelligence Board",
+        title: t("nav.intelligenceBoard", "Intelligence Board"),
         links: [
           {
-            label: "Interview Viva",
+            label: t("nav.interviews", "Interview Viva"),
             path: "/interview",
             icon: FaMicrophone,
             badge: "Oral Board",
           }, {
-            label: "AI Copilot",
+            label: t("nav.copilot", "AI Copilot"),
             path: "/chat",
             icon: BsRobot,
             isAi: true,
@@ -163,9 +165,9 @@ const Sidebar = ({ onOpenAuth }) => {
       ...(userData?.role === "admin"
         ? [
           {
-            title: "Governance",
+            title: t("nav.governance", "Governance"),
             links: [
-              { label: "Admin Portal", path: "/admin", icon: BsShieldLock, badge: "Officer" },
+              { label: t("nav.admin", "Admin Portal"), path: "/admin", icon: BsShieldLock, badge: "Officer" },
             ],
           },
         ]
