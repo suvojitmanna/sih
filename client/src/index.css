@@ -137,4 +137,6 @@ font {
   box-shadow: none !important;
 }
 
-
+.notranslate {
+  translate: no !important;
+}

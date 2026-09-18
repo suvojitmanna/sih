@@ -110,10 +110,17 @@ const ScrollProgressBar = () => {
     const t1 = setTimeout(updateScroll, 100);
     const t2 = setTimeout(updateScroll, 500);
 
+    const onLangChange = () => {
+      setTimeout(updateScroll, 150);
+      setTimeout(updateScroll, 500);
+    };
+    window.addEventListener("sankhyaLanguageChange", onLangChange);
+
     return () => {
       unsubscribe();
       window.removeEventListener("scroll", updateScroll);
       window.removeEventListener("resize", updateScroll);
+      window.removeEventListener("sankhyaLanguageChange", onLangChange);
       if (observer) observer.disconnect();
       clearTimeout(t1);
       clearTimeout(t2);
@@ -133,7 +140,10 @@ const ScrollProgressBar = () => {
 
   return (
     <>
-      <div className="fixed top-0 left-0 right-0 z-[120] pointer-events-none h-1 bg-transparent">
+      <div
+        translate="no"
+        className="notranslate fixed top-0 left-0 right-0 z-[120] pointer-events-none h-1 bg-transparent"
+      >
         <motion.div
           className="h-full bg-gradient-to-r from-blue-600 via-indigo-500 to-cyan-400 origin-left shadow-xs shadow-blue-500/50"
           style={{ scaleX }}
@@ -142,11 +152,14 @@ const ScrollProgressBar = () => {
 
       <div
         ref={boundaryRef}
-        className="fixed inset-1 pointer-events-none z-40"
+        translate="no"
+        className="notranslate fixed inset-1 pointer-events-none z-40"
       >
         <AnimatePresence>
           {isVisible && (
             <motion.div
+              key="scroll-progress-pill"
+              translate="no"
               drag
               style={{ x, y }}
               dragConstraints={boundaryRef}
@@ -171,7 +184,7 @@ const ScrollProgressBar = () => {
               onDoubleClick={resetPosition}
               title={`Scroll to top (${scrollPercent}%) • Drag to move anywhere on screen • Double-click to reset`}
               aria-label={`Scroll progress ${scrollPercent}%, drag to move or click to scroll to top`}
-              className={`pointer-events-auto absolute ${
+              className={`notranslate pointer-events-auto absolute ${
                 hasHelpdesk ? "bottom-20" : "bottom-2"
               } right-2 flex items-center gap-1.5 sm:gap-2 py-2 px-2.5 sm:py-2.5 sm:px-3 rounded-2xl bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-slate-200/90 dark:border-slate-800 shadow-xl dark:shadow-2xl text-slate-700 dark:text-slate-200 hover:border-blue-500 hover:text-blue-600 dark:hover:text-blue-400 transition-colors cursor-grab active:cursor-grabbing group select-none`}
             >
@@ -207,7 +220,10 @@ const ScrollProgressBar = () => {
                 />
               </div>
 
-              <span className="text-xs font-mono font-black tracking-tight pr-1">
+              <span
+                translate="no"
+                className="notranslate text-xs font-mono font-black tracking-tight pr-1"
+              >
                 {scrollPercent}%
               </span>
             </motion.div>
