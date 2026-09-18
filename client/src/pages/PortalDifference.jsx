@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import BackButton from "../components/BackButton";
@@ -394,6 +395,7 @@ const COMPARISON_ITEMS = [
 ];
 
 const PortalDifference = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { userData } = useSelector((state) => state.user);
   const [activeCategory, setActiveCategory] = useState("all");
@@ -435,7 +437,7 @@ const PortalDifference = () => {
               className="inline-flex items-center gap-2 px-4 py-2 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-bold shadow-xs transition-all cursor-pointer"
             >
               <FaFilePdf className="text-rose-600" size={13} />
-              <span>Export Comparative Audit (PDF)</span>
+              <span>{t("portalDiff.exportAudit")}</span>
             </button>
           </div>
 
@@ -448,18 +450,15 @@ const PortalDifference = () => {
             <div className="relative z-10 max-w-4xl space-y-6">
               <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-500/20 text-blue-300 border border-blue-400/30 text-xs font-bold uppercase tracking-wider">
                 <BsShieldCheck size={14} className="text-emerald-400" />
-                <span>MoSPI • NSSTA Official System Evaluation</span>
+                <span>{t("portalDiff.badge")}</span>
               </div>
 
               <h1 className="text-3xl sm:text-5xl font-black tracking-tight leading-[1.15]">
-                Why SankhyaIQ™ AI Transforms Official Statistics{" "}
-                <span className="bg-gradient-to-r from-blue-400 via-indigo-300 to-teal-300 bg-clip-text text-transparent">
-                  Beyond Legacy Portals
-                </span>
+                {t("portalDiff.title")}
               </h1>
 
               <p className="text-sm sm:text-base text-slate-300 leading-relaxed max-w-3xl">
-                A rigorous architectural audit comparing traditional generic LMS portals and legacy government training systems against <strong>SankhyaIQ™ AI-Enabled Skill Intelligence Platform</strong> — engineered specifically for India’s Official Statistical System.
+                {t("portalDiff.subtitle")}
               </p>
 
               <div className="flex flex-wrap items-center gap-3 pt-2">
@@ -471,7 +470,7 @@ const PortalDifference = () => {
                   className="px-6 py-3 rounded-2xl bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-xs sm:text-sm shadow-xl shadow-blue-500/25 transition-all flex items-center gap-2 cursor-pointer active:scale-95"
                 >
                   <BsCheck2Circle size={15} />
-                  <span>Inspect Feature Matrix</span>
+                  <span>{t("portalDiff.inspectMatrix")}</span>
                 </button>
 
                 <button
@@ -479,7 +478,7 @@ const PortalDifference = () => {
                   className="px-5 py-3 rounded-2xl bg-white/10 hover:bg-white/20 text-white border border-white/20 font-bold text-xs sm:text-sm backdrop-blur-md transition-all flex items-center gap-2 cursor-pointer"
                 >
                   <FaFilePdf size={14} className="text-rose-400" />
-                  <span>Download Audit Dossier (PDF)</span>
+                  <span>{t("portalDiff.exportAudit")}</span>
                 </button>
               </div>
             </div>

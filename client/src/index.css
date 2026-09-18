@@ -86,4 +86,55 @@ body.layout-mode-sidebar.sidebar-collapsed {
   }
 }
 
+/* Deep Omnipresent Translation styling: keeps interface 100% clean and native */
+[class*="VIpgJd"],
+.VIpgJd-ZVi9od-aZ2wEe-wOHMyf,
+.VIpgJd-ZVi9od-aZ2wEe-wOHMyf-ti6hGc,
+.VIpgJd-ZVi9od-aZ2wEe-OiiCO,
+.VIpgJd-ZVi9od-xl07Ob-lTBxed,
+.VIpgJd-y6vqq-Sw7be3,
+.goog-te-spinner-pos,
+.goog-te-spinner,
+.goog-te-banner-frame.skiptranslate,
+.goog-te-banner-frame,
+#google_translate_element,
+.skiptranslate,
+#goog-gt-tt,
+.goog-te-balloon-frame,
+.goog-tooltip,
+.goog-te-gadget,
+body > div[class*="skiptranslate"],
+iframe.skiptranslate,
+iframe[id*=":1.container"],
+iframe[id*=":2.container"] {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  max-width: 0 !important;
+  max-height: 0 !important;
+  position: absolute !important;
+  left: -99999px !important;
+  top: -99999px !important;
+  z-index: -99999 !important;
+}
+
+body {
+  top: 0px !important;
+  position: static !important;
+}
+
+.goog-text-highlight {
+  background: transparent !important;
+  box-shadow: none !important;
+  border: none !important;
+}
+
+font {
+  background-color: transparent !important;
+  box-shadow: none !important;
+}
+
 

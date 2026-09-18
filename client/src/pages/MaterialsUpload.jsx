@@ -32,6 +32,7 @@ import {
   BsInboxFill,
   BsSendCheckFill,
 } from "react-icons/bs";
+import { useTranslation } from "react-i18next";
 
 const formatDateTime = (dateStr) => {
   if (!dateStr) return "";
@@ -105,6 +106,7 @@ const getFileBadge = (fileType = "", fileName = "") => {
 };
 
 const MaterialsUpload = ({ initialTab = "material-request" }) => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
   const [searchParams] = useSearchParams();
@@ -398,13 +400,13 @@ const MaterialsUpload = ({ initialTab = "material-request" }) => {
               <div className="space-y-1">
                 <div className="inline-flex items-center gap-2 px-3 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950/80 text-blue-700 dark:text-blue-300 border border-blue-200/80 dark:border-blue-800/80 text-[11px] font-black uppercase tracking-wider">
                   <BsShieldCheck size={12} className="text-blue-600 dark:text-blue-400" />
-                  <span>NSSTA Secretariat • Official Training Cadre Requisitions</span>
+                  <span>{t("materials.badge", "NSSTA Secretariat • Official Training Cadre Requisitions")}</span>
                 </div>
                 <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight">
-                  Official Study Material Request & Academy Dispatches
+                  {t("materials.title", "Official Study Material Request & Academy Dispatches")}
                 </h1>
                 <p className="text-xs text-slate-500 dark:text-slate-400 max-w-2xl leading-relaxed">
-                  Submit formal training curriculum requisitions directly to the NSSTA Secretariat. Track dispatch status, review administrator notes, and download official study packs.
+                  {t("materials.subtitle", "Submit formal training curriculum requisitions directly to the NSSTA Secretariat. Track dispatch status, review administrator notes, and download official study packs.")}
                 </p>
               </div>
 

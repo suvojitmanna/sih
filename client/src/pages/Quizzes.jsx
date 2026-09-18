@@ -16,6 +16,7 @@ import {
 } from "react-icons/fa";
 import { BsShieldCheck } from "react-icons/bs";
 import { CardGridSkeleton } from "../components/SkeletonLoader";
+import { useTranslation } from "react-i18next";
 
 const SAMPLE_TOPICS = [
   "Sampling Techniques & Estimation",
@@ -28,6 +29,7 @@ const SAMPLE_TOPICS = [
 ];
 
 const Quizzes = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("explore");
   const [quizzes, setQuizzes] = useState([]);
@@ -147,14 +149,13 @@ const Quizzes = () => {
           <div>
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 dark:bg-blue-950 text-blue-700 dark:text-blue-300 text-xs font-bold uppercase tracking-wider mb-2">
               <BsShieldCheck size={13} />
-              <span>NSSTA Examination Wing</span>
+              <span>{t("quiz.badge", "NSSTA Examination Wing")}</span>
             </div>
             <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-slate-900 dark:text-white">
-              Official Statistical Assessments & Quizzes
+              {t("quiz.title", "Official Statistical Assessments & Quizzes")}
             </h1>
             <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
-              Benchmark your conceptual mastery, receive instant topic-level
-              diagnostics, and update your competency profile.
+              {t("quiz.subtitle", "Benchmark your conceptual mastery, receive instant topic-level diagnostics, and update your competency profile.")}
             </p>
             {masteredQuizzesCount > 0 && (
               <div className="inline-flex items-center gap-1.5 mt-2.5 px-3 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 text-[11px] font-bold text-emerald-700 dark:text-emerald-400">
@@ -175,7 +176,7 @@ const Quizzes = () => {
                   : "text-slate-500 hover:text-slate-900 dark:hover:text-white"
                   }`}
               >
-                Available Quizzes ({availableQuizzes.length})
+                {t("quiz.availableTab", "Available Quizzes")} ({availableQuizzes.length})
               </button>
               <button
                 onClick={() => setActiveTab("history")}
@@ -184,7 +185,7 @@ const Quizzes = () => {
                   : "text-slate-500 hover:text-slate-900 dark:hover:text-white"
                   }`}
               >
-                My Past Attempts ({myAttempts.length})
+                {t("quiz.historyTab", "My Past Attempts")} ({myAttempts.length})
               </button>
             </div>
 

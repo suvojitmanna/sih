@@ -6,6 +6,8 @@ import { useSelector, useDispatch } from "react-redux";
 import { setUserData } from "../redux/userSlice";
 import { useNavigation } from "../context/NavigationContext";
 import { useTheme } from "../context/ThemeContext";
+import { useTranslation } from "react-i18next";
+import { setGlobalLanguage } from "../utils/translator";
 import { ServerUrl } from "../App";
 import axios from "axios";
 import toast from "react-hot-toast";
@@ -84,6 +86,19 @@ const Settings = () => {
   const { userData } = useSelector((state) => state.user);
   const { navMode, setNavMode } = useNavigation();
   const { theme, setTheme } = useTheme();
+  const { t, i18n } = useTranslation();
+  const currentLanguage = i18n.language || "en";
+
+  const handleSelectLanguage = (lang) => {
+    if (currentLanguage === lang) return;
+    i18n.changeLanguage(lang);
+    setGlobalLanguage(lang);
+    toast.success(
+      lang === "hi"
+        ? "भाषा को हिन्दी (भाषिणी संवर्ग) में सेट किया गया"
+        : "Language set to English (Standard Cadre)"
+    );
+  };
 
   const [searchParams, setSearchParams] = useSearchParams();
   const tabQuery = searchParams.get("tab");
@@ -1392,6 +1407,68 @@ const Settings = () => {
                     </div>
                     <div className="text-[10px] text-slate-500">Auto match OS</div>
                   </div>
+                </button>
+              </div>
+            </div>
+
+            <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 p-5 sm:p-6 shadow-xs space-y-4">
+              <div>
+                <h3 className="text-base font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+                  <span>Language & Localization</span>
+                  <span className="text-xs font-normal text-slate-400">/ भाषा एवं स्थानीयकरण</span>
+                </h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                  Select your preferred language for official statistical training and guidelines (Digital India Bhashini Mission).
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 pt-1">
+                <button
+                  type="button"
+                  onClick={() => handleSelectLanguage("en")}
+                  className={`p-4 rounded-xl border-2 flex items-center justify-between transition-all cursor-pointer text-left ${currentLanguage === "en"
+                    ? "border-blue-600 bg-blue-50/40 dark:bg-blue-950/20"
+                    : "border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 bg-slate-50/30 dark:bg-slate-800/20"
+                    }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300 flex items-center justify-center font-black text-sm shrink-0">
+                      EN
+                    </div>
+                    <div>
+                      <div className="text-xs font-bold text-slate-900 dark:text-white">
+                        English
+                      </div>
+                      <div className="text-[11px] text-slate-500">Official Statistical Cadre Standard</div>
+                    </div>
+                  </div>
+                  {currentLanguage === "en" && (
+                    <BsCheckCircleFill className="text-blue-600 dark:text-blue-400" size={18} />
+                  )}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => handleSelectLanguage("hi")}
+                  className={`p-4 rounded-xl border-2 flex items-center justify-between transition-all cursor-pointer text-left ${currentLanguage === "hi"
+                    ? "border-amber-600 bg-amber-50/40 dark:bg-amber-950/20"
+                    : "border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 bg-slate-50/30 dark:bg-slate-800/20"
+                    }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300 flex items-center justify-center font-black text-sm shrink-0">
+                      हि
+                    </div>
+                    <div>
+                      <div className="text-xs font-bold text-slate-900 dark:text-white">
+                        हिन्दी (Hindi)
+                      </div>
+                      <div className="text-[11px] text-slate-500">भाषिणी क्षेत्रीय संवर्ग (Bhashini FOD)</div>
+                    </div>
+                  </div>
+                  {currentLanguage === "hi" && (
+                    <BsCheckCircleFill className="text-amber-600 dark:text-amber-400" size={18} />
+                  )}
                 </button>
               </div>
             </div>

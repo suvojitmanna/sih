@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import BackButton from "../components/BackButton";
@@ -59,6 +60,7 @@ const CORE_EVALUATION_SKILLS = [
 ];
 
 const CompetencyAssessment = () => {
+  const { t } = useTranslation();
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
@@ -186,13 +188,13 @@ const CompetencyAssessment = () => {
           <div>
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 dark:bg-blue-950 text-blue-700 dark:text-blue-300 text-xs font-bold uppercase tracking-wider mb-2">
               <BsShieldCheck size={13} />
-              <span>NSSTA Competency Framework</span>
+              <span>{t("competency.badge")}</span>
             </div>
             <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-slate-900 dark:text-white">
-              Official Statistical Competency Assessment
+              {t("competency.title")}
             </h1>
             <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
-              Multi-dimensional AI assessment mapped across MoSPI / NSSTA competency standards.
+              {t("competency.subtitle")}
             </p>
           </div>
 
@@ -204,7 +206,7 @@ const CompetencyAssessment = () => {
                 : "text-slate-500 hover:text-slate-900 dark:hover:text-white"
                 }`}
             >
-              Self-Rating Form
+              {t("competency.selfRatingTab")}
             </button>
             <button
               onClick={() => setActiveTab("results")}
@@ -213,7 +215,7 @@ const CompetencyAssessment = () => {
                 : "text-slate-500 hover:text-slate-900 dark:hover:text-white"
                 }`}
             >
-              Assessed Matrix & Gaps
+              {t("competency.resultsTab")}
             </button>
           </div>
         </div>
@@ -373,7 +375,7 @@ const CompetencyAssessment = () => {
                 ) : (
                   <>
                     <FaHandSparkles size={16} className="text-amber-300" />
-                    <span>Run AI Competency Assessment & Skill Gap Analysis</span>
+                    <span>{t("competency.submitBtn")}</span>
                   </>
                 )}
               </button>

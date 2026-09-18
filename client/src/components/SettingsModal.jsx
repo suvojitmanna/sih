@@ -23,15 +23,30 @@ import {
 import { useSelector } from "react-redux";
 import { useNavigation } from "../context/NavigationContext";
 import { useTheme } from "../context/ThemeContext";
+import { useTranslation } from "react-i18next";
+import { setGlobalLanguage } from "../utils/translator";
 import toast from "react-hot-toast";
 
 const SettingsModal = ({ isOpen, onClose }) => {
   const navigate = useNavigate();
   const { navMode, setNavMode } = useNavigation();
   const { theme, setTheme, resolvedTheme } = useTheme();
+  const { t, i18n } = useTranslation();
+  const currentLanguage = i18n.language || "en";
   const { userData } = useSelector((state) => state.user);
 
   const [activeTab, setActiveTab] = useState("profile");
+
+  const handleSelectLanguage = (lang) => {
+    if (currentLanguage === lang) return;
+    i18n.changeLanguage(lang);
+    setGlobalLanguage(lang);
+    toast.success(
+      lang === "hi"
+        ? "भाषा को हिन्दी (भाषिणी संवर्ग) में सेट किया गया"
+        : "Language set to English (Standard Cadre)"
+    );
+  };
 
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -454,6 +469,68 @@ const SettingsModal = ({ isOpen, onClose }) => {
                         <div>
                           <div className="font-extrabold text-xs text-slate-900 dark:text-white">System</div>
                           <div className="text-[9px] text-slate-500 dark:text-slate-400">Sync OS</div>
+                        </div>
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="space-y-3 pt-4 border-t border-slate-100 dark:border-slate-800/80">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <span className="text-xs font-black uppercase tracking-wider text-slate-900 dark:text-slate-100 flex items-center gap-1.5">
+                          🌐 Language & Localization / भाषा
+                        </span>
+                        <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                          English & हिन्दी (Digital India Bhashini Mission).
+                        </p>
+                      </div>
+                      <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 uppercase border border-slate-200/60 dark:border-slate-700/60">
+                        {currentLanguage === "hi" ? "हिन्दी (HI)" : "English (EN)"}
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2.5">
+                      <button
+                        type="button"
+                        onClick={() => handleSelectLanguage("en")}
+                        className={`relative p-3 rounded-2xl border-2 transition-all cursor-pointer flex items-center gap-2.5 ${currentLanguage === "en"
+                          ? "border-blue-600 bg-blue-50/50 dark:bg-blue-950/20 shadow-sm ring-2 ring-blue-500/20"
+                          : "border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 bg-white dark:bg-slate-800/40"
+                          }`}
+                      >
+                        {currentLanguage === "en" && (
+                          <div className="absolute top-2 right-2 text-blue-600 dark:text-blue-400">
+                            <BsCheckCircleFill size={13} />
+                          </div>
+                        )}
+                        <div className="w-9 h-9 rounded-xl bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300 font-black text-xs flex items-center justify-center shrink-0">
+                          EN
+                        </div>
+                        <div className="text-left">
+                          <div className="font-extrabold text-xs text-slate-900 dark:text-white">English</div>
+                          <div className="text-[9px] text-slate-500">Official Standard</div>
+                        </div>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => handleSelectLanguage("hi")}
+                        className={`relative p-3 rounded-2xl border-2 transition-all cursor-pointer flex items-center gap-2.5 ${currentLanguage === "hi"
+                          ? "border-amber-600 bg-amber-50/50 dark:bg-amber-950/20 shadow-sm ring-2 ring-amber-500/20"
+                          : "border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 bg-white dark:bg-slate-800/40"
+                          }`}
+                      >
+                        {currentLanguage === "hi" && (
+                          <div className="absolute top-2 right-2 text-amber-600 dark:text-amber-400">
+                            <BsCheckCircleFill size={13} />
+                          </div>
+                        )}
+                        <div className="w-9 h-9 rounded-xl bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300 font-black text-xs flex items-center justify-center shrink-0">
+                          हि
+                        </div>
+                        <div className="text-left">
+                          <div className="font-extrabold text-xs text-slate-900 dark:text-white">हिन्दी</div>
+                          <div className="text-[9px] text-slate-500">भाषिणी (Bhashini)</div>
                         </div>
                       </button>
                     </div>

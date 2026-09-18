@@ -29,7 +29,7 @@ const ScrollProgressBar = () => {
   const location = useLocation();
   const { scrollYProgress } = useScroll();
   const [scrollPercent, setScrollPercent] = useState(0);
-  const [isScrollable, setIsScrollable] = useState(false);
+  const [isVisible, setIsVisible] = useState(false);
 
   const boundaryRef = useRef(null);
   const isDraggingRef = useRef(false);
@@ -45,36 +45,55 @@ const ScrollProgressBar = () => {
   });
 
   const updateScroll = useCallback(() => {
+    const el = document.scrollingElement || document.documentElement || document.body;
     const scrollTop =
+      window.scrollY ||
       window.pageYOffset ||
-      document.documentElement.scrollTop ||
-      document.body.scrollTop ||
+      el.scrollTop ||
       0;
     const scrollHeight = Math.max(
       document.documentElement.scrollHeight,
       document.body.scrollHeight,
-      document.documentElement.offsetHeight,
-      document.body.offsetHeight
+      el.scrollHeight || 0
     );
     const clientHeight =
-      window.innerHeight || document.documentElement.clientHeight || 0;
+      window.innerHeight || el.clientHeight || 0;
     const maxScroll = scrollHeight - clientHeight;
 
-    if (maxScroll <= 20) {
+    if (maxScroll <= 50 || scrollTop < 50) {
       setScrollPercent(0);
-      setIsScrollable(false);
+      setIsVisible(false);
       return;
     }
 
-    setIsScrollable(true);
     const pct = Math.min(
       100,
-      Math.max(0, Math.round((scrollTop / maxScroll) * 100))
+      Math.max(1, Math.round((scrollTop / maxScroll) * 100))
     );
     setScrollPercent(pct);
+    setIsVisible(true);
   }, []);
 
   useEffect(() => {
+    const unsubscribe = scrollYProgress.on("change", (latest) => {
+      const el = document.scrollingElement || document.documentElement || document.body;
+      const scrollTop =
+        window.scrollY ||
+        window.pageYOffset ||
+        el.scrollTop ||
+        0;
+
+      if (scrollTop < 50) {
+        setScrollPercent(0);
+        setIsVisible(false);
+        return;
+      }
+
+      const pct = Math.min(100, Math.max(1, Math.round(latest * 100)));
+      setScrollPercent(pct);
+      setIsVisible(true);
+    });
+
     updateScroll();
 
     window.addEventListener("scroll", updateScroll, { passive: true });
@@ -90,17 +109,16 @@ const ScrollProgressBar = () => {
 
     const t1 = setTimeout(updateScroll, 100);
     const t2 = setTimeout(updateScroll, 500);
-    const t3 = setTimeout(updateScroll, 1200);
 
     return () => {
+      unsubscribe();
       window.removeEventListener("scroll", updateScroll);
       window.removeEventListener("resize", updateScroll);
       if (observer) observer.disconnect();
       clearTimeout(t1);
       clearTimeout(t2);
-      clearTimeout(t3);
     };
-  }, [location.pathname, updateScroll]);
+  }, [location.pathname, scrollYProgress, updateScroll]);
 
   const scrollToTop = () => {
     if (isDraggingRef.current) return;
@@ -127,7 +145,7 @@ const ScrollProgressBar = () => {
         className="fixed inset-1 pointer-events-none z-40"
       >
         <AnimatePresence>
-          {isScrollable && (
+          {isVisible && (
             <motion.div
               drag
               style={{ x, y }}
@@ -142,9 +160,9 @@ const ScrollProgressBar = () => {
                   isDraggingRef.current = false;
                 }, 120);
               }}
-              initial={{ opacity: 0, scale: 0.85 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.85 }}
+              initial={{ opacity: 0, scale: 0.85, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.85, y: 10 }}
               transition={{ duration: 0.2 }}
               whileHover={{ scale: 1.05 }}
               whileDrag={{ scale: 1.1, zIndex: 60 }}

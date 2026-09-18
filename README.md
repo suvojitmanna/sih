@@ -7,7 +7,7 @@
 </p>
 
 <p align="center">
-  <img src="https://readme-typing-svg.herokuapp.com?color=38BDF8&size=24&center=true&vCenter=true&width=950&lines=SIH+2026+Problem+Statement+26101+Official+Implementation;AI-Enabled+Competency+Profiling+for+India's+Official+Statistical+System;4-Domain+MoSPI+Knowledge+Taxonomy+and+Cadre+Benchmarking;Dynamic+Skill+Gap+Analysis+with+iGOT+Karmayogi+Integration;Automated+Document-to-MCQ+Generation+from+Survey+Manuals;AI+Mock+Oral+Viva+Voce+and+Practicum+Rubrics+Engine" />
+  <img src="https://readme-typing-svg.herokuapp.com?color=38BDF8&size=24&center=true&vCenter=true&width=950&lines=SIH+2026+Problem+Statement+26101+Official+Implementation;AI-Enabled+Competency+Profiling+for+India's+Official+Statistical+System;4-Domain+MoSPI+Knowledge+Taxonomy+and+Cadre+Benchmarking;Dynamic+Skill+Gap+Analysis+with+iGOT+Karmayogi+Integration;Automated+Document-to-MCQ+Generation+from+Survey+Manuals;Bhashini+Multilingual+Support+(English+%26+%E0%A4%B9%E0%A4%BF%E0%A4%A8%E0%A5%8D%E0%A4%A6%E0%A5%80+Available);AI+Mock+Oral+Viva+Voce+and+Practicum+Rubrics+Engine" />
 </p>
 
 ---
@@ -18,11 +18,23 @@
   <img src="https://img.shields.io/badge/SIH-2026%20Problem%2026101-FF9933?style=for-the-badge&logo=gov.in&logoColor=white"/>
   <img src="https://img.shields.io/badge/Ministry-MoSPI%20%7C%20Govt%20of%20India-138808?style=for-the-badge&logoColor=white"/>
   <img src="https://img.shields.io/badge/Framework-Mission%20Karmayogi%20(FRAC)-000088?style=for-the-badge"/>
+  <img src="https://img.shields.io/badge/Languages-English%20%7C%20%E0%A4%B9%E0%A4%BF%E0%A4%A8%E0%A5%8D%E0%A4%A6%E0%A5%80%20(Bhashini)-FF6B00?style=for-the-badge&logoColor=white"/>
   <img src="https://img.shields.io/badge/Stack-MERN%20(React%2019%20%2B%20Node%205)-61DAFB?style=for-the-badge&logo=react&logoColor=black"/>
   <img src="https://img.shields.io/badge/AI%20Engine-Gemini%20%26%20OpenRouter-8B5CF6?style=for-the-badge&logo=google&logoColor=white"/>
   <img src="https://img.shields.io/badge/Database-MongoDB%20Atlas-47A248?style=for-the-badge&logo=mongodb&logoColor=white"/>
   <img src="https://img.shields.io/badge/Security-2FA%20OTP%20%26%20JWT-red?style=for-the-badge&logo=auth0&logoColor=white"/>
 </p>
+
+---
+
+## 🌐 Multilingual Accessibility (English & हिन्दी Available)
+
+To ensure nationwide inclusivity across all statistical directorates and regional survey field offices:
+* **Languages Available:** **English (`en`)** and **हिन्दी (`hi`)**.
+* **Configurable in Settings:** Seamless language selection via the **System Settings Portal** and quick settings modal with persistent local storage.
+* **Target Inclusivity:** Tailored for **Field Operations Division (FOD)** investigators, enumerators, and regional statistical staff across Indian states who conduct ground-level surveys (PLFS, Consumer Expenditure, Agriculture Census) in Hindi and regional dialects.
+* **Government Alignment:** Direct adherence to Government of India's **Digital India Bhashini Mission** for vernacular language enablement in public systems.
+* **State Persistence:** Preserves selected language preferences across sessions in local client storage with instant reactive updates.
 
 ---
 
@@ -47,9 +59,10 @@ The **Official Statistical System of India**—spearheaded by the Ministry of St
 2. Identifying granular skill gaps through dynamic assessment analytics.
 3. Recommending tailored learning pathways directly integrated with **iGOT Karmayogi** and **NSSTA TPAC** training programmes.
 4. Generating interactive quizzes and multiple-choice questions (MCQs) on-demand from uploaded survey manuals, administrative circulars, and study materials.
+5. Providing accessible, multilingual capability for regional field officers.
 
 ### The Solution: SankhyaIQ™
-**SankhyaIQ™** is an end-to-end AI-powered skill intelligence platform engineered to fulfill the mandate of Problem Statement 26101. Grounded in the **Mission Karmayogi FRAC (Framework for Roles, Activities, and Competencies)** standard, SankhyaIQ provides real-time competency calculation across a 4-domain knowledge taxonomy, automated skill gap ranking, AI document-to-MCQ generation, voice-assisted oral vivas, practical assignments, and executive cadre analytics.
+**SankhyaIQ™** is an end-to-end AI-powered skill intelligence platform engineered to fulfill the mandate of Problem Statement 26101. Grounded in the **Mission Karmayogi FRAC (Framework for Roles, Activities, and Competencies)** standard, SankhyaIQ provides real-time competency calculation across a 4-domain knowledge taxonomy, automated skill gap ranking, AI document-to-MCQ generation, voice-assisted oral vivas, practical assignments, executive cadre analytics, and native English/Hindi multilingual operations.
 
 ---
 
@@ -80,16 +93,20 @@ Measures and tracks capability across the four pillars of India's statistical in
 * Extracts core text using `pdfjs-dist` and `mammoth` parsing engines.
 * The **SankhyaIQ Neural Engine** generates validated 4-option MCQs with pedagogical explanations, correct answer validation, and source citations directly traceable to the manual.
 
-### 5. 🎙️ Multi-Modal Assessment Engine
+### 5. 🌐 Bhashini Multi-Language Support (English & हिन्दी)
+* Built-in dual-language localization engine supporting **English** and **हिन्दी**.
+* Bridges the barrier between headquarters leadership (ISS) and grassroots field enumerators (FOD) in regional statistical rounds.
+
+### 6. 🎙️ Multi-Modal Assessment Engine
 * **Diagnostic Cadre Assessments:** Instant baseline evaluation upon cadre selection.
 * **Topic & Domain Quizzes:** Timed assessments with interactive question palettes and instant analytics.
 * **AI Oral Viva Voce:** Speech-to-text enabled simulated oral examinations evaluating communication and procedural clarity.
 * **Assignment Practicums:** Real-world statistical problem statements with multi-parameter automated AI rubric grading.
 
-### 6. 💬 SankhyaCopilot AI Domain Tutor
+### 7. 💬 SankhyaCopilot AI Domain Tutor
 * Context-aware conversational AI assistant specializing in Indian official statistics, survey methodologies, sampling manuals, and administrative guidelines.
 
-### 7. 🛡️ Executive Cadre Training Portal
+### 8. 🛡️ Executive Cadre Training Portal
 * Cadre-wide skill distributions, department-wise radar comparisons, and deficit tracking for NSSTA decision-makers.
 
 ---
@@ -100,6 +117,7 @@ Measures and tracks capability across the four pillars of India's statistical in
                                   SANKHYAIQ TECH STACK
 ┌────────────────────────────────────────────────────────────────────────────────────────┐
 │  FRONTEND            React 19  •  Vite 8  •  Tailwind CSS v4  •  Redux Toolkit         │
+│  LOCALIZATION        Bhashini-Aligned Multilingual Engine (English & हिन्दी)            │
 │  UI & VISUALIZATION  Framer Motion  •  Recharts  •  React-Icons  •  Prism.js          │
 │  BACKEND RUNTIME     Node.js (v20+)  •  Express.js (v5)  •  ES Modules (ESM)           │
 │  DATABASE            MongoDB Atlas  •  Mongoose ODM (v9)                               │
@@ -111,6 +129,7 @@ Measures and tracks capability across the four pillars of India's statistical in
 
 ### Frontend
 * **Core:** React.js 19, Vite 8, JavaScript (ES6+)
+* **Multilingual:** Custom `LanguageContext` supporting English and हिन्दी (`en` and `hi`)
 * **Styling & Motion:** Tailwind CSS v4, Framer Motion
 * **State Management:** Redux Toolkit (`@reduxjs/toolkit`), React-Redux
 * **Routing & Utilities:** React Router DOM v7, Axios, React Hot Toast
@@ -131,39 +150,34 @@ Measures and tracks capability across the four pillars of India's statistical in
 ## 🏗️ System Architecture & Data Flow
 
 ```mermaid
+%%{init: {'theme': 'base', 'themeVariables': { 'background': 'transparent', 'mainBkg': 'transparent', 'primaryColor': 'transparent', 'primaryBorderColor': '#3b82f6', 'primaryTextColor': '#e2e8f0', 'lineColor': '#60a5fa', 'clusterBkg': 'transparent', 'clusterBorder': '#3b82f6' }}}%%
 flowchart TD
-    subgraph ClientLayer["🖥️ Frontend Presentation Tier (React 19 + Vite)"]
-        UI["Learner & Officer Portal"]
-        Radar["4-Domain Competency Radar"]
-        Studio["Document Upload & MCQ Studio"]
-        Viva["AI Mock Oral Viva (Voice-Enabled)"]
-        LPath["iGOT Adaptive Learning Path"]
-        AdminUI["Executive Cadre Analytics"]
-    end
+    UI["🖥️ Learner & Officer Portal (Web & Mobile)"]
+    Lang["🌐 Multilingual Engine (English & हिन्दी)"]
+    Radar["📊 4-Domain Competency Radar Engine"]
+    Studio["📄 Document Upload & AI MCQ Studio"]
+    Viva["🎙️ AI Mock Oral Viva (Speech-to-Text)"]
+    LPath["🗺️ iGOT & NSSTA Adaptive Learning Path"]
+    AdminUI["🛡️ Executive Cadre Training Analytics"]
 
-    subgraph APILayer["⚙️ Backend Application Tier (Express 5 + Node.js)"]
-        AuthMid["2FA OTP Authentication & RBAC Middleware"]
-        CompService["Competency Calculation & Skill Gap Service"]
-        DocService["Document Extraction Engine (PDF / DOCX)"]
-        AIService["SankhyaIQ AI Neural Orchestrator"]
-        ReportService["Analytics & Job Readiness Aggregator"]
-    end
+    AuthMid["🔐 2FA OTP Auth & RBAC Middleware"]
+    CompService["⚡ Competency Scoring & Skill Gap Service"]
+    DocService["📑 Document Extraction Engine (pdfjs-dist)"]
+    AIService["🧠 SankhyaIQ AI Neural Orchestrator"]
+    ReportService["📈 Job Readiness & Analytics Aggregator"]
 
-    subgraph DataLayer["🗄️ Database & Storage Tier"]
-        MongoDB[("MongoDB Atlas Cloud Database")]
-        UserModel["User & Cadre Profile Schema"]
-        QuizModel["Quiz & Question Bank Schema"]
-        AttemptModel["Assessment Evaluations & Attempts"]
-        AssignModel["Assignment Practicum Schema"]
-    end
+    MongoDB[("🗄️ MongoDB Atlas Cloud Database")]
+    UserModel["User & Cadre Profile Schema"]
+    QuizModel["Quiz & Question Bank Schema"]
+    AttemptModel["Assessment Evaluations & Attempts"]
+    AssignModel["Assignment Practicum Schema"]
 
-    subgraph ExternalServices["☁️ External Government & AI Ecosystem"]
-        Gemini["Google Gemini / OpenRouter Neural API"]
-        iGOTCatalog["iGOT Karmayogi Course Registry"]
-        TpacCatalog["NSSTA TPAC In-Service Programmes"]
-        EmailService["Government / SMTP Relay (2FA OTP)"]
-    end
+    Gemini["☁️ Google Gemini & OpenRouter AI"]
+    iGOTCatalog["🏛️ iGOT Karmayogi Course Registry"]
+    TpacCatalog["🏛️ NSSTA TPAC Training Catalog"]
+    EmailService["✉️ 2FA Crypto OTP Email Dispatcher"]
 
+    Lang --> UI
     UI --> AuthMid
     Radar --> CompService
     Studio --> DocService
@@ -192,6 +206,7 @@ flowchart TD
 ### 1. Competency Assessment & Dynamic Skill Gap Engine
 
 ```mermaid
+%%{init: {'theme': 'base', 'themeVariables': { 'background': 'transparent', 'actorBkg': 'transparent', 'actorBorder': '#3b82f6', 'actorTextColor': '#e2e8f0', 'actorLineColor': '#60a5fa', 'signalColor': '#60a5fa', 'signalTextColor': '#e2e8f0', 'labelBoxBkgColor': 'transparent', 'labelBoxBorderColor': '#3b82f6', 'labelTextColor': '#e2e8f0', 'loopTextColor': '#e2e8f0', 'noteBkgColor': 'transparent', 'noteBorderColor': '#3b82f6', 'noteTextColor': '#e2e8f0' }}}%%
 sequenceDiagram
     autonumber
     actor Official as Cadre Officer
@@ -222,6 +237,7 @@ sequenceDiagram
 ### 2. Document-to-MCQ AI Extraction & Studio Pipeline
 
 ```mermaid
+%%{init: {'theme': 'base', 'themeVariables': { 'background': 'transparent', 'mainBkg': 'transparent', 'primaryColor': 'transparent', 'primaryBorderColor': '#3b82f6', 'primaryTextColor': '#e2e8f0', 'lineColor': '#60a5fa' }}}%%
 flowchart LR
     A["Official Survey Manual\n(PDF / DOCX / TXT)"] --> B["Multipart Multer\nUpload Stream"]
     B --> C["Document Extractor\n(pdfjs-dist / mammoth)"]
@@ -237,34 +253,39 @@ flowchart LR
 ### 3. MoSPI 4-Domain Framework & Cadre Benchmarking
 
 ```mermaid
+%%{init: {'theme': 'base', 'themeVariables': { 'background': 'transparent', 'mainBkg': 'transparent', 'primaryColor': 'transparent', 'primaryBorderColor': '#3b82f6', 'primaryTextColor': '#e2e8f0', 'lineColor': '#60a5fa' }}}%%
 flowchart TD
-    subgraph Taxonomy["MoSPI 4-Domain Competency Framework"]
-        D1["Domain 1: Statistical Competencies\n(Sampling, National Accounts, Index Numbers, Surveys)"]
-        D2["Domain 2: Technical & Computational\n(R, Python, STATA, Data Engineering, CAPI Tools)"]
-        D3["Domain 3: Digital Governance & Policy\n(Official Statistics Act, Privacy, NDGFP, Ethics)"]
-        D4["Domain 4: Managerial & Field Rigor\n(FOD Operations, Team Leadership, Quality Auditing)"]
-    end
+    D1["Domain 1: Statistical Competencies\n(Sampling, National Accounts, Index Numbers, Surveys)"]
+    D2["Domain 2: Technical & Computational\n(R, Python, STATA, Data Engineering, CAPI Tools)"]
+    D3["Domain 3: Digital Governance & Policy\n(Official Statistics Act, Privacy, NDGFP, Ethics)"]
+    D4["Domain 4: Managerial & Field Rigor\n(FOD Operations, Team Leadership, Quality Auditing)"]
 
-    subgraph Profiling["Weighted Evaluation Engine"]
-        Quizzes["Quizzes & MCQs (40% Weight)"]
-        Assignments["Practicum Assignments (35% Weight)"]
-        Vivas["Oral Viva Voce (25% Weight)"]
-    end
+    Quizzes["Quizzes & MCQs (40% Weight)"]
+    Assignments["Practicum Assignments (35% Weight)"]
+    Vivas["Oral Viva Voce (25% Weight)"]
 
-    subgraph Benchmarking["Cadre Benchmark Comparison"]
-        ISS["Indian Statistical Service (ISS)"]
-        SSS["Subordinate Statistical Service (SSS)"]
-        FOD["Field Operations Division (FOD)"]
-    end
+    ISS["Indian Statistical Service (ISS)"]
+    SSS["Subordinate Statistical Service (SSS)"]
+    FOD["Field Operations Division (FOD)"]
 
-    subgraph Outcome["Actionable Output"]
-        Gap["Prioritized Skill Gaps (High / Med / Low)"]
-        Path["Personalized iGOT / TPAC Pathway"]
-    end
+    Gap["Prioritized Skill Gaps (High / Med / Low)"]
+    Path["Personalized iGOT / TPAC Pathway"]
 
-    Profiling --> Taxonomy
-    Taxonomy --> Benchmarking
-    Benchmarking --> Gap
+    Quizzes --> D1
+    Quizzes --> D2
+    Assignments --> D2
+    Assignments --> D4
+    Vivas --> D3
+    Vivas --> D4
+
+    D1 --> ISS
+    D2 --> ISS
+    D3 --> SSS
+    D4 --> FOD
+
+    ISS --> Gap
+    SSS --> Gap
+    FOD --> Gap
     Gap --> Path
 ```
 
@@ -279,11 +300,15 @@ sih/
 │   ├── src/
 │   │   ├── assets/                       # Images, logos, and graphics
 │   │   ├── components/                   # Reusable UI components
-│   │   │   ├── Navbar.jsx                # Government & platform navigation header
+│   │   │   ├── Navbar.jsx                # Government navigation with [🌐 EN | हिन्दी]
 │   │   │   ├── Footer.jsx                # MoSPI & NSSTA footer
 │   │   │   ├── ProtectedRoute.jsx        # JWT auth guard wrapper
 │   │   │   └── ...                       # Modals, buttons, cards, skeletons
-│   │   ├── context/                      # React Context providers (Auth, Theme)
+│   │   ├── context/                      # React Context providers
+│   │   │   ├── LanguageContext.jsx       # English & हिन्दी Bhashini Localization
+│   │   │   ├── ThemeContext.jsx          # Dark / Light theme provider
+│   │   │   ├── NavigationContext.jsx     # Navigation and layout state
+│   │   │   └── DiagnosticContext.jsx     # Mandatory intake diagnostics guard
 │   │   ├── pages/                        # View Pages
 │   │   │   ├── Home.jsx                  # Hero landing page & MoSPI portal overview
 │   │   │   ├── Dashboard.jsx             # 4-Domain Competency radar & gap summary
@@ -303,7 +328,7 @@ sih/
 │   │   ├── redux/                        # Redux state slices & store
 │   │   ├── utils/                        # Frontend helpers & API Axios client
 │   │   ├── App.jsx                       # Master route declarations
-│   │   ├── main.jsx                      # Application bootstrap
+│   │   ├── main.jsx                      # Application bootstrap with LanguageProvider
 │   │   └── index.css                     # Tailwind CSS entrypoint
 │   ├── index.html                        # HTML template
 │   ├── package.json                      # Client dependencies & scripts
@@ -451,9 +476,6 @@ cd ../client
 # Install frontend dependencies
 npm install
 
-# Create and configure .env file
-# Ensure VITE_BASE_URL is set to http://localhost:5000
-
 # Start frontend development server (runs on http://localhost:5173)
 npm run dev
 ```
@@ -495,6 +517,7 @@ Open your browser and navigate to **`http://localhost:5173`**.
 | **3. iGOT Karmayogi Integration** | Connects identified skill deficits directly to digital modules from iGOT Karmayogi and training from NSSTA TPAC. | [`igotService.js`](server/services/igotService.js) & [`tpacService.js`](server/services/tpacService.js) |
 | **4. Automated Content & MCQ Generation** | Parses uploaded survey manuals and circulars (PDF/DOCX) using AI to extract structured 4-option MCQs with pedagogical reasoning. | [`documentExtractor.js`](server/utils/documentExtractor.js) & [`aiService.js`](server/services/aiService.js) |
 | **5. Continuous Capacity Building** | Combines Quizzes, Practical Assignments, and Voice-Enabled Oral Viva Voce with built-in zero-latency fallback presets. | [`diagnosticAssessmentService.js`](server/services/diagnosticAssessmentService.js) |
+| **6. Multilingual Inclusivity (Bhashini)** | Supports English and हिन्दी (`en` and `hi`) natively for Field Operations Division (FOD) officers across non-English speaking districts. | [`LanguageContext.jsx`](client/src/context/LanguageContext.jsx) & [`Navbar.jsx`](client/src/components/Navbar.jsx) |
 
 ---
 
