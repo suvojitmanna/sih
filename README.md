@@ -105,7 +105,7 @@ To ensure nationwide inclusivity across all statistical directorates and regiona
 
 | Asset | Resource Link |
 | :--- | :--- |
-| **🚀 Production Web Application** | [https://ai-interview-two-sigma.vercel.app](https://ai-interview-two-sigma.vercel.app) |
+| **🚀 Production Web Application** | [https://ai-interview-two-sigma.vercel.app](https://sih-six-swart.vercel.app/) |
 | **💻 GitHub Source Repository** | [https://github.com/suvojitmanna/sih](https://github.com/suvojitmanna/sih) |
 | **🏛️ Target Ministry Portal** | [Ministry of Statistics and Programme Implementation (MoSPI)](https://www.mospi.gov.in) |
 | **🎓 Integrated Training Ecosystem** | [iGOT Karmayogi](https://igotkarmayogi.gov.in) • [NSSTA Academy](https://www.mospi.gov.in/national-statistical-systems-training-academy-nssta) |
