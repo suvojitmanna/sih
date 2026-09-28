@@ -105,7 +105,7 @@ To ensure nationwide inclusivity across all statistical directorates and regiona
 
 | Asset | Resource Link |
 | :--- | :--- |
-| **🚀 Production Web Application** | [https://ai-interview-two-sigma.vercel.app](https://ai-interview-two-sigma.vercel.app) |
+| **🚀 Production Web Application** | [https://ai-interview-two-sigma.vercel.app](https://sih-six-swart.vercel.app/) |
 | **💻 GitHub Source Repository** | [https://github.com/suvojitmanna/sih](https://github.com/suvojitmanna/sih) |
 | **🏛️ Target Ministry Portal** | [Ministry of Statistics and Programme Implementation (MoSPI)](https://www.mospi.gov.in) |
 | **🎓 Integrated Training Ecosystem** | [iGOT Karmayogi](https://igotkarmayogi.gov.in) • [NSSTA Academy](https://www.mospi.gov.in/national-statistical-systems-training-academy-nssta) |
@@ -593,28 +593,13 @@ Open your browser and navigate to **`http://localhost:5173`**.
   <b>Lead Developer:</b> Suvojit Manna<br/>
   <i>Full Stack MERN Developer • AI & System Architect</i>
 </p>
-
 <p align="center">
   <a href="https://github.com/suvojitmanna"><img src="https://img.shields.io/badge/GitHub-100000?style=for-the-badge&logo=github&logoColor=white" /></a>
-  <a href="https://linkedin.com/in/suvojit-manna"><img src="https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white" /></a>
+  <a href="https://www.linkedin.com/in/suvojit-manna-505614327/"><img src="https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white" /></a>
 </p>
-
----
-
-## 📜 License
-
-This project is licensed under the **MIT License** — feel free to use, modify, and distribute with attribution.
-
----
-
-## 👁️ Visitor Statistics
-
-<p align="center">
-  <img src="https://komarev.com/ghpvc/?username=suvojitmanna-sih&label=Project%20Views&color=blue&style=for-the-badge"/>
-</p>
-
----
-
 <p align="center">
   <img src="https://capsule-render.vercel.app/api?type=waving&color=0:2563eb,50:1e3a8a,100:0f172a&height=140&section=footer" width="100%" />
+</p>
+<p align="center">
+  <img src="https://komarev.com/ghpvc/?username=suvojitmanna-sih&label=Project%20Views&color=blue&style=for-the-badge"/>
 </p>
