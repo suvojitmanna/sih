@@ -62,7 +62,7 @@ const ProtectedRoute = ({ children, loading, requireAdmin = false }) => {
     return <Navigate to="/" replace />;
   }
 
-  if (userData.role === "trainer" && location.pathname !== "/admin" && location.pathname !== "/settings") {
+  if (userData.role === "trainer" && !["/admin", "/settings", "/chat", "/materials", "/dashboard"].includes(location.pathname)) {
     return <Navigate to="/admin" replace />;
   }
 
@@ -91,10 +91,6 @@ const PublicRoute = ({ children, loading }) => {
 
   if (userData && !userData.isProfileCompleted) {
     return <Navigate to="/auth" replace />;
-  }
-
-  if (userData?.role === "trainer" && (location.pathname === "/" || location.pathname === "/welcome")) {
-    return <Navigate to="/admin" replace />;
   }
 
   return children;

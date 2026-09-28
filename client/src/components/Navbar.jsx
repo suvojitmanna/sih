@@ -127,9 +127,13 @@ const Navbar = () => {
   const navSections = isTrainer
     ? [
       {
-        title: t("nav.governance", "Governance"),
+        title: t("nav.governance", "Governance & Faculty Hub"),
         links: [
-          { label: t("nav.admin", "Admin Portal"), path: "/admin", icon: BsShieldLock, badge: "Trainer", desc: "Executive Analytics, Study Material Dispatch & Learner Oversight" },
+          { label: t("nav.admin", "Admin Dashboard"), path: "/admin", icon: BsShieldLock, badge: "Faculty", desc: "Executive Analytics & Cadre Oversight" },
+          { label: "Real-Time Helpdesk", path: "/admin?tab=communications", icon: FaComments, badge: "Live", desc: "Real-Time Communications & Officer Inquiries" },
+          { label: "Performance Monitor", path: "/admin?tab=learners", icon: FaUserTie, badge: "Cadre", desc: "Officer Performance & Experience Monitor" },
+          { label: "Study Material Dispatch", path: "/admin?tab=materials", icon: FaBookOpen, badge: "Hub", desc: "Study Material Requests & Dispatch Hub" },
+          { label: "Case Study Assignments", path: "/admin?tab=assignments", icon: FaTasks, badge: "Rubric", desc: "Dispatched Assignments & Submissions" },
         ],
       },
     ]
@@ -226,7 +230,7 @@ const Navbar = () => {
         <Sidebar onOpenAuth={() => setShowAuth(true)} />
 
         <header
-          className={`fixed top-0 right-0 z-[90] h-14 bg-white/85 dark:bg-slate-950/85 backdrop-blur-xl border-b border-slate-200/80 dark:border-slate-800/80 transition-all duration-300 left-0 ${isCollapsed ? "md:left-[76px]" : "md:left-[260px]"
+          className={`fixed top-0 right-0 z-[90] h-14 bg-white/85 dark:bg-slate-950/85 backdrop-blur-xl border-b border-slate-200/80 dark:border-slate-800/80 transition-all duration-300 left-0 ${isCollapsed ? "md:left-[76px]" : "md:left-[270px]"
             } flex items-center justify-between px-3 sm:px-6 select-none`}
         >
           <div className="flex items-center gap-2.5 md:hidden">
@@ -301,7 +305,7 @@ const Navbar = () => {
               </button>
             )}
 
-            {userData && !isTrainer && <NotificationBell />}
+            {userData && <NotificationBell />}
 
             <div>
               {userData ? (
@@ -575,7 +579,7 @@ const Navbar = () => {
                 </button>
               )}
 
-              {userData && !isTrainer && <NotificationBell />}
+              {userData && <NotificationBell />}
 
               <div ref={userRef} className="relative">
                 {userData ? (

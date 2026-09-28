@@ -250,6 +250,7 @@ const MaterialsUpload = ({ initialTab = "material-request" }) => {
         });
         setRequestAttachment(null);
         fetchMaterials();
+        window.dispatchEvent(new Event("material-request-updated"));
       }
     } catch (error) {
       toast.error(error.response?.data?.message || "Error submitting study material request.");

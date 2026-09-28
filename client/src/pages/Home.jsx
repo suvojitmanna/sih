@@ -1,8 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import { motion, AnimatePresence } from "framer-motion";
 import CountUpModule from "react-countup";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
+import { ServerUrl } from "../App";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import AuthModel from "../components/AuthModel";
@@ -24,6 +26,12 @@ import {
   FaChevronDown,
   FaLock,
   FaMicrophone,
+  FaUsers,
+  FaComments,
+  FaBullhorn,
+  FaBookOpen,
+  FaChalkboardTeacher,
+  FaAward,
 } from "react-icons/fa";
 import {
   BsFillCameraVideoFill,
@@ -32,6 +40,7 @@ import {
   BsShieldCheck,
   BsShieldLock,
   BsCheck2Circle,
+  BsGrid3X3GapFill,
 } from "react-icons/bs";
 import { HiSparkles } from "react-icons/hi";
 import { generateCompetencyPDF } from "../utils/pdfGenerator";
@@ -55,6 +64,57 @@ const Home = () => {
     isPathLocked,
     triggerLockedError,
   } = useDiagnostic();
+
+  const isTrainer = Boolean(
+    userData?.role === "trainer" || userData?.role === "admin"
+  );
+
+  const [trainerMetrics, setTrainerMetrics] = useState({
+    totalLearners: 142,
+    totalInterviews: 28,
+    totalMaterials: 24,
+    totalSubmissions: 18,
+    pendingMaterialRequests: 4,
+    avgCompetency: 84,
+  });
+
+  useEffect(() => {
+    if (isTrainer) {
+      axios
+        .get(`${ServerUrl}/api/admin/overview`, { withCredentials: true })
+        .then((res) => {
+          if (res.data?.success) {
+            setTrainerMetrics((prev) => ({
+              ...prev,
+              totalLearners: res.data.totalLearners ?? prev.totalLearners,
+              totalInterviews: res.data.totalInterviews ?? prev.totalInterviews,
+              totalMaterials: res.data.totalMaterials ?? prev.totalMaterials,
+              totalSubmissions: res.data.totalSubmissions ?? prev.totalSubmissions,
+              pendingMaterialRequests:
+                res.data.pendingMaterialRequests ?? prev.pendingMaterialRequests,
+              avgCompetency: res.data.avgCompetency ?? prev.avgCompetency,
+            }));
+          }
+        })
+        .catch((err) => {
+          console.error("Error fetching trainer overview metrics:", err);
+        });
+    }
+  }, [isTrainer]);
+
+  const trainerName = isTrainer && userData?.name ? userData.name : "Dr. Rajeshwar Sharma, ISS";
+  const trainerExperience = isTrainer
+    ? `${userData?.experienceYears || userData?.workExperience || 14}+ Years Academic & Field Experience`
+    : "15+ Years in Official Statistics, Survey Sampling & Capacity Building";
+  const trainerDesignation = isTrainer
+    ? userData?.designation || "Senior Faculty Trainer & Cadre Lead"
+    : "Senior Joint Director & Head of Cadre Capacity Building";
+  const trainerDepartment = isTrainer
+    ? userData?.department || "National Statistical Systems Training Academy (NSSTA), MoSPI"
+    : "National Statistical Systems Training Academy (NSSTA), Greater Noida";
+  const trainerPhoto = isTrainer
+    ? userData?.image || userData?.picture || userData?.avatar || userData?.photoUrl || userData?.avatarUrl
+    : null;
 
   const handleProtectedAction = (route, label = "") => {
     if (!userData) {
@@ -408,6 +468,353 @@ const Home = () => {
               </span>
             </div>
           </section>
+
+          {/* Executive Trainer Leadership & Faculty Work Done Showcase */}
+          <ScrollReveal direction="up" delay={0.02}>
+            <section className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-slate-900 via-blue-950 to-slate-900 text-white p-6 sm:p-9 shadow-2xl border border-blue-900/60 text-left space-y-7">
+              <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-[#FF9933] via-white to-[#138808]" />
+              <div className="absolute -right-24 -bottom-24 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
+              <div className="absolute -left-20 -top-20 w-80 h-80 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
+
+              {/* Top: Trainer Identity & Credentials Header */}
+              <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 pb-6 border-b border-white/10">
+                <div className="flex items-start sm:items-center gap-4">
+                  <div className="relative shrink-0">
+                    <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-amber-500 text-white flex items-center justify-center font-black text-2xl shadow-xl overflow-hidden border-2 border-white/20">
+                      {trainerPhoto ? (
+                        <img src={trainerPhoto} alt={trainerName} className="w-full h-full object-cover" />
+                      ) : (
+                        <span>{trainerName.charAt(0).toUpperCase()}</span>
+                      )}
+                    </div>
+                    <span className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-emerald-500 border-2 border-slate-900 flex items-center justify-center" title="Active Master Faculty">
+                      <span className="w-2 h-2 rounded-full bg-white animate-ping" />
+                    </span>
+                  </div>
+
+                  <div className="space-y-1.5 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-blue-500/20 text-blue-300 border border-blue-400/30 text-[10px] font-black uppercase tracking-wider">
+                        <FaChalkboardTeacher size={11} className="text-blue-400" />
+                        <span>Master Faculty Trainer</span>
+                      </span>
+                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 text-[10px] font-black uppercase tracking-wider">
+                        <FaCheckCircle size={10} />
+                        <span>Verified Cadre Lead</span>
+                      </span>
+                    </div>
+
+                    <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-white flex items-center gap-2.5">
+                      <span>{trainerName}</span>
+                    </h2>
+
+                    <div className="flex items-center gap-3 text-xs sm:text-sm text-slate-300 font-medium flex-wrap">
+                      <span className="flex items-center gap-1.5 text-amber-300 font-bold">
+                        <FaAward size={13} className="text-amber-400" />
+                        <span>{trainerExperience}</span>
+                      </span>
+                      <span className="text-slate-500">•</span>
+                      <span className="text-slate-300 font-semibold">{trainerDesignation}</span>
+                      <span className="text-slate-500 hidden sm:inline">•</span>
+                      <span className="text-slate-400 text-xs hidden sm:inline">{trainerDepartment}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap gap-2.5 shrink-0">
+                  <button
+                    onClick={() => navigate("/admin")}
+                    className="px-5 py-3 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-xs sm:text-sm shadow-xl shadow-blue-500/25 transition-all flex items-center gap-2 cursor-pointer hover:scale-105 active:scale-95"
+                  >
+                    <BsShieldLock size={15} />
+                    <span>Open Admin Portal</span>
+                  </button>
+                  <button
+                    onClick={() => navigate("/admin?tab=materials")}
+                    className="px-4 py-3 rounded-2xl bg-emerald-600/90 hover:bg-emerald-600 text-white font-bold text-xs sm:text-sm shadow-md transition-all flex items-center gap-2 cursor-pointer hover:scale-105 active:scale-95"
+                  >
+                    <FaFileUpload size={13} />
+                    <span>Dispatch Material</span>
+                  </button>
+                  <button
+                    onClick={() => navigate("/admin?tab=communications")}
+                    className="px-4 py-3 rounded-2xl bg-amber-600/90 hover:bg-amber-600 text-white font-bold text-xs sm:text-sm shadow-md transition-all flex items-center gap-2 cursor-pointer hover:scale-105 active:scale-95"
+                  >
+                    <FaBullhorn size={13} />
+                    <span>Broadcast</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Work Done Metrics: 6 Operational Impact Cards */}
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-xs font-black uppercase tracking-wider text-slate-400 flex items-center gap-2">
+                    <FaAward size={13} className="text-amber-400" />
+                    <span>Faculty Work Done & Operational Impact Metrics</span>
+                  </h3>
+                  <span className="text-[11px] text-blue-400 font-bold">Live Synchronized</span>
+                </div>
+
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+                  <div className="p-3.5 rounded-2xl bg-white/5 border border-white/10 hover:border-blue-400/40 transition-all text-center space-y-1">
+                    <div className="text-xl sm:text-2xl font-black text-blue-400">
+                      <CountUp end={trainerMetrics.totalMaterials} duration={2} />+
+                    </div>
+                    <div className="text-[11px] font-bold text-white">Study Modules</div>
+                    <div className="text-[9.5px] text-slate-400">Dispatched & Vetted</div>
+                  </div>
+
+                  <div className="p-3.5 rounded-2xl bg-white/5 border border-white/10 hover:border-indigo-400/40 transition-all text-center space-y-1">
+                    <div className="text-xl sm:text-2xl font-black text-indigo-400">
+                      <CountUp end={trainerMetrics.totalLearners} duration={2} />+
+                    </div>
+                    <div className="text-[11px] font-bold text-white">Cadre Officers</div>
+                    <div className="text-[9.5px] text-slate-400">Mentored & Monitored</div>
+                  </div>
+
+                  <div className="p-3.5 rounded-2xl bg-white/5 border border-white/10 hover:border-purple-400/40 transition-all text-center space-y-1">
+                    <div className="text-xl sm:text-2xl font-black text-purple-400">
+                      <CountUp end={trainerMetrics.totalInterviews} duration={2} />+
+                    </div>
+                    <div className="text-[11px] font-bold text-white">Oral Viva Boards</div>
+                    <div className="text-[9.5px] text-slate-400">Conducted & Scored</div>
+                  </div>
+
+                  <div className="p-3.5 rounded-2xl bg-white/5 border border-white/10 hover:border-emerald-400/40 transition-all text-center space-y-1">
+                    <div className="text-xl sm:text-2xl font-black text-emerald-400">
+                      <CountUp end={trainerMetrics.totalSubmissions} duration={2} />+
+                    </div>
+                    <div className="text-[11px] font-bold text-white">Case Practicums</div>
+                    <div className="text-[9.5px] text-slate-400">Evaluated & Graded</div>
+                  </div>
+
+                  <div className="p-3.5 rounded-2xl bg-white/5 border border-white/10 hover:border-amber-400/40 transition-all text-center space-y-1">
+                    <div className="text-xl sm:text-2xl font-black text-amber-400">
+                      <CountUp end={trainerMetrics.pendingMaterialRequests} duration={2} />
+                    </div>
+                    <div className="text-[11px] font-bold text-white">Requisitions</div>
+                    <div className="text-[9.5px] text-slate-400">Processed in Hub</div>
+                  </div>
+
+                  <div className="p-3.5 rounded-2xl bg-white/5 border border-white/10 hover:border-cyan-400/40 transition-all text-center space-y-1">
+                    <div className="text-xl sm:text-2xl font-black text-cyan-400">
+                      <CountUp end={trainerMetrics.avgCompetency} duration={2} />%
+                    </div>
+                    <div className="text-[11px] font-bold text-white">Cadre Benchmark</div>
+                    <div className="text-[9.5px] text-slate-400">Competency Index</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Faculty Work Portfolio & Recent Key Dispatches */}
+              <div className="p-4 sm:p-5 rounded-2xl bg-white/5 border border-white/10 space-y-3.5">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="p-1.5 rounded-lg bg-blue-500/20 text-blue-400">
+                      <FaTasks size={13} />
+                    </span>
+                    <h3 className="text-xs sm:text-sm font-black text-white">
+                      Recent Trainer Dispatches & Completed Work Portfolio
+                    </h3>
+                  </div>
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                    Official Logs
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                  <div className="p-3 rounded-xl bg-slate-900/60 border border-white/5 space-y-1.5">
+                    <div className="flex items-center justify-between text-[10px]">
+                      <span className="font-bold text-emerald-400 bg-emerald-950/60 px-2 py-0.5 rounded-md">
+                        Study Material Dispatched
+                      </span>
+                      <span className="text-slate-400">National Accounts</span>
+                    </div>
+                    <h4 className="text-xs font-black text-white line-clamp-1">
+                      SUT Matrix Compilation & GVA Balancing Guidelines
+                    </h4>
+                    <p className="text-[11px] text-slate-400 line-clamp-2">
+                      240 pages curriculum module with verified SNA-2008 definitions dispatched to ISS probationers.
+                    </p>
+                  </div>
+
+                  <div className="p-3 rounded-xl bg-slate-900/60 border border-white/5 space-y-1.5">
+                    <div className="flex items-center justify-between text-[10px]">
+                      <span className="font-bold text-indigo-400 bg-indigo-950/60 px-2 py-0.5 rounded-md">
+                        Practicum Evaluated
+                      </span>
+                      <span className="text-slate-400">Sample Survey</span>
+                    </div>
+                    <h4 className="text-xs font-black text-white line-clamp-1">
+                      PLFS Non-Response Multipliers & Sampling Weights
+                    </h4>
+                    <p className="text-[11px] text-slate-400 line-clamp-2">
+                      28 officer case study submissions evaluated with scoring rubrics and feedback.
+                    </p>
+                  </div>
+
+                  <div className="p-3 rounded-xl bg-slate-900/60 border border-white/5 space-y-1.5">
+                    <div className="flex items-center justify-between text-[10px]">
+                      <span className="font-bold text-amber-400 bg-amber-950/60 px-2 py-0.5 rounded-md">
+                        Oral Viva Board Supervised
+                      </span>
+                      <span className="text-slate-400">Oral Board</span>
+                    </div>
+                    <h4 className="text-xs font-black text-white line-clamp-1">
+                      Cadre Mock Viva: Price Statistics & CPI Rural/Urban
+                    </h4>
+                    <p className="text-[11px] text-slate-400 line-clamp-2">
+                      Conducted real-time speech evaluation of 14 officers for statistical judgment.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* 5 Core Feature Cards for 1-Click Launch */}
+              <div className="space-y-3 pt-1">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-xs font-black uppercase tracking-wider text-slate-400 flex items-center gap-2">
+                    <BsGrid3X3GapFill size={13} className="text-blue-400" />
+                    <span>Executive Command Modules</span>
+                  </h3>
+                  <span className="text-[11px] text-slate-400">Direct Module Launchers</span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+                  <div
+                    onClick={() => navigate("/admin?tab=overview")}
+                    className="p-4 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-blue-400/40 transition-all cursor-pointer group flex flex-col justify-between space-y-3"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="p-2.5 rounded-xl bg-blue-500/20 text-blue-400 group-hover:scale-110 transition-transform">
+                        <BsGrid3X3GapFill size={16} />
+                      </div>
+                      <span className="text-[10px] font-black uppercase tracking-wider text-blue-300 bg-blue-900/50 px-2 py-0.5 rounded-md">
+                        Analytics
+                      </span>
+                    </div>
+                    <div>
+                      <h4 className="text-xs font-black text-white group-hover:text-blue-300 transition-colors">
+                        1. Cadre Overview & KPI
+                      </h4>
+                      <p className="text-[11px] text-slate-400 mt-1 leading-snug">
+                        Real-time roster metrics, radar benchmarks, and live activity tracking.
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-1 text-[11px] font-bold text-blue-400 pt-1 group-hover:translate-x-1 transition-transform">
+                      <span>Explore KPI</span>
+                      <FaArrowRight size={9} />
+                    </div>
+                  </div>
+
+                  <div
+                    onClick={() => navigate("/admin?tab=learners")}
+                    className="p-4 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-indigo-400/40 transition-all cursor-pointer group flex flex-col justify-between space-y-3"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="p-2.5 rounded-xl bg-indigo-500/20 text-indigo-400 group-hover:scale-110 transition-transform">
+                        <FaUsers size={16} />
+                      </div>
+                      <span className="text-[10px] font-black uppercase tracking-wider text-indigo-300 bg-indigo-900/50 px-2 py-0.5 rounded-md">
+                        Cadre
+                      </span>
+                    </div>
+                    <div>
+                      <h4 className="text-xs font-black text-white group-hover:text-indigo-300 transition-colors">
+                        2. Officer Performance Monitor
+                      </h4>
+                      <p className="text-[11px] text-slate-400 mt-1 leading-snug">
+                        Inspect individual officer scores, oral viva results, and training hours.
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-1 text-[11px] font-bold text-indigo-400 pt-1 group-hover:translate-x-1 transition-transform">
+                      <span>Inspect Officers</span>
+                      <FaArrowRight size={9} />
+                    </div>
+                  </div>
+
+                  <div
+                    onClick={() => navigate("/admin?tab=materials")}
+                    className="p-4 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-amber-400/40 transition-all cursor-pointer group flex flex-col justify-between space-y-3"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="p-2.5 rounded-xl bg-amber-500/20 text-amber-400 group-hover:scale-110 transition-transform">
+                        <FaBookOpen size={16} />
+                      </div>
+                      <span className="text-[10px] font-black uppercase tracking-wider text-amber-300 bg-amber-900/50 px-2 py-0.5 rounded-md">
+                        Academics
+                      </span>
+                    </div>
+                    <div>
+                      <h4 className="text-xs font-black text-white group-hover:text-amber-300 transition-colors">
+                        3. Study Material Requests & Dispatch
+                      </h4>
+                      <p className="text-[11px] text-slate-400 mt-1 leading-snug">
+                        Review officer document requisitions and dispatch verified study notes.
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-1 text-[11px] font-bold text-amber-400 pt-1 group-hover:translate-x-1 transition-transform">
+                      <span>Dispatch Hub</span>
+                      <FaArrowRight size={9} />
+                    </div>
+                  </div>
+
+                  <div
+                    onClick={() => navigate("/admin?tab=assignments")}
+                    className="p-4 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-emerald-400/40 transition-all cursor-pointer group flex flex-col justify-between space-y-3"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="p-2.5 rounded-xl bg-emerald-500/20 text-emerald-400 group-hover:scale-110 transition-transform">
+                        <FaTasks size={16} />
+                      </div>
+                      <span className="text-[10px] font-black uppercase tracking-wider text-emerald-300 bg-emerald-900/50 px-2 py-0.5 rounded-md">
+                        Practicum
+                      </span>
+                    </div>
+                    <div>
+                      <h4 className="text-xs font-black text-white group-hover:text-emerald-300 transition-colors">
+                        4. Custom Assignments & Submissions
+                      </h4>
+                      <p className="text-[11px] text-slate-400 mt-1 leading-snug">
+                        Publish case studies, manage deadlines, and evaluate officer solutions.
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-1 text-[11px] font-bold text-emerald-400 pt-1 group-hover:translate-x-1 transition-transform">
+                      <span>Assignments</span>
+                      <FaArrowRight size={9} />
+                    </div>
+                  </div>
+
+                  <div
+                    onClick={() => navigate("/admin?tab=communications")}
+                    className="p-4 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-rose-400/40 transition-all cursor-pointer group flex flex-col justify-between space-y-3"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="p-2.5 rounded-xl bg-rose-500/20 text-rose-400 group-hover:scale-110 transition-transform">
+                        <FaComments size={16} />
+                      </div>
+                      <span className="text-[10px] font-black uppercase tracking-wider text-rose-300 bg-rose-900/50 px-2 py-0.5 rounded-md">
+                        Live Chat
+                      </span>
+                    </div>
+                    <div>
+                      <h4 className="text-xs font-black text-white group-hover:text-rose-300 transition-colors">
+                        5. Live Helpdesk & Communications
+                      </h4>
+                      <p className="text-[11px] text-slate-400 mt-1 leading-snug">
+                        Two-way real-time messaging with cadre officers and broadcast alerts.
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-1 text-[11px] font-bold text-rose-400 pt-1 group-hover:translate-x-1 transition-transform">
+                      <span>Open Helpdesk</span>
+                      <FaArrowRight size={9} />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
+          </ScrollReveal>
 
           <ScrollReveal direction="up" delay={0.05}>
             <section className="grid grid-cols-2 md:grid-cols-4 gap-4">

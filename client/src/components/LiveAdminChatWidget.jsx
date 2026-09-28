@@ -57,7 +57,17 @@ const CORE_PORTAL_PAGES = [
   "/welcome",
   "/dashboard",
   "/competencies",
+  "/skill-gaps",
+  "/skill-gap-analysis",
+  "/job-readiness",
   "/history",
+  "/materials",
+  "/mcq-create",
+  "/quizzes",
+  "/assignments",
+  "/learning-path",
+  "/portal-comparison",
+  "/settings",
 ];
 
 const isAllowedRoute = (pathname) => {

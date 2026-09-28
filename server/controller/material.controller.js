@@ -274,6 +274,22 @@ export const requestMaterial = async (req, res) => {
       status: "pending",
     });
 
+    try {
+      await SupportMessage.create({
+        senderId: user._id,
+        senderName: user.name || "Statistical Officer",
+        senderRole: "learner",
+        senderCadre: user.jobRole || "Cadre Officer",
+        recipientId: null,
+        recipientName: "NSSTA Secretariat & Faculty",
+        message: `📄 New Study Material Requisition: "${topic.trim()}" (${urgency} Priority) requested by ${user.name || "Statistical Officer"}. Requires dispatch in Study Material Hub.`,
+        isBroadcast: false,
+        isRead: false,
+      });
+    } catch (msgErr) {
+      console.error("[REQUEST MATERIAL NOTIFICATION ERROR]", msgErr);
+    }
+
     return res.status(201).json({
       success: true,
       message:

@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef } from "react";
+import { useSearchParams } from "react-router-dom";
 import { useSelector } from "react-redux";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
@@ -54,6 +55,7 @@ import {
   BsGrid3X3GapFill,
   BsFillSendFill,
   BsCircleFill,
+  BsShieldLock,
 } from "react-icons/bs";
 
 const formatDateTime = (dateStr) => {
@@ -208,8 +210,22 @@ const QUICK_REPLIES = [
 const AdminDashboard = () => {
   const { userData } = useSelector((state) => state.user);
   const isTrainer = userData?.role === "trainer";
+  const [searchParams, setSearchParams] = useSearchParams();
+  const tabQuery = searchParams.get("tab");
+  const validTabs = ["overview", "learners", "materials", "assignments", "communications"];
 
-  const [activeTab, setActiveTab] = useState("overview");
+  const [activeTab, setActiveTab] = useState(() => {
+    if (tabQuery && validTabs.includes(tabQuery)) {
+      return tabQuery;
+    }
+    return "overview";
+  });
+
+  useEffect(() => {
+    if (tabQuery && validTabs.includes(tabQuery)) {
+      setActiveTab(tabQuery);
+    }
+  }, [tabQuery]);
   const [metrics, setMetrics] = useState(null);
   const [learners, setLearners] = useState([]);
   const [heatmap, setHeatmap] = useState([]);
@@ -821,158 +837,16 @@ const AdminDashboard = () => {
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col transition-colors duration-300">
       <Navbar />
 
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-16 space-y-6">
-        <div className="bg-gradient-to-r from-slate-900 via-blue-950 to-slate-900 text-white rounded-3xl p-6 sm:p-8 shadow-xl border border-slate-800 flex flex-col md:flex-row md:items-center md:justify-between gap-6">
-          <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/20 text-blue-300 border border-blue-400/30 text-xs font-bold uppercase tracking-wider mb-2">
-              <BsShieldCheck size={13} />
-              <span>{isTrainer ? "NSSTA Faculty & Trainer Portal • Active Session" : "National Statistical Systems Training Academy (NSSTA)"}</span>
-            </div>
-            <h1 className="text-2xl sm:text-3xl font-black tracking-tight">
-              {isTrainer ? "NSSTA Faculty Training & Oversight Hub" : "Executive Academy Administration & Oversight Hub"}
-            </h1>
-            <p className="text-xs sm:text-sm text-slate-300 mt-1 max-w-2xl">
-              {isTrainer
-                ? "Monitor cadre officers' viva experiences, respond to real-time inquiries, fulfill study material requests, and dispatch statistical case studies."
-                : "Monitor officers' viva experiences, respond to real-time inquiries, fulfill study material requests, and dispatch statistical case studies."}
-            </p>
-            {isTrainer && userData && (
-              <div className="mt-3 inline-flex items-center gap-2 px-3.5 py-1.5 rounded-2xl bg-white/10 border border-white/20 text-xs text-blue-200">
-                <FaUserTie className="text-amber-400" size={12} />
-                <span className="font-bold text-white">Faculty: {userData.name || "Statistical Trainer"}</span>
-                <span className="text-slate-300">({userData.department || "NSSTA Faculty Training Division"})</span>
-                {userData.experienceYears > 0 && (
-                  <span className="px-1.5 py-0.5 rounded bg-amber-400/20 text-amber-300 text-[10px] font-bold">
-                    {userData.experienceYears} Yrs Exp
-                  </span>
-                )}
-              </div>
-            )}
-          </div>
-
-          <div className="flex flex-wrap gap-2.5">
-            <button
-              onClick={() => setShowBroadcastModal(true)}
-              className="px-4 py-2.5 rounded-2xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs shadow-md transition-all flex items-center gap-2 cursor-pointer"
-            >
-              <FaBullhorn size={12} />
-              <span>Broadcast Announcement</span>
-            </button>
-
-            <button
-              onClick={() => setShowDispatchMaterialModal(true)}
-              className="px-4 py-2.5 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-md transition-all flex items-center gap-2 cursor-pointer"
-            >
-              <FaFileUpload size={12} />
-              <span>Dispatch Material</span>
-            </button>
-
-            <button
-              onClick={() => setShowDispatchAssignmentModal(true)}
-              className="px-4 py-2.5 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-md transition-all flex items-center gap-2 cursor-pointer"
-            >
-              <FaTasks size={12} />
-              <span>Assign Case Study</span>
-            </button>
-          </div>
-        </div>
-
-        <div className="relative flex items-center gap-2">
-          <button
-            type="button"
-            onClick={() => handleTabScroll("left")}
-            className="p-3 rounded-2xl bg-slate-200/90 hover:bg-slate-300 dark:bg-slate-900 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-300/60 dark:border-slate-800 transition-all shrink-0 cursor-pointer shadow-xs active:scale-95 flex items-center justify-center hover:text-blue-600 dark:hover:text-blue-400"
-            title="Scroll tabs left"
-            aria-label="Scroll left"
-          >
-            <FaChevronLeft size={12} />
-          </button>
-
-          <div
-            ref={tabContainerRef}
-            className="flex-1 flex overflow-x-auto gap-2 p-1.5 bg-slate-200/80 dark:bg-slate-900 border border-slate-300/60 dark:border-slate-800 rounded-2xl text-xs font-bold no-scrollbar [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden scroll-smooth"
-          >
-            <button
-              onClick={() => setActiveTab("overview")}
-              className={`px-4 py-2.5 rounded-xl transition-all flex items-center gap-2 cursor-pointer whitespace-nowrap ${activeTab === "overview"
-                  ? "bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 shadow-sm"
-                  : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
-                }`}
-            >
-              <BsGrid3X3GapFill size={13} />
-              <span>1. Cadre Overview & Analytics</span>
-            </button>
-
-            <button
-              onClick={() => setActiveTab("learners")}
-              className={`px-4 py-2.5 rounded-xl transition-all flex items-center gap-2 cursor-pointer whitespace-nowrap ${activeTab === "learners"
-                  ? "bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 shadow-sm"
-                  : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
-                }`}
-            >
-              <FaUsers size={13} />
-              <span>2. Officer Performance & Experience Monitor</span>
-              <span className="px-2 py-0.5 rounded-full text-[10px] bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300">
-                {filteredLearners.length}
-              </span>
-            </button>
-
-            <button
-              onClick={() => setActiveTab("materials")}
-              className={`px-4 py-2.5 rounded-xl transition-all flex items-center gap-2 cursor-pointer whitespace-nowrap ${activeTab === "materials"
-                  ? "bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 shadow-sm"
-                  : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
-                }`}
-            >
-              <FaBookOpen size={13} />
-              <span>3. Study Material Requests & Dispatch Hub</span>
-              {metrics?.pendingMaterialRequests > 0 && (
-                <span className="px-2 py-0.5 rounded-full text-[10px] bg-amber-500 text-white animate-pulse">
-                  {metrics.pendingMaterialRequests} Pending
-                </span>
-              )}
-            </button>
-
-            <button
-              onClick={() => setActiveTab("assignments")}
-              className={`px-4 py-2.5 rounded-xl transition-all flex items-center gap-2 cursor-pointer whitespace-nowrap ${activeTab === "assignments"
-                  ? "bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 shadow-sm"
-                  : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
-                }`}
-            >
-              <FaTasks size={13} />
-              <span>4. Custom Assignments & Submissions</span>
-              <span className="px-2 py-0.5 rounded-full text-[10px] bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300">
-                {submissions.length}
-              </span>
-            </button>
-
-            <button
-              onClick={() => setActiveTab("communications")}
-              className={`px-4 py-2.5 rounded-xl transition-all flex items-center gap-2 cursor-pointer whitespace-nowrap ${activeTab === "communications"
-                  ? "bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 shadow-sm"
-                  : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
-                }`}
-            >
-              <FaComments size={13} />
-              <span>5. Live Helpdesk & Real-Time Communications</span>
-              {totalUnreadMessages > 0 && (
-                <span className="px-2 py-0.5 rounded-full text-[10px] bg-rose-500 text-white animate-bounce">
-                  {totalUnreadMessages} New
-                </span>
-              )}
-            </button>
-          </div>
-
-          <button
-            type="button"
-            onClick={() => handleTabScroll("right")}
-            className="p-3 rounded-2xl bg-slate-200/90 hover:bg-slate-300 dark:bg-slate-900 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-300/60 dark:border-slate-800 transition-all shrink-0 cursor-pointer shadow-xs active:scale-95 flex items-center justify-center hover:text-blue-600 dark:hover:text-blue-400"
-            title="Scroll tabs right"
-            aria-label="Scroll right"
-          >
-            <FaChevronRight size={12} />
-          </button>
+      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 pt-18 pb-16 space-y-6">
+        <div className="flex items-center gap-2 text-xs font-bold text-slate-500 dark:text-slate-400">
+          <span>Section:</span>
+          <span className="px-2.5 py-1 rounded-xl bg-blue-50 dark:bg-blue-950/80 text-blue-700 dark:text-blue-300 border border-blue-200/50 dark:border-blue-800/50 font-black">
+            {activeTab === "overview" && "1. Cadre Overview & Analytics"}
+            {activeTab === "learners" && "2. Officer Performance & Experience Monitor"}
+            {activeTab === "materials" && "3. Study Material Requests & Dispatch Hub"}
+            {activeTab === "assignments" && "4. Custom Assignments & Submissions"}
+            {activeTab === "communications" && "5. Live Helpdesk & Real-Time Communications"}
+          </span>
         </div>
         {activeTab === "overview" && (
           <div className="space-y-8">
@@ -1343,22 +1217,20 @@ const AdminDashboard = () => {
                       </td>
                       <td className="p-4 text-center">
                         <span
-                          className={`px-3 py-1 rounded-full font-black text-xs border ${
-                            l.hasCompletedViva === false || l.overallCompetencyScore === 0
+                          className={`px-3 py-1 rounded-full font-black text-xs border ${l.hasCompletedViva === false || l.overallCompetencyScore === 0
                               ? "bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 border-rose-200 dark:border-rose-900"
                               : "bg-blue-50 dark:bg-blue-950 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800"
-                          }`}
+                            }`}
                         >
                           {l.hasCompletedViva === false ? 0 : (l.overallCompetencyScore !== undefined && l.overallCompetencyScore !== null ? l.overallCompetencyScore : 0)}%
                         </span>
                       </td>
                       <td className="p-4 text-center">
                         <span
-                          className={`px-2.5 py-1 rounded-xl text-[10px] font-bold border ${
-                            l.hasCompletedViva === false
+                          className={`px-2.5 py-1 rounded-xl text-[10px] font-bold border ${l.hasCompletedViva === false
                               ? "bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-900"
                               : "bg-emerald-50 dark:bg-emerald-950 text-emerald-600 border border-emerald-200 dark:border-emerald-800"
-                          }`}
+                            }`}
                         >
                           {l.hasCompletedViva === false ? "Novice (Viva Pending)" : (l.overallLevel || "Proficient")}
                         </span>
@@ -1486,10 +1358,10 @@ const AdminDashboard = () => {
                         <td className="p-4 text-center">
                           <span
                             className={`px-2 py-0.5 rounded-md font-bold text-[10px] ${req.urgency === "Critical"
-                                ? "bg-rose-50 dark:bg-rose-950 text-rose-600 border border-rose-200 dark:border-rose-800"
-                                : req.urgency === "High"
-                                  ? "bg-amber-50 dark:bg-amber-950 text-amber-600 border border-amber-200 dark:border-amber-800"
-                                  : "bg-slate-100 dark:bg-slate-800 text-slate-600"
+                              ? "bg-rose-50 dark:bg-rose-950 text-rose-600 border border-rose-200 dark:border-rose-800"
+                              : req.urgency === "High"
+                                ? "bg-amber-50 dark:bg-amber-950 text-amber-600 border border-amber-200 dark:border-amber-800"
+                                : "bg-slate-100 dark:bg-slate-800 text-slate-600"
                               }`}
                           >
                             {req.urgency || "Normal"}
@@ -1498,10 +1370,10 @@ const AdminDashboard = () => {
                         <td className="p-4 text-center">
                           <span
                             className={`px-2.5 py-1 rounded-full font-black text-[10px] ${req.status === "fulfilled"
-                                ? "bg-emerald-50 dark:bg-emerald-950 text-emerald-600 border border-emerald-200 dark:border-emerald-800"
-                                : req.status === "rejected"
-                                  ? "bg-rose-50 dark:bg-rose-950 text-rose-600"
-                                  : "bg-amber-50 dark:bg-amber-950 text-amber-600 border border-amber-200 dark:border-amber-800 animate-pulse"
+                              ? "bg-emerald-50 dark:bg-emerald-950 text-emerald-600 border border-emerald-200 dark:border-emerald-800"
+                              : req.status === "rejected"
+                                ? "bg-rose-50 dark:bg-rose-950 text-rose-600"
+                                : "bg-amber-50 dark:bg-amber-950 text-amber-600 border border-amber-200 dark:border-amber-800 animate-pulse"
                               }`}
                           >
                             {req.status === "fulfilled"
@@ -1519,7 +1391,7 @@ const AdminDashboard = () => {
                                 adminResponseNote: req.adminResponseNote || "",
                                 dispatchedMaterialTitle: req.topic,
                                 dispatchedMaterialUrl:
-                                   req.dispatchedMaterialUrl || "",
+                                  req.dispatchedMaterialUrl || "",
                                 dispatchedMaterialText:
                                   req.dispatchedMaterialText || "",
                                 file: null,
@@ -1560,11 +1432,10 @@ const AdminDashboard = () => {
                   <button
                     type="button"
                     onClick={() => setAssignmentSubTab("posted")}
-                    className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
-                      assignmentSubTab === "posted"
+                    className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${assignmentSubTab === "posted"
                         ? "bg-blue-600 text-white shadow-xs"
                         : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:text-blue-600"
-                    }`}
+                      }`}
                   >
                     <FaClock size={12} />
                     <span>📋 Posted Case Studies & Timers</span>
@@ -1576,11 +1447,10 @@ const AdminDashboard = () => {
                   <button
                     type="button"
                     onClick={() => setAssignmentSubTab("submissions")}
-                    className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
-                      assignmentSubTab === "submissions"
+                    className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${assignmentSubTab === "submissions"
                         ? "bg-blue-600 text-white shadow-xs"
                         : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:text-blue-600"
-                    }`}
+                      }`}
                   >
                     <FaCheckCircle size={12} />
                     <span>📥 Officer Submissions Review</span>
@@ -1828,8 +1698,8 @@ const AdminDashboard = () => {
                       type="button"
                       onClick={() => setCommSubTab("direct")}
                       className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${commSubTab === "direct"
-                          ? "bg-white dark:bg-slate-900 text-blue-600 dark:text-blue-400 shadow-xs"
-                          : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+                        ? "bg-white dark:bg-slate-900 text-blue-600 dark:text-blue-400 shadow-xs"
+                        : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
                         }`}
                     >
                       <FaComments size={12} />
@@ -1844,8 +1714,8 @@ const AdminDashboard = () => {
                       type="button"
                       onClick={() => setCommSubTab("broadcasts")}
                       className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${commSubTab === "broadcasts"
-                          ? "bg-white dark:bg-slate-900 text-amber-600 dark:text-amber-400 shadow-xs"
-                          : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+                        ? "bg-white dark:bg-slate-900 text-amber-600 dark:text-amber-400 shadow-xs"
+                        : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
                         }`}
                     >
                       <FaBullhorn size={12} />
@@ -2047,8 +1917,8 @@ const AdminDashboard = () => {
                               );
                             }}
                             className={`w-full p-4 text-left transition flex items-start justify-between gap-3 cursor-pointer ${isSelected
-                                ? "bg-blue-50/90 dark:bg-blue-950/50 border-l-4 border-blue-600 shadow-inner"
-                                : "hover:bg-slate-50 dark:hover:bg-slate-800/40"
+                              ? "bg-blue-50/90 dark:bg-blue-950/50 border-l-4 border-blue-600 shadow-inner"
+                              : "hover:bg-slate-50 dark:hover:bg-slate-800/40"
                               }`}
                           >
                             <div className="flex items-start gap-3 min-w-0">
@@ -2162,8 +2032,8 @@ const AdminDashboard = () => {
 
                                 <div
                                   className={`max-w-[75%] p-4 rounded-3xl text-xs leading-relaxed space-y-2 shadow-xs ${isAdmin
-                                      ? "bg-gradient-to-tr from-blue-700 to-indigo-700 text-white rounded-br-xs"
-                                      : "bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 rounded-bl-xs border border-slate-200 dark:border-slate-700"
+                                    ? "bg-gradient-to-tr from-blue-700 to-indigo-700 text-white rounded-br-xs"
+                                    : "bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 rounded-bl-xs border border-slate-200 dark:border-slate-700"
                                     }`}
                                 >
                                   <p className="whitespace-pre-wrap">
@@ -2339,8 +2209,8 @@ const AdminDashboard = () => {
                     </span>
                     <span className="text-xl font-black text-blue-900 dark:text-blue-200">
                       {(userDetailedData?.interviews && userDetailedData.interviews.some((i) => i.status === "completed" || i.finalScore || i.score)) ||
-                      userDetailedData?.hasCompletedInterview ||
-                      userDetailedData?.hasCompletedViva
+                        userDetailedData?.hasCompletedInterview ||
+                        userDetailedData?.hasCompletedViva
                         ? (userDetailedData?.learner?.overallCompetencyScore !== undefined && userDetailedData?.learner?.overallCompetencyScore !== null
                           ? userDetailedData.learner.overallCompetencyScore
                           : 0)
@@ -2353,8 +2223,8 @@ const AdminDashboard = () => {
                     </span>
                     <span className="text-xl font-black text-emerald-900 dark:text-emerald-200">
                       {(userDetailedData?.interviews && userDetailedData.interviews.some((i) => i.status === "completed" || i.finalScore || i.score)) ||
-                      userDetailedData?.hasCompletedInterview ||
-                      userDetailedData?.hasCompletedViva
+                        userDetailedData?.hasCompletedInterview ||
+                        userDetailedData?.hasCompletedViva
                         ? (userDetailedData?.learner?.overallLevel || "Proficient")
                         : "Novice (Viva Pending)"}
                     </span>
@@ -2382,8 +2252,8 @@ const AdminDashboard = () => {
                   <button
                     onClick={() => setInspectTab("competencies")}
                     className={`px-3 py-1.5 rounded-xl font-bold transition cursor-pointer flex items-center gap-1.5 ${inspectTab === "competencies"
-                        ? "bg-blue-600 text-white shadow-xs"
-                        : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400"
+                      ? "bg-blue-600 text-white shadow-xs"
+                      : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400"
                       }`}
                   >
                     <FaBrain size={12} />
@@ -2395,8 +2265,8 @@ const AdminDashboard = () => {
                   <button
                     onClick={() => setInspectTab("interviews")}
                     className={`px-3 py-1.5 rounded-xl font-bold transition cursor-pointer ${inspectTab === "interviews"
-                        ? "bg-blue-600 text-white shadow-xs"
-                        : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400"
+                      ? "bg-blue-600 text-white shadow-xs"
+                      : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400"
                       }`}
                   >
                     AI Viva Mock Interviews (
@@ -2405,8 +2275,8 @@ const AdminDashboard = () => {
                   <button
                     onClick={() => setInspectTab("quizzes")}
                     className={`px-3 py-1.5 rounded-xl font-bold transition cursor-pointer ${inspectTab === "quizzes"
-                        ? "bg-blue-600 text-white shadow-xs"
-                        : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400"
+                      ? "bg-blue-600 text-white shadow-xs"
+                      : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400"
                       }`}
                   >
                     Quiz Evaluations (
@@ -2415,8 +2285,8 @@ const AdminDashboard = () => {
                   <button
                     onClick={() => setInspectTab("assignments")}
                     className={`px-3 py-1.5 rounded-xl font-bold transition cursor-pointer ${inspectTab === "assignments"
-                        ? "bg-blue-600 text-white shadow-xs"
-                        : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400"
+                      ? "bg-blue-600 text-white shadow-xs"
+                      : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400"
                       }`}
                   >
                     Case Study Submissions (
@@ -2425,8 +2295,8 @@ const AdminDashboard = () => {
                   <button
                     onClick={() => setInspectTab("requests")}
                     className={`px-3 py-1.5 rounded-xl font-bold transition cursor-pointer ${inspectTab === "requests"
-                        ? "bg-blue-600 text-white shadow-xs"
-                        : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400"
+                      ? "bg-blue-600 text-white shadow-xs"
+                      : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400"
                       }`}
                   >
                     Material Requests (
@@ -2480,7 +2350,7 @@ const AdminDashboard = () => {
                                 </span>
                               </div>
                               <p className="text-[11px] text-amber-900/90 dark:text-amber-300/90 mt-0.5 leading-relaxed">
-                                This user has not completed their mandatory signup assignment (Diagnostic Quiz & Intake Viva Voce). 
+                                This user has not completed their mandatory signup assignment (Diagnostic Quiz & Intake Viva Voce).
                                 4-Domain Competency Radar values remain at <strong>0%</strong> until both baseline evaluations are completed.
                               </p>
                               <div className="flex flex-wrap items-center gap-2 mt-2 text-[10px] font-bold">
@@ -2585,148 +2455,146 @@ const AdminDashboard = () => {
                         </div>
                       </div>
 
-                    <div className="space-y-3">
-                      <h4 className="font-bold text-slate-900 dark:text-white flex items-center gap-1.5 text-xs">
-                        <FaSlidersH className="text-blue-600" />
-                        <span>Assessed Competency Matrix</span>
-                      </h4>
-                      {(!userDetailedData?.learner?.competencies || userDetailedData.learner.competencies.length === 0) ? (
-                        <p className="text-slate-400 text-center py-4 bg-slate-50 dark:bg-slate-800/40 rounded-xl">
-                          No competency assessment performed by this officer yet.
-                        </p>
-                      ) : (
-                        <div className="overflow-x-auto">
-                          <table className="w-full text-left text-[11px]">
-                            <thead className="bg-slate-100 dark:bg-slate-800 text-slate-500 uppercase text-[10px] font-bold">
-                              <tr>
-                                <th className="p-2.5 rounded-l-xl">Competency Name</th>
-                                <th className="p-2.5">Domain</th>
-                                <th className="p-2.5 text-center">Score</th>
-                                <th className="p-2.5 text-center">Proficiency</th>
-                                <th className="p-2.5 rounded-r-xl">Assessment Source</th>
-                              </tr>
-                            </thead>
-                            <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                              {userDetailedData.learner.competencies.map((c, i) => (
-                                <tr key={i} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/40">
-                                  <td className="p-2.5 font-bold text-slate-800 dark:text-slate-200">
-                                    {c.competencyName}
-                                  </td>
-                                  <td className="p-2.5">
-                                    <span className="px-2 py-0.5 rounded-md bg-blue-50 dark:bg-blue-950 text-blue-600 text-[10px] font-bold">
-                                      {c.domain || "Statistical"}
-                                    </span>
-                                  </td>
-                                  <td className="p-2.5 text-center font-black text-blue-700 dark:text-blue-400">
-                                    {c.score}%
-                                  </td>
-                                  <td className="p-2.5 text-center font-semibold text-slate-600 dark:text-slate-300">
-                                    {c.level || "Intermediate"}
-                                  </td>
-                                  <td className="p-2.5 text-slate-500 text-[10px]">
-                                    {c.source || "assessment-derived"}
-                                  </td>
+                      <div className="space-y-3">
+                        <h4 className="font-bold text-slate-900 dark:text-white flex items-center gap-1.5 text-xs">
+                          <FaSlidersH className="text-blue-600" />
+                          <span>Assessed Competency Matrix</span>
+                        </h4>
+                        {(!userDetailedData?.learner?.competencies || userDetailedData.learner.competencies.length === 0) ? (
+                          <p className="text-slate-400 text-center py-4 bg-slate-50 dark:bg-slate-800/40 rounded-xl">
+                            No competency assessment performed by this officer yet.
+                          </p>
+                        ) : (
+                          <div className="overflow-x-auto">
+                            <table className="w-full text-left text-[11px]">
+                              <thead className="bg-slate-100 dark:bg-slate-800 text-slate-500 uppercase text-[10px] font-bold">
+                                <tr>
+                                  <th className="p-2.5 rounded-l-xl">Competency Name</th>
+                                  <th className="p-2.5">Domain</th>
+                                  <th className="p-2.5 text-center">Score</th>
+                                  <th className="p-2.5 text-center">Proficiency</th>
+                                  <th className="p-2.5 rounded-r-xl">Assessment Source</th>
                                 </tr>
-                              ))}
-                            </tbody>
-                          </table>
-                        </div>
-                      )}
-                    </div>
+                              </thead>
+                              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                                {userDetailedData.learner.competencies.map((c, i) => (
+                                  <tr key={i} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/40">
+                                    <td className="p-2.5 font-bold text-slate-800 dark:text-slate-200">
+                                      {c.competencyName}
+                                    </td>
+                                    <td className="p-2.5">
+                                      <span className="px-2 py-0.5 rounded-md bg-blue-50 dark:bg-blue-950 text-blue-600 text-[10px] font-bold">
+                                        {c.domain || "Statistical"}
+                                      </span>
+                                    </td>
+                                    <td className="p-2.5 text-center font-black text-blue-700 dark:text-blue-400">
+                                      {c.score}%
+                                    </td>
+                                    <td className="p-2.5 text-center font-semibold text-slate-600 dark:text-slate-300">
+                                      {c.level || "Intermediate"}
+                                    </td>
+                                    <td className="p-2.5 text-slate-500 text-[10px]">
+                                      {c.source || "assessment-derived"}
+                                    </td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+                        )}
+                      </div>
 
-                    <div className="space-y-3">
-                      <h4 className="font-bold text-slate-900 dark:text-white flex items-center gap-1.5 text-xs">
-                        <FaExclamationTriangle className="text-amber-500" />
-                        <span>Identified Skill Gaps & Deficits ({userDetailedData?.learner?.skillGaps?.length || 0})</span>
-                      </h4>
-                      {(!userDetailedData?.learner?.skillGaps || userDetailedData.learner.skillGaps.length === 0) ? (
-                        <p className="text-slate-400 text-center py-4 bg-slate-50 dark:bg-slate-800/40 rounded-xl">
-                          No critical skill gaps identified.
-                        </p>
-                      ) : (
-                        <div className="grid md:grid-cols-2 gap-3">
-                          {userDetailedData.learner.skillGaps.map((g, i) => (
-                            <div
-                              key={i}
-                              className="p-3.5 rounded-2xl bg-amber-50/50 dark:bg-amber-950/20 border border-amber-200/70 dark:border-amber-900/50 space-y-1.5"
-                            >
-                              <div className="flex items-center justify-between">
-                                <span className="font-bold text-slate-900 dark:text-white text-xs">
-                                  {g.competencyName}
-                                </span>
-                                <span
-                                  className={`px-2 py-0.5 rounded-full text-[10px] font-black ${
-                                    g.priority === "High"
-                                      ? "bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-300"
-                                      : "bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300"
-                                  }`}
-                                >
-                                  {g.priority || "Medium"} Priority
-                                </span>
-                              </div>
-                              <p className="text-[11px] text-slate-600 dark:text-slate-300">
-                                Current Level: <strong>{g.currentLevel}</strong> ➔ Target:{" "}
-                                <strong>{g.requiredLevel}</strong>
-                              </p>
-                              {g.recommendedAction && (
-                                <p className="text-[10px] text-blue-700 dark:text-blue-300 font-medium">
-                                  <strong>Action:</strong> {g.recommendedAction}
-                                </p>
-                              )}
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="space-y-3">
-                      <h4 className="font-bold text-slate-900 dark:text-white flex items-center gap-1.5 text-xs">
-                        <FaGraduationCap className="text-emerald-600" />
-                        <span>Tailored AI Learning Pathway ({userDetailedData?.learner?.learningPath?.length || 0} Modules)</span>
-                      </h4>
-                      {(!userDetailedData?.learner?.learningPath || userDetailedData.learner.learningPath.length === 0) ? (
-                        <p className="text-slate-400 text-center py-4 bg-slate-50 dark:bg-slate-800/40 rounded-xl">
-                          No personalized learning pathway generated yet.
-                        </p>
-                      ) : (
-                        <div className="space-y-2">
-                          {userDetailedData.learner.learningPath.map((step, i) => (
-                            <div
-                              key={i}
-                              className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/80 flex items-center justify-between gap-3"
-                            >
-                              <div className="flex items-center gap-2.5">
-                                <span className="w-6 h-6 rounded-full bg-blue-600 text-white font-black text-[10px] flex items-center justify-center shrink-0">
-                                  {step.step || i + 1}
-                                </span>
-                                <div>
-                                  <span className="font-bold text-slate-900 dark:text-white text-xs block">
-                                    {step.title}
+                      <div className="space-y-3">
+                        <h4 className="font-bold text-slate-900 dark:text-white flex items-center gap-1.5 text-xs">
+                          <FaExclamationTriangle className="text-amber-500" />
+                          <span>Identified Skill Gaps & Deficits ({userDetailedData?.learner?.skillGaps?.length || 0})</span>
+                        </h4>
+                        {(!userDetailedData?.learner?.skillGaps || userDetailedData.learner.skillGaps.length === 0) ? (
+                          <p className="text-slate-400 text-center py-4 bg-slate-50 dark:bg-slate-800/40 rounded-xl">
+                            No critical skill gaps identified.
+                          </p>
+                        ) : (
+                          <div className="grid md:grid-cols-2 gap-3">
+                            {userDetailedData.learner.skillGaps.map((g, i) => (
+                              <div
+                                key={i}
+                                className="p-3.5 rounded-2xl bg-amber-50/50 dark:bg-amber-950/20 border border-amber-200/70 dark:border-amber-900/50 space-y-1.5"
+                              >
+                                <div className="flex items-center justify-between">
+                                  <span className="font-bold text-slate-900 dark:text-white text-xs">
+                                    {g.competencyName}
                                   </span>
-                                  <span className="text-[10px] text-slate-400">
-                                    Provider: {step.provider || "iGOT Karmayogi"} • Duration: {step.duration || "12 Hours"}
+                                  <span
+                                    className={`px-2 py-0.5 rounded-full text-[10px] font-black ${g.priority === "High"
+                                        ? "bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-300"
+                                        : "bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300"
+                                      }`}
+                                  >
+                                    {g.priority || "Medium"} Priority
                                   </span>
                                 </div>
+                                <p className="text-[11px] text-slate-600 dark:text-slate-300">
+                                  Current Level: <strong>{g.currentLevel}</strong> ➔ Target:{" "}
+                                  <strong>{g.requiredLevel}</strong>
+                                </p>
+                                {g.recommendedAction && (
+                                  <p className="text-[10px] text-blue-700 dark:text-blue-300 font-medium">
+                                    <strong>Action:</strong> {g.recommendedAction}
+                                  </p>
+                                )}
                               </div>
-                              <span
-                                className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
-                                  step.status === "completed"
-                                    ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300"
-                                    : step.status === "in-progress"
-                                      ? "bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300"
-                                      : "bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-300"
-                                }`}
+                            ))}
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="space-y-3">
+                        <h4 className="font-bold text-slate-900 dark:text-white flex items-center gap-1.5 text-xs">
+                          <FaGraduationCap className="text-emerald-600" />
+                          <span>Tailored AI Learning Pathway ({userDetailedData?.learner?.learningPath?.length || 0} Modules)</span>
+                        </h4>
+                        {(!userDetailedData?.learner?.learningPath || userDetailedData.learner.learningPath.length === 0) ? (
+                          <p className="text-slate-400 text-center py-4 bg-slate-50 dark:bg-slate-800/40 rounded-xl">
+                            No personalized learning pathway generated yet.
+                          </p>
+                        ) : (
+                          <div className="space-y-2">
+                            {userDetailedData.learner.learningPath.map((step, i) => (
+                              <div
+                                key={i}
+                                className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/80 flex items-center justify-between gap-3"
                               >
-                                {step.status || "not-started"}
-                              </span>
-                            </div>
-                          ))}
-                        </div>
-                      )}
+                                <div className="flex items-center gap-2.5">
+                                  <span className="w-6 h-6 rounded-full bg-blue-600 text-white font-black text-[10px] flex items-center justify-center shrink-0">
+                                    {step.step || i + 1}
+                                  </span>
+                                  <div>
+                                    <span className="font-bold text-slate-900 dark:text-white text-xs block">
+                                      {step.title}
+                                    </span>
+                                    <span className="text-[10px] text-slate-400">
+                                      Provider: {step.provider || "iGOT Karmayogi"} • Duration: {step.duration || "12 Hours"}
+                                    </span>
+                                  </div>
+                                </div>
+                                <span
+                                  className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold ${step.status === "completed"
+                                      ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300"
+                                      : step.status === "in-progress"
+                                        ? "bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300"
+                                        : "bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-300"
+                                    }`}
+                                >
+                                  {step.status || "not-started"}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                );
-              })()}
+                  );
+                })()}
 
                 {inspectTab === "interviews" && (
                   <div className="space-y-4">
@@ -2889,8 +2757,8 @@ const AdminDashboard = () => {
                           </div>
                           <span
                             className={`px-2.5 py-1 rounded-full font-bold text-[10px] ${mr.status === "fulfilled"
-                                ? "bg-emerald-50 dark:bg-emerald-950 text-emerald-600"
-                                : "bg-amber-50 dark:bg-amber-950 text-amber-600"
+                              ? "bg-emerald-50 dark:bg-emerald-950 text-emerald-600"
+                              : "bg-amber-50 dark:bg-amber-950 text-amber-600"
                               }`}
                           >
                             {mr.status}
@@ -3414,11 +3282,10 @@ const AdminDashboard = () => {
                           }));
                         }
                       }}
-                      className={`px-3 py-1.5 rounded-xl text-[11px] font-bold transition-all cursor-pointer ${
-                        timerPreset === p.key
+                      className={`px-3 py-1.5 rounded-xl text-[11px] font-bold transition-all cursor-pointer ${timerPreset === p.key
                           ? "bg-amber-600 text-white shadow-xs"
                           : "bg-white dark:bg-slate-800 border border-amber-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:border-amber-400"
-                      }`}
+                        }`}
                     >
                       {p.label}
                     </button>
